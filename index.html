@@ -1,1 +1,608 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ's Smart Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&family=JetBrains+Mono:wght@500&display=swap');
 
+        :root {
+            --glass-bg: rgba(0, 0, 0, 0.45); 
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --accent-color: #38bdf8; 
+            --warning-color: #fbbf24;
+            --memo-color: #fcd34d;
+            --quote-shadow: 0 4px 15px rgba(0, 0, 0, 1), 0 2px 4px rgba(0, 0, 0, 0.8);
+            --btn-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        body {
+            margin: 0; padding: 0; min-height: 100vh;
+            background-color: #020617; background-size: cover; background-position: center;
+            background-repeat: no-repeat; background-attachment: fixed;
+            color: #f1f5f9; font-family: 'Pretendard', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 100px 20px 180px; box-sizing: border-box; 
+            transition: background-image 0.8s ease-in-out;
+        }
+
+        body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: transparent; z-index: -1; }
+
+        .widget-btn { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 14px; color: white; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0.7; transition: 0.3s; box-shadow: var(--btn-shadow); }
+        .widget-btn:hover { opacity: 1; border-color: var(--accent-color); color: var(--accent-color); }
+
+        .fab-container { position: relative; display: flex; align-items: center; }
+        .fab-menu { display: flex; gap: 10px; position: absolute; opacity: 0; visibility: hidden; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; z-index: 200; transform: scale(0.9) translateX(-10px); }
+        .fab-menu.active { opacity: 1; visibility: visible; pointer-events: auto; transform: scale(1) translateX(0); }
+        .right-menu { left: 55px; top: 0; flex-direction: row; }
+
+        #top-left-widgets { position: fixed; top: 30px; left: 30px; z-index: 100; }
+        #top-right-widgets { position: fixed; top: 30px; right: 30px; z-index: 100; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+        #weather-container { text-align: right; min-width: 120px; margin-right: 10px; }
+        .weather-loc { font-size: 0.8rem; opacity: 0.9; margin-bottom: 4px; text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.8); }
+        .weather-main { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; color: var(--accent-color); display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-weight: bold; line-height: 1; text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.9); }
+        .weather-hl { font-size: 0.8rem; opacity: 0.9; margin-top: 6px; text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.8); }
+
+        #quote-section { text-align: center; margin-bottom: 60px; max-width: 1000px; width: 100%; animation: fadeIn 1.2s ease-out; }
+        #quote-text { font-family: 'Noto Serif KR', serif; font-size: 3rem; font-weight: 700; line-height: 1.5; color: #fff; text-shadow: var(--quote-shadow); margin-bottom: 20px; word-break: keep-all; }
+        #quote-author { font-size: 1.1rem; color: var(--accent-color); text-align: right; display: block; letter-spacing: 4px; font-weight: 600; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9); padding-right: 20px; }
+
+        #shortcut-container { display: grid; gap: 20px; width: 100%; max-width: 1100px; }
+        .grid-layout { grid-template-columns: repeat(5, 1fr); }
+        .list-layout { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        .shortcut-item { background: rgba(0,0,0,0.35); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 24px 15px; text-align: center; text-decoration: none; color: white; transition: all 0.3s; position: relative; cursor: pointer; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+        .shortcut-item:active { transform: scale(0.95); }
+        .shortcut-item:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-8px); border-color: var(--accent-color); }
+        .shortcut-item img { width: 50px; height: 50px; border-radius: 12px; margin-bottom: 12px; box-shadow: var(--btn-shadow); pointer-events: none; }
+
+        .context-menu { display: none; position: absolute; z-index: 2000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 12px; padding: 8px 0; min-width: 120px; box-shadow: var(--btn-shadow); overflow: hidden; }
+        .context-menu div { padding: 12px 20px; font-size: 0.95rem; cursor: pointer; color: white; transition: 0.2s; text-align: center; font-weight: bold; }
+        .context-menu div:hover { background: rgba(255, 255, 255, 0.1); }
+        .context-menu .cm-del { color: #ef4444; border-top: 1px solid rgba(255,255,255,0.05); }
+
+        .bottom-widgets { position: fixed; bottom: 30px; left: 0; width: 100%; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 30px; box-sizing: border-box; pointer-events: none; z-index: 100; }
+        .left-area { align-items: flex-start; display: flex; flex-direction: column; gap: 10px; pointer-events: auto; position: relative; z-index: 20; }
+        .right-area { align-items: flex-end; display: flex; flex-direction: column; gap: 10px; pointer-events: auto; position: relative; z-index: 10; }
+
+        .smart-folder { display: none; position: relative; }
+        .smart-folder.has-items { display: flex; flex-direction: column; gap: 10px; }
+        
+        .folder-icon { display: none !important; position: relative; }
+        .folder-content { width: 170px; display: flex; flex-direction: column; gap: 8px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .item-card { background: rgba(0,0,0,0.5); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 14px; padding: 12px 15px; width: 100%; box-sizing: border-box; position: relative; animation: slideIn 0.3s ease; box-shadow: var(--btn-shadow); cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; }
+        .item-card:hover { border-color: var(--accent-color); }
+        .item-card .title { font-size: 0.85rem; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 15px; }
+        .noti-info { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 0.75rem; font-family: 'JetBrains Mono'; }
+
+        #clock-container { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); padding: 12px 22px; border-radius: 18px; text-align: right; box-shadow: var(--btn-shadow); }
+        #clock-time { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; color: var(--accent-color); line-height: 1; }
+        #clock-date { font-size: 0.75rem; opacity: 0.6; margin-top: 4px; }
+
+        .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
+        .modal-content { background: #1e293b; padding: 35px; border-radius: 30px; width: 340px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 1px solid var(--glass-border); box-sizing: border-box; }
+        
+        #memoModal .modal-content { width: 600px; max-width: 90vw; }
+        #memoContent { height: 300px; resize: vertical; font-size: 1rem; line-height: 1.6; }
+
+        .modal-content h3 { text-align: center; margin-top: 0; margin-bottom: 25px; font-size: 1.2rem; }
+        .modal-content input, .modal-content textarea, .time-select { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; font-family: inherit; }
+        
+        .time-picker-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .time-select { margin-bottom: 0; cursor: pointer; text-align: center; font-family: 'JetBrains Mono'; }
+        .repeat-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 15px; font-size: 0.9rem; white-space: nowrap; }
+        
+        .day-selector { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .day-check input { display: none; }
+        .day-check span { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #0f172a; border-radius: 8px; font-size: 0.75rem; border: 1px solid #334155; cursor: pointer; }
+        .day-check input:checked + span { background: var(--accent-color); color: #0f172a; font-weight: bold; }
+
+        .btn-save { width: 100%; padding: 12px; border: none; border-radius: 10px; background: var(--accent-color); color: #0f172a; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-save:hover { opacity: 0.9; }
+
+        .theme-colors { display: grid; grid-template-columns: repeat(5, 35px); gap: 10px; justify-content: center; margin-bottom: 10px; }
+        .color-swatch { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; box-shadow: var(--btn-shadow); }
+        .color-swatch:hover { transform: scale(1.15); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 🔥 모바일 최적화 🔥 */
+        @media (max-width: 768px) {
+            body { padding: 160px 15px 120px; } 
+            #top-left-widgets { top: 15px; left: 15px; }
+            #top-right-widgets { top: 15px; right: 15px; }
+            .bottom-widgets { bottom: 15px; padding: 0 15px; }
+
+            #quote-text { font-size: 2rem; }
+            .grid-layout { grid-template-columns: repeat(4, 1fr); gap: 15px; }
+            
+            .widget-btn { width: 40px; height: 40px; font-size: 0.9rem; }
+            #clock-container, #weather-container { padding: 10px 15px; border-radius: 14px; }
+            #clock-time { font-size: 1.3rem; }
+            .weather-main { font-size: 1.2rem; }
+            
+            .modal-content { width: 90vw; padding: 25px; }
+            .folder-icon { display: flex !important; }
+            
+            .folder-content { 
+                position: absolute; bottom: calc(100% + 15px); width: 220px; 
+                max-height: 50vh; overflow-y: auto; padding-right: 4px;
+                opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(10px); z-index: 200; 
+            }
+            
+            .folder-content::-webkit-scrollbar { width: 4px; }
+            .folder-content::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 4px; }
+
+            #noti-folder .folder-content { right: 0; } 
+            #memo-folder .folder-content { left: 0; }  
+            
+            .smart-folder.open .folder-content { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0); }
+        }
+        @media (max-width: 480px) {
+            .grid-layout { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+            #quote-text { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body onclick="requestNotiPermission()">
+
+    <div id="shortcutContextMenu" class="context-menu">
+        <div onclick="editCurrentShortcut()">수정하기</div>
+        <div class="cm-del" onclick="deleteCurrentShortcut()">삭제하기</div>
+    </div>
+
+    <div id="top-left-widgets">
+        <div class="fab-container">
+            <div class="widget-btn fab-main" title="파일 관리" onclick="toggleFab('tl-fab', event)"><i class="fas fa-folder"></i></div>
+            <div class="fab-menu right-menu" id="tl-fab">
+                <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+                <div class="widget-btn" title="데이터 백업" onclick="exportData()"><i class="fas fa-download"></i></div>
+                <div class="widget-btn" title="데이터 복원" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="top-right-widgets">
+        <div id="weather-container">
+            <div class="weather-loc">우성면</div>
+            <div class="weather-main"><i id="w-icon" class="fas fa-spinner fa-spin"></i> <span id="w-temp">--</span>°</div>
+            <div class="weather-hl">최고 <span id="w-high">--</span>° 최저 <span id="w-low">--</span>°</div>
+        </div>
+    </div>
+
+    <div id="quote-section">
+        <div id="quote-text">...</div>
+        <div id="quote-author"></div>
+    </div>
+
+    <div id="shortcut-container"></div>
+
+    <div class="bottom-widgets">
+        <div class="left-area">
+            <div class="smart-folder" id="memo-folder">
+                <div class="widget-btn folder-icon" onclick="toggleFolder('memo-folder', event)">
+                    <i class="fas fa-sticky-note" style="color:var(--memo-color)"></i>
+                </div>
+                <div class="folder-content" id="memo-list"></div>
+            </div>
+            
+            <div class="fab-container">
+                <div class="widget-btn fab-main" title="메뉴 열기" onclick="toggleFab('bl-fab', event)"><i class="fas fa-cog"></i></div>
+                <div class="fab-menu right-menu" id="bl-fab">
+                    <div class="widget-btn" title="테마 변경" onclick="openModal('themeModal')"><i class="fas fa-palette"></i></div>
+                    <div class="widget-btn" title="배경 변경" onclick="changeBackgroundInstant()"><i class="fas fa-image"></i></div>
+                    <div class="widget-btn" title="알림 추가" onclick="openNotiModal()"><i class="fas fa-bell"></i></div>
+                    <div class="widget-btn" title="메모 추가" onclick="openMemoModal()"><i class="fas fa-pen"></i></div>
+                    <div class="widget-btn" title="바로가기 추가" onclick="openLinkModal()"><i class="fas fa-plus"></i></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="right-area">
+            <div class="smart-folder" id="noti-folder">
+                <div class="widget-btn folder-icon" onclick="toggleFolder('noti-folder', event)">
+                    <i class="fas fa-bell" style="color:var(--warning-color)"></i>
+                </div>
+                <div class="folder-content" id="noti-list"></div>
+            </div>
+            
+            <div id="clock-container">
+                <div id="clock-time">00:00:00</div>
+                <div id="clock-date">2026.04.16 THU</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="themeModal" onclick="if(event.target == this) closeModal('themeModal')">
+        <div class="modal-content" style="width: 300px;">
+            <h3>테마 색상</h3>
+            <div class="theme-colors">
+                <div class="color-swatch" style="background:#ef4444" onclick="setTheme('#ef4444')"></div>
+                <div class="color-swatch" style="background:#f97316" onclick="setTheme('#f97316')"></div>
+                <div class="color-swatch" style="background:#eab308" onclick="setTheme('#eab308')"></div>
+                <div class="color-swatch" style="background:#22c55e" onclick="setTheme('#22c55e')"></div>
+                <div class="color-swatch" style="background:#3b82f6" onclick="setTheme('#3b82f6')"></div>
+                <div class="color-swatch" style="background:#6366f1" onclick="setTheme('#6366f1')"></div>
+                <div class="color-swatch" style="background:#a855f7" onclick="setTheme('#a855f7')"></div>
+                <div class="color-swatch" style="background:#ec4899" onclick="setTheme('#ec4899')"></div>
+                <div class="color-swatch" style="background:#ffffff" onclick="setTheme('#ffffff')"></div>
+                <div class="color-swatch" style="background:#000000; border: 1px solid rgba(255,255,255,0.3);" onclick="setTheme('#000000')"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="linkModal" onclick="if(event.target == this) closeModal('linkModal')">
+        <div class="modal-content">
+            <h3 id="linkModalTitle">바로가기 추가</h3>
+            <input type="text" id="siteName" placeholder="이름">
+            <input type="text" id="siteUrl" placeholder="URL (example.com)" onkeypress="if(event.key === 'Enter') addShortcut()">
+            <button class="btn-save" id="linkSaveBtn" onclick="addShortcut()">추가</button>
+        </div>
+    </div>
+
+    <div class="modal" id="notiModal" onclick="if(event.target == this) closeModal('notiModal')">
+        <div class="modal-content">
+            <h3 id="notiModalTitle">알림 추가</h3>
+            <input type="text" id="notiTitle" placeholder="알림 제목">
+            <textarea id="notiDesc" placeholder="알림 내용 (생략 가능)" rows="2"></textarea>
+            <div class="time-picker-row"><select id="notiHour" class="time-select"></select><select id="notiMin" class="time-select"></select></div>
+            <div class="repeat-row">
+                <input type="date" id="notiDate" class="time-select" style="margin-bottom:0; flex:1; padding: 10px; font-size: 0.9rem;">
+                <div style="display:flex; align-items:center; gap: 6px;">
+                    <label for="isRepeat" style="cursor:pointer">반복 설정</label>
+                    <input type="checkbox" id="isRepeat" onchange="toggleDaySelector(this.checked)" style="margin: 0; padding: 0; width: 16px; height: 16px; cursor: pointer; box-sizing: border-box;">
+                </div>
+            </div>
+            <div id="day-selector-wrap" style="display:none;"><div class="day-selector">
+                <label class="day-check"><input type="checkbox" value="1"><span>월</span></label>
+                <label class="day-check"><input type="checkbox" value="2"><span>화</span></label>
+                <label class="day-check"><input type="checkbox" value="3"><span>수</span></label>
+                <label class="day-check"><input type="checkbox" value="4"><span>목</span></label>
+                <label class="day-check"><input type="checkbox" value="5"><span>금</span></label>
+                <label class="day-check"><input type="checkbox" value="6"><span>토</span></label>
+                <label class="day-check"><input type="checkbox" value="0"><span>일</span></label>
+            </div></div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-save" id="notiSaveBtn" style="flex: 1;" onclick="addNotification()">알림 추가</button>
+                <button class="btn-save" id="notiDelBtn" style="display: none; background: #ef4444; color: white; flex: 0.4;" onclick="deleteCurrentNoti()">삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="memoModal" onclick="if(event.target == this) closeModal('memoModal')">
+        <div class="modal-content">
+            <h3 id="memoModalTitle">메모 추가</h3>
+            <input type="text" id="memoTitle" placeholder="메모 제목">
+            <textarea id="memoContent" placeholder="메모 내용" rows="4"></textarea>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-save" id="memoSaveBtn" style="flex: 1;" onclick="addMemo()">메모 저장</button>
+                <button class="btn-save" id="memoDelBtn" style="display: none; background: #ef4444; color: white; flex: 0.4;" onclick="deleteCurrentMemo()">삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let shortcuts = JSON.parse(localStorage.getItem('dj_shortcuts')) || [];
+        let notifications = JSON.parse(localStorage.getItem('dj_notifications')) || [];
+        let memos = JSON.parse(localStorage.getItem('dj_memos')) || [];
+        let firedMinute = "";
+        let currentEditNotiId = null, currentEditMemoId = null, currentShortcutIndex = null; 
+
+        const savedTheme = localStorage.getItem('dj_theme_color');
+        if(savedTheme) document.documentElement.style.setProperty('--accent-color', savedTheme);
+        function setTheme(color) { document.documentElement.style.setProperty('--accent-color', color); localStorage.setItem('dj_theme_color', color); closeModal('themeModal'); }
+
+        function toggleFolder(id, event) {
+            event.stopPropagation();
+            document.querySelectorAll('.fab-menu').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('.smart-folder').forEach(f => { if(f.id !== id) f.classList.remove('open'); });
+            document.getElementById(id).classList.toggle('open');
+        }
+
+        function toggleFab(id, event) {
+            event.stopPropagation();
+            document.querySelectorAll('.smart-folder').forEach(f => f.classList.remove('open'));
+            document.querySelectorAll('.fab-menu').forEach(m => { if (m.id !== id) m.classList.remove('active'); });
+            document.getElementById(id).classList.toggle('active');
+        }
+
+        document.addEventListener('click', (e) => { 
+            if (!e.target.closest('.fab-container')) document.querySelectorAll('.fab-menu').forEach(m => m.classList.remove('active')); 
+            if (!e.target.closest('.smart-folder')) document.querySelectorAll('.smart-folder').forEach(f => f.classList.remove('open')); 
+            
+            const ctxMenu = document.getElementById('shortcutContextMenu');
+            if (ctxMenu && ctxMenu.style.display === 'block') { ctxMenu.style.display = 'none'; }
+        });
+
+        function requestNotiPermission() { if (Notification.permission === "default") Notification.requestPermission(); }
+        function playBeep() { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.frequency.value = 880; gain.gain.value = 0.05; osc.start(); setTimeout(() => osc.stop(), 150); }
+
+        function initTimePicker() {
+            const h = document.getElementById('notiHour'), m = document.getElementById('notiMin');
+            for(let i=0; i<24; i++) h.options.add(new Option(String(i).padStart(2,'0')+'시', String(i).padStart(2,'0')));
+            for(let i=0; i<60; i++) m.options.add(new Option(String(i).padStart(2,'0')+'분', String(i).padStart(2,'0')));
+        }
+
+        function saveData() { localStorage.setItem('dj_shortcuts', JSON.stringify(shortcuts)); localStorage.setItem('dj_notifications', JSON.stringify(notifications)); localStorage.setItem('dj_memos', JSON.stringify(memos)); }
+        function setBackground(seed) { document.body.style.backgroundImage = `url('https://picsum.photos/seed/${seed}/1920/1080')`; }
+        function changeBackgroundInstant() { const seed = 'dj_'+Date.now(); localStorage.setItem('dj_bg_seed', seed); setBackground(seed); }
+
+        async function fetchQuote() {
+            const qt = document.getElementById('quote-text'), qa = document.getElementById('quote-author');
+            try {
+                const res = await fetch('https://korean-advice-open-api.vercel.app/api/advice');
+                const d = await res.json();
+                if (d.message) { qt.innerText = `"${d.message}"`; qa.innerText = `- ${d.author || "지혜의 기록"}`; } else throw new Error();
+            } catch(e) { qt.innerText = "\"기회는 일어나는 것이 아니라 만드는 것이다.\""; qa.innerText = "- Chris Grosser"; }
+        }
+
+        async function fetchWeather() {
+            try {
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=36.48&longitude=127.08&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul');
+                const d = await res.json();
+                document.getElementById('w-temp').innerText = Math.round(d.current.temperature_2m);
+                document.getElementById('w-high').innerText = Math.round(d.daily.temperature_2m_max[0]);
+                document.getElementById('w-low').innerText = Math.round(d.daily.temperature_2m_min[0]);
+                let icon = 'fa-cloud'; const code = d.current.weather_code;
+                if (code === 0) icon = 'fa-sun'; else if (code <= 3) icon = 'fa-cloud-sun'; else if ([51,53,55,61,63,65,80,81,82].includes(code)) icon = 'fa-cloud-rain';
+                document.getElementById('w-icon').className = `fas ${icon}`;
+            } catch(e) { document.getElementById('w-temp').innerText = '-'; }
+        }
+
+function updateAll() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2,'0');
+            const m = String(now.getMinutes()).padStart(2,'0');
+            const s = String(now.getSeconds()).padStart(2,'0');
+            
+            const timeStr = `${h}:${m}`;
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            
+            document.getElementById('clock-time').innerText = `${h}:${m}:${s}`;
+
+            // --- 브라우저 언어 감지 및 연도 제외 다국어 날짜 포맷 ---
+            const lang = navigator.language.toLowerCase();
+            const dayIdx = now.getDay();
+            const month = now.getMonth() + 1;
+            const date = now.getDate();
+            
+            let dateString = "";
+            
+            if (lang.startsWith('ko')) {
+                // 한국어: 4월 16일 목요일
+                const daysKo = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+                dateString = `${month}월${date}일 ${daysKo[dayIdx]}`;
+            } else if (lang.startsWith('ja')) {
+                // 일본어 (한자): 4月 16日 木曜日
+                const daysJa = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
+                dateString = `${month}月${date}日 ${daysJa[dayIdx]}`;
+            } else if (lang.startsWith('zh')) {
+                // 중국어/대만 (한자): 4月 16日 星期四
+                const daysZh = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                dateString = `${month}月${date}日 ${daysZh[dayIdx]}`;
+            } else {
+                // 영어 및 기타: Apr. 16, THU
+                const daysEn = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+                const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                dateString = `${monthsEn[month - 1]}. ${date}, ${daysEn[dayIdx]}`;
+            }
+
+            document.getElementById('clock-date').innerText = dateString;
+
+            if(firedMinute !== timeStr) {
+                notifications.forEach((n, idx) => {
+                    const isToday = n.isRepeat ? n.days.includes(String(now.getDay())) : (n.date === todayStr);
+                    if(isToday && n.time === timeStr) {
+                        firedMinute = timeStr;
+                        if(Notification.permission === "granted") new Notification(n.title, {body: n.desc});
+                        playBeep(); if(!n.isRepeat) { notifications.splice(idx,1); renderNotifications(); }
+                    }
+                });
+            }
+            updateRemainingTimes(now);
+        }
+
+        function updateRemainingTimes(now) {
+            document.querySelectorAll('.noti-item').forEach(el => {
+                const n = notifications.find(x => x.id == el.dataset.id);
+                if(n) {
+                    const [th, tm] = n.time.split(':').map(Number);
+                    let target = new Date(now); target.setHours(th, tm, 0, 0);
+                    if (!n.isRepeat && n.date) { const [y, m, d] = n.date.split('-'); target.setFullYear(y, m-1, d); }
+                    else if (target <= now) target.setDate(target.getDate()+1);
+                    const diff = target - now;
+                    if (diff > 0) {
+                        const hh = String(Math.floor(diff/3600000)).padStart(2,'0'), mm = String(Math.floor((diff%3600000)/60000)).padStart(2,'0'), ss = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
+                        const rem = el.querySelector('.remaining'); if(rem) rem.innerText = `${hh}:${mm}:${ss}`;
+                    } else {
+                        const rem = el.querySelector('.remaining'); if(rem) rem.innerText = (!n.isRepeat) ? "종료됨" : "00:00:00";
+                    }
+                }
+            });
+        }
+
+        function showShortcutMenu(e, index) {
+            e.preventDefault(); 
+            currentShortcutIndex = index;
+            const menu = document.getElementById('shortcutContextMenu');
+            menu.style.display = 'block';
+            let x = e.pageX || (e.touches && e.touches[0].pageX);
+            let y = e.pageY || (e.touches && e.touches[0].pageY);
+            if (x + 120 > window.innerWidth) x = window.innerWidth - 130;
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+        }
+
+        function renderShortcuts() {
+            const c = document.getElementById('shortcut-container'); c.innerHTML = '';
+            c.className = shortcuts.length <= 10 ? 'grid-layout' : 'list-layout';
+            shortcuts.forEach((s, i) => {
+                const url = s.url.startsWith('http') ? s.url : 'http://'+s.url;
+                const div = document.createElement('a'); div.className = 'shortcut-item'; 
+                div.onclick = (e) => { if(window.isDraggingShortcut) { e.preventDefault(); window.isDraggingShortcut = false; } else { window.location.href = url; } };
+                div.oncontextmenu = (e) => showShortcutMenu(e, i);
+                div.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=128&domain=${new URL(url).hostname}"><span>${s.name}</span>`;
+                c.appendChild(div);
+            });
+            if(window.shortcutSortable) window.shortcutSortable.destroy();
+            window.shortcutSortable = new Sortable(c, { 
+                animation: 150, delay: 400, delayOnTouchOnly: true, 
+                onStart: () => { window.isDraggingShortcut = true; },
+                onEnd: (evt) => { 
+                    const itemEl = shortcuts.splice(evt.oldIndex, 1)[0];
+                    shortcuts.splice(evt.newIndex, 0, itemEl);
+                    saveData(); setTimeout(() => window.isDraggingShortcut = false, 100);
+                } 
+            });
+        }
+
+        function renderNotifications() {
+            const c = document.getElementById('noti-list'); c.innerHTML = '';
+            const folder = document.getElementById('noti-folder');
+            
+            if(notifications.length > 0) folder.classList.add('has-items');
+            else folder.classList.remove('has-items', 'open');
+
+            notifications.sort((a,b) => {
+                let aT = a.isRepeat ? "9999-12-31" : (a.date || "9999-12-31");
+                let bT = b.isRepeat ? "9999-12-31" : (b.date || "9999-12-31");
+                if (aT === bT) return a.time.localeCompare(b.time);
+                return aT.localeCompare(bT);
+            }).forEach(n => {
+                const div = document.createElement('div'); div.className = 'item-card noti-item'; div.dataset.id = n.id;
+                div.onclick = (e) => { e.stopPropagation(); openNotiModal(n.id); };
+                div.innerHTML = `<div class="title">${n.title}</div>
+                                 <div class="noti-info"><span>${n.time}</span><span class="remaining" style="color:var(--warning-color)">00:00:00</span></div>`;
+                c.appendChild(div);
+            });
+            saveData();
+        }
+
+        function renderMemos() {
+            const c = document.getElementById('memo-list'); c.innerHTML = '';
+            const folder = document.getElementById('memo-folder');
+            
+            if(memos.length > 0) folder.classList.add('has-items');
+            else folder.classList.remove('has-items', 'open');
+
+            memos.forEach(m => {
+                const div = document.createElement('div'); div.className = 'item-card memo-item';
+                div.onclick = (e) => { e.stopPropagation(); openMemoModal(m.id); };
+                div.innerHTML = `<div class="title">${m.title}</div>`;
+                c.appendChild(div);
+            });
+            saveData();
+        }
+
+        function openLinkModal(index = null) { 
+            currentShortcutIndex = index;
+            if(index !== null) {
+                document.getElementById('siteName').value = shortcuts[index].name; 
+                document.getElementById('siteUrl').value = shortcuts[index].url; 
+                document.getElementById('linkModalTitle').innerText = "바로가기 수정";
+                document.getElementById('linkSaveBtn').innerText = "수정 완료";
+            } else {
+                document.getElementById('siteName').value = ''; document.getElementById('siteUrl').value = ''; 
+                document.getElementById('linkModalTitle').innerText = "바로가기 추가";
+                document.getElementById('linkSaveBtn').innerText = "추가";
+            }
+            openModal('linkModal'); 
+        }
+
+        function editCurrentShortcut() { document.getElementById('shortcutContextMenu').style.display = 'none'; openLinkModal(currentShortcutIndex); }
+        function deleteCurrentShortcut() {
+            document.getElementById('shortcutContextMenu').style.display = 'none';
+            if(confirm('삭제하시겠습니까?')) { shortcuts.splice(currentShortcutIndex, 1); renderShortcuts(); saveData(); }
+        }
+
+        function openMemoModal(id = null) {
+            currentEditMemoId = id; const d = document.getElementById('memoDelBtn');
+            if(id) {
+                const m = memos.find(x => x.id == id);
+                document.getElementById('memoTitle').value = m.title; document.getElementById('memoContent').value = m.content;
+                document.getElementById('memoModalTitle').innerText = "메모 수정"; d.style.display = "block";
+            } else {
+                document.getElementById('memoTitle').value = ''; document.getElementById('memoContent').value = '';
+                document.getElementById('memoModalTitle').innerText = "메모 추가"; d.style.display = "none";
+            }
+            openModal('memoModal');
+        }
+
+        function openNotiModal(id = null) {
+            currentEditNotiId = id; const dBtn = document.getElementById('notiDelBtn');
+            const now = new Date(), today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            if(id) {
+                const n = notifications.find(x => x.id == id);
+                document.getElementById('notiTitle').value = n.title; document.getElementById('notiDesc').value = n.desc || '';
+                const [h, m] = n.time.split(':'); document.getElementById('notiHour').value = h; document.getElementById('notiMin').value = m;
+                document.getElementById('notiDate').value = n.date || today; document.getElementById('isRepeat').checked = n.isRepeat;
+                toggleDaySelector(n.isRepeat); document.querySelectorAll('.day-check input').forEach(chk => chk.checked = n.days.includes(chk.value));
+                document.getElementById('notiModalTitle').innerText = "알림 수정"; dBtn.style.display = "block";
+            } else {
+                document.getElementById('notiTitle').value = ''; document.getElementById('notiDesc').value = '';
+                document.getElementById('notiHour').value = String(now.getHours()).padStart(2,'0'); document.getElementById('notiMin').value = String(now.getMinutes()).padStart(2,'0');
+                document.getElementById('notiDate').value = today; document.getElementById('isRepeat').checked = false;
+                toggleDaySelector(false); document.querySelectorAll('.day-check input').forEach(chk => chk.checked = false);
+                document.getElementById('notiModalTitle').innerText = "알림 추가"; dBtn.style.display = "none";
+            }
+            openModal('notiModal');
+        }
+
+        function addShortcut() { 
+            const n = document.getElementById('siteName').value, u = document.getElementById('siteUrl').value; 
+            if(n&&u){ 
+                if(currentShortcutIndex !== null) shortcuts[currentShortcutIndex] = {name:n, url:u};
+                else shortcuts.push({name:n, url:u}); 
+                renderShortcuts(); saveData(); closeModal('linkModal'); 
+            } 
+        }
+
+        function addNotification() {
+            const t = document.getElementById('notiTitle').value, h = document.getElementById('notiHour').value, m = document.getElementById('notiMin').value, r = document.getElementById('isRepeat').checked, dt = document.getElementById('notiDate').value;
+            const days = Array.from(document.querySelectorAll('.day-check input:checked')).map(x => x.value);
+            if(t) {
+                const data = { id: currentEditNotiId || Date.now(), title: t, desc: document.getElementById('notiDesc').value, time: h+':'+m, isRepeat: r, days, date: dt };
+                if(currentEditNotiId) { const idx = notifications.findIndex(x => x.id == currentEditNotiId); notifications[idx] = data; }
+                else notifications.push(data);
+                renderNotifications(); closeModal('notiModal');
+            }
+        }
+        function deleteCurrentNoti() { if(confirm('삭제하시겠습니까?')) { notifications = notifications.filter(x => x.id != currentEditNotiId); renderNotifications(); closeModal('notiModal'); } }
+
+        function addMemo() {
+            const t = document.getElementById('memoTitle').value, c = document.getElementById('memoContent').value;
+            if(t) {
+                if(currentEditMemoId) { const idx = memos.findIndex(x => x.id == currentEditMemoId); memos[idx] = { ...memos[idx], title: t, content: c }; }
+                else memos.push({ id: Date.now(), title: t, content: c });
+                renderMemos(); closeModal('memoModal');
+            }
+        }
+        function deleteCurrentMemo() { if(confirm('삭제하시겠습니까?')) { memos = memos.filter(x => x.id != currentEditMemoId); renderMemos(); closeModal('memoModal'); } }
+
+        function exportData() {
+            const d = { shortcuts, notifications, memos, theme: localStorage.getItem('dj_theme_color'), seed: localStorage.getItem('dj_bg_seed') };
+            const blob = new Blob([JSON.stringify(d)], {type: "application/json"}), a = document.createElement('a');
+            a.href = URL.createObjectURL(blob); a.download = "dj_smarthub.json"; a.click();
+        }
+        function importData(e) {
+            const f = e.target.files[0]; if(!f) return;
+            const r = new FileReader(); r.onload = (ev) => {
+                const d = JSON.parse(ev.target.result); shortcuts = d.shortcuts || []; notifications = d.notifications || []; memos = d.memos || [];
+                saveData(); if(d.theme) setTheme(d.theme); if(d.seed) { localStorage.setItem('dj_bg_seed', d.seed); setBackground(d.seed); }
+                renderShortcuts(); renderNotifications(); renderMemos(); alert("복원 완료!");
+            }; r.readAsText(f);
+        }
+
+        function toggleDaySelector(s) { document.getElementById('day-selector-wrap').style.display = s ? 'block' : 'none'; document.getElementById('notiDate').disabled = s; }
+        function openModal(id) { document.getElementById(id).style.display = 'block'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        const sd = localStorage.getItem('dj_bg_seed') || new Date().toISOString().split('T')[0];
+        setBackground(sd); fetchQuote(); initTimePicker(); fetchWeather(); setInterval(updateAll, 1000); updateAll(); renderShortcuts(); renderNotifications(); renderMemos();
+    </script>
+</body>
+</html>
