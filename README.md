@@ -1,4 +1,4 @@
-Dashboard with following features for web browser. only one HTML file.
+Dashboard with following features for web browser. (Only one HTML file)
 
 1. Background (Auto change dayily or manually)
 2. Weather
