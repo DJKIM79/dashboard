@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Dashboard for web browser",
   "author": "dongjunkim@outlook.com",
-  "url": "https://github.com/DJKIM79/Dashboard"
+  "url": "https://github.com/DJKIM79/Dashboard",
   "action": {
     "default_popup": "index.html",
     "default_icon": "dashboard.ico"
