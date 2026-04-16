@@ -3,8 +3,8 @@ Dashboard with following features for web browser. (Only one HTML file)
 1. Background (Auto change daily or manually)
 2. Quote
 3. Weather
-4. Time and Date
-5. Alram
+4. Time and date
+5. Arlam
 6. Memo
 7. Theme (10 Colors)
 8. Quick access for sites
