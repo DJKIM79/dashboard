@@ -7,7 +7,7 @@
   "url": "https://github.com/DJKIM79/Dashboard"
   "action": {
     "default_popup": "index.html",
-    "default_icon": "dashboard.png"
+    "default_icon": "dashboard.ico"
   },
   "permissions": [
     "storage"
