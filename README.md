@@ -4,7 +4,7 @@ Dashboard with following features for web browser. (Only one HTML file)
 2. Quote
 3. Weather
 4. Time and date
-5. Arlam
+5. Alarm
 6. Memo
 7. Theme (10 Colors)
 8. Quick access for sites
