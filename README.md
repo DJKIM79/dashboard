@@ -10,4 +10,4 @@ Dashboard with following features for web browser. (Only one HTML file)
 8. Quick access for sites
 9. Import & Export Settings.
 
-<img width="920" height="602" alt="image" src="https://github.com/user-attachments/assets/519279de-92b5-41d5-be89-9bae654b59db" />
+<img width="1651" height="1302" alt="image" src="https://github.com/user-attachments/assets/d6d371df-113a-4592-8467-85e5809eede3" />
