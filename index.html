@@ -6,6 +6,9 @@
     <title>OnTo.kr</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&family=JetBrains+Mono:wght@500&display=swap');
 
@@ -168,7 +171,7 @@
 
     <div id="top-right-widgets">
         <div id="weather-container">
-            <div class="weather-loc">우성면</div>
+            <div class="weather-loc">날씨 불러오는 중...</div>
             <div class="weather-main"><i id="w-icon" class="fas fa-spinner fa-spin"></i> <span id="w-temp">--</span>°</div>
             <div class="weather-hl">최고 <span id="w-high">--</span>° 최저 <span id="w-low">--</span>°</div>
         </div>
@@ -340,20 +343,58 @@
             } catch(e) { qt.innerText = "\"기회는 일어나는 것이 아니라 만드는 것이다.\""; qa.innerText = "- Chris Grosser"; }
         }
 
-        async function fetchWeather() {
+        // --- 위치 기반 날씨 가져오기 통합 함수 ---
+        async function getWeatherData(lat, lon, defaultLocName) {
             try {
-                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=36.48&longitude=127.08&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul');
+                let locName = defaultLocName || "현재 위치";
+                
+                // 위치명을 직접 넘기지 않은 경우(현재 위치를 잡았을 때) 리버스 지오코딩으로 지역명 조회
+                if (!defaultLocName) {
+                    try {
+                        const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14&addressdetails=1&accept-language=ko`);
+                        const geoData = await geoRes.json();
+                        if (geoData && geoData.address) {
+                            locName = geoData.address.town || geoData.address.village || geoData.address.suburb || geoData.address.city_district || geoData.address.city || "현재 위치";
+                        }
+                    } catch(e) { console.log("지역명 조회 실패"); }
+                }
+                
+                document.querySelector('.weather-loc').innerText = locName;
+
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul`);
                 const d = await res.json();
+                
                 document.getElementById('w-temp').innerText = Math.round(d.current.temperature_2m);
                 document.getElementById('w-high').innerText = Math.round(d.daily.temperature_2m_max[0]);
                 document.getElementById('w-low').innerText = Math.round(d.daily.temperature_2m_min[0]);
+                
                 let icon = 'fa-cloud'; const code = d.current.weather_code;
                 if (code === 0) icon = 'fa-sun'; else if (code <= 3) icon = 'fa-cloud-sun'; else if ([51,53,55,61,63,65,80,81,82].includes(code)) icon = 'fa-cloud-rain';
                 document.getElementById('w-icon').className = `fas ${icon}`;
-            } catch(e) { document.getElementById('w-temp').innerText = '-'; }
+            } catch(e) { 
+                document.getElementById('w-temp').innerText = '-'; 
+            }
         }
 
-function updateAll() {
+        function fetchWeather() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // 위치 접근 허용 시 현재 좌표 사용
+                        getWeatherData(position.coords.latitude, position.coords.longitude, null);
+                    },
+                    (error) => {
+                        // 권한 거부 시 기본값 (우성면) 사용
+                        getWeatherData(36.48, 127.08, "우성면 (기본)");
+                    }
+                );
+            } else {
+                // 브라우저에서 위치를 아예 지원 안 할 경우
+                getWeatherData(36.48, 127.08, "우성면 (기본)");
+            }
+        }
+
+        function updateAll() {
             const now = new Date();
             const h = String(now.getHours()).padStart(2,'0');
             const m = String(now.getMinutes()).padStart(2,'0');
@@ -364,28 +405,22 @@ function updateAll() {
             
             document.getElementById('clock-time').innerText = `${h}:${m}:${s}`;
 
-            // --- 브라우저 언어 감지 및 연도 제외 다국어 날짜 포맷 ---
             const lang = navigator.language.toLowerCase();
             const dayIdx = now.getDay();
             const month = now.getMonth() + 1;
             const date = now.getDate();
             
             let dateString = "";
-            
             if (lang.startsWith('ko')) {
-                // 한국어: 4월 16일 목요일
                 const daysKo = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
                 dateString = `${month}월${date}일 ${daysKo[dayIdx]}`;
             } else if (lang.startsWith('ja')) {
-                // 일본어 (한자): 4月 16日 木曜日
                 const daysJa = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
                 dateString = `${month}月${date}日 ${daysJa[dayIdx]}`;
             } else if (lang.startsWith('zh')) {
-                // 중국어/대만 (한자): 4月 16日 星期四
                 const daysZh = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
                 dateString = `${month}月${date}日 ${daysZh[dayIdx]}`;
             } else {
-                // 영어 및 기타: Apr. 16, THU
                 const daysEn = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
                 const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 dateString = `${monthsEn[month - 1]}. ${date}, ${daysEn[dayIdx]}`;
@@ -601,8 +636,73 @@ function updateAll() {
         function openModal(id) { document.getElementById(id).style.display = 'block'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
+        // --- 튜토리얼 (도움말) 설정 ---
+        function showTutorial() {
+            const driver = window.driver.js.driver;
+            
+            const driverObj = driver({
+                showProgress: true,       
+                nextBtnText: '다음 &rarr;',
+                prevBtnText: '&larr; 이전',
+                doneBtnText: '시작하기',
+                allowClose: false,        
+                steps: [
+                    { 
+                        element: '#weather-container', 
+                        popover: { 
+                            title: '🌤️ 날씨 위젯', 
+                            description: '현재 계신 위치를 자동으로 검색하여 날씨와 최고/최저 기온을 표시합니다.<br><small>(* 위치 정보 제공 권한 허용이 필요합니다)</small>', 
+                            side: "left", 
+                            align: 'start' 
+                        } 
+                    },
+                    { 
+                        element: '#clock-container', 
+                        popover: { 
+                            title: '⏰ 시계', 
+                            description: '현재 시각과 날짜를 표시합니다.', 
+                            side: "top", 
+                            align: 'end' 
+                        } 
+                    },
+                    { 
+                        element: '.bottom-widgets .left-area .fab-container', 
+                        popover: { 
+                            title: '⚙️ 설정 및 추가', 
+                            description: '테마 색상 변경, 배경화면 무작위 변경 기능과<br>새로운 알림, 메모, 바로가기를 추가할 수 있는 메뉴입니다.', 
+                            side: "top", 
+                            align: 'start' 
+                        } 
+                    },
+                    { 
+                        element: '#top-left-widgets .fab-container', 
+                        popover: { 
+                            title: '💾 파일 관리', 
+                            description: '현재까지 추가한 모든 데이터를 JSON 파일로 내보내어 백업하거나, 백업한 파일을 다시 불러와 복원할 수 있습니다.', 
+                            side: "right", 
+                            align: 'start' 
+                        } 
+                    }
+                ]
+            });
+
+            driverObj.drive();
+        }
+
         const sd = localStorage.getItem('dj_bg_seed') || new Date().toISOString().split('T')[0];
         setBackground(sd); fetchQuote(); initTimePicker(); fetchWeather(); setInterval(updateAll, 1000); updateAll(); renderShortcuts(); renderNotifications(); renderMemos();
+
+        // 처음 방문했는지 확인 후 튜토리얼 실행
+        window.addEventListener('load', () => {
+            const hasSeenTutorial = localStorage.getItem('dj_tutorial_done');
+            
+            if (!hasSeenTutorial) {
+                setTimeout(() => {
+                    showTutorial();
+                    localStorage.setItem('dj_tutorial_done', 'true'); // 다음부터는 안 보이게 저장
+                }, 800);
+            }
+        });
     </script>
 </body>
 </html>
