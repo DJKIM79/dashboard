@@ -232,7 +232,7 @@
             <h3 id="linkModalTitle" data-i18n="modalLinkAdd">바로가기 추가</h3>
             <input type="text" id="siteName" data-i18n-ph="linkName" placeholder="이름">
             <input type="text" id="siteUrl" data-i18n-ph="linkUrl" placeholder="URL (example.com)" onkeypress="if(event.key === 'Enter') addShortcut()">
-            <button class="btn-save" id="linkSaveBtn" data-i18n="btnSave">추가</button>
+            <button class="btn-save" id="linkSaveBtn" onclick="addShortcut()" data-i18n="btnSave">추가</button>
         </div>
     </div>
 
