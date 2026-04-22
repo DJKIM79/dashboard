@@ -119,30 +119,19 @@
             #top-left-widgets { top: 15px; left: 15px; }
             #top-right-widgets { top: 15px; right: 15px; }
             .bottom-widgets { bottom: 15px; padding: 0 15px; }
-
             #quote-text { font-size: 2rem; }
             .grid-layout { grid-template-columns: repeat(4, 1fr); gap: 15px; }
-            
             .widget-btn { width: 40px; height: 40px; font-size: 0.9rem; }
             #clock-container, #weather-container { padding: 10px 15px; border-radius: 14px; }
             #clock-time { font-size: 1.3rem; }
             .weather-main { font-size: 1.2rem; }
-            
             .modal-content { width: 90vw; padding: 25px; }
             .folder-icon { display: flex !important; }
-            
-            .folder-content { 
-                position: absolute; bottom: calc(100% + 15px); width: 220px; 
-                max-height: 50vh; overflow-y: auto; padding-right: 4px;
-                opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(10px); z-index: 200; 
-            }
-            
+            .folder-content { position: absolute; bottom: calc(100% + 15px); width: 220px; max-height: 50vh; overflow-y: auto; padding-right: 4px; opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(10px); z-index: 200; }
             .folder-content::-webkit-scrollbar { width: 4px; }
             .folder-content::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 4px; }
-
             #noti-folder .folder-content { right: 0; } 
             #memo-folder .folder-content { left: 0; }  
-            
             .smart-folder.open .folder-content { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0); }
         }
         @media (max-width: 480px) {
@@ -154,26 +143,26 @@
 <body onclick="requestNotiPermission()">
 
     <div id="shortcutContextMenu" class="context-menu">
-        <div onclick="editCurrentShortcut()">수정하기</div>
-        <div class="cm-del" onclick="deleteCurrentShortcut()">삭제하기</div>
+        <div onclick="editCurrentShortcut()" data-i18n="cmEdit">수정하기</div>
+        <div class="cm-del" onclick="deleteCurrentShortcut()" data-i18n="cmDelete">삭제하기</div>
     </div>
 
     <div id="top-left-widgets">
         <div class="fab-container">
-            <div class="widget-btn fab-main" title="파일 관리" onclick="toggleFab('tl-fab', event)"><i class="fas fa-folder"></i></div>
+            <div class="widget-btn fab-main" data-i18n-title="tipFile" onclick="toggleFab('tl-fab', event)"><i class="fas fa-folder"></i></div>
             <div class="fab-menu right-menu" id="tl-fab">
                 <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
-                <div class="widget-btn" title="데이터 백업" onclick="exportData()"><i class="fas fa-download"></i></div>
-                <div class="widget-btn" title="데이터 복원" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload"></i></div>
+                <div class="widget-btn" data-i18n-title="tipBackup" onclick="exportData()"><i class="fas fa-download"></i></div>
+                <div class="widget-btn" data-i18n-title="tipRestore" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload"></i></div>
             </div>
         </div>
     </div>
 
     <div id="top-right-widgets">
         <div id="weather-container">
-            <div class="weather-loc">날씨 불러오는 중...</div>
+            <div class="weather-loc" data-i18n="weatherLoading">날씨 불러오는 중...</div>
             <div class="weather-main"><i id="w-icon" class="fas fa-spinner fa-spin"></i> <span id="w-temp">--</span>°</div>
-            <div class="weather-hl">최고 <span id="w-high">--</span>° 최저 <span id="w-low">--</span>°</div>
+            <div class="weather-hl"><span data-i18n="weatherHigh">최고</span> <span id="w-high">--</span>° <span data-i18n="weatherLow">최저</span> <span id="w-low">--</span>°</div>
         </div>
     </div>
 
@@ -194,13 +183,13 @@
             </div>
             
             <div class="fab-container">
-                <div class="widget-btn fab-main" title="메뉴 열기" onclick="toggleFab('bl-fab', event)"><i class="fas fa-cog"></i></div>
+                <div class="widget-btn fab-main" data-i18n-title="tipMenu" onclick="toggleFab('bl-fab', event)"><i class="fas fa-cog"></i></div>
                 <div class="fab-menu right-menu" id="bl-fab">
-                    <div class="widget-btn" title="테마 변경" onclick="openModal('themeModal')"><i class="fas fa-palette"></i></div>
-                    <div class="widget-btn" title="배경 변경" onclick="changeBackgroundInstant()"><i class="fas fa-image"></i></div>
-                    <div class="widget-btn" title="알림 추가" onclick="openNotiModal()"><i class="fas fa-bell"></i></div>
-                    <div class="widget-btn" title="메모 추가" onclick="openMemoModal()"><i class="fas fa-pen"></i></div>
-                    <div class="widget-btn" title="바로가기 추가" onclick="openLinkModal()"><i class="fas fa-plus"></i></div>
+                    <div class="widget-btn" data-i18n-title="tipTheme" onclick="openModal('themeModal')"><i class="fas fa-palette"></i></div>
+                    <div class="widget-btn" data-i18n-title="tipBg" onclick="changeBackgroundInstant()"><i class="fas fa-image"></i></div>
+                    <div class="widget-btn" data-i18n-title="tipNoti" onclick="openNotiModal()"><i class="fas fa-bell"></i></div>
+                    <div class="widget-btn" data-i18n-title="tipMemo" onclick="openMemoModal()"><i class="fas fa-pen"></i></div>
+                    <div class="widget-btn" data-i18n-title="tipLink" onclick="openLinkModal()"><i class="fas fa-plus"></i></div>
                 </div>
             </div>
         </div>
@@ -215,14 +204,14 @@
             
             <div id="clock-container">
                 <div id="clock-time">00:00:00</div>
-                <div id="clock-date">2026.04.16 THU</div>
+                <div id="clock-date">...</div>
             </div>
         </div>
     </div>
 
     <div class="modal" id="themeModal" onclick="if(event.target == this) closeModal('themeModal')">
         <div class="modal-content" style="width: 300px;">
-            <h3>테마 색상</h3>
+            <h3 data-i18n="modalTheme">테마 색상</h3>
             <div class="theme-colors">
                 <div class="color-swatch" style="background:#ef4444" onclick="setTheme('#ef4444')"></div>
                 <div class="color-swatch" style="background:#f97316" onclick="setTheme('#f97316')"></div>
@@ -240,23 +229,23 @@
 
     <div class="modal" id="linkModal" onclick="if(event.target == this) closeModal('linkModal')">
         <div class="modal-content">
-            <h3 id="linkModalTitle">바로가기 추가</h3>
-            <input type="text" id="siteName" placeholder="이름">
-            <input type="text" id="siteUrl" placeholder="URL (example.com)" onkeypress="if(event.key === 'Enter') addShortcut()">
-            <button class="btn-save" id="linkSaveBtn" onclick="addShortcut()">추가</button>
+            <h3 id="linkModalTitle" data-i18n="modalLinkAdd">바로가기 추가</h3>
+            <input type="text" id="siteName" data-i18n-ph="linkName" placeholder="이름">
+            <input type="text" id="siteUrl" data-i18n-ph="linkUrl" placeholder="URL (example.com)" onkeypress="if(event.key === 'Enter') addShortcut()">
+            <button class="btn-save" id="linkSaveBtn" data-i18n="btnSave">추가</button>
         </div>
     </div>
 
     <div class="modal" id="notiModal" onclick="if(event.target == this) closeModal('notiModal')">
         <div class="modal-content">
-            <h3 id="notiModalTitle">알림 추가</h3>
-            <input type="text" id="notiTitle" placeholder="알림 제목">
-            <textarea id="notiDesc" placeholder="알림 내용 (생략 가능)" rows="2"></textarea>
+            <h3 id="notiModalTitle" data-i18n="modalNotiAdd">알림 추가</h3>
+            <input type="text" id="notiTitle" data-i18n-ph="notiTitle" placeholder="알림 제목">
+            <textarea id="notiDesc" data-i18n-ph="notiDesc" placeholder="알림 내용 (생략 가능)" rows="2"></textarea>
             <div class="time-picker-row"><select id="notiHour" class="time-select"></select><select id="notiMin" class="time-select"></select></div>
             <div class="repeat-row">
                 <input type="date" id="notiDate" class="time-select" style="margin-bottom:0; flex:1; padding: 10px; font-size: 0.9rem;">
                 <div style="display:flex; align-items:center; gap: 6px;">
-                    <label for="isRepeat" style="cursor:pointer">반복 설정</label>
+                    <label for="isRepeat" style="cursor:pointer" data-i18n="repeatSet">반복 설정</label>
                     <input type="checkbox" id="isRepeat" onchange="toggleDaySelector(this.checked)" style="margin: 0; padding: 0; width: 16px; height: 16px; cursor: pointer; box-sizing: border-box;">
                 </div>
             </div>
@@ -270,25 +259,76 @@
                 <label class="day-check"><input type="checkbox" value="0"><span>일</span></label>
             </div></div>
             <div style="display: flex; gap: 10px;">
-                <button class="btn-save" id="notiSaveBtn" style="flex: 1;" onclick="addNotification()">알림 추가</button>
-                <button class="btn-save" id="notiDelBtn" style="display: none; background: #ef4444; color: white; flex: 0.4;" onclick="deleteCurrentNoti()">삭제</button>
+                <button class="btn-save" id="notiSaveBtn" style="flex: 1;" onclick="addNotification()" data-i18n="btnAddNoti">알림 추가</button>
+                <button class="btn-save" id="notiDelBtn" style="display: none; background: #ef4444; color: white; flex: 0.4;" onclick="deleteCurrentNoti()" data-i18n="btnDelete">삭제</button>
             </div>
         </div>
     </div>
 
     <div class="modal" id="memoModal" onclick="if(event.target == this) closeModal('memoModal')">
         <div class="modal-content">
-            <h3 id="memoModalTitle">메모 추가</h3>
-            <input type="text" id="memoTitle" placeholder="메모 제목">
-            <textarea id="memoContent" placeholder="메모 내용" rows="4"></textarea>
+            <h3 id="memoModalTitle" data-i18n="modalMemoAdd">메모 추가</h3>
+            <input type="text" id="memoTitle" data-i18n-ph="memoTitle" placeholder="메모 제목">
+            <textarea id="memoContent" data-i18n-ph="memoContent" placeholder="메모 내용" rows="4"></textarea>
             <div style="display: flex; gap: 10px;">
-                <button class="btn-save" id="memoSaveBtn" style="flex: 1;" onclick="addMemo()">메모 저장</button>
-                <button class="btn-save" id="memoDelBtn" style="display: none; background: #ef4444; color: white; flex: 0.4;" onclick="deleteCurrentMemo()">삭제</button>
+                <button class="btn-save" id="memoSaveBtn" style="flex: 1;" onclick="addMemo()" data-i18n="btnSaveMemo">메모 저장</button>
+                <button class="btn-save" id="memoDelBtn" style="display: none; background: #ef4444; color: white; flex: 0.4;" onclick="deleteCurrentMemo()" data-i18n="btnDelete">삭제</button>
             </div>
         </div>
     </div>
 
     <script>
+        // --- 🌐 i18n 언어 사전 설정 ---
+        const userLang = navigator.language.startsWith('ko') ? 'ko' : 'en';
+        const LANG = {
+            ko: {
+                weatherDefault: "우성면 (기본)", weatherLoading: "날씨 불러오는 중...", weatherHigh: "최고", weatherLow: "최저",
+                quoteDefault: "\"기회는 일어나는 것이 아니라 만드는 것이다.\"", quoteAuthorDefault: "- Chris Grosser",
+                cmEdit: "수정하기", cmDelete: "삭제하기",
+                tipFile: "파일 관리", tipBackup: "데이터 백업", tipRestore: "데이터 복원", tipMenu: "메뉴 열기", 
+                tipTheme: "테마 변경", tipBg: "배경 변경", tipNoti: "알림 추가", tipMemo: "메모 추가", tipLink: "바로가기 추가",
+                modalTheme: "테마 색상", modalLinkAdd: "바로가기 추가", modalLinkEdit: "바로가기 수정", linkName: "이름", linkUrl: "URL (example.com)", 
+                btnSave: "추가", btnEdit: "수정 완료", modalNotiAdd: "알림 추가", modalNotiEdit: "알림 수정", notiTitle: "알림 제목", notiDesc: "알림 내용 (생략 가능)", 
+                repeatSet: "반복 설정", days: ["일", "월", "화", "수", "목", "금", "토"], btnAddNoti: "알림 추가", btnDelete: "삭제", 
+                modalMemoAdd: "메모 추가", modalMemoEdit: "메모 수정", memoTitle: "메모 제목", memoContent: "메모 내용", btnSaveMemo: "메모 저장", 
+                alertDel: "삭제하시겠습니까?", alertRestore: "복원 완료!", txtEnded: "종료됨",
+                tutWeatherTitle: '🌤️ 날씨 위젯', tutWeatherDesc: '현재 계신 위치를 자동으로 검색하여 날씨와 최고/최저 기온을 표시합니다.<br><small>(* 위치 정보 제공 권한 허용이 필요합니다)</small>',
+                tutClockTitle: '⏰ 시계', tutClockDesc: '현재 시각과 날짜를 표시합니다.',
+                tutSettingTitle: '⚙️ 설정 및 추가', tutSettingDesc: '테마 색상 변경, 배경화면 무작위 변경 기능과<br>새로운 알림, 메모, 바로가기를 추가할 수 있는 메뉴입니다.',
+                tutFileTitle: '💾 파일 관리', tutFileDesc: '현재까지 추가한 모든 데이터를 JSON 파일로 내보내어 백업하거나, 백업한 파일을 다시 불러와 복원할 수 있습니다.',
+                tutNext: '다음 &rarr;', tutPrev: '&larr; 이전', tutDone: '시작하기'
+            },
+            en: {
+                weatherDefault: "Useong-myeon (Default)", weatherLoading: "Loading Weather...", weatherHigh: "H", weatherLow: "L",
+                quoteDefault: "\"Opportunities don't happen. You create them.\"", quoteAuthorDefault: "- Chris Grosser",
+                cmEdit: "Edit", cmDelete: "Delete",
+                tipFile: "Files", tipBackup: "Backup", tipRestore: "Restore", tipMenu: "Menu", 
+                tipTheme: "Theme", tipBg: "Background", tipNoti: "Notification", tipMemo: "Memo", tipLink: "Shortcut",
+                modalTheme: "Theme Colors", modalLinkAdd: "Add Shortcut", modalLinkEdit: "Edit Shortcut", linkName: "Name", linkUrl: "URL (example.com)", 
+                btnSave: "Add", btnEdit: "Save", modalNotiAdd: "Add Alert", modalNotiEdit: "Edit Alert", notiTitle: "Title", notiDesc: "Description (Optional)", 
+                repeatSet: "Repeat", days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], btnAddNoti: "Add Alert", btnDelete: "Delete", 
+                modalMemoAdd: "Add Memo", modalMemoEdit: "Edit Memo", memoTitle: "Title", memoContent: "Content", btnSaveMemo: "Save", 
+                alertDel: "Are you sure you want to delete?", alertRestore: "Restore Complete!", txtEnded: "Ended",
+                tutWeatherTitle: '🌤️ Weather Widget', tutWeatherDesc: 'Automatically detects your location to display the weather.<br><small>(* Requires location permission)</small>',
+                tutClockTitle: '⏰ Clock', tutClockDesc: 'Displays the current time and date.',
+                tutSettingTitle: '⚙️ Settings', tutSettingDesc: 'Change theme colors, backgrounds, and add new alerts, memos, or shortcuts.',
+                tutFileTitle: '💾 Backup & Restore', tutFileDesc: 'Export all your data as a JSON file or import to restore.',
+                tutNext: 'Next &rarr;', tutPrev: '&larr; Prev', tutDone: 'Start'
+            }
+        };
+
+        function applyLanguage() {
+            const T = LANG[userLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => el.innerHTML = T[el.getAttribute('data-i18n')]);
+            document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = T[el.getAttribute('data-i18n-ph')]);
+            document.querySelectorAll('[data-i18n-title]').forEach(el => el.title = T[el.getAttribute('data-i18n-title')]);
+            
+            const daySpans = document.querySelectorAll('.day-check span');
+            // 월(1), 화(2), 수(3), 목(4), 금(5), 토(6), 일(0) 순서 매핑
+            const dayMapping = [1, 2, 3, 4, 5, 6, 0];
+            daySpans.forEach((span, i) => { span.innerText = T.days[dayMapping[i]]; });
+        }
+
         let shortcuts = JSON.parse(localStorage.getItem('dj_shortcuts')) || [];
         let notifications = JSON.parse(localStorage.getItem('dj_notifications')) || [];
         let memos = JSON.parse(localStorage.getItem('dj_memos')) || [];
@@ -326,8 +366,10 @@
 
         function initTimePicker() {
             const h = document.getElementById('notiHour'), m = document.getElementById('notiMin');
-            for(let i=0; i<24; i++) h.options.add(new Option(String(i).padStart(2,'0')+'시', String(i).padStart(2,'0')));
-            for(let i=0; i<60; i++) m.options.add(new Option(String(i).padStart(2,'0')+'분', String(i).padStart(2,'0')));
+            const hSuffix = userLang === 'ko' ? '시' : 'h';
+            const mSuffix = userLang === 'ko' ? '분' : 'm';
+            for(let i=0; i<24; i++) h.options.add(new Option(String(i).padStart(2,'0')+hSuffix, String(i).padStart(2,'0')));
+            for(let i=0; i<60; i++) m.options.add(new Option(String(i).padStart(2,'0')+mSuffix, String(i).padStart(2,'0')));
         }
 
         function saveData() { localStorage.setItem('dj_shortcuts', JSON.stringify(shortcuts)); localStorage.setItem('dj_notifications', JSON.stringify(notifications)); localStorage.setItem('dj_memos', JSON.stringify(memos)); }
@@ -337,26 +379,31 @@
         async function fetchQuote() {
             const qt = document.getElementById('quote-text'), qa = document.getElementById('quote-author');
             try {
-                const res = await fetch('https://korean-advice-open-api.vercel.app/api/advice');
-                const d = await res.json();
-                if (d.message) { qt.innerText = `"${d.message}"`; qa.innerText = `- ${d.author || "지혜의 기록"}`; } else throw new Error();
-            } catch(e) { qt.innerText = "\"기회는 일어나는 것이 아니라 만드는 것이다.\""; qa.innerText = "- Chris Grosser"; }
+                if(userLang === 'ko') {
+                    const res = await fetch('https://korean-advice-open-api.vercel.app/api/advice');
+                    const d = await res.json();
+                    if (d.message) { qt.innerText = `"${d.message}"`; qa.innerText = `- ${d.author || "지혜의 기록"}`; return; }
+                } else {
+                    const res = await fetch('https://api.quotable.io/random');
+                    const d = await res.json();
+                    if (d.content) { qt.innerText = `"${d.content}"`; qa.innerText = `- ${d.author || "Unknown"}`; return; }
+                }
+                throw new Error();
+            } catch(e) { qt.innerText = LANG[userLang].quoteDefault; qa.innerText = LANG[userLang].quoteAuthorDefault; }
         }
 
-        // --- 위치 기반 날씨 가져오기 통합 함수 ---
         async function getWeatherData(lat, lon, defaultLocName) {
             try {
-                let locName = defaultLocName || "현재 위치";
+                let locName = defaultLocName || LANG[userLang].weatherDefault;
                 
-                // 위치명을 직접 넘기지 않은 경우(현재 위치를 잡았을 때) 리버스 지오코딩으로 지역명 조회
                 if (!defaultLocName) {
                     try {
-                        const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14&addressdetails=1&accept-language=ko`);
+                        const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14&addressdetails=1&accept-language=${userLang}`);
                         const geoData = await geoRes.json();
                         if (geoData && geoData.address) {
-                            locName = geoData.address.town || geoData.address.village || geoData.address.suburb || geoData.address.city_district || geoData.address.city || "현재 위치";
+                            locName = geoData.address.town || geoData.address.village || geoData.address.suburb || geoData.address.city_district || geoData.address.city || locName;
                         }
-                    } catch(e) { console.log("지역명 조회 실패"); }
+                    } catch(e) { console.log("Geocoding failed"); }
                 }
                 
                 document.querySelector('.weather-loc').innerText = locName;
@@ -379,18 +426,11 @@
         function fetchWeather() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        // 위치 접근 허용 시 현재 좌표 사용
-                        getWeatherData(position.coords.latitude, position.coords.longitude, null);
-                    },
-                    (error) => {
-                        // 권한 거부 시 기본값 (우성면) 사용
-                        getWeatherData(36.48, 127.08, "우성면 (기본)");
-                    }
+                    (position) => { getWeatherData(position.coords.latitude, position.coords.longitude, null); },
+                    (error) => { getWeatherData(36.48, 127.08, LANG[userLang].weatherDefault); }
                 );
             } else {
-                // 브라우저에서 위치를 아예 지원 안 할 경우
-                getWeatherData(36.48, 127.08, "우성면 (기본)");
+                getWeatherData(36.48, 127.08, LANG[userLang].weatherDefault);
             }
         }
 
@@ -405,21 +445,14 @@
             
             document.getElementById('clock-time').innerText = `${h}:${m}:${s}`;
 
-            const lang = navigator.language.toLowerCase();
             const dayIdx = now.getDay();
             const month = now.getMonth() + 1;
             const date = now.getDate();
             
             let dateString = "";
-            if (lang.startsWith('ko')) {
+            if (userLang === 'ko') {
                 const daysKo = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
                 dateString = `${month}월${date}일 ${daysKo[dayIdx]}`;
-            } else if (lang.startsWith('ja')) {
-                const daysJa = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
-                dateString = `${month}月${date}日 ${daysJa[dayIdx]}`;
-            } else if (lang.startsWith('zh')) {
-                const daysZh = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-                dateString = `${month}月${date}日 ${daysZh[dayIdx]}`;
             } else {
                 const daysEn = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
                 const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -454,7 +487,7 @@
                         const hh = String(Math.floor(diff/3600000)).padStart(2,'0'), mm = String(Math.floor((diff%3600000)/60000)).padStart(2,'0'), ss = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
                         const rem = el.querySelector('.remaining'); if(rem) rem.innerText = `${hh}:${mm}:${ss}`;
                     } else {
-                        const rem = el.querySelector('.remaining'); if(rem) rem.innerText = (!n.isRepeat) ? "종료됨" : "00:00:00";
+                        const rem = el.querySelector('.remaining'); if(rem) rem.innerText = (!n.isRepeat) ? LANG[userLang].txtEnded : "00:00:00";
                     }
                 }
             });
@@ -535,15 +568,16 @@
 
         function openLinkModal(index = null) { 
             currentShortcutIndex = index;
+            const T = LANG[userLang];
             if(index !== null) {
                 document.getElementById('siteName').value = shortcuts[index].name; 
                 document.getElementById('siteUrl').value = shortcuts[index].url; 
-                document.getElementById('linkModalTitle').innerText = "바로가기 수정";
-                document.getElementById('linkSaveBtn').innerText = "수정 완료";
+                document.getElementById('linkModalTitle').innerText = T.modalLinkEdit;
+                document.getElementById('linkSaveBtn').innerText = T.btnEdit;
             } else {
                 document.getElementById('siteName').value = ''; document.getElementById('siteUrl').value = ''; 
-                document.getElementById('linkModalTitle').innerText = "바로가기 추가";
-                document.getElementById('linkSaveBtn').innerText = "추가";
+                document.getElementById('linkModalTitle').innerText = T.modalLinkAdd;
+                document.getElementById('linkSaveBtn').innerText = T.btnSave;
             }
             openModal('linkModal'); 
         }
@@ -551,18 +585,19 @@
         function editCurrentShortcut() { document.getElementById('shortcutContextMenu').style.display = 'none'; openLinkModal(currentShortcutIndex); }
         function deleteCurrentShortcut() {
             document.getElementById('shortcutContextMenu').style.display = 'none';
-            if(confirm('삭제하시겠습니까?')) { shortcuts.splice(currentShortcutIndex, 1); renderShortcuts(); saveData(); }
+            if(confirm(LANG[userLang].alertDel)) { shortcuts.splice(currentShortcutIndex, 1); renderShortcuts(); saveData(); }
         }
 
         function openMemoModal(id = null) {
             currentEditMemoId = id; const d = document.getElementById('memoDelBtn');
+            const T = LANG[userLang];
             if(id) {
                 const m = memos.find(x => x.id == id);
                 document.getElementById('memoTitle').value = m.title; document.getElementById('memoContent').value = m.content;
-                document.getElementById('memoModalTitle').innerText = "메모 수정"; d.style.display = "block";
+                document.getElementById('memoModalTitle').innerText = T.modalMemoEdit; d.style.display = "block";
             } else {
                 document.getElementById('memoTitle').value = ''; document.getElementById('memoContent').value = '';
-                document.getElementById('memoModalTitle').innerText = "메모 추가"; d.style.display = "none";
+                document.getElementById('memoModalTitle').innerText = T.modalMemoAdd; d.style.display = "none";
             }
             openModal('memoModal');
         }
@@ -570,19 +605,21 @@
         function openNotiModal(id = null) {
             currentEditNotiId = id; const dBtn = document.getElementById('notiDelBtn');
             const now = new Date(), today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            const T = LANG[userLang];
+            
             if(id) {
                 const n = notifications.find(x => x.id == id);
                 document.getElementById('notiTitle').value = n.title; document.getElementById('notiDesc').value = n.desc || '';
                 const [h, m] = n.time.split(':'); document.getElementById('notiHour').value = h; document.getElementById('notiMin').value = m;
                 document.getElementById('notiDate').value = n.date || today; document.getElementById('isRepeat').checked = n.isRepeat;
                 toggleDaySelector(n.isRepeat); document.querySelectorAll('.day-check input').forEach(chk => chk.checked = n.days.includes(chk.value));
-                document.getElementById('notiModalTitle').innerText = "알림 수정"; dBtn.style.display = "block";
+                document.getElementById('notiModalTitle').innerText = T.modalNotiEdit; dBtn.style.display = "block";
             } else {
                 document.getElementById('notiTitle').value = ''; document.getElementById('notiDesc').value = '';
                 document.getElementById('notiHour').value = String(now.getHours()).padStart(2,'0'); document.getElementById('notiMin').value = String(now.getMinutes()).padStart(2,'0');
                 document.getElementById('notiDate').value = today; document.getElementById('isRepeat').checked = false;
                 toggleDaySelector(false); document.querySelectorAll('.day-check input').forEach(chk => chk.checked = false);
-                document.getElementById('notiModalTitle').innerText = "알림 추가"; dBtn.style.display = "none";
+                document.getElementById('notiModalTitle').innerText = T.modalNotiAdd; dBtn.style.display = "none";
             }
             openModal('notiModal');
         }
@@ -606,7 +643,7 @@
                 renderNotifications(); closeModal('notiModal');
             }
         }
-        function deleteCurrentNoti() { if(confirm('삭제하시겠습니까?')) { notifications = notifications.filter(x => x.id != currentEditNotiId); renderNotifications(); closeModal('notiModal'); } }
+        function deleteCurrentNoti() { if(confirm(LANG[userLang].alertDel)) { notifications = notifications.filter(x => x.id != currentEditNotiId); renderNotifications(); closeModal('notiModal'); } }
 
         function addMemo() {
             const t = document.getElementById('memoTitle').value, c = document.getElementById('memoContent').value;
@@ -616,7 +653,7 @@
                 renderMemos(); closeModal('memoModal');
             }
         }
-        function deleteCurrentMemo() { if(confirm('삭제하시겠습니까?')) { memos = memos.filter(x => x.id != currentEditMemoId); renderMemos(); closeModal('memoModal'); } }
+        function deleteCurrentMemo() { if(confirm(LANG[userLang].alertDel)) { memos = memos.filter(x => x.id != currentEditMemoId); renderMemos(); closeModal('memoModal'); } }
 
         function exportData() {
             const d = { shortcuts, notifications, memos, theme: localStorage.getItem('dj_theme_color'), seed: localStorage.getItem('dj_bg_seed') };
@@ -628,7 +665,7 @@
             const r = new FileReader(); r.onload = (ev) => {
                 const d = JSON.parse(ev.target.result); shortcuts = d.shortcuts || []; notifications = d.notifications || []; memos = d.memos || [];
                 saveData(); if(d.theme) setTheme(d.theme); if(d.seed) { localStorage.setItem('dj_bg_seed', d.seed); setBackground(d.seed); }
-                renderShortcuts(); renderNotifications(); renderMemos(); alert("복원 완료!");
+                renderShortcuts(); renderNotifications(); renderMemos(); alert(LANG[userLang].alertRestore);
             }; r.readAsText(f);
         }
 
@@ -636,71 +673,35 @@
         function openModal(id) { document.getElementById(id).style.display = 'block'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // --- 튜토리얼 (도움말) 설정 ---
+        // --- 튜토리얼 기능 (i18n 적용) ---
         function showTutorial() {
             const driver = window.driver.js.driver;
+            const T = LANG[userLang];
             
             const driverObj = driver({
                 showProgress: true,       
-                nextBtnText: '다음 &rarr;',
-                prevBtnText: '&larr; 이전',
-                doneBtnText: '시작하기',
+                nextBtnText: T.tutNext,
+                prevBtnText: T.tutPrev,
+                doneBtnText: T.tutDone,
                 allowClose: false,        
                 steps: [
-                    { 
-                        element: '#weather-container', 
-                        popover: { 
-                            title: '🌤️ 날씨 위젯', 
-                            description: '현재 계신 위치를 자동으로 검색하여 날씨와 최고/최저 기온을 표시합니다.<br><small>(* 위치 정보 제공 권한 허용이 필요합니다)</small>', 
-                            side: "left", 
-                            align: 'start' 
-                        } 
-                    },
-                    { 
-                        element: '#clock-container', 
-                        popover: { 
-                            title: '⏰ 시계', 
-                            description: '현재 시각과 날짜를 표시합니다.', 
-                            side: "top", 
-                            align: 'end' 
-                        } 
-                    },
-                    { 
-                        element: '.bottom-widgets .left-area .fab-container', 
-                        popover: { 
-                            title: '⚙️ 설정 및 추가', 
-                            description: '테마 색상 변경, 배경화면 무작위 변경 기능과<br>새로운 알림, 메모, 바로가기를 추가할 수 있는 메뉴입니다.', 
-                            side: "top", 
-                            align: 'start' 
-                        } 
-                    },
-                    { 
-                        element: '#top-left-widgets .fab-container', 
-                        popover: { 
-                            title: '💾 파일 관리', 
-                            description: '현재까지 추가한 모든 데이터를 JSON 파일로 내보내어 백업하거나, 백업한 파일을 다시 불러와 복원할 수 있습니다.', 
-                            side: "right", 
-                            align: 'start' 
-                        } 
-                    }
+                    { element: '#weather-container', popover: { title: T.tutWeatherTitle, description: T.tutWeatherDesc, side: "left", align: 'start' } },
+                    { element: '#clock-container', popover: { title: T.tutClockTitle, description: T.tutClockDesc, side: "top", align: 'end' } },
+                    { element: '.bottom-widgets .left-area .fab-container', popover: { title: T.tutSettingTitle, description: T.tutSettingDesc, side: "top", align: 'start' } },
+                    { element: '#top-left-widgets .fab-container', popover: { title: T.tutFileTitle, description: T.tutFileDesc, side: "right", align: 'start' } }
                 ]
             });
-
             driverObj.drive();
         }
 
+        // --- 초기화 ---
+        applyLanguage();
         const sd = localStorage.getItem('dj_bg_seed') || new Date().toISOString().split('T')[0];
         setBackground(sd); fetchQuote(); initTimePicker(); fetchWeather(); setInterval(updateAll, 1000); updateAll(); renderShortcuts(); renderNotifications(); renderMemos();
 
-        // 처음 방문했는지 확인 후 튜토리얼 실행
         window.addEventListener('load', () => {
-            const hasSeenTutorial = localStorage.getItem('dj_tutorial_done');
-            
-            if (!hasSeenTutorial) {
-                setTimeout(() => {
-                    showTutorial();
-                    localStorage.setItem('dj_tutorial_done', 'true'); // 다음부터는 안 보이게 저장
-                }, 800);
+            if (!localStorage.getItem('dj_tutorial_done')) {
+                setTimeout(() => { showTutorial(); localStorage.setItem('dj_tutorial_done', 'true'); }, 800);
             }
         });
     </script>
