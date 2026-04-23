@@ -70,6 +70,14 @@
         .shortcut-item img { 
             width: 40px; height: 40px; border-radius: 12px; margin-bottom: 8px; box-shadow: var(--btn-shadow); pointer-events: none; 
         }
+        /* 추가된 부분: 긴 텍스트 말줄임표 처리 */
+        .shortcut-item span {
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+        }
 
         .context-menu { display: none; position: absolute; z-index: 2000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 12px; padding: 8px 0; min-width: 120px; box-shadow: var(--btn-shadow); overflow: hidden; }
         .context-menu div { padding: 12px 20px; font-size: 0.95rem; cursor: pointer; color: white; transition: 0.2s; text-align: center; font-weight: bold; }
@@ -131,7 +139,6 @@
             .bottom-widgets { bottom: 15px; padding: 0 15px; }
             #quote-text { font-size: 2rem; }
             
-            /* 모바일에선 양쪽 여백 제한을 풀고 다시 100% 사용 */
             #shortcut-container { max-width: 100%; }
             .grid-layout, .list-layout { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 12px; }
             
@@ -199,7 +206,7 @@
             <div class="fab-container">
                 <div class="widget-btn fab-main" data-i18n-title="tipMenu" onclick="toggleFab('bl-fab', event)"><i class="fas fa-cog"></i></div>
                 <div class="fab-menu right-menu" id="bl-fab">
-                    <div class="widget-btn" data-i18n-title="tipTheme" onclick="openModal('themeModal')"><i class="fas fa-palette"></i></div>
+                    <div class="widget-btn" data-i18n-title="tipSetting" onclick="openSettingModal()"><i class="fas fa-sliders-h"></i></div>
                     <div class="widget-btn" data-i18n-title="tipBg" onclick="changeBackgroundInstant()"><i class="fas fa-image"></i></div>
                     <div class="widget-btn" data-i18n-title="tipNoti" onclick="openNotiModal()"><i class="fas fa-bell"></i></div>
                     <div class="widget-btn" data-i18n-title="tipMemo" onclick="openMemoModal()"><i class="fas fa-pen"></i></div>
@@ -223,10 +230,12 @@
         </div>
     </div>
 
-    <div class="modal" id="themeModal" onclick="if(event.target == this) closeModal('themeModal')">
-        <div class="modal-content" style="width: 300px;">
-            <h3 data-i18n="modalTheme">테마 색상</h3>
-            <div class="theme-colors">
+    <div class="modal" id="settingModal" onclick="if(event.target == this) closeModal('settingModal')">
+        <div class="modal-content" style="width: 340px;">
+            <h3 data-i18n="modalSetting">환경 설정</h3>
+            
+            <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 10px; font-weight: 600;" data-i18n="lblTheme">테마 색상</div>
+            <div class="theme-colors" style="margin-bottom: 25px;">
                 <div class="color-swatch" style="background:#ef4444" onclick="setTheme('#ef4444')"></div>
                 <div class="color-swatch" style="background:#f97316" onclick="setTheme('#f97316')"></div>
                 <div class="color-swatch" style="background:#eab308" onclick="setTheme('#eab308')"></div>
@@ -238,6 +247,10 @@
                 <div class="color-swatch" style="background:#ffffff" onclick="setTheme('#ffffff')"></div>
                 <div class="color-swatch" style="background:#000000; border: 1px solid rgba(255,255,255,0.3);" onclick="setTheme('#000000')"></div>
             </div>
+
+            <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 10px; font-weight: 600;" data-i18n="lblBgKeyword">배경화면 키워드 (영문 권장)</div>
+	    <input type="text" id="bgKeywordInput" data-i18n-ph="bgKeywordPh" placeholder="예: nature, space, city, dark" onkeypress="if(event.key === 'Enter') saveSettings()">
+            <button class="btn-save" onclick="saveSettings()" data-i18n="btnSaveSettings">저장 및 적용</button>
         </div>
     </div>
 
@@ -300,15 +313,16 @@
                 quoteDefault: "\"기회는 일어나는 것이 아니라 만드는 것이다.\"", quoteAuthorDefault: "- Chris Grosser",
                 cmEdit: "수정하기", cmDelete: "삭제하기",
                 tipFile: "파일 관리", tipBackup: "데이터 백업", tipRestore: "데이터 복원", tipMenu: "메뉴 열기", 
-                tipTheme: "테마 변경", tipBg: "배경 변경", tipNoti: "알림 추가", tipMemo: "메모 추가", tipLink: "바로가기 추가",
-                modalTheme: "테마 색상", modalLinkAdd: "바로가기 추가", modalLinkEdit: "바로가기 수정", linkName: "이름", linkUrl: "URL (example.com)", 
+                tipSetting: "환경 설정", tipBg: "배경 랜덤 변경", tipNoti: "알림 추가", tipMemo: "메모 추가", tipLink: "바로가기 추가",
+                modalSetting: "환경 설정", lblTheme: "테마 색상", lblBgKeyword: "배경화면 키워드 (영문 권장)", bgKeywordPh: "예: space, nature, minimal", btnSaveSettings: "저장 및 적용",
+                modalLinkAdd: "바로가기 추가", modalLinkEdit: "바로가기 수정", linkName: "이름", linkUrl: "URL (example.com)", 
                 btnSave: "추가", btnEdit: "수정 완료", modalNotiAdd: "알림 추가", modalNotiEdit: "알림 수정", notiTitle: "알림 제목", notiDesc: "알림 내용 (생략 가능)", 
                 repeatSet: "반복 설정", days: ["일", "월", "화", "수", "목", "금", "토"], btnAddNoti: "알림 추가", btnEditNoti: "알림 수정", btnDelete: "삭제", 
                 modalMemoAdd: "메모 추가", modalMemoEdit: "메모 수정", memoTitle: "메모 제목", memoContent: "메모 내용", btnSaveMemo: "메모 저장", 
                 alertDel: "삭제하시겠습니까?", alertRestore: "복원 완료!", txtEnded: "종료됨",
                 tutWeatherTitle: '🌤️ 날씨 위젯', tutWeatherDesc: '현재 계신 위치를 자동으로 검색하여 날씨와 최고/최저 기온을 표시합니다.<br><small>(* 위치 정보 제공 권한 허용이 필요합니다)</small>',
                 tutClockTitle: '⏰ 시계', tutClockDesc: '현재 시각과 날짜를 표시합니다.',
-                tutSettingTitle: '⚙️ 설정 및 추가', tutSettingDesc: '테마 색상 변경, 배경화면 무작위 변경 기능과<br>새로운 알림, 메모, 바로가기를 추가할 수 있는 메뉴입니다.',
+                tutSettingTitle: '⚙️ 설정 및 추가', tutSettingDesc: '테마 색상 변경, 배경화면 검색어 설정 기능과<br>새로운 알림, 메모, 바로가기를 추가할 수 있는 메뉴입니다.',
                 tutFileTitle: '💾 파일 관리', tutFileDesc: '현재까지 추가한 모든 데이터를 JSON 파일로 내보내어 백업하거나, 백업한 파일을 다시 불러와 복원할 수 있습니다.',
                 tutNext: '다음 &rarr;', tutPrev: '&larr; 이전', tutDone: '시작하기'
             },
@@ -317,15 +331,16 @@
                 quoteDefault: "\"Opportunities don't happen. You create them.\"", quoteAuthorDefault: "- Chris Grosser",
                 cmEdit: "Edit", cmDelete: "Delete",
                 tipFile: "Files", tipBackup: "Backup", tipRestore: "Restore", tipMenu: "Menu", 
-                tipTheme: "Theme", tipBg: "Background", tipNoti: "Notification", tipMemo: "Memo", tipLink: "Shortcut",
-                modalTheme: "Theme Colors", modalLinkAdd: "Add Shortcut", modalLinkEdit: "Edit Shortcut", linkName: "Name", linkUrl: "URL (example.com)", 
+                tipSetting: "Settings", tipBg: "Random Background", tipNoti: "Notification", tipMemo: "Memo", tipLink: "Shortcut",
+                modalSetting: "Settings", lblTheme: "Theme Color", lblBgKeyword: "Background Keyword", bgKeywordPh: "e.g., space, nature, minimal", btnSaveSettings: "Save & Apply",
+                modalLinkAdd: "Add Shortcut", modalLinkEdit: "Edit Shortcut", linkName: "Name", linkUrl: "URL (example.com)", 
                 btnSave: "Add", btnEdit: "Save", modalNotiAdd: "Add Alert", modalNotiEdit: "Edit Alert", notiTitle: "Title", notiDesc: "Description (Optional)", 
                 repeatSet: "Repeat", days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], btnAddNoti: "Add Alert", btnEditNoti: "Edit Alert", btnDelete: "Delete", 
                 modalMemoAdd: "Add Memo", modalMemoEdit: "Edit Memo", memoTitle: "Title", memoContent: "Content", btnSaveMemo: "Save", 
                 alertDel: "Are you sure you want to delete?", alertRestore: "Restore Complete!", txtEnded: "Ended",
                 tutWeatherTitle: '🌤️ Weather Widget', tutWeatherDesc: 'Automatically detects your location to display the weather.<br><small>(* Requires location permission)</small>',
                 tutClockTitle: '⏰ Clock', tutClockDesc: 'Displays the current time and date.',
-                tutSettingTitle: '⚙️ Settings', tutSettingDesc: 'Change theme colors, backgrounds, and add new alerts, memos, or shortcuts.',
+                tutSettingTitle: '⚙️ Settings', tutSettingDesc: 'Change theme colors, background keywords, and add new alerts, memos, or shortcuts.',
                 tutFileTitle: '💾 Backup & Restore', tutFileDesc: 'Export all your data as a JSON file or import to restore.',
                 tutNext: 'Next &rarr;', tutPrev: '&larr; Prev', tutDone: 'Start'
             }
@@ -338,7 +353,6 @@
             document.querySelectorAll('[data-i18n-title]').forEach(el => el.title = T[el.getAttribute('data-i18n-title')]);
             
             const daySpans = document.querySelectorAll('.day-check span');
-            // 월(1), 화(2), 수(3), 목(4), 금(5), 토(6), 일(0) 순서 매핑
             const dayMapping = [1, 2, 3, 4, 5, 6, 0];
             daySpans.forEach((span, i) => { span.innerText = T.days[dayMapping[i]]; });
         }
@@ -351,7 +365,7 @@
 
         const savedTheme = localStorage.getItem('dj_theme_color');
         if(savedTheme) document.documentElement.style.setProperty('--accent-color', savedTheme);
-        function setTheme(color) { document.documentElement.style.setProperty('--accent-color', color); localStorage.setItem('dj_theme_color', color); closeModal('themeModal'); }
+        function setTheme(color) { document.documentElement.style.setProperty('--accent-color', color); localStorage.setItem('dj_theme_color', color); }
 
         function toggleFolder(id, event) {
             event.stopPropagation();
@@ -387,8 +401,30 @@
         }
 
         function saveData() { localStorage.setItem('dj_shortcuts', JSON.stringify(shortcuts)); localStorage.setItem('dj_notifications', JSON.stringify(notifications)); localStorage.setItem('dj_memos', JSON.stringify(memos)); }
-        function setBackground(seed) { document.body.style.backgroundImage = `url('https://picsum.photos/seed/${seed}/1920/1080')`; }
-        function changeBackgroundInstant() { const seed = 'dj_'+Date.now(); localStorage.setItem('dj_bg_seed', seed); setBackground(seed); }
+        
+        // --- 변경된 부분: 배경화면 API 로직 ---
+        function openSettingModal() {
+            document.getElementById('bgKeywordInput').value = localStorage.getItem('dj_bg_keyword') || '';
+            openModal('settingModal');
+        }
+
+        function saveSettings() {
+            const keyword = document.getElementById('bgKeywordInput').value.trim();
+            localStorage.setItem('dj_bg_keyword', keyword);
+            changeBackgroundInstant();
+            closeModal('settingModal');
+        }
+	function setBackground(seed) { 
+            let keyword = localStorage.getItem('dj_bg_keyword') || 'landscape';
+            
+            // 기존 pollinations.ai (AI 생성) 대신, 빠르고 안정적인 일반 무료 이미지 서비스(loremflickr)로 변경
+            // 키워드에 띄어쓰기가 있을 경우 쉼표로 변환
+            const formattedKeyword = keyword.replace(/\s+/g, ',');
+            
+            document.body.style.backgroundImage = `url('https://loremflickr.com/1920/1080/${formattedKeyword}?random=${seed}')`; 
+        }
+
+        function changeBackgroundInstant() { const seed = Math.floor(Math.random() * 100000); localStorage.setItem('dj_bg_seed', seed); setBackground(seed); }
 
         async function fetchQuote() {
             const qt = document.getElementById('quote-text'), qa = document.getElementById('quote-author');
@@ -678,7 +714,7 @@
         function deleteCurrentMemo() { if(confirm(LANG[userLang].alertDel)) { memos = memos.filter(x => x.id != currentEditMemoId); renderMemos(); closeModal('memoModal'); } }
 
         function exportData() {
-            const d = { shortcuts, notifications, memos, theme: localStorage.getItem('dj_theme_color'), seed: localStorage.getItem('dj_bg_seed') };
+            const d = { shortcuts, notifications, memos, theme: localStorage.getItem('dj_theme_color'), seed: localStorage.getItem('dj_bg_seed'), bgKeyword: localStorage.getItem('dj_bg_keyword') };
             const blob = new Blob([JSON.stringify(d)], {type: "application/json"}), a = document.createElement('a');
             a.href = URL.createObjectURL(blob); a.download = "dj_smarthub.json"; a.click();
         }
@@ -686,7 +722,9 @@
             const f = e.target.files[0]; if(!f) return;
             const r = new FileReader(); r.onload = (ev) => {
                 const d = JSON.parse(ev.target.result); shortcuts = d.shortcuts || []; notifications = d.notifications || []; memos = d.memos || [];
-                saveData(); if(d.theme) setTheme(d.theme); if(d.seed) { localStorage.setItem('dj_bg_seed', d.seed); setBackground(d.seed); }
+                saveData(); if(d.theme) setTheme(d.theme); 
+                if(d.bgKeyword) localStorage.setItem('dj_bg_keyword', d.bgKeyword);
+                if(d.seed) { localStorage.setItem('dj_bg_seed', d.seed); setBackground(d.seed); }
                 renderShortcuts(); renderNotifications(); renderMemos(); alert(LANG[userLang].alertRestore);
             }; r.readAsText(f);
         }
@@ -695,7 +733,6 @@
         function openModal(id) { document.getElementById(id).style.display = 'block'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // --- 튜토리얼 기능 (i18n 적용) ---
         function showTutorial() {
             const driver = window.driver.js.driver;
             const T = LANG[userLang];
@@ -718,7 +755,7 @@
 
         // --- 초기화 ---
         applyLanguage();
-        const sd = localStorage.getItem('dj_bg_seed') || new Date().toISOString().split('T')[0];
+        const sd = localStorage.getItem('dj_bg_seed') || Math.floor(Math.random() * 10000);
         setBackground(sd); fetchQuote(); initTimePicker(); fetchWeather(); setInterval(updateAll, 1000); updateAll(); renderShortcuts(); renderNotifications(); renderMemos();
 
         window.addEventListener('load', () => {
