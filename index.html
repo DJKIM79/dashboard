@@ -110,13 +110,13 @@
         position: fixed;
         top: 30px;
         left: 30px;
-        z-index: 100;
+        z-index: 500;
       }
       #top-right-widgets {
         position: fixed;
         top: 30px;
         right: 30px;
-        z-index: 100;
+        z-index: 500;
         display: flex;
         flex-direction: row;
         gap: 20px;
@@ -376,7 +376,7 @@
       .context-menu {
         display: none;
         position: absolute;
-        z-index: 2000;
+        z-index: 3000;
         background: rgba(15, 23, 42, 0.95);
         backdrop-filter: blur(10px);
         border: 1px solid var(--glass-border);
@@ -747,7 +747,7 @@
       .modal {
         display: none;
         position: fixed;
-        z-index: 1000;
+        z-index: 2000;
         top: 0;
         left: 0;
         width: 100%;
@@ -1488,7 +1488,7 @@
           : "en";
       const LANG = {
         ko: {
-          weatherDefault: "우성면 (기본)",
+          weatherDefault: "현재 위치",
           weatherLoading: "날씨 불러오는 중...",
           weatherHigh: "최고",
           weatherLow: "최저",
@@ -2118,14 +2118,38 @@
         if (showCurrentWeather) {
           if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-              (pos) => {
+              async (pos) => {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                let locName = LANG[userLang].currentLoc;
+
+                try {
+                  const reverseUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=${userLang}`;
+                  const revRes = await fetch(reverseUrl, {
+                    headers: { "User-Agent": "OnTo-SmartHub/1.1" },
+                  });
+                  const revData = await revRes.json();
+                  if (revData && revData.address) {
+                    const addr = revData.address;
+                    const area =
+                      addr.city ||
+                      addr.town ||
+                      addr.village ||
+                      addr.suburb ||
+                      addr.hamlet ||
+                      addr.city_district ||
+                      addr.borough;
+                    if (area) {
+                      const prefix = userLang === "ko" ? "현지" : LANG[userLang].lblCurrentWeather;
+                      locName = `${prefix} (${area})`;
+                    }
+                  }
+                } catch (e) {
+                  console.error("Reverse geocode error:", e);
+                }
+
                 removeLoading();
-                getWeatherData(
-                  pos.coords.latitude,
-                  pos.coords.longitude,
-                  LANG[userLang].currentLoc,
-                  "current",
-                );
+                getWeatherData(lat, lon, locName, "current");
               },
               () => {
                 removeLoading();
