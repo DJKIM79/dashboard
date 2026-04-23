@@ -43,7 +43,7 @@
         .right-menu { left: 55px; top: 0; flex-direction: row; }
 
         #top-left-widgets { position: fixed; top: 30px; left: 30px; z-index: 100; }
-        #top-right-widgets { position: fixed; top: 30px; right: 30px; z-index: 100; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+        #top-right-widgets { position: fixed; top: 30px; right: 30px; z-index: 100; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         #weather-container { text-align: right; min-width: 120px; margin-right: 10px; }
         .weather-loc { font-size: 0.8rem; opacity: 0.9; margin-bottom: 4px; text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.8); }
         .weather-main { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; color: var(--accent-color); display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-weight: bold; line-height: 1; text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.9); }
@@ -88,6 +88,39 @@
         .left-area { align-items: flex-start; display: flex; flex-direction: column; gap: 10px; pointer-events: auto; position: relative; z-index: 20; }
         .right-area { align-items: flex-end; display: flex; flex-direction: column; gap: 10px; pointer-events: auto; position: relative; z-index: 10; }
 
+        /* Widget Handle Style */
+        .widget-handle { 
+            position: absolute; left: -20px; top: 50%; transform: translateY(-50%);
+            width: 20px; height: 40px; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border); border-right: none;
+            border-radius: 8px 0 0 8px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: white; opacity: 0; transition: 0.3s; font-size: 0.7rem; z-index: 5;
+        }
+        #top-right-widgets:hover .widget-handle,
+        #calendar-container:hover .widget-handle,
+        #clock-container:hover .widget-handle { opacity: 0.7; }
+        .widget-handle:hover { opacity: 1 !important; color: var(--accent-color); }
+
+        /* Individual Widget Transitions */
+        #top-right-widgets { position: fixed; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        #calendar-container, #clock-container { position: relative; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        body.hide-weather #top-right-widgets { transform: translateX(calc(100% + 30px)); }
+        body.hide-calendar #calendar-container { transform: translateX(calc(100% + 30px)); }
+        body.hide-clock #clock-container { transform: translateX(calc(100% + 30px)); }
+
+        /* Keep handles visible when hidden */
+        body.hide-weather #top-right-widgets .widget-handle,
+        body.hide-calendar #calendar-container .widget-handle,
+        body.hide-clock #clock-container .widget-handle { 
+            opacity: 0.8; 
+            left: -20px; /* 고정 위치 */
+        }
+        
+        body.hide-weather #top-right-widgets .widget-handle i,
+        body.hide-calendar #calendar-container .widget-handle i,
+        body.hide-clock #clock-container .widget-handle i { transform: rotate(180deg); }
+
         .smart-folder { display: none; position: relative; }
         .smart-folder.has-items { display: flex; flex-direction: column; gap: 10px; }
         
@@ -99,9 +132,18 @@
         .item-card .title { font-size: 0.85rem; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 15px; }
         .noti-info { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 0.75rem; font-family: 'JetBrains Mono'; }
 
-        #clock-container { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); padding: 12px 22px; border-radius: 18px; text-align: right; box-shadow: var(--btn-shadow); }
+        #clock-container { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); padding: 12px 22px; border-radius: 18px; text-align: right; box-shadow: var(--btn-shadow); display: flex; flex-direction: column; width: fit-content; align-self: flex-end; }
         #clock-time { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; color: var(--accent-color); line-height: 1; }
-        #clock-date { font-size: 0.75rem; opacity: 0.6; margin-top: 4px; }
+
+        .calendar-widget { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); padding: 15px; border-radius: 18px; box-shadow: var(--btn-shadow); width: 200px; color: white; font-size: 0.8rem; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; color: var(--accent-color); font-family: 'JetBrains Mono'; }
+        .calendar-days-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-weight: bold; margin-bottom: 5px; opacity: 0.7; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+        .calendar-day { padding: 4px 0; border-radius: 4px; }
+        .calendar-day.today { background: var(--accent-color); color: #0f172a; font-weight: bold; }
+        .calendar-day.other-month { opacity: 0.3; }
+        .calendar-day.sun { color: #ef4444; }
+        .calendar-day.sat { color: #3b82f6; }
 
         .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
         .modal-content { background: #1e293b; padding: 35px; border-radius: 30px; width: 340px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 1px solid var(--glass-border); box-sizing: border-box; }
@@ -112,6 +154,10 @@
         .modal-content h3 { text-align: center; margin-top: 0; margin-bottom: 25px; font-size: 1.2rem; }
         .modal-content input, .modal-content textarea, .time-select { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; font-family: inherit; }
         
+        .toggle-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .toggle-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: #f1f5f9; }
+        .toggle-item input { width: auto; margin-bottom: 0; cursor: pointer; }
+
         .time-picker-row { display: flex; gap: 10px; margin-bottom: 15px; }
         .time-select { margin-bottom: 0; cursor: pointer; text-align: center; font-family: 'JetBrains Mono'; }
         .repeat-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 15px; font-size: 0.9rem; white-space: nowrap; }
@@ -180,6 +226,7 @@
     </div>
 
     <div id="top-right-widgets">
+        <div class="widget-handle" onclick="toggleWidget('weather')"><i class="fas fa-chevron-right"></i></div>
         <div id="weather-container">
             <div class="weather-loc" data-i18n="weatherLoading">날씨 불러오는 중...</div>
             <div class="weather-main"><i id="w-icon" class="fas fa-spinner fa-spin"></i> <span id="w-temp">--</span>°</div>
@@ -223,9 +270,16 @@
                 <div class="folder-content" id="noti-list"></div>
             </div>
             
+            <div id="calendar-container" class="calendar-widget">
+                <div class="widget-handle" onclick="toggleWidget('calendar')"><i class="fas fa-chevron-right"></i></div>
+                <div class="calendar-header" id="cal-month-year">...</div>
+                <div class="calendar-days-header" id="cal-days-header"></div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+
             <div id="clock-container">
+                <div class="widget-handle" onclick="toggleWidget('clock')"><i class="fas fa-chevron-right"></i></div>
                 <div id="clock-time">00:00:00</div>
-                <div id="clock-date">...</div>
             </div>
         </div>
     </div>
@@ -250,6 +304,7 @@
 
             <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 10px; font-weight: 600;" data-i18n="lblBgKeyword">배경화면 키워드 (영문 권장)</div>
 	    <input type="text" id="bgKeywordInput" data-i18n-ph="bgKeywordPh" placeholder="예: nature, space, city, dark" onkeypress="if(event.key === 'Enter') saveSettings()">
+            
             <button class="btn-save" onclick="saveSettings()" data-i18n="btnSaveSettings">저장 및 적용</button>
         </div>
     </div>
@@ -320,10 +375,11 @@
                 repeatSet: "반복 설정", days: ["일", "월", "화", "수", "목", "금", "토"], btnAddNoti: "알림 추가", btnEditNoti: "알림 수정", btnDelete: "삭제", 
                 modalMemoAdd: "메모 추가", modalMemoEdit: "메모 수정", memoTitle: "메모 제목", memoContent: "메모 내용", btnSaveMemo: "메모 저장", 
                 alertDel: "삭제하시겠습니까?", alertRestore: "복원 완료!", txtEnded: "종료됨",
-                tutWeatherTitle: '🌤️ 날씨 위젯', tutWeatherDesc: '현재 계신 위치를 자동으로 검색하여 날씨와 최고/최저 기온을 표시합니다.<br><small>(* 위치 정보 제공 권한 허용이 필요합니다)</small>',
-                tutClockTitle: '⏰ 시계', tutClockDesc: '현재 시각과 날짜를 표시합니다.',
-                tutSettingTitle: '⚙️ 설정 및 추가', tutSettingDesc: '테마 색상 변경, 배경화면 검색어 설정 기능과<br>새로운 알림, 메모, 바로가기를 추가할 수 있는 메뉴입니다.',
-                tutFileTitle: '💾 파일 관리', tutFileDesc: '현재까지 추가한 모든 데이터를 JSON 파일로 내보내어 백업하거나, 백업한 파일을 다시 불러와 복원할 수 있습니다.',
+                tutWeatherTitle: '🌤️ 날씨 위젯', tutWeatherDesc: '현재 계신 위치의 날씨와 기온을 실시간으로 확인하세요.',
+                tutCalendarTitle: '📅 달력', tutCalendarDesc: '이번 달의 전체 일정을 한눈에 볼 수 있는 달력입니다.',
+                tutClockTitle: '⏰ 시계', tutClockDesc: '초 단위까지 정확한 현재 시각을 표시합니다.',
+                tutSettingTitle: '⚙️ 설정 및 추가', tutSettingDesc: '테마, 배경화면 키워드, 위젯 표시 여부 설정 및<br>새 알림, 메모, 바로가기를 추가할 수 있습니다.',
+                tutFileTitle: '💾 데이터 관리', tutFileDesc: '모든 데이터를 JSON 파일로 백업하거나 복원할 수 있습니다.',
                 tutNext: '다음 &rarr;', tutPrev: '&larr; 이전', tutDone: '시작하기'
             },
             en: {
@@ -338,10 +394,11 @@
                 repeatSet: "Repeat", days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], btnAddNoti: "Add Alert", btnEditNoti: "Edit Alert", btnDelete: "Delete", 
                 modalMemoAdd: "Add Memo", modalMemoEdit: "Edit Memo", memoTitle: "Title", memoContent: "Content", btnSaveMemo: "Save", 
                 alertDel: "Are you sure you want to delete?", alertRestore: "Restore Complete!", txtEnded: "Ended",
-                tutWeatherTitle: '🌤️ Weather Widget', tutWeatherDesc: 'Automatically detects your location to display the weather.<br><small>(* Requires location permission)</small>',
-                tutClockTitle: '⏰ Clock', tutClockDesc: 'Displays the current time and date.',
-                tutSettingTitle: '⚙️ Settings', tutSettingDesc: 'Change theme colors, background keywords, and add new alerts, memos, or shortcuts.',
-                tutFileTitle: '💾 Backup & Restore', tutFileDesc: 'Export all your data as a JSON file or import to restore.',
+                tutWeatherTitle: '🌤️ Weather', tutWeatherDesc: 'Check real-time weather and temperature for your location.',
+                tutCalendarTitle: '📅 Calendar', tutCalendarDesc: 'View the entire month\'s dates at a glance.',
+                tutClockTitle: '⏰ Clock', tutClockDesc: 'Displays the current time down to the second.',
+                tutSettingTitle: '⚙️ Settings & Add', tutSettingDesc: 'Configure themes, background keywords, widget visibility, and add new items.',
+                tutFileTitle: '💾 Data Management', tutFileDesc: 'Backup or restore all your data as a JSON file.',
                 tutNext: 'Next &rarr;', tutPrev: '&larr; Prev', tutDone: 'Start'
             }
         };
@@ -413,6 +470,82 @@
             localStorage.setItem('dj_bg_keyword', keyword);
             changeBackgroundInstant();
             closeModal('settingModal');
+        }
+
+        function toggleWidget(type) {
+            const key = `dj_hide_${type}`;
+            const isHidden = localStorage.getItem(key) === 'true';
+            localStorage.setItem(key, !isHidden);
+            applyVisibility();
+        }
+
+        function applyVisibility() {
+            const widgets = ['weather', 'calendar', 'clock'];
+            widgets.forEach(type => {
+                const isHidden = localStorage.getItem(`dj_hide_${type}`) === 'true';
+                if (isHidden) {
+                    document.body.classList.add(`hide-${type}`);
+                } else {
+                    document.body.classList.remove(`hide-${type}`);
+                }
+            });
+        }
+
+        function renderCalendar() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const today = now.getDate();
+
+            const T = LANG[userLang];
+            const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const header = document.getElementById('cal-month-year');
+            header.innerText = userLang === 'ko' ? `${year}.${String(month + 1).padStart(2, '0')}` : `${monthsEn[month]} ${year}`;
+
+            const daysHeader = document.getElementById('cal-days-header');
+            daysHeader.innerHTML = '';
+            const dayLabels = userLang === 'ko' ? ['일', '월', '화', '수', '목', '금', '토'] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+            dayLabels.forEach((label, i) => {
+                const div = document.createElement('div');
+                div.innerText = label;
+                if (i === 0) div.classList.add('sun');
+                if (i === 6) div.classList.add('sat');
+                daysHeader.appendChild(div);
+            });
+
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            const prevLastDate = new Date(year, month, 0).getDate();
+
+            for (let i = firstDay; i > 0; i--) {
+                const div = document.createElement('div');
+                div.className = 'calendar-day other-month';
+                div.innerText = prevLastDate - i + 1;
+                grid.appendChild(div);
+            }
+
+            for (let i = 1; i <= lastDate; i++) {
+                const div = document.createElement('div');
+                div.className = 'calendar-day';
+                div.innerText = i;
+                const d = new Date(year, month, i).getDay();
+                if (d === 0) div.classList.add('sun');
+                if (d === 6) div.classList.add('sat');
+                if (i === today) div.classList.add('today');
+                grid.appendChild(div);
+            }
+
+            const totalCells = 42;
+            const nextMonthDays = totalCells - grid.children.length;
+            for (let i = 1; i <= nextMonthDays; i++) {
+                const div = document.createElement('div');
+                div.className = 'calendar-day other-month';
+                div.innerText = i;
+                grid.appendChild(div);
+            }
         }
 	function setBackground(seed) { 
             let keyword = localStorage.getItem('dj_bg_keyword') || 'landscape';
@@ -495,23 +628,10 @@
             
             document.getElementById('clock-time').innerText = `${h}:${m}:${s}`;
 
-            const dayIdx = now.getDay();
-            const month = now.getMonth() + 1;
-            const date = now.getDate();
-            
-            let dateString = "";
-            if (userLang === 'ko') {
-                const daysKo = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
-                dateString = `${month}월${date}일 ${daysKo[dayIdx]}`;
-            } else {
-                const daysEn = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-                const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                dateString = `${monthsEn[month - 1]}. ${date}, ${daysEn[dayIdx]}`;
-            }
-
-            document.getElementById('clock-date').innerText = dateString;
-
             if(firedMinute !== timeStr) {
+                // Update calendar once a minute to catch day changes
+                renderCalendar();
+                
                 notifications.forEach((n, idx) => {
                     const isToday = n.isRepeat ? n.days.includes(String(now.getDay())) : (n.date === todayStr);
                     if(isToday && n.time === timeStr) {
@@ -745,6 +865,7 @@
                 allowClose: false,        
                 steps: [
                     { element: '#weather-container', popover: { title: T.tutWeatherTitle, description: T.tutWeatherDesc, side: "left", align: 'start' } },
+                    { element: '#calendar-container', popover: { title: T.tutCalendarTitle, description: T.tutCalendarDesc, side: "top", align: 'end' } },
                     { element: '#clock-container', popover: { title: T.tutClockTitle, description: T.tutClockDesc, side: "top", align: 'end' } },
                     { element: '.bottom-widgets .left-area .fab-container', popover: { title: T.tutSettingTitle, description: T.tutSettingDesc, side: "top", align: 'start' } },
                     { element: '#top-left-widgets .fab-container', popover: { title: T.tutFileTitle, description: T.tutFileDesc, side: "right", align: 'start' } }
@@ -757,6 +878,7 @@
         applyLanguage();
         const sd = localStorage.getItem('dj_bg_seed') || Math.floor(Math.random() * 10000);
         setBackground(sd); fetchQuote(); initTimePicker(); fetchWeather(); setInterval(updateAll, 1000); updateAll(); renderShortcuts(); renderNotifications(); renderMemos();
+        applyVisibility();
 
         window.addEventListener('load', () => {
             if (!localStorage.getItem('dj_tutorial_done')) {
