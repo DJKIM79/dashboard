@@ -113,21 +113,35 @@
         right: 30px;
         z-index: 100;
         display: flex;
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-end;
+        flex-direction: row;
+        gap: 20px;
+        align-items: flex-start;
         transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      #weather-container {
+      .weather-item {
+        position: relative;
         text-align: right;
         min-width: 120px;
-        margin-right: 10px;
+        cursor: pointer;
+        transition: 0.3s;
+        background: transparent;
+        padding: 10px;
+        border-radius: 14px;
+        border: 1px solid transparent;
+      }
+      .weather-item:hover {
+        background: rgba(0, 0, 0, 0.4);
+        border-color: var(--accent-color);
       }
       .weather-loc {
         font-size: 0.8rem;
         opacity: 0.9;
         margin-bottom: 4px;
         text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.8);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
       }
       .weather-main {
         font-family: "JetBrains Mono", monospace;
@@ -146,6 +160,108 @@
         opacity: 0.9;
         margin-top: 6px;
         text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.8);
+      }
+      .forecast-window {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 18px;
+        padding: 15px;
+        width: 250px;
+        z-index: 2000;
+        margin-top: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.3s ease-out;
+      }
+      .forecast-window.active {
+        display: block;
+      }
+      .forecast-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .forecast-item:last-child {
+        border-bottom: none;
+      }
+      .forecast-day {
+        font-size: 0.85rem;
+        width: 40px;
+      }
+      .forecast-icon {
+        font-size: 1rem;
+        color: var(--accent-color);
+        width: 30px;
+        text-align: center;
+      }
+      .forecast-temp {
+        font-family: "JetBrains Mono";
+        font-size: 0.85rem;
+        width: 90px;
+        text-align: right;
+      }
+      .city-search-container {
+        position: relative;
+        margin-bottom: 20px;
+      }
+      .city-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+        display: none;
+      }
+      .city-result-item {
+        padding: 10px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #1e293b;
+      }
+      .city-result-item:hover {
+        background: #1e293b;
+        color: var(--accent-color);
+      }
+      .location-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 20px;
+        max-height: 150px;
+        overflow-y: auto;
+        padding-right: 5px;
+      }
+      .location-list::-webkit-scrollbar {
+        width: 4px;
+      }
+      .location-list::-webkit-scrollbar-thumb {
+        background: var(--accent-color);
+        border-radius: 4px;
+      }
+      .location-tag {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #0f172a;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        border: 1px solid #334155;
+      }
+      .location-tag i {
+        cursor: pointer;
+        color: #ef4444;
       }
       #quote-section {
         text-align: center;
@@ -313,10 +429,38 @@
       .sidebar-trigger {
         position: fixed;
         right: 0;
-        top: 0;
-        width: 20px;
-        height: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 80px;
         z-index: 999;
+        cursor: pointer;
+      }
+      .sidebar-hint {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #fff;
+        opacity: 0.3;
+        font-size: 1.4rem;
+        font-weight: 700;
+        font-family: "JetBrains Mono", monospace;
+        pointer-events: none;
+        animation: hintArrow 2.5s infinite;
+        transition: 0.3s;
+        text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+      }
+      .sidebar-trigger:hover .sidebar-hint {
+        opacity: 0 !important;
+      }
+      /* Hide hint when sidebar is open/hovered */
+      body:has(.widget-sidebar:hover) .sidebar-hint {
+        opacity: 0 !important;
+      }
+      @keyframes hintArrow {
+        0%, 100% { transform: translateY(-50%) translateX(0); opacity: 0.3; }
+        50% { transform: translateY(-50%) translateX(-12px); opacity: 0.8; }
       }
       .sidebar-trigger:hover + .widget-sidebar,
       .widget-sidebar:hover {
@@ -491,17 +635,17 @@
       }
       .calendar-day.today {
         background: var(--accent-color);
-        color: #0f172a;
+        color: var(--accent-contrast, #0f172a);
         font-weight: 700;
       }
       .calendar-day.other-month {
         opacity: 0.3;
       }
-      .calendar-day.sun {
-        color: #ef4444;
+      .sun {
+        color: #ff5f5f !important;
       }
-      .calendar-day.sat {
-        color: #3b82f6;
+      .sat {
+        color: #60a5fa !important;
       }
       .modal {
         display: none;
@@ -615,7 +759,7 @@
       }
       .day-check input:checked + span {
         background: var(--accent-color);
-        color: #0f172a;
+        color: var(--accent-contrast, #0f172a);
         font-weight: 700;
       }
       .btn-save {
@@ -624,7 +768,7 @@
         border: none;
         border-radius: 10px;
         background: var(--accent-color);
-        color: #0f172a;
+        color: var(--accent-contrast, #0f172a);
         font-weight: 700;
         cursor: pointer;
         transition: 0.2s;
@@ -811,7 +955,7 @@
         </div>
       </div>
     </div>
-    <div class="sidebar-trigger"></div>
+    <div class="sidebar-trigger"><div class="sidebar-hint">&laquo;</div></div>
     <div class="widget-sidebar">
       <div
         class="sidebar-icon"
@@ -854,21 +998,7 @@
         <i class="fas fa-sticky-note"></i>
       </div>
     </div>
-    <div id="top-right-widgets">
-      <div id="weather-container">
-        <div class="weather-loc" data-i18n="weatherLoading">
-          날씨 불러오는 중...
-        </div>
-        <div class="weather-main">
-          <i id="w-icon" class="fas fa-spinner fa-spin"></i>
-          <span id="w-temp">--</span>°
-        </div>
-        <div class="weather-hl">
-          <span data-i18n="weatherHigh">최고</span> <span id="w-high">--</span>°
-          <span data-i18n="weatherLow">최저</span> <span id="w-low">--</span>°
-        </div>
-      </div>
-    </div>
+    <div id="top-right-widgets"></div>
     <div id="quote-section">
       <div id="quote-text">...</div>
       <div id="quote-author"></div>
@@ -1032,10 +1162,35 @@
           data-i18n-ph="bgKeywordPh"
           placeholder="예: nature, space, city, dark"
           onkeypress="event.key === 'Enter' && saveSettings()"
-        /><button
+        />
+        <div
+          style="
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            font-weight: 600;
+          "
+          data-i18n="lblWeatherLoc"
+        >
+          날씨 위치 설정
+        </div>
+        <div id="weatherLocationList" class="location-list"></div>
+        <div class="city-search-container">
+          <input
+            type="text"
+            id="citySearchInput"
+            data-i18n-ph="citySearchPh"
+            placeholder="도시 검색 (예: 서울, London)"
+            autocomplete="off"
+            oninput="searchCities(this.value)"
+          />
+          <div id="citySearchResults" class="city-results"></div>
+        </div>
+        <button
           class="btn-save"
           onclick="saveSettings()"
           data-i18n="btnSaveSettings"
+          style="margin-top: 10px"
         >
           저장 및 적용
         </button>
@@ -1206,7 +1361,11 @@
       </div>
     </div>
     <script>
-      const userLang = navigator.language.startsWith("ko") ? "ko" : "en";
+      const userLang = navigator.language.startsWith("ko")
+        ? "ko"
+        : navigator.language.startsWith("ja")
+          ? "ja"
+          : "en";
       const LANG = {
         ko: {
           weatherDefault: "우성면 (기본)",
@@ -1233,6 +1392,9 @@
           sideMemo: "메모",
           modalSetting: "환경 설정",
           lblTheme: "테마 색상",
+          lblWeatherLoc: "날씨 위치 설정",
+          citySearchPh: "도시 검색 (예: 서울, London)",
+          currentLoc: "현재 위치",
           lblBgKeyword: "배경화면 키워드 (영문 권장)",
           bgKeywordPh: "예: space, nature, minimal",
           btnSaveSettings: "저장 및 적용",
@@ -1247,6 +1409,7 @@
           notiTitle: "알림 제목",
           notiDesc: "알림 내용 (생략 가능)",
           repeatSet: "반복 설정",
+          today: "오늘",
           days: ["일", "월", "화", "수", "목", "금", "토"],
           btnAddNoti: "알림 추가",
           btnEditNoti: "알림 수정",
@@ -1261,7 +1424,7 @@
           txtEnded: "종료됨",
           tutSidebarTitle: "🖱️ 위젯 사이드바",
           tutSidebarDesc:
-            "화면 오른쪽 끝에 마우스를 가져가면 위젯 패널이 나타납니다. 각 아이콘을 클릭하여 위젯을 켜거나 끌 수 있습니다.",
+            "화면 오른쪽의 화살표(«)에 마우스를 가져가면 위젯 패널이 나타납니다. 각 아이콘을 클릭하여 위젯을 켜거나 끌 수 있습니다.",
           tutWeatherTitle: "🌤️ 날씨 위젯",
           tutWeatherDesc: "실시간 날씨와 기온을 확인할 수 있습니다.",
           tutBottomWidgetsTitle: "📅 알림 및 일정",
@@ -1277,9 +1440,62 @@
           tutDone: "시작하기",
         },
         en: {
+          weatherDefault: "Current Location",
+          weatherLoading: "Loading weather...",
+          weatherHigh: "High",
+          weatherLow: "Low",
+          quoteDefault: '"Opportunity is not something that happens, it is something you create."',
+          quoteAuthorDefault: "- Chris Grosser",
+          cmEdit: "Edit",
+          cmDelete: "Delete",
+          tipFile: "File Management",
+          tipBackup: "Backup",
+          tipRestore: "Restore",
+          tipMenu: "Menu",
+          tipSetting: "Settings",
+          tipNoti: "Add Alert",
+          tipMemo: "Add Memo",
+          tipLink: "Add Shortcut",
+          sideWeather: "Weather",
+          sideCalendar: "Calendar",
+          sideClock: "Clock",
+          sideNoti: "Alert",
+          sideMemo: "Memo",
+          modalSetting: "Settings",
+          lblTheme: "Theme Color",
+          lblWeatherLoc: "Weather Locations",
+          citySearchPh: "Search city (e.g. London, Seoul)",
+          currentLoc: "Current Location",
+          lblBgKeyword: "Background Keyword (English)",
+          bgKeywordPh: "e.g. space, nature, minimal",
+          btnSaveSettings: "Save & Apply",
+          modalLinkAdd: "Add Shortcut",
+          modalLinkEdit: "Edit Shortcut",
+          linkName: "Name",
+          linkUrl: "URL (example.com)",
+          btnSave: "Add",
+          btnEdit: "Edit",
+          modalNotiAdd: "Add Alert",
+          modalNotiEdit: "Edit Alert",
+          notiTitle: "Alert Title",
+          notiDesc: "Alert Content",
+          repeatSet: "Repeat",
+          today: "Today",
+          days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+          btnAddNoti: "Add Alert",
+          btnEditNoti: "Update Alert",
+          btnDelete: "Delete",
+          modalMemoAdd: "Add Memo",
+          modalMemoEdit: "Edit Memo",
+          memoTitle: "Memo Title",
+          memoContent: "Memo Content",
+          btnSaveMemo: "Save Memo",
+          alertDel: "Are you sure you want to delete?",
+          alertRestore: "Restored successfully!",
+          txtEnded: "Ended",
           tutSidebarTitle: "🖱️ Widget Sidebar",
           tutSidebarDesc:
-            "Hover over the right edge of the screen to reveal the widget panel. Click icons to toggle widgets on/off.",
+            "Hover over the arrow («) on the right edge to reveal the widget panel. Click icons to toggle widgets on/off.",
           tutWeatherTitle: "🌤️ Weather",
           tutWeatherDesc: "Check real-time weather and temperature.",
           tutBottomWidgetsTitle: "📅 Widgets & Alerts",
@@ -1293,6 +1509,77 @@
           tutNext: "Next &rarr;",
           tutPrev: "&larr; Prev",
           tutDone: "Start",
+        },
+        ja: {
+          weatherDefault: "現在の位置",
+          weatherLoading: "天気を読み込み中...",
+          weatherHigh: "最高",
+          weatherLow: "最低",
+          quoteDefault: '"機会は起こるものではなく、作るものである。"',
+          quoteAuthorDefault: "- クリス・グロッサー",
+          cmEdit: "編集",
+          cmDelete: "削除",
+          tipFile: "ファイル管理",
+          tipBackup: "データバックアップ",
+          tipRestore: "データ復元",
+          tipMenu: "メニューを開く",
+          tipSetting: "環境設定",
+          tipNoti: "通知を追加",
+          tipMemo: "メモを追加",
+          tipLink: "ショートカットを追加",
+          sideWeather: "天気",
+          sideCalendar: "カレンダー",
+          sideClock: "時計",
+          sideNoti: "通知",
+          sideMemo: "メモ",
+          modalSetting: "環境設定",
+          lblTheme: "テーマカラー",
+          lblWeatherLoc: "天気の場所設定",
+          citySearchPh: "都市を検索 (例: 東京, London)",
+          currentLoc: "現在の位置",
+          lblBgKeyword: "壁紙キーワード (英語推奨)",
+          bgKeywordPh: "例: space, nature, minimal",
+          btnSaveSettings: "保存して適用",
+          modalLinkAdd: "ショートカットを追加",
+          modalLinkEdit: "ショートカットを編集",
+          linkName: "名前",
+          linkUrl: "URL (example.com)",
+          btnSave: "追加",
+          btnEdit: "編集完了",
+          modalNotiAdd: "通知を追加",
+          modalNotiEdit: "通知を編集",
+          notiTitle: "通知タイトル",
+          notiDesc: "通知内容 (省略可能)",
+          repeatSet: "繰り返し設定",
+          today: "今日",
+          days: ["日", "月", "火", "水", "木", "金", "土"],
+          btnAddNoti: "通知を追加",
+          btnEditNoti: "通知を更新",
+          btnDelete: "削除",
+          modalMemoAdd: "メモを追加",
+          modalMemoEdit: "メモを編集",
+          memoTitle: "メモタイトル",
+          memoContent: "メモ内容",
+          btnSaveMemo: "メモを保存",
+          alertDel: "削除しますか？",
+          alertRestore: "復元完了！",
+          txtEnded: "終了",
+          tutSidebarTitle: "🖱️ ウィジェットサイドバー",
+          tutSidebarDesc:
+            "画面右側の矢印(«)にマウスを置くとウィジェットパネルが表示されます。各アイコンをクリックしてウィジェットのオン/オフを切り替えられます。",
+          tutWeatherTitle: "🌤️ 天気ウィジェット",
+          tutWeatherDesc: "リアルタイムの天気と気温を確認できます。",
+          tutBottomWidgetsTitle: "📅 通知と予定",
+          tutBottomWidgetsDesc:
+            "時計、カレンダー、通知ウィジェットが下から順に表示されます。ウィジェットをオフにすると、位置がスムーズに移動します。",
+          tutSettingTitle: "⚙️ 設定と追加",
+          tutSettingDesc:
+            "テーマ、壁紙、通知、メモ、ショートカットを管理できます。",
+          tutFileTitle: "💾 データ管理",
+          tutFileDesc: "すべてのデータを安全にバックアップまたは復元します。",
+          tutNext: "次へ &rarr;",
+          tutPrev: "&larr; 前へ",
+          tutDone: "開始",
         },
       };
       const applyLanguage = () => {
@@ -1315,20 +1602,21 @@
         notifications =
           JSON.parse(localStorage.getItem("dj_notifications")) || [],
         memos = JSON.parse(localStorage.getItem("dj_memos")) || [],
+        weatherLocations = JSON.parse(
+          localStorage.getItem("dj_weather_locations"),
+        ) || [{ type: "current" }],
         firedMinute = "",
         currentEditNotiId = null,
         currentEditMemoId = null,
         currentShortcutIndex = null;
       const savedTheme = localStorage.getItem("dj_theme_color");
-      if (savedTheme)
-        document.documentElement.style.setProperty(
-          "--accent-color",
-          savedTheme,
-        );
       const setTheme = (color) => {
         document.documentElement.style.setProperty("--accent-color", color);
         localStorage.setItem("dj_theme_color", color);
+        const contrast = (color === "#000" || color === "#000000") ? "#fff" : "#0f172a";
+        document.documentElement.style.setProperty("--accent-contrast", contrast);
       };
+      if (savedTheme) setTheme(savedTheme);
       const toggleFolder = (id, event) => {
         event.stopPropagation();
         document
@@ -1366,6 +1654,12 @@
             .forEach((f) => f.classList.remove("open"));
         const ctxMenu = document.getElementById("shortcutContextMenu");
         if (ctxMenu) ctxMenu.style.display = "none";
+        if (!e.target.closest(".weather-item"))
+          document
+            .querySelectorAll(".forecast-window")
+            .forEach((w) => w.classList.remove("active"));
+        if (!e.target.closest(".city-search-container"))
+          document.getElementById("citySearchResults").style.display = "none";
       });
       const requestNotiPermission = () =>
         Notification.permission === "default" &&
@@ -1409,6 +1703,7 @@
       const openSettingModal = () => {
         document.getElementById("bgKeywordInput").value =
           localStorage.getItem("dj_bg_keyword") || "";
+        renderWeatherLocationList();
         openModal("settingModal");
       };
       const saveSettings = () => {
@@ -1545,61 +1840,189 @@
           qa.innerText = LANG[userLang].quoteAuthorDefault;
         }
       };
-      const getWeatherData = async (lat, lon, defaultLocName) => {
+      const getWeatherData = async (lat, lon, locName, id) => {
         try {
-          let locName = defaultLocName || LANG[userLang].weatherDefault;
-          if (!defaultLocName) {
-            try {
-              const geoRes = await fetch(
-                  `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14&addressdetails=1&accept-language=${userLang}`,
-                ),
-                geoData = await geoRes.json();
-              if (geoData?.address)
-                locName =
-                  geoData.address.town ||
-                  geoData.address.village ||
-                  geoData.address.suburb ||
-                  geoData.address.city_district ||
-                  geoData.address.city ||
-                  locName;
-            } catch (e) {}
-          }
-          document.querySelector(".weather-loc").innerText = locName;
           const res = await fetch(
-              `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul`,
-            ),
-            d = await res.json();
-          document.getElementById("w-temp").innerText = Math.round(
-            d.current.temperature_2m,
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`,
           );
-          document.getElementById("w-high").innerText = Math.round(
-            d.daily.temperature_2m_max[0],
-          );
-          document.getElementById("w-low").innerText = Math.round(
-            d.daily.temperature_2m_min[0],
-          );
-          const code = d.current.weather_code,
-            icon =
-              code === 0
-                ? "fa-sun"
-                : code <= 3
-                  ? "fa-cloud-sun"
-                  : [51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)
-                    ? "fa-cloud-rain"
-                    : "fa-cloud";
-          document.getElementById("w-icon").className = `fas ${icon}`;
+          const d = await res.json();
+          const current = d.current;
+          const daily = d.daily;
+
+          const container = document.createElement("div");
+          container.className = "weather-item";
+          container.id = `weather-${id}`;
+          container.onclick = (e) => {
+            e.stopPropagation();
+            toggleForecast(id, daily, lat, lon);
+          };
+
+          const icon = getWeatherIcon(current.weather_code);
+
+          container.innerHTML = `
+            <div class="weather-loc">${locName}</div>
+            <div class="weather-main">
+              <i class="fas ${icon}"></i>
+              <span>${Math.round(current.temperature_2m)}</span>°
+            </div>
+            <div class="weather-hl">
+              <span>${LANG[userLang].weatherHigh}</span> ${Math.round(daily.temperature_2m_max[0])}°
+              <span>${LANG[userLang].weatherLow}</span> ${Math.round(daily.temperature_2m_min[0])}°
+            </div>
+            <div id="forecast-${id}" class="forecast-window" onclick="event.stopPropagation()"></div>
+          `;
+          document.getElementById("top-right-widgets").appendChild(container);
         } catch (e) {
-          document.getElementById("w-temp").innerText = "-";
+          console.error(e);
+        }
+      };
+      const getWeatherIcon = (code) => {
+        if (code === 0) return "fa-sun";
+        if (code <= 3) return "fa-cloud-sun";
+        if ([45, 48].includes(code)) return "fa-smog";
+        if ([51, 53, 55].includes(code)) return "fa-cloud-rain";
+        if ([61, 63, 65, 80, 81, 82].includes(code)) return "fa-cloud-showers-heavy";
+        if ([71, 73, 75].includes(code)) return "fa-snowflake";
+        if ([95, 96, 99].includes(code)) return "fa-bolt";
+        return "fa-cloud";
+      };
+      const toggleForecast = (id, daily, lat, lon) => {
+        const el = document.getElementById(`forecast-${id}`);
+        const isActive = el.classList.contains("active");
+        document
+          .querySelectorAll(".forecast-window")
+          .forEach((w) => w.classList.remove("active"));
+        if (!isActive) {
+          renderForecast(el, daily);
+          el.classList.add("active");
+        }
+      };
+      const renderForecast = (container, daily) => {
+        container.innerHTML = "";
+        const T = LANG[userLang];
+        const days = T.days;
+        const now = new Date();
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(now);
+          date.setDate(now.getDate() + i);
+          const day = date.getDay();
+          const dayName = i === 0 ? T.today : days[day];
+          const dayClass = day === 0 ? "sun" : day === 6 ? "sat" : "";
+          const icon = getWeatherIcon(daily.weather_code[i]);
+          const max = Math.round(daily.temperature_2m_max[i]);
+          const min = Math.round(daily.temperature_2m_min[i]);
+          const item = document.createElement("div");
+          item.className = "forecast-item";
+          item.innerHTML = `
+            <div class="forecast-day ${dayClass}">${dayName}</div>
+            <div class="forecast-icon"><i class="fas ${icon}"></i></div>
+            <div class="forecast-temp">${max}° / ${min}°</div>
+          `;
+          container.appendChild(item);
         }
       };
       const fetchWeather = () => {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (pos) =>
-              getWeatherData(pos.coords.latitude, pos.coords.longitude, null),
-            () => getWeatherData(36.48, 127.08, LANG[userLang].weatherDefault),
+        document.getElementById("top-right-widgets").innerHTML = "";
+        weatherLocations.forEach((loc) => {
+          if (loc.type === "current") {
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (pos) =>
+                  getWeatherData(
+                    pos.coords.latitude,
+                    pos.coords.longitude,
+                    LANG[userLang].currentLoc,
+                    "current",
+                  ),
+                () =>
+                  getWeatherData(
+                    36.48,
+                    127.08,
+                    LANG[userLang].weatherDefault,
+                    "current",
+                  ),
+              );
+            } else {
+              getWeatherData(
+                36.48,
+                127.08,
+                LANG[userLang].weatherDefault,
+                "current",
+              );
+            }
+          } else {
+            getWeatherData(loc.lat, loc.lon, loc.name, loc.id);
+          }
+        });
+      };
+      const searchCities = async (query) => {
+        const results = document.getElementById("citySearchResults");
+        if (!query || query.length < 2) {
+          results.style.display = "none";
+          return;
+        }
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=${userLang}`,
           );
-        } else getWeatherData(36.48, 127.08, LANG[userLang].weatherDefault);
+          const data = await res.json();
+          results.innerHTML = "";
+          if (data.length > 0) {
+            results.style.display = "block";
+            data.forEach((item) => {
+              const div = document.createElement("div");
+              div.className = "city-result-item";
+              div.innerText = item.display_name;
+              div.onclick = () => addWeatherLocation(item);
+              results.appendChild(div);
+            });
+          } else {
+            results.style.display = "none";
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      };
+      const addWeatherLocation = (item) => {
+        const loc = {
+          type: "custom",
+          name: item.display_name.split(",")[0],
+          lat: item.lat,
+          lon: item.lon,
+          id: Date.now(),
+        };
+        weatherLocations.push(loc);
+        saveWeatherLocations();
+        fetchWeather();
+        document.getElementById("citySearchInput").value = "";
+        document.getElementById("citySearchResults").style.display = "none";
+        renderWeatherLocationList();
+      };
+      const removeWeatherLocation = (id) => {
+        weatherLocations = weatherLocations.filter((l) => l.id !== id);
+        saveWeatherLocations();
+        fetchWeather();
+        renderWeatherLocationList();
+      };
+      const saveWeatherLocations = () => {
+        localStorage.setItem(
+          "dj_weather_locations",
+          JSON.stringify(weatherLocations),
+        );
+      };
+      const renderWeatherLocationList = () => {
+        const list = document.getElementById("weatherLocationList");
+        list.innerHTML = "";
+        weatherLocations.forEach((loc) => {
+          const tag = document.createElement("div");
+          tag.className = "location-tag";
+          if (loc.type === "current") {
+            tag.innerHTML = `<span><i class="fas fa-location-arrow" style="margin-right:8px; color:var(--accent-color)"></i>${LANG[userLang].currentLoc}</span>`;
+          } else {
+            tag.innerHTML = `<span>${loc.name}</span><i class="fas fa-times" onclick="removeWeatherLocation(${loc.id})"></i>`;
+          }
+          list.appendChild(tag);
+        });
       };
       const updateAll = () => {
         const now = new Date(),
@@ -1964,7 +2387,7 @@
           allowClose: !1,
           steps: [
             {
-              element: ".widget-sidebar",
+              element: ".sidebar-trigger",
               popover: {
                 title: T.tutSidebarTitle,
                 description: T.tutSidebarDesc,
