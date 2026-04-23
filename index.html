@@ -2000,7 +2000,10 @@
           const res = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`,
           );
+          if (!res.ok) throw new Error("Weather API failed");
           const d = await res.json();
+          if (!d.current || !d.daily) throw new Error("Invalid weather data");
+
           const current = d.current;
           const daily = d.daily;
 
@@ -2029,6 +2032,16 @@
           document.getElementById("top-right-widgets").appendChild(container);
         } catch (e) {
           console.error(e);
+          if (id === "current") {
+            const err = document.createElement("div");
+            err.className = "weather-item";
+            err.style.opacity = "0.7";
+            err.innerHTML = `
+              <div class="weather-loc" style="color:var(--warning-color)">API 오류</div>
+              <div class="weather-main" style="font-size:0.8rem">정보 획득 실패</div>
+            `;
+            document.getElementById("top-right-widgets").appendChild(err);
+          }
         }
       };
       const getWeatherIcon = (code) => {
@@ -2077,26 +2090,55 @@
         }
       };
       const fetchWeather = () => {
-        document.getElementById("top-right-widgets").innerHTML = "";
+        const container = document.getElementById("top-right-widgets");
+        container.innerHTML = "";
+
+        // 표시할 날씨가 있는지 확인 (현지 날씨 ON 또는 추가된 도시가 있는 경우)
+        const hasCustomLocations = weatherLocations.some(loc => loc.type !== "current");
+        if (!showCurrentWeather && !hasCustomLocations) {
+          return;
+        }
+
+        let loadingEl = document.createElement("div");
+        loadingEl.className = "weather-item";
+        loadingEl.style.opacity = "0.6";
+        loadingEl.style.cursor = "default";
+        loadingEl.innerText = LANG[userLang].weatherLoading;
+        container.appendChild(loadingEl);
+
+        const removeLoading = () => {
+          if (loadingEl && loadingEl.parentNode) {
+            loadingEl.remove();
+            loadingEl = null;
+          }
+        };
+
+        // 현지 날씨가 켜져 있을 때만 geolocation 실행
         if (showCurrentWeather) {
           if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-              (pos) =>
+              (pos) => {
+                removeLoading();
                 getWeatherData(
                   pos.coords.latitude,
                   pos.coords.longitude,
                   LANG[userLang].currentLoc,
                   "current",
-                ),
-              () =>
+                );
+              },
+              () => {
+                removeLoading();
                 getWeatherData(
                   36.48,
                   127.08,
                   LANG[userLang].weatherDefault,
                   "current",
-                ),
+                );
+              },
+              { timeout: 5000 },
             );
           } else {
+            removeLoading();
             getWeatherData(
               36.48,
               127.08,
@@ -2105,11 +2147,23 @@
             );
           }
         }
+
+        // 추가된 도시들 처리
         weatherLocations.forEach((loc) => {
           if (loc.type !== "current") {
-            getWeatherData(loc.lat, loc.lon, loc.name, loc.id);
+            getWeatherData(loc.lat, loc.lon, loc.name, loc.id).finally(() =>
+              removeLoading(),
+            );
           }
         });
+
+        // 만약 현지 날씨는 꺼져있고 추가된 도시만 불러오는 경우, 
+        // forEach가 끝나면 loading이 제거되도록 보장
+        if (!showCurrentWeather && hasCustomLocations) {
+          // getWeatherData 내부에서 비동기로 처리되므로 위 forEach의 finally에서 처리됨
+        } else if (!showCurrentWeather && !hasCustomLocations) {
+          removeLoading();
+        }
       };
       let searchTimeout;
       const searchCities = async (query) => {
