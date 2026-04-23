@@ -1,1 +1,2088 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OnTo.kr</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"><script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script><style>@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&family=JetBrains+Mono:wght@500&display=swap');:root{--glass-bg:rgba(0,0,0,.45);--glass-border:rgba(255,255,255,.15);--accent-color:#38bdf8;--warning-color:#fbbf24;--memo-color:#fcd34d;--quote-shadow:0 4px 15px rgba(0,0,0,1),0 2px 4px rgba(0,0,0,.8);--btn-shadow:0 4px 12px rgba(0,0,0,.3)}body{margin:0;padding:100px 20px 180px;min-height:100vh;background-color:#020617;background-size:cover;background-position:center;background-repeat:no-repeat;background-attachment:fixed;color:#f1f5f9;font-family:Pretendard,sans-serif;display:flex;flex-direction:column;align-items:center;box-sizing:border-box;transition:background-image .8s ease-in-out}body::before{content:"";position:fixed;top:0;left:0;width:100%;height:100%;background:0 0;z-index:-1}.widget-btn{background:rgba(0,0,0,.5);backdrop-filter:blur(10px);border:1px solid var(--glass-border);border-radius:14px;color:#fff;width:45px;height:45px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:.7;transition:.3s;box-shadow:var(--btn-shadow)}.widget-btn:hover{opacity:1;border-color:var(--accent-color);color:var(--accent-color)}.fab-container{position:relative;display:flex;align-items:center}.fab-menu{display:flex;gap:10px;position:absolute;opacity:0;visibility:hidden;transition:.3s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:200;transform:scale(.9) translateX(-10px)}.fab-menu.active{opacity:1;visibility:visible;pointer-events:auto;transform:scale(1) translateX(0)}.right-menu{left:55px;top:0;flex-direction:row}#top-left-widgets{position:fixed;top:30px;left:30px;z-index:100}#top-right-widgets{position:fixed;top:30px;right:30px;z-index:100;display:flex;flex-direction:column;gap:10px;align-items:flex-end;transition:.5s cubic-bezier(.4,0,.2,1)}#weather-container{text-align:right;min-width:120px;margin-right:10px}.weather-loc{font-size:.8rem;opacity:.9;margin-bottom:4px;text-shadow:1px 2px 4px rgba(0,0,0,.8)}.weather-main{font-family:'JetBrains Mono',monospace;font-size:1.5rem;color:var(--accent-color);display:flex;align-items:center;justify-content:flex-end;gap:8px;font-weight:700;line-height:1;text-shadow:1px 2px 5px rgba(0,0,0,.9)}.weather-hl{font-size:.8rem;opacity:.9;margin-top:6px;text-shadow:1px 2px 4px rgba(0,0,0,.8)}#quote-section{text-align:center;margin-bottom:60px;max-width:1000px;width:100%;animation:fadeIn 1.2s ease-out}#quote-text{font-family:'Noto Serif KR',serif;font-size:3rem;font-weight:700;line-height:1.5;color:#fff;text-shadow:var(--quote-shadow);margin-bottom:20px;word-break:keep-all}#quote-author{font-size:1.1rem;color:var(--accent-color);text-align:right;display:block;letter-spacing:4px;font-weight:600;text-shadow:0 2px 10px rgba(0,0,0,.9);padding-right:20px}#shortcut-container{display:grid;gap:15px;width:100%;max-width:calc(100vw - 460px);margin:0 auto}.grid-layout,.list-layout{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}.shortcut-item{background:rgba(0,0,0,.35);backdrop-filter:blur(15px);border:1px solid var(--glass-border);border-radius:20px;padding:16px 10px;font-size:.9rem;text-align:center;text-decoration:none;color:#fff;transition:all .3s;position:relative;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;display:flex;flex-direction:column;align-items:center}.shortcut-item:active{transform:scale(.95)}.shortcut-item:hover{background:rgba(255,255,255,.15);transform:translateY(-8px);border-color:var(--accent-color)}.shortcut-item img{width:40px;height:40px;border-radius:12px;margin-bottom:8px;pointer-events:none}.shortcut-item span{width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}.context-menu{display:none;position:absolute;z-index:2000;background:rgba(15,23,42,.95);backdrop-filter:blur(10px);border:1px solid var(--glass-border);border-radius:12px;padding:8px 0;min-width:120px;box-shadow:var(--btn-shadow);overflow:hidden}.context-menu div{padding:12px 20px;font-size:.95rem;cursor:pointer;color:#fff;transition:.2s;text-align:center;font-weight:700}.context-menu div:hover{background:rgba(255,255,255,.1)}.context-menu .cm-del{color:#ef4444;border-top:1px solid rgba(255,255,255,.05)}.bottom-widgets{position:fixed;bottom:30px;left:0;width:100%;display:flex;justify-content:space-between;align-items:flex-end;padding:0 30px;box-sizing:border-box;pointer-events:none;z-index:100}.left-area{align-items:flex-start;display:flex;flex-direction:column;gap:10px;pointer-events:auto;position:relative;z-index:20}.right-area{align-items:flex-end;display:flex;flex-direction:column;gap:10px;pointer-events:auto;position:relative;z-index:10}.widget-handle{position:absolute;left:-20px;top:50%;transform:translateY(-50%);width:20px;height:40px;background:rgba(0,0,0,.4);backdrop-filter:blur(10px);border:1px solid var(--glass-border);border-right:none;border-radius:8px 0 0 8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;opacity:0;transition:.3s;font-size:.7rem;z-index:5}#calendar-container:hover .widget-handle,#clock-container:hover .widget-handle,#top-right-widgets:hover .widget-handle{opacity:.7}.widget-handle:hover{opacity:1!important;color:var(--accent-color)}#calendar-container,#clock-container,#top-right-widgets{position:relative;transition:.5s cubic-bezier(.4,0,.2,1)}#top-right-widgets{position:fixed}body.hide-weather #top-right-widgets{transform:translateX(calc(100% + 30px))}body.hide-calendar #calendar-container{transform:translateX(calc(100% + 30px))}body.hide-clock #clock-container{transform:translateX(calc(100% + 30px))}body.hide-calendar #calendar-container .widget-handle,body.hide-clock #clock-container .widget-handle,body.hide-weather #top-right-widgets .widget-handle{opacity:.8;left:-20px}body.hide-calendar #calendar-container .widget-handle i,body.hide-clock #clock-container .widget-handle i,body.hide-weather #top-right-widgets .widget-handle i{transform:rotate(180deg)}.smart-folder{display:none;position:relative}.smart-folder.has-items{display:flex;flex-direction:column;gap:10px}.folder-icon{display:none!important;position:relative}.folder-content{width:170px;display:flex;flex-direction:column;gap:8px;transition:.3s cubic-bezier(.4,0,.2,1)}.item-card{background:rgba(0,0,0,.5);backdrop-filter:blur(12px);border:1px solid var(--glass-border);border-radius:14px;padding:12px 15px;width:100%;box-sizing:border-box;position:relative;animation:slideIn .3s ease;box-shadow:var(--btn-shadow);cursor:pointer;transition:.2s;display:flex;flex-direction:column}.item-card:hover{border-color:var(--accent-color)}.item-card .title{font-size:.85rem;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:15px}.noti-info{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:.75rem;font-family:'JetBrains Mono'}#clock-container{background:rgba(0,0,0,.5);backdrop-filter:blur(10px);border:1px solid var(--glass-border);padding:12px 22px;border-radius:18px;text-align:right;box-shadow:var(--btn-shadow);display:flex;flex-direction:column;width:fit-content;align-self:flex-end}#clock-time{font-family:'JetBrains Mono',monospace;font-size:1.6rem;color:var(--accent-color);line-height:1}.calendar-widget{background:rgba(0,0,0,.5);backdrop-filter:blur(10px);border:1px solid var(--glass-border);padding:15px;border-radius:18px;box-shadow:var(--btn-shadow);width:200px;color:#fff;font-size:.8rem}.calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:700;color:var(--accent-color);font-family:'JetBrains Mono'}.calendar-days-header{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-weight:700;margin-bottom:5px;opacity:.7}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}.calendar-day{padding:4px 0;border-radius:4px}.calendar-day.today{background:var(--accent-color);color:#0f172a;font-weight:700}.calendar-day.other-month{opacity:.3}.calendar-day.sun{color:#ef4444}.calendar-day.sat{color:#3b82f6}.modal{display:none;position:fixed;z-index:1000;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);backdrop-filter:blur(10px)}.modal-content{background:#1e293b;padding:35px;border-radius:30px;width:340px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border:1px solid var(--glass-border);box-sizing:border-box}#memoModal .modal-content{width:600px;max-width:90vw}#memoContent{height:300px;resize:vertical;font-size:1rem;line-height:1.6}.modal-content h3{text-align:center;margin-top:0;margin-bottom:25px;font-size:1.2rem}.modal-content input,.modal-content textarea,.time-select{width:100%;padding:12px;margin-bottom:15px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#fff;box-sizing:border-box;font-family:inherit}.toggle-group{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}.toggle-item{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;color:#f1f5f9}.toggle-item input{width:auto;margin-bottom:0;cursor:pointer}.time-picker-row{display:flex;gap:10px;margin-bottom:15px}.time-select{margin-bottom:0;cursor:pointer;text-align:center;font-family:'JetBrains Mono'}.repeat-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px;font-size:.9rem;white-space:nowrap}.day-selector{display:flex;justify-content:space-between;margin-bottom:20px}.day-check input{display:none}.day-check span{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#0f172a;border-radius:8px;font-size:.75rem;border:1px solid #334155;cursor:pointer}.day-check input:checked+span{background:var(--accent-color);color:#0f172a;font-weight:700}.btn-save{width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent-color);color:#0f172a;font-weight:700;cursor:pointer;transition:.2s}.btn-save:hover{opacity:.9}.theme-colors{display:grid;grid-template-columns:repeat(5,35px);gap:10px;justify-content:center;margin-bottom:10px}.color-swatch{width:35px;height:35px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.2s;box-shadow:var(--btn-shadow)}.color-swatch:hover{transform:scale(1.15)}@keyframes fadeIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@media (max-width:768px){body{padding:160px 15px 120px}#top-left-widgets{top:15px;left:15px}#top-right-widgets{top:15px;right:15px}.bottom-widgets{bottom:15px;padding:0 15px}#quote-text{font-size:2rem}#shortcut-container{max-width:100%}.grid-layout,.list-layout{grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:12px}.widget-btn{width:40px;height:40px;font-size:.9rem}#clock-container,#weather-container{padding:10px 15px;border-radius:14px}#clock-time{font-size:1.3rem}.weather-main{font-size:1.2rem}.modal-content{width:90vw;padding:25px}.folder-icon{display:flex!important}.folder-content{position:absolute;bottom:calc(100% + 15px);width:220px;max-height:50vh;overflow-y:auto;padding-right:4px;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(10px);z-index:200}.folder-content::-webkit-scrollbar{width:4px}.folder-content::-webkit-scrollbar-thumb{background:var(--accent-color);border-radius:4px}#noti-folder .folder-content{right:0}#memo-folder .folder-content{left:0}.smart-folder.open .folder-content{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}}@media (max-width:480px){.grid-layout,.list-layout{grid-template-columns:repeat(3,1fr);gap:12px}#quote-text{font-size:1.6rem}}</style></head><body onclick="requestNotiPermission()"><div id="shortcutContextMenu" class="context-menu"><div onclick="editCurrentShortcut()" data-i18n="cmEdit">수정하기</div><div class="cm-del" onclick="deleteCurrentShortcut()" data-i18n="cmDelete">삭제하기</div></div><div id="top-left-widgets"><div class="fab-container"><div class="widget-btn fab-main" data-i18n-title="tipFile" onclick="toggleFab('tl-fab',event)"><i class="fas fa-folder"></i></div><div class="fab-menu right-menu" id="tl-fab"><input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)"><div class="widget-btn" data-i18n-title="tipBackup" onclick="exportData()"><i class="fas fa-download"></i></div><div class="widget-btn" data-i18n-title="tipRestore" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload"></i></div></div></div></div><div id="top-right-widgets"><div class="widget-handle" onclick="toggleWidget('weather')"><i class="fas fa-chevron-right"></i></div><div id="weather-container"><div class="weather-loc" data-i18n="weatherLoading">날씨 불러오는 중...</div><div class="weather-main"><i id="w-icon" class="fas fa-spinner fa-spin"></i> <span id="w-temp">--</span>°</div><div class="weather-hl"><span data-i18n="weatherHigh">최고</span> <span id="w-high">--</span>° <span data-i18n="weatherLow">최저</span> <span id="w-low">--</span>°</div></div></div><div id="quote-section"><div id="quote-text">...</div><div id="quote-author"></div></div><div id="shortcut-container"></div><div class="bottom-widgets"><div class="left-area"><div class="smart-folder" id="memo-folder"><div class="widget-btn folder-icon" onclick="toggleFolder('memo-folder',event)"><i class="fas fa-sticky-note" style="color:var(--memo-color)"></i></div><div class="folder-content" id="memo-list"></div></div><div class="fab-container"><div class="widget-btn fab-main" data-i18n-title="tipMenu" onclick="toggleFab('bl-fab',event)"><i class="fas fa-cog"></i></div><div class="fab-menu right-menu" id="bl-fab"><div class="widget-btn" data-i18n-title="tipSetting" onclick="openSettingModal()"><i class="fas fa-sliders-h"></i></div><div class="widget-btn" data-i18n-title="tipNoti" onclick="openNotiModal()"><i class="fas fa-bell"></i></div><div class="widget-btn" data-i18n-title="tipMemo" onclick="openMemoModal()"><i class="fas fa-pen"></i></div><div class="widget-btn" data-i18n-title="tipLink" onclick="openLinkModal()"><i class="fas fa-plus"></i></div></div></div></div><div class="right-area"><div class="smart-folder" id="noti-folder"><div class="widget-btn folder-icon" onclick="toggleFolder('noti-folder',event)"><i class="fas fa-bell" style="color:var(--warning-color)"></i></div><div class="folder-content" id="noti-list"></div></div><div id="calendar-container" class="calendar-widget"><div class="widget-handle" onclick="toggleWidget('calendar')"><i class="fas fa-chevron-right"></i></div><div class="calendar-header" id="cal-month-year">...</div><div class="calendar-days-header" id="cal-days-header"></div><div class="calendar-grid" id="calendar-grid"></div></div><div id="clock-container"><div class="widget-handle" onclick="toggleWidget('clock')"><i class="fas fa-chevron-right"></i></div><div id="clock-time">00:00:00</div></div></div></div><div class="modal" id="settingModal" onclick="event.target==this&&closeModal('settingModal')"><div class="modal-content" style="width:340px"><h3 data-i18n="modalSetting">환경 설정</h3><div style="font-size:.85rem;color:#94a3b8;margin-bottom:10px;font-weight:600" data-i18n="lblTheme">테마 색상</div><div class="theme-colors" style="margin-bottom:25px"><div class="color-swatch" style="background:#ef4444" onclick="setTheme('#ef4444')"></div><div class="color-swatch" style="background:#f97316" onclick="setTheme('#f97316')"></div><div class="color-swatch" style="background:#eab308" onclick="setTheme('#eab308')"></div><div class="color-swatch" style="background:#22c55e" onclick="setTheme('#22c55e')"></div><div class="color-swatch" style="background:#3b82f6" onclick="setTheme('#3b82f6')"></div><div class="color-swatch" style="background:#6366f1" onclick="setTheme('#6366f1')"></div><div class="color-swatch" style="background:#a855f7" onclick="setTheme('#a855f7')"></div><div class="color-swatch" style="background:#ec4899" onclick="setTheme('#ec4899')"></div><div class="color-swatch" style="background:#fff" onclick="setTheme('#fff')"></div><div class="color-swatch" style="background:#000;border:1px solid rgba(255,255,255,.3)" onclick="setTheme('#000')"></div></div><div style="font-size:.85rem;color:#94a3b8;margin-bottom:10px;font-weight:600" data-i18n="lblBgKeyword">배경화면 키워드 (영문 권장)</div><input type="text" id="bgKeywordInput" data-i18n-ph="bgKeywordPh" placeholder="예: nature, space, city, dark" onkeypress="event.key==='Enter'&&saveSettings()"><button class="btn-save" onclick="saveSettings()" data-i18n="btnSaveSettings">저장 및 적용</button></div></div><div class="modal" id="linkModal" onclick="event.target==this&&closeModal('linkModal')"><div class="modal-content"><h3 id="linkModalTitle" data-i18n="modalLinkAdd">바로가기 추가</h3><input type="text" id="siteName" data-i18n-ph="linkName" placeholder="이름"> <input type="text" id="siteUrl" data-i18n-ph="linkUrl" placeholder="URL (example.com)" onkeypress="event.key==='Enter'&&addShortcut()"><button class="btn-save" id="linkSaveBtn" onclick="addShortcut()" data-i18n="btnSave">추가</button></div></div><div class="modal" id="notiModal" onclick="event.target==this&&closeModal('notiModal')"><div class="modal-content"><h3 id="notiModalTitle" data-i18n="modalNotiAdd">알림 추가</h3><input type="text" id="notiTitle" data-i18n-ph="notiTitle" placeholder="알림 제목"><textarea id="notiDesc" data-i18n-ph="notiDesc" placeholder="알림 내용 (생략 가능)" rows="2"></textarea><div class="time-picker-row"><select id="notiHour" class="time-select"></select><select id="notiMin" class="time-select"></select></div><div class="repeat-row"><input type="date" id="notiDate" class="time-select" style="margin-bottom:0;flex:1;padding:10px;font-size:.9rem"><div style="display:flex;align-items:center;gap:6px"><label for="isRepeat" style="cursor:pointer" data-i18n="repeatSet">반복 설정</label> <input type="checkbox" id="isRepeat" onchange="toggleDaySelector(this.checked)" style="margin:0;padding:0;width:16px;height:16px;cursor:pointer;box-sizing:border-box"></div></div><div id="day-selector-wrap" style="display:none"><div class="day-selector"><label class="day-check"><input type="checkbox" value="1"><span>월</span></label> <label class="day-check"><input type="checkbox" value="2"><span>화</span></label> <label class="day-check"><input type="checkbox" value="3"><span>수</span></label> <label class="day-check"><input type="checkbox" value="4"><span>목</span></label> <label class="day-check"><input type="checkbox" value="5"><span>금</span></label> <label class="day-check"><input type="checkbox" value="6"><span>토</span></label> <label class="day-check"><input type="checkbox" value="0"><span>일</span></label></div></div><div style="display:flex;gap:10px"><button class="btn-save" id="notiSaveBtn" style="flex:1" onclick="addNotification()" data-i18n="btnAddNoti">알림 추가</button> <button class="btn-save" id="notiDelBtn" style="display:none;background:#ef4444;color:#fff;flex:.4" onclick="deleteCurrentNoti()" data-i18n="btnDelete">삭제</button></div></div></div><div class="modal" id="memoModal" onclick="event.target==this&&closeModal('memoModal')"><div class="modal-content"><h3 id="memoModalTitle" data-i18n="modalMemoAdd">메모 추가</h3><input type="text" id="memoTitle" data-i18n-ph="memoTitle" placeholder="메모 제목"><textarea id="memoContent" data-i18n-ph="memoContent" placeholder="메모 내용" rows="4"></textarea><div style="display:flex;gap:10px"><button class="btn-save" id="memoSaveBtn" style="flex:1" onclick="addMemo()" data-i18n="btnSaveMemo">메모 저장</button> <button class="btn-save" id="memoDelBtn" style="display:none;background:#ef4444;color:#fff;flex:.4" onclick="deleteCurrentMemo()" data-i18n="btnDelete">삭제</button></div></div></div><script>const userLang=navigator.language.startsWith('ko')?'ko':'en';const LANG={ko:{weatherDefault:"우성면 (기본)",weatherLoading:"날씨 불러오는 중...",weatherHigh:"최고",weatherLow:"최저",quoteDefault:'"기회는 일어나는 것이 아니라 만드는 것이다."',quoteAuthorDefault:"- Chris Grosser",cmEdit:"수정하기",cmDelete:"삭제하기",tipFile:"파일 관리",tipBackup:"데이터 백업",tipRestore:"데이터 복원",tipMenu:"메뉴 열기",tipSetting:"환경 설정",tipBg:"배경 랜덤 변경",tipNoti:"알림 추가",tipMemo:"메모 추가",tipLink:"바로가기 추가",modalSetting:"환경 설정",lblTheme:"테마 색상",lblBgKeyword:"배경화면 키워드 (영문 권장)",bgKeywordPh:"예: space, nature, minimal",btnSaveSettings:"저장 및 적용",modalLinkAdd:"바로가기 추가",modalLinkEdit:"바로가기 수정",linkName:"이름",linkUrl:"URL (example.com)",btnSave:"추가",btnEdit:"수정 완료",modalNotiAdd:"알림 추가",modalNotiEdit:"알림 수정",notiTitle:"알림 제목",notiDesc:"알림 내용 (생략 가능)",repeatSet:"반복 설정",days:["일","월","화","수","목","금","토"],btnAddNoti:"알림 추가",btnEditNoti:"알림 수정",btnDelete:"삭제",modalMemoAdd:"메모 추가",modalMemoEdit:"메모 수정",memoTitle:"메모 제목",memoContent:"메모 내용",btnSaveMemo:"메모 저장",alertDel:"삭제하시겠습니까?",alertRestore:"복원 완료!",txtEnded:"종료됨",tutWeatherTitle:'🌤️ 날씨 위젯',tutWeatherDesc:'현재 계신 위치의 날씨와 기온을 실시간으로 확인하세요.',tutCalendarTitle:'📅 달력',tutCalendarDesc:'이번 달의 전체 일정을 한눈에 볼 수 있는 달력입니다.',tutClockTitle:'⏰ 시계',tutClockDesc:'초 단위까지 정확한 현재 시각을 표시합니다.',tutSettingTitle:'⚙️ 설정 및 추가',tutSettingDesc:'테마, 배경화면 키워드, 위젯 표시 여부 설정 및<br>새 알림, 메모, 바로가기를 추가할 수 있습니다.',tutFileTitle:'💾 데이터 관리',tutFileDesc:'모든 데이터를 JSON 파일로 백업하거나 복원할 수 있습니다.',tutNext:'다음 &rarr;',tutPrev:'&larr; 이전',tutDone:'시작하기'},en:{weatherDefault:"Useong-myeon (Default)",weatherLoading:"Loading Weather...",weatherHigh:"H",weatherLow:"L",quoteDefault:'"Opportunities don\'t happen. You create them."',quoteAuthorDefault:"- Chris Grosser",cmEdit:"Edit",cmDelete:"Delete",tipFile:"Files",tipBackup:"Backup",tipRestore:"Restore",tipMenu:"Menu",tipSetting:"Settings",tipBg:"Random Background",tipNoti:"Notification",tipMemo:"Memo",tipLink:"Shortcut",modalSetting:"Settings",lblTheme:"Theme Color",lblBgKeyword:"Background Keyword",bgKeywordPh:"e.g., space, nature, minimal",btnSaveSettings:"Save & Apply",modalLinkAdd:"Add Shortcut",modalLinkEdit:"Edit Shortcut",linkName:"Name",linkUrl:"URL (example.com)",btnSave:"Add",btnEdit:"Save",modalNotiAdd:"Add Alert",modalNotiEdit:"Edit Alert",notiTitle:"Title",notiDesc:"Description (Optional)",repeatSet:"Repeat",days:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],btnAddNoti:"Add Alert",btnEditNoti:"Edit Alert",btnDelete:"Delete",modalMemoAdd:"Add Memo",modalMemoEdit:"Edit Memo",memoTitle:"Title",memoContent:"Content",btnSaveMemo:"Save",alertDel:"Are you sure you want to delete?",alertRestore:"Restore Complete!",txtEnded:"Ended",tutWeatherTitle:'🌤️ Weather',tutWeatherDesc:'Check real-time weather and temperature for your location.',tutCalendarTitle:'📅 Calendar',tutCalendarDesc:"View the entire month's dates at a glance.",tutClockTitle:'⏰ Clock',tutClockDesc:'Displays the current time down to the second.',tutSettingTitle:'⚙️ Settings & Add',tutSettingDesc:'Configure themes, background keywords, widget visibility, and add new items.',tutFileTitle:'💾 Data Management',tutFileDesc:'Backup or restore all your data as a JSON file.',tutNext:'Next &rarr;',tutPrev:'&larr; Prev',tutDone:'Start'}};const applyLanguage=()=>{const T=LANG[userLang];document.querySelectorAll('[data-i18n]').forEach(el=>el.innerHTML=T[el.dataset.i18n]);document.querySelectorAll('[data-i18n-ph]').forEach(el=>el.placeholder=T[el.dataset.i18nPh]);document.querySelectorAll('[data-i18n-title]').forEach(el=>el.title=T[el.dataset.i18nTitle]);const dayMapping=[1,2,3,4,5,6,0];document.querySelectorAll('.day-check span').forEach((span,i)=>span.innerText=T.days[dayMapping[i]])};let shortcuts=JSON.parse(localStorage.getItem('dj_shortcuts'))||[],notifications=JSON.parse(localStorage.getItem('dj_notifications'))||[],memos=JSON.parse(localStorage.getItem('dj_memos'))||[],firedMinute="",currentEditNotiId=null,currentEditMemoId=null,currentShortcutIndex=null;const savedTheme=localStorage.getItem('dj_theme_color');if(savedTheme)document.documentElement.style.setProperty('--accent-color',savedTheme);const setTheme=color=>{document.documentElement.style.setProperty('--accent-color',color);localStorage.setItem('dj_theme_color',color)};const toggleFolder=(id,event)=>{event.stopPropagation();document.querySelectorAll('.fab-menu').forEach(m=>m.classList.remove('active'));document.querySelectorAll('.smart-folder').forEach(f=>f.id!==id?f.classList.remove('open'):f.classList.toggle('open'))};const toggleFab=(id,event)=>{event.stopPropagation();document.querySelectorAll('.smart-folder').forEach(f=>f.classList.remove('open'));document.querySelectorAll('.fab-menu').forEach(m=>m.id!==id?m.classList.remove('active'):m.classList.toggle('active'))};document.addEventListener('click',e=>{if(!e.target.closest('.fab-container'))document.querySelectorAll('.fab-menu').forEach(m=>m.classList.remove('active'));if(!e.target.closest('.smart-folder'))document.querySelectorAll('.smart-folder').forEach(f=>f.classList.remove('open'));const ctxMenu=document.getElementById('shortcutContextMenu');if(ctxMenu)ctxMenu.style.display='none'});const requestNotiPermission=()=>Notification.permission==="default"&&Notification.requestPermission();const playBeep=()=>{const ctx=new(window.AudioContext||window.webkitAudioContext)(),osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=880;gain.gain.value=.05;osc.start();setTimeout(()=>osc.stop(),150)};const initTimePicker=()=>{const h=document.getElementById('notiHour'),m=document.getElementById('notiMin'),hSuffix=userLang==='ko'?'시':'h',mSuffix=userLang==='ko'?'분':'m';for(let i=0;i<24;i++)h.options.add(new Option(`${String(i).padStart(2,'0')}${hSuffix}`,String(i).padStart(2,'0')));for(let i=0;i<60;i++)m.options.add(new Option(`${String(i).padStart(2,'0')}${mSuffix}`,String(i).padStart(2,'0')))};const saveData=()=>{localStorage.setItem('dj_shortcuts',JSON.stringify(shortcuts));localStorage.setItem('dj_notifications',JSON.stringify(notifications));localStorage.setItem('dj_memos',JSON.stringify(memos))};const openSettingModal=()=>{document.getElementById('bgKeywordInput').value=localStorage.getItem('dj_bg_keyword')||'';openModal('settingModal')};const saveSettings=()=>{const keyword=document.getElementById('bgKeywordInput').value.trim();localStorage.setItem('dj_bg_keyword',keyword);changeBackgroundInstant();closeModal('settingModal')};const toggleWidget=type=>{const key=`dj_hide_${type}`;localStorage.setItem(key,localStorage.getItem(key)!=='true');applyVisibility()};const applyVisibility=()=>['weather','calendar','clock'].forEach(type=>{document.body.classList[localStorage.getItem(`dj_hide_${type}`)==='true'?'add':'remove'](`hide-${type}`)});const renderCalendar=()=>{const now=new Date(),year=now.getFullYear(),month=now.getMonth(),today=now.getDate(),T=LANG[userLang],monthsEn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];document.getElementById('cal-month-year').innerText=userLang==='ko'?`${year}.${String(month+1).padStart(2,'0')}`:`${monthsEn[month]} ${year}`;const daysHeader=document.getElementById('cal-days-header');daysHeader.innerHTML='';(userLang==='ko'?['일','월','화','수','목','금','토']:['S','M','T','W','T','F','S']).forEach((label,i)=>{const div=document.createElement('div');div.innerText=label;if(i===0)div.classList.add('sun');if(i===6)div.classList.add('sat');daysHeader.appendChild(div)});const grid=document.getElementById('calendar-grid');grid.innerHTML='';const firstDay=new Date(year,month,1).getDay(),lastDate=new Date(year,month+1,0).getDate(),prevLastDate=new Date(year,month,0).getDate();for(let i=firstDay;i>0;i--){const div=document.createElement('div');div.className='calendar-day other-month';div.innerText=prevLastDate-i+1;grid.appendChild(div)}for(let i=1;i<=lastDate;i++){const div=document.createElement('div');div.className='calendar-day';div.innerText=i;const d=new Date(year,month,i).getDay();if(d===0)div.classList.add('sun');if(d===6)div.classList.add('sat');if(i===today)div.classList.add('today');grid.appendChild(div)}for(let i=1;grid.children.length<42;i++){const div=document.createElement('div');div.className='calendar-day other-month';div.innerText=i;grid.appendChild(div)}};const setBackground=seed=>{const keyword=(localStorage.getItem('dj_bg_keyword')||'landscape').replace(/\s+/g,',');document.body.style.backgroundImage=`url('https://loremflickr.com/1920/1080/${keyword}?random=${seed}')`};const changeBackgroundInstant=()=>{const seed=Math.floor(Math.random()*100000);localStorage.setItem('dj_bg_seed',seed);setBackground(seed)};const fetchQuote=async()=>{const qt=document.getElementById('quote-text'),qa=document.getElementById('quote-author');try{const res=await fetch(userLang==='ko'?'https://korean-advice-open-api.vercel.app/api/advice':'https://api.quotable.io/random'),d=await res.json(),text=userLang==='ko'?d.message:d.content,author=d.author||(userLang==='ko'?"지혜의 기록":"Unknown");if(text){qt.innerText=`"${text}"`;qa.innerText=`- ${author}`;return}throw new Error()}catch(e){qt.innerText=LANG[userLang].quoteDefault;qa.innerText=LANG[userLang].quoteAuthorDefault}};const getWeatherData=async(lat,lon,defaultLocName)=>{try{let locName=defaultLocName||LANG[userLang].weatherDefault;if(!defaultLocName){try{const geoRes=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14&addressdetails=1&accept-language=${userLang}`),geoData=await geoRes.json();if(geoData?.address)locName=geoData.address.town||geoData.address.village||geoData.address.suburb||geoData.address.city_district||geoData.address.city||locName}catch(e){}}document.querySelector('.weather-loc').innerText=locName;const res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul`),d=await res.json();document.getElementById('w-temp').innerText=Math.round(d.current.temperature_2m);document.getElementById('w-high').innerText=Math.round(d.daily.temperature_2m_max[0]);document.getElementById('w-low').innerText=Math.round(d.daily.temperature_2m_min[0]);const code=d.current.weather_code,icon=code===0?'fa-sun':code<=3?'fa-cloud-sun':[51,53,55,61,63,65,80,81,82].includes(code)?'fa-cloud-rain':'fa-cloud';document.getElementById('w-icon').className=`fas ${icon}`}catch(e){document.getElementById('w-temp').innerText='-'}};const fetchWeather=()=>{if(navigator.geolocation){navigator.geolocation.getCurrentPosition(pos=>getWeatherData(pos.coords.latitude,pos.coords.longitude,null),()=>getWeatherData(36.48,127.08,LANG[userLang].weatherDefault))}else getWeatherData(36.48,127.08,LANG[userLang].weatherDefault)};const updateAll=()=>{const now=new Date(),h=String(now.getHours()).padStart(2,'0'),m=String(now.getMinutes()).padStart(2,'0'),s=String(now.getSeconds()).padStart(2,'0'),timeStr=`${h}:${m}`,todayStr=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;document.getElementById('clock-time').innerText=`${h}:${m}:${s}`;if(firedMinute!==timeStr){renderCalendar();notifications.forEach((n,idx)=>{if((n.isRepeat?n.days.includes(String(now.getDay())):n.date===todayStr)&&n.time===timeStr){firedMinute=timeStr;if(Notification.permission==="granted")new Notification(n.title,{body:n.desc});playBeep();if(!n.isRepeat){notifications.splice(idx,1);renderNotifications()}}})}updateRemainingTimes(now)};const updateRemainingTimes=now=>{document.querySelectorAll('.noti-item').forEach(el=>{const n=notifications.find(x=>x.id==el.dataset.id);if(n){const[th,tm]=n.time.split(':').map(Number);let target=new Date(now);target.setHours(th,tm,0,0);if(!n.isRepeat&&n.date){const[y,m,d]=n.date.split('-');target.setFullYear(y,m-1,d)}else if(target<=now)target.setDate(target.getDate()+1);const diff=target-now,rem=el.querySelector('.remaining');if(rem){if(diff>0){const hh=String(Math.floor(diff/3600000)).padStart(2,'0'),mm=String(Math.floor((diff%3600000)/60000)).padStart(2,'0'),ss=String(Math.floor((diff%60000)/1000)).padStart(2,'0');rem.innerText=`${hh}:${mm}:${ss}`}else rem.innerText=n.isRepeat?"00:00:00":LANG[userLang].txtEnded}}})};const showShortcutMenu=(e,index)=>{e.preventDefault();currentShortcutIndex=index;const menu=document.getElementById('shortcutContextMenu');menu.style.display='block';let x=e.pageX||e.touches?.[0].pageX,y=e.pageY||e.touches?.[0].pageY;if(x+120>window.innerWidth)x=window.innerWidth-130;menu.style.left=`${x}px`;menu.style.top=`${y}px`};const renderShortcuts=()=>{const c=document.getElementById('shortcut-container');c.innerHTML='';c.className=shortcuts.length<=10?'grid-layout':'list-layout';shortcuts.forEach((s,i)=>{const url=s.url.startsWith('http')?s.url:`http://${s.url}`,div=document.createElement('a');div.className='shortcut-item';div.onclick=e=>window.isDraggingShortcut?(e.preventDefault(),window.isDraggingShortcut=!1):window.location.href=url;div.oncontextmenu=e=>showShortcutMenu(e,i);div.innerHTML=`<img src="https://www.google.com/s2/favicons?sz=128&domain=${new URL(url).hostname}"><span>${s.name}</span>`;c.appendChild(div)});if(window.shortcutSortable)window.shortcutSortable.destroy();window.shortcutSortable=new Sortable(c,{animation:150,delay:400,delayOnTouchOnly:!0,onStart:()=>window.isDraggingShortcut=!0,onEnd:evt=>{const item=shortcuts.splice(evt.oldIndex,1)[0];shortcuts.splice(evt.newIndex,0,item);saveData();setTimeout(()=>window.isDraggingShortcut=!1,100)}})};const renderNotifications=()=>{const c=document.getElementById('noti-list');c.innerHTML='';const folder=document.getElementById('noti-folder');notifications.length>0?folder.classList.add('has-items'):folder.classList.remove('has-items','open');notifications.sort((a,b)=>{const aT=a.isRepeat?"9999-12-31":(a.date||"9999-12-31"),bT=b.isRepeat?"9999-12-31":(b.date||"9999-12-31");return aT===bT?a.time.localeCompare(b.time):aT.localeCompare(bT)}).forEach(n=>{const div=document.createElement('div');div.className='item-card noti-item';div.dataset.id=n.id;div.onclick=e=>{e.stopPropagation();openNotiModal(n.id)};div.innerHTML=`<div class="title">${n.title}</div><div class="noti-info"><span>${n.time}</span><span class="remaining" style="color:var(--warning-color)">00:00:00</span></div>`;c.appendChild(div)});saveData()};const renderMemos=()=>{const c=document.getElementById('memo-list');c.innerHTML='';const folder=document.getElementById('memo-folder');memos.length>0?folder.classList.add('has-items'):folder.classList.remove('has-items','open');memos.forEach(m=>{const div=document.createElement('div');div.className='item-card memo-item';div.onclick=e=>{e.stopPropagation();openMemoModal(m.id)};div.innerHTML=`<div class="title">${m.title}</div>`;c.appendChild(div)});saveData()};const openLinkModal=(index=null)=>{currentShortcutIndex=index;const T=LANG[userLang],isEdit=index!==null;document.getElementById('siteName').value=isEdit?shortcuts[index].name:'';document.getElementById('siteUrl').value=isEdit?shortcuts[index].url:'';document.getElementById('linkModalTitle').innerText=isEdit?T.modalLinkEdit:T.modalLinkAdd;document.getElementById('linkSaveBtn').innerText=isEdit?T.btnEdit:T.btnSave;openModal('linkModal');setTimeout(()=>document.getElementById('siteName').focus(),50)};const editCurrentShortcut=()=>{document.getElementById('shortcutContextMenu').style.display='none';openLinkModal(currentShortcutIndex)};const deleteCurrentShortcut=()=>{document.getElementById('shortcutContextMenu').style.display='none';if(confirm(LANG[userLang].alertDel)){shortcuts.splice(currentShortcutIndex,1);renderShortcuts();saveData()}};const openMemoModal=(id=null)=>{currentEditMemoId=id;const T=LANG[userLang],d=document.getElementById('memoDelBtn'),m=id?memos.find(x=>x.id==id):null;document.getElementById('memoTitle').value=m?m.title:'';document.getElementById('memoContent').value=m?m.content:'';document.getElementById('memoModalTitle').innerText=id?T.modalMemoEdit:T.modalMemoAdd;d.style.display=id?"block":"none";openModal('memoModal');setTimeout(()=>document.getElementById('memoTitle').focus(),50)};const openNotiModal=(id=null)=>{currentEditNotiId=id;const T=LANG[userLang],dBtn=document.getElementById('notiDelBtn'),sBtn=document.getElementById('notiSaveBtn');const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;const n=id?notifications.find(x=>x.id==id):null;document.getElementById('notiTitle').value=n?n.title:'';document.getElementById('notiDesc').value=n?n.desc||'':'';const[h,m]=n?n.time.split(':'):[String(now.getHours()).padStart(2,'0'),String(now.getMinutes()).padStart(2,'0')];document.getElementById('notiHour').value=h;document.getElementById('notiMin').value=m;document.getElementById('notiDate').value=n?n.date||today:today;document.getElementById('isRepeat').checked=n?n.isRepeat:!1;toggleDaySelector(n?n.isRepeat:!1);document.querySelectorAll('.day-check input').forEach(chk=>chk.checked=n?n.days.includes(chk.value):!1);document.getElementById('notiModalTitle').innerText=id?T.modalNotiEdit:T.modalNotiAdd;sBtn.innerText=id?T.btnEditNoti:T.btnAddNoti;sBtn.dataset.i18n=id?'btnEditNoti':'btnAddNoti';dBtn.style.display=id?"block":"none";openModal('notiModal');setTimeout(()=>document.getElementById('notiTitle').focus(),50)};const addShortcut=()=>{const n=document.getElementById('siteName').value,u=document.getElementById('siteUrl').value;if(n&&u){currentShortcutIndex!==null?shortcuts[currentShortcutIndex]={name:n,url:u}:shortcuts.push({name:n,url:u});renderShortcuts();saveData();closeModal('linkModal')}};const addNotification=()=>{const t=document.getElementById('notiTitle').value,h=document.getElementById('notiHour').value,m=document.getElementById('notiMin').value,r=document.getElementById('isRepeat').checked,dt=document.getElementById('notiDate').value,days=Array.from(document.querySelectorAll('.day-check input:checked')).map(x=>x.value);if(t){const data={id:currentEditNotiId||Date.now(),title:t,desc:document.getElementById('notiDesc').value,time:`${h}:${m}`,isRepeat:r,days,date:dt};currentEditNotiId?notifications[notifications.findIndex(x=>x.id==currentEditNotiId)]=data:notifications.push(data);renderNotifications();closeModal('notiModal')}};const deleteCurrentNoti=()=>{if(confirm(LANG[userLang].alertDel)){notifications=notifications.filter(x=>x.id!=currentEditNotiId);renderNotifications();closeModal('notiModal')}};const addMemo=()=>{const t=document.getElementById('memoTitle').value,c=document.getElementById('memoContent').value;if(t){currentEditMemoId?(memos[memos.findIndex(x=>x.id==currentEditMemoId)]={...memos.find(x=>x.id==currentEditMemoId),title:t,content:c}):memos.push({id:Date.now(),title:t,content:c});renderMemos();closeModal('memoModal')}};const deleteCurrentMemo=()=>{if(confirm(LANG[userLang].alertDel)){memos=memos.filter(x=>x.id!=currentEditMemoId);renderMemos();closeModal('memoModal')}};const exportData=()=>{const d={shortcuts,notifications,memos,theme:localStorage.getItem('dj_theme_color'),seed:localStorage.getItem('dj_bg_seed'),bgKeyword:localStorage.getItem('dj_bg_keyword')};const blob=new Blob([JSON.stringify(d)],{type:"application/json"}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download="dj_smarthub.json";a.click()};const importData=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const d=JSON.parse(ev.target.result);shortcuts=d.shortcuts||[];notifications=d.notifications||[];memos=d.memos||[];saveData();if(d.theme)setTheme(d.theme);if(d.bgKeyword)localStorage.setItem('dj_bg_keyword',d.bgKeyword);if(d.seed){localStorage.setItem('dj_bg_seed',d.seed);setBackground(d.seed)}renderShortcuts();renderNotifications();renderMemos();alert(LANG[userLang].alertRestore)};r.readAsText(f)};const toggleDaySelector=s=>{document.getElementById('day-selector-wrap').style.display=s?'block':'none';document.getElementById('notiDate').disabled=s};const openModal=id=>document.getElementById(id).style.display='block';const closeModal=id=>document.getElementById(id).style.display='none';const showTutorial=()=>{const driver=window.driver.js.driver,T=LANG[userLang];driver({showProgress:!0,nextBtnText:T.tutNext,prevBtnText:T.tutPrev,doneBtnText:T.tutDone,allowClose:!1,steps:[{element:'#weather-container',popover:{title:T.tutWeatherTitle,description:T.tutWeatherDesc,side:"left",align:'start'}},{element:'#calendar-container',popover:{title:T.tutCalendarTitle,description:T.tutCalendarDesc,side:"top",align:'end'}},{element:'#clock-container',popover:{title:T.tutClockTitle,description:T.tutClockDesc,side:"top",align:'end'}},{element:'.bottom-widgets .left-area .fab-container',popover:{title:T.tutSettingTitle,description:T.tutSettingDesc,side:"top",align:'start'}},{element:'#top-left-widgets .fab-container',popover:{title:T.tutFileTitle,description:T.tutFileDesc,side:"right",align:'start'}}]}).drive()};applyLanguage();const sd=localStorage.getItem('dj_bg_seed')||Math.floor(Math.random()*10000);setBackground(sd);fetchQuote();initTimePicker();fetchWeather();setInterval(updateAll,1e3);updateAll();renderShortcuts();renderNotifications();renderMemos();applyVisibility();window.addEventListener('load',()=>!localStorage.getItem('dj_tutorial_done')&&setTimeout(()=>{showTutorial();localStorage.setItem('dj_tutorial_done','true')},800));</script></body></html>
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>OnTo.kr</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&family=JetBrains+Mono:wght@500&display=swap");
+      :root {
+        --glass-bg: rgba(0, 0, 0, 0.45);
+        --glass-border: rgba(255, 255, 255, 0.15);
+        --accent-color: #38bdf8;
+        --warning-color: #fbbf24;
+        --memo-color: #fcd34d;
+        --quote-shadow:
+          0 4px 15px rgba(0, 0, 0, 1), 0 2px 4px rgba(0, 0, 0, 0.8);
+        --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      body {
+        margin: 0;
+        padding: 100px 20px 180px;
+        min-height: 100vh;
+        background-color: #020617;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        color: #f1f5f9;
+        font-family: Pretendard, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-sizing: border-box;
+        transition: background-image 0.8s ease-in-out;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 0 0;
+        z-index: -1;
+      }
+      .widget-btn {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 14px;
+        color: #fff;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: 0.3s;
+        box-shadow: var(--btn-shadow);
+      }
+      .widget-btn:hover {
+        opacity: 1;
+        border-color: var(--accent-color);
+        color: var(--accent-color);
+      }
+      .fab-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .fab-menu {
+        display: flex;
+        gap: 10px;
+        position: absolute;
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+        z-index: 200;
+        transform: scale(0.9) translateX(-10px);
+      }
+      .fab-menu.active {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: scale(1) translateX(0);
+      }
+      .right-menu {
+        left: 55px;
+        top: 0;
+        flex-direction: row;
+      }
+      #top-left-widgets {
+        position: fixed;
+        top: 30px;
+        left: 30px;
+        z-index: 100;
+      }
+      #top-right-widgets {
+        position: fixed;
+        top: 30px;
+        right: 30px;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-end;
+        transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      #weather-container {
+        text-align: right;
+        min-width: 120px;
+        margin-right: 10px;
+      }
+      .weather-loc {
+        font-size: 0.8rem;
+        opacity: 0.9;
+        margin-bottom: 4px;
+        text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.8);
+      }
+      .weather-main {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.5rem;
+        color: var(--accent-color);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        font-weight: 700;
+        line-height: 1;
+        text-shadow: 1px 2px 5px rgba(0, 0, 0, 0.9);
+      }
+      .weather-hl {
+        font-size: 0.8rem;
+        opacity: 0.9;
+        margin-top: 6px;
+        text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.8);
+      }
+      #quote-section {
+        text-align: center;
+        margin-bottom: 60px;
+        max-width: 1000px;
+        width: 100%;
+        animation: fadeIn 1.2s ease-out;
+      }
+      #quote-text {
+        font-family: "Noto Serif KR", serif;
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 1.5;
+        color: #fff;
+        text-shadow: var(--quote-shadow);
+        margin-bottom: 20px;
+        word-break: keep-all;
+      }
+      #quote-author {
+        font-size: 1.1rem;
+        color: var(--accent-color);
+        text-align: right;
+        display: block;
+        letter-spacing: 4px;
+        font-weight: 600;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+        padding-right: 20px;
+      }
+      #shortcut-container {
+        display: grid;
+        gap: 15px;
+        width: 100%;
+        max-width: calc(100vw - 460px);
+        margin: 0 auto;
+      }
+      .grid-layout,
+      .list-layout {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      }
+      .shortcut-item {
+        background: rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 16px 10px;
+        font-size: 0.9rem;
+        text-align: center;
+        text-decoration: none;
+        color: #fff;
+        transition: all 0.3s;
+        position: relative;
+        cursor: pointer;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .shortcut-item:active {
+        transform: scale(0.95);
+      }
+      .shortcut-item:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-8px);
+        border-color: var(--accent-color);
+      }
+      .shortcut-item img {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        margin-bottom: 8px;
+        pointer-events: none;
+      }
+      .shortcut-item span {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+      }
+      .context-menu {
+        display: none;
+        position: absolute;
+        z-index: 2000;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        padding: 8px 0;
+        min-width: 120px;
+        box-shadow: var(--btn-shadow);
+        overflow: hidden;
+      }
+      .context-menu div {
+        padding: 12px 20px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        color: #fff;
+        transition: 0.2s;
+        text-align: center;
+        font-weight: 700;
+      }
+      .context-menu div:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .context-menu .cm-del {
+        color: #ef4444;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .bottom-widgets {
+        position: fixed;
+        bottom: 30px;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding: 0 30px;
+        box-sizing: border-box;
+        pointer-events: none;
+        z-index: 100;
+      }
+      .left-area {
+        align-items: flex-start;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: auto;
+        position: relative;
+        z-index: 20;
+      }
+      .right-area {
+        align-items: flex-end;
+        display: flex;
+        flex-direction: column-reverse;
+        pointer-events: auto;
+        position: relative;
+        z-index: 10;
+      }
+      #clock-container {
+        margin-bottom: 0;
+      }
+      #calendar-container,
+      #noti-folder {
+        margin-bottom: 15px;
+      }
+      .widget-sidebar {
+        position: fixed;
+        right: -60px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--glass-border);
+        border-right: none;
+        border-radius: 20px 0 0 20px;
+        padding: 15px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        z-index: 1000;
+        transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .sidebar-trigger {
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 20px;
+        height: 100%;
+        z-index: 999;
+      }
+      .sidebar-trigger:hover + .widget-sidebar,
+      .widget-sidebar:hover {
+        right: 0;
+      }
+      .sidebar-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #fff;
+        opacity: 0.6;
+        transition: 0.3s;
+        font-size: 1.2rem;
+      }
+      .sidebar-icon:hover {
+        opacity: 1;
+        color: var(--accent-color);
+        transform: scale(1.1);
+      }
+      .sidebar-icon.active {
+        opacity: 1;
+        color: var(--accent-color);
+      }
+      #calendar-container,
+      #clock-container,
+      #noti-folder,
+      #top-right-widgets,
+      #memo-folder {
+        transition:
+          transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+          margin 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+          max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+          padding 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: right bottom;
+        max-height: 1000px;
+      }
+      .widget-hidden {
+        opacity: 0 !important;
+        transform: scale(0.9) translateX(20px) !important;
+        pointer-events: none !important;
+        max-height: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        overflow: hidden !important;
+        border: none !important;
+      }
+      #top-right-widgets.widget-hidden {
+        transform: scale(0.9) translateY(-20px) !important;
+      }
+      #memo-folder.widget-hidden {
+        transform: scale(0.9) translateX(-20px) !important;
+      }
+      .smart-folder {
+        display: none;
+        position: relative;
+      }
+      .smart-folder.has-items {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .folder-icon {
+        display: none !important;
+        position: relative;
+      }
+      .folder-content {
+        width: 170px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .item-card {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 14px;
+        padding: 12px 15px;
+        width: 100%;
+        box-sizing: border-box;
+        position: relative;
+        animation: slideIn 0.3s ease;
+        box-shadow: var(--btn-shadow);
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        flex-direction: column;
+      }
+      .item-card:hover {
+        border-color: var(--accent-color);
+      }
+      .item-card .title {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #fff;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-right: 15px;
+      }
+      .noti-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+        font-size: 0.75rem;
+        font-family: "JetBrains Mono";
+      }
+      #clock-container {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        padding: 12px 22px;
+        border-radius: 18px;
+        text-align: right;
+        box-shadow: var(--btn-shadow);
+        display: flex;
+        flex-direction: column;
+        width: fit-content;
+        align-self: flex-end;
+      }
+      #clock-time {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 1.6rem;
+        color: var(--accent-color);
+        line-height: 1;
+      }
+      .calendar-widget {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        padding: 15px;
+        border-radius: 18px;
+        box-shadow: var(--btn-shadow);
+        width: 200px;
+        color: #fff;
+        font-size: 0.8rem;
+      }
+      .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        font-weight: 700;
+        color: var(--accent-color);
+        font-family: "JetBrains Mono";
+      }
+      .calendar-days-header {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 5px;
+        opacity: 0.7;
+      }
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+        text-align: center;
+      }
+      .calendar-day {
+        padding: 4px 0;
+        border-radius: 4px;
+      }
+      .calendar-day.today {
+        background: var(--accent-color);
+        color: #0f172a;
+        font-weight: 700;
+      }
+      .calendar-day.other-month {
+        opacity: 0.3;
+      }
+      .calendar-day.sun {
+        color: #ef4444;
+      }
+      .calendar-day.sat {
+        color: #3b82f6;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+      }
+      .modal-content {
+        background: #1e293b;
+        padding: 35px;
+        border-radius: 30px;
+        width: 340px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: 1px solid var(--glass-border);
+        box-sizing: border-box;
+      }
+      #memoModal .modal-content {
+        width: 600px;
+        max-width: 90vw;
+      }
+      #memoContent {
+        height: 300px;
+        resize: vertical;
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+      .modal-content h3 {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 25px;
+        font-size: 1.2rem;
+      }
+      .modal-content input,
+      .modal-content textarea,
+      .time-select {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+        border: 1px solid #334155;
+        background: #0f172a;
+        color: #fff;
+        box-sizing: border-box;
+        font-family: inherit;
+      }
+      .toggle-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .toggle-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        color: #f1f5f9;
+      }
+      .toggle-item input {
+        width: auto;
+        margin-bottom: 0;
+        cursor: pointer;
+      }
+      .time-picker-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+      .time-select {
+        margin-bottom: 0;
+        cursor: pointer;
+        text-align: center;
+        font-family: "JetBrains Mono";
+      }
+      .repeat-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        white-space: nowrap;
+      }
+      .day-selector {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      .day-check input {
+        display: none;
+      }
+      .day-check span {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f172a;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        border: 1px solid #334155;
+        cursor: pointer;
+      }
+      .day-check input:checked + span {
+        background: var(--accent-color);
+        color: #0f172a;
+        font-weight: 700;
+      }
+      .btn-save {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        background: var(--accent-color);
+        color: #0f172a;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .btn-save:hover {
+        opacity: 0.9;
+      }
+      .theme-colors {
+        display: grid;
+        grid-template-columns: repeat(5, 35px);
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 10px;
+      }
+      .color-swatch {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: 0.2s;
+        box-shadow: var(--btn-shadow);
+      }
+      .color-swatch:hover {
+        transform: scale(1.15);
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (max-width: 768px) {
+        body {
+          padding: 160px 15px 120px;
+        }
+        #top-left-widgets {
+          top: 15px;
+          left: 15px;
+        }
+        #top-right-widgets {
+          top: 15px;
+          right: 15px;
+        }
+        .bottom-widgets {
+          bottom: 15px;
+          padding: 0 15px;
+        }
+        #quote-text {
+          font-size: 2rem;
+        }
+        #shortcut-container {
+          max-width: 100%;
+        }
+        .grid-layout,
+        .list-layout {
+          grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+          gap: 12px;
+        }
+        .widget-btn {
+          width: 40px;
+          height: 40px;
+          font-size: 0.9rem;
+        }
+        #clock-container,
+        #weather-container {
+          padding: 10px 15px;
+          border-radius: 14px;
+        }
+        #clock-time {
+          font-size: 1.3rem;
+        }
+        .weather-main {
+          font-size: 1.2rem;
+        }
+        .modal-content {
+          width: 90vw;
+          padding: 25px;
+        }
+        .folder-icon {
+          display: flex !important;
+        }
+        .folder-content {
+          position: absolute;
+          bottom: calc(100% + 15px);
+          width: 220px;
+          max-height: 50vh;
+          overflow-y: auto;
+          padding-right: 4px;
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+          transform: translateY(10px);
+          z-index: 200;
+        }
+        .folder-content::-webkit-scrollbar {
+          width: 4px;
+        }
+        .folder-content::-webkit-scrollbar-thumb {
+          background: var(--accent-color);
+          border-radius: 4px;
+        }
+        #noti-folder .folder-content {
+          right: 0;
+        }
+        #memo-folder .folder-content {
+          left: 0;
+        }
+        .smart-folder.open .folder-content {
+          opacity: 1;
+          visibility: visible;
+          pointer-events: auto;
+          transform: translateY(0);
+        }
+      }
+      @media (max-width: 480px) {
+        .grid-layout,
+        .list-layout {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+        #quote-text {
+          font-size: 1.6rem;
+        }
+      }
+    </style>
+  </head>
+  <body onclick="requestNotiPermission()">
+    <div id="shortcutContextMenu" class="context-menu">
+      <div onclick="editCurrentShortcut()" data-i18n="cmEdit">수정하기</div>
+      <div
+        class="cm-del"
+        onclick="deleteCurrentShortcut()"
+        data-i18n="cmDelete"
+      >
+        삭제하기
+      </div>
+    </div>
+    <div id="top-left-widgets">
+      <div class="fab-container">
+        <div
+          class="widget-btn fab-main"
+          data-i18n-title="tipFile"
+          onclick="toggleFab('tl-fab', event)"
+        >
+          <i class="fas fa-folder"></i>
+        </div>
+        <div class="fab-menu right-menu" id="tl-fab">
+          <input
+            type="file"
+            id="importFile"
+            style="display: none"
+            accept=".json"
+            onchange="importData(event)"
+          />
+          <div
+            class="widget-btn"
+            data-i18n-title="tipBackup"
+            onclick="exportData()"
+          >
+            <i class="fas fa-download"></i>
+          </div>
+          <div
+            class="widget-btn"
+            data-i18n-title="tipRestore"
+            onclick="document.getElementById('importFile').click()"
+          >
+            <i class="fas fa-upload"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-trigger"></div>
+    <div class="widget-sidebar">
+      <div
+        class="sidebar-icon"
+        id="side-weather"
+        onclick="toggleWidget('weather')"
+        data-i18n-title="sideWeather"
+      >
+        <i class="fas fa-cloud-sun"></i>
+      </div>
+      <div
+        class="sidebar-icon"
+        id="side-calendar"
+        onclick="toggleWidget('calendar')"
+        data-i18n-title="sideCalendar"
+      >
+        <i class="fas fa-calendar-alt"></i>
+      </div>
+      <div
+        class="sidebar-icon"
+        id="side-clock"
+        onclick="toggleWidget('clock')"
+        data-i18n-title="sideClock"
+      >
+        <i class="fas fa-clock"></i>
+      </div>
+      <div
+        class="sidebar-icon"
+        id="side-noti"
+        onclick="toggleWidget('noti')"
+        data-i18n-title="sideNoti"
+      >
+        <i class="fas fa-bell"></i>
+      </div>
+      <div
+        class="sidebar-icon"
+        id="side-memo"
+        onclick="toggleWidget('memo')"
+        data-i18n-title="sideMemo"
+      >
+        <i class="fas fa-sticky-note"></i>
+      </div>
+    </div>
+    <div id="top-right-widgets">
+      <div id="weather-container">
+        <div class="weather-loc" data-i18n="weatherLoading">
+          날씨 불러오는 중...
+        </div>
+        <div class="weather-main">
+          <i id="w-icon" class="fas fa-spinner fa-spin"></i>
+          <span id="w-temp">--</span>°
+        </div>
+        <div class="weather-hl">
+          <span data-i18n="weatherHigh">최고</span> <span id="w-high">--</span>°
+          <span data-i18n="weatherLow">최저</span> <span id="w-low">--</span>°
+        </div>
+      </div>
+    </div>
+    <div id="quote-section">
+      <div id="quote-text">...</div>
+      <div id="quote-author"></div>
+    </div>
+    <div id="shortcut-container"></div>
+    <div class="bottom-widgets">
+      <div class="left-area">
+        <div class="smart-folder" id="memo-folder">
+          <div
+            class="widget-btn folder-icon"
+            onclick="toggleFolder('memo-folder', event)"
+          >
+            <i class="fas fa-sticky-note" style="color: var(--memo-color)"></i>
+          </div>
+          <div class="folder-content" id="memo-list"></div>
+        </div>
+        <div class="fab-container">
+          <div
+            class="widget-btn fab-main"
+            data-i18n-title="tipMenu"
+            onclick="toggleFab('bl-fab', event)"
+          >
+            <i class="fas fa-cog"></i>
+          </div>
+          <div class="fab-menu right-menu" id="bl-fab">
+            <div
+              class="widget-btn"
+              data-i18n-title="tipSetting"
+              onclick="openSettingModal()"
+            >
+              <i class="fas fa-sliders-h"></i>
+            </div>
+            <div
+              class="widget-btn"
+              data-i18n-title="tipNoti"
+              onclick="openNotiModal()"
+            >
+              <i class="fas fa-bell"></i>
+            </div>
+            <div
+              class="widget-btn"
+              data-i18n-title="tipMemo"
+              onclick="openMemoModal()"
+            >
+              <i class="fas fa-pen"></i>
+            </div>
+            <div
+              class="widget-btn"
+              data-i18n-title="tipLink"
+              onclick="openLinkModal()"
+            >
+              <i class="fas fa-plus"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="right-area">
+        <div id="clock-container">
+          <div id="clock-time">00:00:00</div>
+        </div>
+        <div id="calendar-container" class="calendar-widget">
+          <div class="calendar-header" id="cal-month-year">...</div>
+          <div class="calendar-days-header" id="cal-days-header"></div>
+          <div class="calendar-grid" id="calendar-grid"></div>
+        </div>
+        <div class="smart-folder" id="noti-folder">
+          <div
+            class="widget-btn folder-icon"
+            onclick="toggleFolder('noti-folder', event)"
+          >
+            <i class="fas fa-bell" style="color: var(--warning-color)"></i>
+          </div>
+          <div class="folder-content" id="noti-list"></div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal"
+      id="settingModal"
+      onclick="event.target == this && closeModal('settingModal')"
+    >
+      <div class="modal-content" style="width: 340px">
+        <h3 data-i18n="modalSetting">환경 설정</h3>
+        <div
+          style="
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            font-weight: 600;
+          "
+          data-i18n="lblTheme"
+        >
+          테마 색상
+        </div>
+        <div class="theme-colors" style="margin-bottom: 25px">
+          <div
+            class="color-swatch"
+            style="background: #ef4444"
+            onclick="setTheme('#ef4444')"
+          ></div>
+          <div
+            class="color-swatch"
+            style="background: #f97316"
+            onclick="setTheme('#f97316')"
+          ></div>
+          <div
+            class="color-swatch"
+            style="background: #eab308"
+            onclick="setTheme('#eab308')"
+          ></div>
+          <div
+            class="color-swatch"
+            style="background: #22c55e"
+            onclick="setTheme('#22c55e')"
+          ></div>
+          <div
+            class="color-swatch"
+            style="background: #3b82f6"
+            onclick="setTheme('#3b82f6')"
+          ></div>
+          <div
+            class="color-swatch"
+            style="background: #6366f1"
+            onclick="setTheme('#6366f1')"
+          ></div>
+          <div
+            class="color-swatch"
+            style="background: #a855f7"
+            onclick="setTheme('#a855f7')"
+          ></div>
+          <div
+            class="color-swatch"
+            style="background: #ec4899"
+            onclick="setTheme('#ec4899')"
+          ></div>
+          <div
+            class="color-swatch"
+            style="background: #fff"
+            onclick="setTheme('#fff')"
+          ></div>
+          <div
+            class="color-swatch"
+            style="background: #000; border: 1px solid rgba(255, 255, 255, 0.3)"
+            onclick="setTheme('#000')"
+          ></div>
+        </div>
+        <div
+          style="
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            font-weight: 600;
+          "
+          data-i18n="lblBgKeyword"
+        >
+          배경화면 키워드 (영문 권장)
+        </div>
+        <input
+          type="text"
+          id="bgKeywordInput"
+          data-i18n-ph="bgKeywordPh"
+          placeholder="예: nature, space, city, dark"
+          onkeypress="event.key === 'Enter' && saveSettings()"
+        /><button
+          class="btn-save"
+          onclick="saveSettings()"
+          data-i18n="btnSaveSettings"
+        >
+          저장 및 적용
+        </button>
+      </div>
+    </div>
+    <div
+      class="modal"
+      id="linkModal"
+      onclick="event.target == this && closeModal('linkModal')"
+    >
+      <div class="modal-content">
+        <h3 id="linkModalTitle" data-i18n="modalLinkAdd">바로가기 추가</h3>
+        <input
+          type="text"
+          id="siteName"
+          data-i18n-ph="linkName"
+          placeholder="이름"
+        />
+        <input
+          type="text"
+          id="siteUrl"
+          data-i18n-ph="linkUrl"
+          placeholder="URL (example.com)"
+          onkeypress="event.key === 'Enter' && addShortcut()"
+        /><button
+          class="btn-save"
+          id="linkSaveBtn"
+          onclick="addShortcut()"
+          data-i18n="btnSave"
+        >
+          추가
+        </button>
+      </div>
+    </div>
+    <div
+      class="modal"
+      id="notiModal"
+      onclick="event.target == this && closeModal('notiModal')"
+    >
+      <div class="modal-content">
+        <h3 id="notiModalTitle" data-i18n="modalNotiAdd">알림 추가</h3>
+        <input
+          type="text"
+          id="notiTitle"
+          data-i18n-ph="notiTitle"
+          placeholder="알림 제목"
+        /><textarea
+          id="notiDesc"
+          data-i18n-ph="notiDesc"
+          placeholder="알림 내용 (생략 가능)"
+          rows="2"
+        ></textarea>
+        <div class="time-picker-row">
+          <select id="notiHour" class="time-select"></select
+          ><select id="notiMin" class="time-select"></select>
+        </div>
+        <div class="repeat-row">
+          <input
+            type="date"
+            id="notiDate"
+            class="time-select"
+            style="margin-bottom: 0; flex: 1; padding: 10px; font-size: 0.9rem"
+          />
+          <div style="display: flex; align-items: center; gap: 6px">
+            <label for="isRepeat" style="cursor: pointer" data-i18n="repeatSet"
+              >반복 설정</label
+            >
+            <input
+              type="checkbox"
+              id="isRepeat"
+              onchange="toggleDaySelector(this.checked)"
+              style="
+                margin: 0;
+                padding: 0;
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+                box-sizing: border-box;
+              "
+            />
+          </div>
+        </div>
+        <div id="day-selector-wrap" style="display: none">
+          <div class="day-selector">
+            <label class="day-check"
+              ><input type="checkbox" value="1" /><span>월</span></label
+            >
+            <label class="day-check"
+              ><input type="checkbox" value="2" /><span>화</span></label
+            >
+            <label class="day-check"
+              ><input type="checkbox" value="3" /><span>수</span></label
+            >
+            <label class="day-check"
+              ><input type="checkbox" value="4" /><span>목</span></label
+            >
+            <label class="day-check"
+              ><input type="checkbox" value="5" /><span>금</span></label
+            >
+            <label class="day-check"
+              ><input type="checkbox" value="6" /><span>토</span></label
+            >
+            <label class="day-check"
+              ><input type="checkbox" value="0" /><span>일</span></label
+            >
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px">
+          <button
+            class="btn-save"
+            id="notiSaveBtn"
+            style="flex: 1"
+            onclick="addNotification()"
+            data-i18n="btnAddNoti"
+          >
+            알림 추가
+          </button>
+          <button
+            class="btn-save"
+            id="notiDelBtn"
+            style="display: none; background: #ef4444; color: #fff; flex: 0.4"
+            onclick="deleteCurrentNoti()"
+            data-i18n="btnDelete"
+          >
+            삭제
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal"
+      id="memoModal"
+      onclick="event.target == this && closeModal('memoModal')"
+    >
+      <div class="modal-content">
+        <h3 id="memoModalTitle" data-i18n="modalMemoAdd">메모 추가</h3>
+        <input
+          type="text"
+          id="memoTitle"
+          data-i18n-ph="memoTitle"
+          placeholder="메모 제목"
+        /><textarea
+          id="memoContent"
+          data-i18n-ph="memoContent"
+          placeholder="메모 내용"
+          rows="4"
+        ></textarea>
+        <div style="display: flex; gap: 10px">
+          <button
+            class="btn-save"
+            id="memoSaveBtn"
+            style="flex: 1"
+            onclick="addMemo()"
+            data-i18n="btnSaveMemo"
+          >
+            메모 저장
+          </button>
+          <button
+            class="btn-save"
+            id="memoDelBtn"
+            style="display: none; background: #ef4444; color: #fff; flex: 0.4"
+            onclick="deleteCurrentMemo()"
+            data-i18n="btnDelete"
+          >
+            삭제
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      const userLang = navigator.language.startsWith("ko") ? "ko" : "en";
+      const LANG = {
+        ko: {
+          weatherDefault: "우성면 (기본)",
+          weatherLoading: "날씨 불러오는 중...",
+          weatherHigh: "최고",
+          weatherLow: "최저",
+          quoteDefault: '"기회는 일어나는 것이 아니라 만드는 것이다."',
+          quoteAuthorDefault: "- Chris Grosser",
+          cmEdit: "수정하기",
+          cmDelete: "삭제하기",
+          tipFile: "파일 관리",
+          tipBackup: "데이터 백업",
+          tipRestore: "데이터 복원",
+          tipMenu: "메뉴 열기",
+          tipSetting: "환경 설정",
+          tipBg: "배경 랜덤 변경",
+          tipNoti: "알림 추가",
+          tipMemo: "메모 추가",
+          tipLink: "바로가기 추가",
+          sideWeather: "날씨",
+          sideCalendar: "달력",
+          sideClock: "시계",
+          sideNoti: "알림",
+          sideMemo: "메모",
+          modalSetting: "환경 설정",
+          lblTheme: "테마 색상",
+          lblBgKeyword: "배경화면 키워드 (영문 권장)",
+          bgKeywordPh: "예: space, nature, minimal",
+          btnSaveSettings: "저장 및 적용",
+          modalLinkAdd: "바로가기 추가",
+          modalLinkEdit: "바로가기 수정",
+          linkName: "이름",
+          linkUrl: "URL (example.com)",
+          btnSave: "추가",
+          btnEdit: "수정 완료",
+          modalNotiAdd: "알림 추가",
+          modalNotiEdit: "알림 수정",
+          notiTitle: "알림 제목",
+          notiDesc: "알림 내용 (생략 가능)",
+          repeatSet: "반복 설정",
+          days: ["일", "월", "화", "수", "목", "금", "토"],
+          btnAddNoti: "알림 추가",
+          btnEditNoti: "알림 수정",
+          btnDelete: "삭제",
+          modalMemoAdd: "메모 추가",
+          modalMemoEdit: "메모 수정",
+          memoTitle: "메모 제목",
+          memoContent: "메모 내용",
+          btnSaveMemo: "메모 저장",
+          alertDel: "삭제하시겠습니까?",
+          alertRestore: "복원 완료!",
+          txtEnded: "종료됨",
+          tutWeatherTitle: "🌤️ 날씨 위젯",
+          tutWeatherDesc:
+            "현재 계신 위치의 날씨와 기온을 실시간으로 확인하세요.",
+          tutCalendarTitle: "📅 달력",
+          tutCalendarDesc:
+            "이번 달의 전체 일정을 한눈에 볼 수 있는 달력입니다.",
+          tutClockTitle: "⏰ 시계",
+          tutClockDesc: "초 단위까지 정확한 현재 시각을 표시합니다.",
+          tutSettingTitle: "⚙️ 설정 및 추가",
+          tutSettingDesc:
+            "테마, 배경화면 키워드, 위젯 표시 여부 설정 및<br>새 알림, 메모, 바로가기를 추가할 수 있습니다.",
+          tutFileTitle: "💾 데이터 관리",
+          tutFileDesc:
+            "모든 데이터를 JSON 파일로 백업하거나 복원할 수 있습니다.",
+          tutNext: "다음 &rarr;",
+          tutPrev: "&larr; 이전",
+          tutDone: "시작하기",
+        },
+        en: {
+          weatherDefault: "Useong-myeon (Default)",
+          weatherLoading: "Loading Weather...",
+          weatherHigh: "H",
+          weatherLow: "L",
+          quoteDefault: '"Opportunities don\'t happen. You create them."',
+          quoteAuthorDefault: "- Chris Grosser",
+          cmEdit: "Edit",
+          cmDelete: "Delete",
+          tipFile: "Files",
+          tipBackup: "Backup",
+          tipRestore: "Restore",
+          tipMenu: "Menu",
+          tipSetting: "Settings",
+          tipBg: "Random Background",
+          tipNoti: "Notification",
+          tipMemo: "Memo",
+          tipLink: "Shortcut",
+          sideWeather: "Weather",
+          sideCalendar: "Calendar",
+          sideClock: "Clock",
+          sideNoti: "Notifications",
+          sideMemo: "Memo",
+          modalSetting: "Settings",
+          lblTheme: "Theme Color",
+          lblBgKeyword: "Background Keyword",
+          bgKeywordPh: "e.g., space, nature, minimal",
+          btnSaveSettings: "Save & Apply",
+          modalLinkAdd: "Add Shortcut",
+          modalLinkEdit: "Edit Shortcut",
+          linkName: "Name",
+          linkUrl: "URL (example.com)",
+          btnSave: "Add",
+          btnEdit: "Save",
+          modalNotiAdd: "Add Alert",
+          modalNotiEdit: "Edit Alert",
+          notiTitle: "Title",
+          notiDesc: "Description (Optional)",
+          repeatSet: "Repeat",
+          days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+          btnAddNoti: "Add Alert",
+          btnEditNoti: "Edit Alert",
+          btnDelete: "Delete",
+          modalMemoAdd: "Add Memo",
+          modalMemoEdit: "Edit Memo",
+          memoTitle: "Title",
+          memoContent: "Content",
+          btnSaveMemo: "Save",
+          alertDel: "Are you sure you want to delete?",
+          alertRestore: "Restore Complete!",
+          txtEnded: "Ended",
+          tutWeatherTitle: "🌤️ Weather",
+          tutWeatherDesc:
+            "Check real-time weather and temperature for your location.",
+          tutCalendarTitle: "📅 Calendar",
+          tutCalendarDesc: "View the entire month's dates at a glance.",
+          tutClockTitle: "⏰ Clock",
+          tutClockDesc: "Displays the current time down to the second.",
+          tutSettingTitle: "⚙️ Settings & Add",
+          tutSettingDesc:
+            "Configure themes, background keywords, widget visibility, and add new items.",
+          tutFileTitle: "💾 Data Management",
+          tutFileDesc: "Backup or restore all your data as a JSON file.",
+          tutNext: "Next &rarr;",
+          tutPrev: "&larr; Prev",
+          tutDone: "Start",
+        },
+      };
+      const applyLanguage = () => {
+        const T = LANG[userLang];
+        document
+          .querySelectorAll("[data-i18n]")
+          .forEach((el) => (el.innerHTML = T[el.dataset.i18n]));
+        document
+          .querySelectorAll("[data-i18n-ph]")
+          .forEach((el) => (el.placeholder = T[el.dataset.i18nPh]));
+        document
+          .querySelectorAll("[data-i18n-title]")
+          .forEach((el) => (el.title = T[el.dataset.i18nTitle]));
+        const dayMapping = [1, 2, 3, 4, 5, 6, 0];
+        document
+          .querySelectorAll(".day-check span")
+          .forEach((span, i) => (span.innerText = T.days[dayMapping[i]]));
+      };
+      let shortcuts = JSON.parse(localStorage.getItem("dj_shortcuts")) || [],
+        notifications =
+          JSON.parse(localStorage.getItem("dj_notifications")) || [],
+        memos = JSON.parse(localStorage.getItem("dj_memos")) || [],
+        firedMinute = "",
+        currentEditNotiId = null,
+        currentEditMemoId = null,
+        currentShortcutIndex = null;
+      const savedTheme = localStorage.getItem("dj_theme_color");
+      if (savedTheme)
+        document.documentElement.style.setProperty(
+          "--accent-color",
+          savedTheme,
+        );
+      const setTheme = (color) => {
+        document.documentElement.style.setProperty("--accent-color", color);
+        localStorage.setItem("dj_theme_color", color);
+      };
+      const toggleFolder = (id, event) => {
+        event.stopPropagation();
+        document
+          .querySelectorAll(".fab-menu")
+          .forEach((m) => m.classList.remove("active"));
+        document
+          .querySelectorAll(".smart-folder")
+          .forEach((f) =>
+            f.id !== id
+              ? f.classList.remove("open")
+              : f.classList.toggle("open"),
+          );
+      };
+      const toggleFab = (id, event) => {
+        event.stopPropagation();
+        document
+          .querySelectorAll(".smart-folder")
+          .forEach((f) => f.classList.remove("open"));
+        document
+          .querySelectorAll(".fab-menu")
+          .forEach((m) =>
+            m.id !== id
+              ? m.classList.remove("active")
+              : m.classList.toggle("active"),
+          );
+      };
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".fab-container"))
+          document
+            .querySelectorAll(".fab-menu")
+            .forEach((m) => m.classList.remove("active"));
+        if (!e.target.closest(".smart-folder"))
+          document
+            .querySelectorAll(".smart-folder")
+            .forEach((f) => f.classList.remove("open"));
+        const ctxMenu = document.getElementById("shortcutContextMenu");
+        if (ctxMenu) ctxMenu.style.display = "none";
+      });
+      const requestNotiPermission = () =>
+        Notification.permission === "default" &&
+        Notification.requestPermission();
+      const playBeep = () => {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)(),
+          osc = ctx.createOscillator(),
+          gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        gain.gain.value = 0.05;
+        osc.start();
+        setTimeout(() => osc.stop(), 150);
+      };
+      const initTimePicker = () => {
+        const h = document.getElementById("notiHour"),
+          m = document.getElementById("notiMin"),
+          hSuffix = userLang === "ko" ? "시" : "h",
+          mSuffix = userLang === "ko" ? "분" : "m";
+        for (let i = 0; i < 24; i++)
+          h.options.add(
+            new Option(
+              `${String(i).padStart(2, "0")}${hSuffix}`,
+              String(i).padStart(2, "0"),
+            ),
+          );
+        for (let i = 0; i < 60; i++)
+          m.options.add(
+            new Option(
+              `${String(i).padStart(2, "0")}${mSuffix}`,
+              String(i).padStart(2, "0"),
+            ),
+          );
+      };
+      const saveData = () => {
+        localStorage.setItem("dj_shortcuts", JSON.stringify(shortcuts));
+        localStorage.setItem("dj_notifications", JSON.stringify(notifications));
+        localStorage.setItem("dj_memos", JSON.stringify(memos));
+      };
+      const openSettingModal = () => {
+        document.getElementById("bgKeywordInput").value =
+          localStorage.getItem("dj_bg_keyword") || "";
+        openModal("settingModal");
+      };
+      const saveSettings = () => {
+        const keyword = document.getElementById("bgKeywordInput").value.trim();
+        localStorage.setItem("dj_bg_keyword", keyword);
+        changeBackgroundInstant();
+        closeModal("settingModal");
+      };
+      const toggleWidget = (type) => {
+        const key = `dj_hide_${type}`;
+        localStorage.setItem(
+          key,
+          localStorage.getItem(key) === "true" ? "false" : "true",
+        );
+        applyVisibility();
+      };
+      const applyVisibility = () => {
+        const types = ["weather", "calendar", "clock", "noti", "memo"];
+        const widgetMap = {
+          weather: "top-right-widgets",
+          calendar: "calendar-container",
+          clock: "clock-container",
+          noti: "noti-folder",
+          memo: "memo-folder",
+        };
+        types.forEach((type) => {
+          const isHidden = localStorage.getItem(`dj_hide_${type}`) === "true";
+          const el = document.getElementById(widgetMap[type]);
+          const sideIcon = document.getElementById(`side-${type}`);
+          if (el) {
+            el.classList.toggle("widget-hidden", isHidden);
+          }
+          if (sideIcon) {
+            sideIcon.classList.toggle("active", !isHidden);
+          }
+        });
+      };
+      const renderCalendar = () => {
+        const now = new Date(),
+          year = now.getFullYear(),
+          month = now.getMonth(),
+          today = now.getDate(),
+          T = LANG[userLang],
+          monthsEn = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ];
+        document.getElementById("cal-month-year").innerText =
+          userLang === "ko"
+            ? `${year}.${String(month + 1).padStart(2, "0")}`
+            : `${monthsEn[month]} ${year}`;
+        const daysHeader = document.getElementById("cal-days-header");
+        daysHeader.innerHTML = "";
+        (userLang === "ko"
+          ? ["일", "월", "화", "수", "목", "금", "토"]
+          : ["S", "M", "T", "W", "T", "F", "S"]
+        ).forEach((label, i) => {
+          const div = document.createElement("div");
+          div.innerText = label;
+          if (i === 0) div.classList.add("sun");
+          if (i === 6) div.classList.add("sat");
+          daysHeader.appendChild(div);
+        });
+        const grid = document.getElementById("calendar-grid");
+        grid.innerHTML = "";
+        const firstDay = new Date(year, month, 1).getDay(),
+          lastDate = new Date(year, month + 1, 0).getDate(),
+          prevLastDate = new Date(year, month, 0).getDate();
+        for (let i = firstDay; i > 0; i--) {
+          const div = document.createElement("div");
+          div.className = "calendar-day other-month";
+          div.innerText = prevLastDate - i + 1;
+          grid.appendChild(div);
+        }
+        for (let i = 1; i <= lastDate; i++) {
+          const div = document.createElement("div");
+          div.className = "calendar-day";
+          div.innerText = i;
+          const d = new Date(year, month, i).getDay();
+          if (d === 0) div.classList.add("sun");
+          if (d === 6) div.classList.add("sat");
+          if (i === today) div.classList.add("today");
+          grid.appendChild(div);
+        }
+        for (let i = 1; grid.children.length < 42; i++) {
+          const div = document.createElement("div");
+          div.className = "calendar-day other-month";
+          div.innerText = i;
+          grid.appendChild(div);
+        }
+      };
+      const setBackground = (seed) => {
+        const keyword = (
+          localStorage.getItem("dj_bg_keyword") || "landscape"
+        ).replace(/\s+/g, ",");
+        document.body.style.backgroundImage = `url('https://loremflickr.com/1920/1080/${keyword}?random=${seed}')`;
+      };
+      const changeBackgroundInstant = () => {
+        const seed = Math.floor(Math.random() * 100000);
+        localStorage.setItem("dj_bg_seed", seed);
+        setBackground(seed);
+      };
+      const fetchQuote = async () => {
+        const qt = document.getElementById("quote-text"),
+          qa = document.getElementById("quote-author");
+        try {
+          const res = await fetch(
+              userLang === "ko"
+                ? "https://korean-advice-open-api.vercel.app/api/advice"
+                : "https://api.quotable.io/random",
+            ),
+            d = await res.json(),
+            text = userLang === "ko" ? d.message : d.content,
+            author =
+              d.author || (userLang === "ko" ? "지혜의 기록" : "Unknown");
+          if (text) {
+            qt.innerText = `"${text}"`;
+            qa.innerText = `- ${author}`;
+            return;
+          }
+          throw new Error();
+        } catch (e) {
+          qt.innerText = LANG[userLang].quoteDefault;
+          qa.innerText = LANG[userLang].quoteAuthorDefault;
+        }
+      };
+      const getWeatherData = async (lat, lon, defaultLocName) => {
+        try {
+          let locName = defaultLocName || LANG[userLang].weatherDefault;
+          if (!defaultLocName) {
+            try {
+              const geoRes = await fetch(
+                  `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14&addressdetails=1&accept-language=${userLang}`,
+                ),
+                geoData = await geoRes.json();
+              if (geoData?.address)
+                locName =
+                  geoData.address.town ||
+                  geoData.address.village ||
+                  geoData.address.suburb ||
+                  geoData.address.city_district ||
+                  geoData.address.city ||
+                  locName;
+            } catch (e) {}
+          }
+          document.querySelector(".weather-loc").innerText = locName;
+          const res = await fetch(
+              `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul`,
+            ),
+            d = await res.json();
+          document.getElementById("w-temp").innerText = Math.round(
+            d.current.temperature_2m,
+          );
+          document.getElementById("w-high").innerText = Math.round(
+            d.daily.temperature_2m_max[0],
+          );
+          document.getElementById("w-low").innerText = Math.round(
+            d.daily.temperature_2m_min[0],
+          );
+          const code = d.current.weather_code,
+            icon =
+              code === 0
+                ? "fa-sun"
+                : code <= 3
+                  ? "fa-cloud-sun"
+                  : [51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)
+                    ? "fa-cloud-rain"
+                    : "fa-cloud";
+          document.getElementById("w-icon").className = `fas ${icon}`;
+        } catch (e) {
+          document.getElementById("w-temp").innerText = "-";
+        }
+      };
+      const fetchWeather = () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) =>
+              getWeatherData(pos.coords.latitude, pos.coords.longitude, null),
+            () => getWeatherData(36.48, 127.08, LANG[userLang].weatherDefault),
+          );
+        } else getWeatherData(36.48, 127.08, LANG[userLang].weatherDefault);
+      };
+      const updateAll = () => {
+        const now = new Date(),
+          h = String(now.getHours()).padStart(2, "0"),
+          m = String(now.getMinutes()).padStart(2, "0"),
+          s = String(now.getSeconds()).padStart(2, "0"),
+          timeStr = `${h}:${m}`,
+          todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        document.getElementById("clock-time").innerText = `${h}:${m}:${s}`;
+        if (firedMinute !== timeStr) {
+          renderCalendar();
+          notifications.forEach((n, idx) => {
+            if (
+              (n.isRepeat
+                ? n.days.includes(String(now.getDay()))
+                : n.date === todayStr) &&
+              n.time === timeStr
+            ) {
+              firedMinute = timeStr;
+              if (Notification.permission === "granted")
+                new Notification(n.title, { body: n.desc });
+              playBeep();
+              if (!n.isRepeat) {
+                notifications.splice(idx, 1);
+                renderNotifications();
+              }
+            }
+          });
+        }
+        updateRemainingTimes(now);
+      };
+      const updateRemainingTimes = (now) => {
+        document.querySelectorAll(".noti-item").forEach((el) => {
+          const n = notifications.find((x) => x.id == el.dataset.id);
+          if (n) {
+            const [th, tm] = n.time.split(":").map(Number);
+            let target = new Date(now);
+            target.setHours(th, tm, 0, 0);
+            if (!n.isRepeat && n.date) {
+              const [y, m, d] = n.date.split("-");
+              target.setFullYear(y, m - 1, d);
+            } else if (target <= now) target.setDate(target.getDate() + 1);
+            const diff = target - now,
+              rem = el.querySelector(".remaining");
+            if (rem) {
+              if (diff > 0) {
+                const hh = String(Math.floor(diff / 3600000)).padStart(2, "0"),
+                  mm = String(Math.floor((diff % 3600000) / 60000)).padStart(
+                    2,
+                    "0",
+                  ),
+                  ss = String(Math.floor((diff % 60000) / 1000)).padStart(
+                    2,
+                    "0",
+                  );
+                rem.innerText = `${hh}:${mm}:${ss}`;
+              } else
+                rem.innerText = n.isRepeat
+                  ? "00:00:00"
+                  : LANG[userLang].txtEnded;
+            }
+          }
+        });
+      };
+      const showShortcutMenu = (e, index) => {
+        e.preventDefault();
+        currentShortcutIndex = index;
+        const menu = document.getElementById("shortcutContextMenu");
+        menu.style.display = "block";
+        let x = e.pageX || e.touches?.[0].pageX,
+          y = e.pageY || e.touches?.[0].pageY;
+        if (x + 120 > window.innerWidth) x = window.innerWidth - 130;
+        menu.style.left = `${x}px`;
+        menu.style.top = `${y}px`;
+      };
+      const renderShortcuts = () => {
+        const c = document.getElementById("shortcut-container");
+        c.innerHTML = "";
+        c.className = shortcuts.length <= 10 ? "grid-layout" : "list-layout";
+        shortcuts.forEach((s, i) => {
+          const url = s.url.startsWith("http") ? s.url : `http://${s.url}`,
+            div = document.createElement("a");
+          div.className = "shortcut-item";
+          div.onclick = (e) =>
+            window.isDraggingShortcut
+              ? (e.preventDefault(), (window.isDraggingShortcut = !1))
+              : (window.location.href = url);
+          div.oncontextmenu = (e) => showShortcutMenu(e, i);
+          div.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=128&domain=${new URL(url).hostname}"><span>${s.name}</span>`;
+          c.appendChild(div);
+        });
+        if (window.shortcutSortable) window.shortcutSortable.destroy();
+        window.shortcutSortable = new Sortable(c, {
+          animation: 150,
+          delay: 400,
+          delayOnTouchOnly: !0,
+          onStart: () => (window.isDraggingShortcut = !0),
+          onEnd: (evt) => {
+            const item = shortcuts.splice(evt.oldIndex, 1)[0];
+            shortcuts.splice(evt.newIndex, 0, item);
+            saveData();
+            setTimeout(() => (window.isDraggingShortcut = !1), 100);
+          },
+        });
+      };
+      const renderNotifications = () => {
+        const c = document.getElementById("noti-list");
+        c.innerHTML = "";
+        const folder = document.getElementById("noti-folder");
+        notifications.length > 0
+          ? folder.classList.add("has-items")
+          : folder.classList.remove("has-items", "open");
+        notifications
+          .sort((a, b) => {
+            const aT = a.isRepeat ? "9999-12-31" : a.date || "9999-12-31",
+              bT = b.isRepeat ? "9999-12-31" : b.date || "9999-12-31";
+            return aT === bT
+              ? a.time.localeCompare(b.time)
+              : aT.localeCompare(bT);
+          })
+          .forEach((n) => {
+            const div = document.createElement("div");
+            div.className = "item-card noti-item";
+            div.dataset.id = n.id;
+            div.onclick = (e) => {
+              e.stopPropagation();
+              openNotiModal(n.id);
+            };
+            div.innerHTML = `<div class="title">${n.title}</div><div class="noti-info"><span>${n.time}</span><span class="remaining" style="color:var(--warning-color)">00:00:00</span></div>`;
+            c.appendChild(div);
+          });
+        saveData();
+      };
+      const renderMemos = () => {
+        const c = document.getElementById("memo-list");
+        c.innerHTML = "";
+        const folder = document.getElementById("memo-folder");
+        memos.length > 0
+          ? folder.classList.add("has-items")
+          : folder.classList.remove("has-items", "open");
+        memos.forEach((m) => {
+          const div = document.createElement("div");
+          div.className = "item-card memo-item";
+          div.onclick = (e) => {
+            e.stopPropagation();
+            openMemoModal(m.id);
+          };
+          div.innerHTML = `<div class="title">${m.title}</div>`;
+          c.appendChild(div);
+        });
+        saveData();
+      };
+      const openLinkModal = (index = null) => {
+        currentShortcutIndex = index;
+        const T = LANG[userLang],
+          isEdit = index !== null;
+        document.getElementById("siteName").value = isEdit
+          ? shortcuts[index].name
+          : "";
+        document.getElementById("siteUrl").value = isEdit
+          ? shortcuts[index].url
+          : "";
+        document.getElementById("linkModalTitle").innerText = isEdit
+          ? T.modalLinkEdit
+          : T.modalLinkAdd;
+        document.getElementById("linkSaveBtn").innerText = isEdit
+          ? T.btnEdit
+          : T.btnSave;
+        openModal("linkModal");
+        setTimeout(() => document.getElementById("siteName").focus(), 50);
+      };
+      const editCurrentShortcut = () => {
+        document.getElementById("shortcutContextMenu").style.display = "none";
+        openLinkModal(currentShortcutIndex);
+      };
+      const deleteCurrentShortcut = () => {
+        document.getElementById("shortcutContextMenu").style.display = "none";
+        if (confirm(LANG[userLang].alertDel)) {
+          shortcuts.splice(currentShortcutIndex, 1);
+          renderShortcuts();
+          saveData();
+        }
+      };
+      const openMemoModal = (id = null) => {
+        currentEditMemoId = id;
+        const T = LANG[userLang],
+          d = document.getElementById("memoDelBtn"),
+          m = id ? memos.find((x) => x.id == id) : null;
+        document.getElementById("memoTitle").value = m ? m.title : "";
+        document.getElementById("memoContent").value = m ? m.content : "";
+        document.getElementById("memoModalTitle").innerText = id
+          ? T.modalMemoEdit
+          : T.modalMemoAdd;
+        d.style.display = id ? "block" : "none";
+        openModal("memoModal");
+        setTimeout(() => document.getElementById("memoTitle").focus(), 50);
+      };
+      const openNotiModal = (id = null) => {
+        currentEditNotiId = id;
+        const T = LANG[userLang],
+          dBtn = document.getElementById("notiDelBtn"),
+          sBtn = document.getElementById("notiSaveBtn");
+        const now = new Date(),
+          today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        const n = id ? notifications.find((x) => x.id == id) : null;
+        document.getElementById("notiTitle").value = n ? n.title : "";
+        document.getElementById("notiDesc").value = n ? n.desc || "" : "";
+        const [h, m] = n
+          ? n.time.split(":")
+          : [
+              String(now.getHours()).padStart(2, "0"),
+              String(now.getMinutes()).padStart(2, "0"),
+            ];
+        document.getElementById("notiHour").value = h;
+        document.getElementById("notiMin").value = m;
+        document.getElementById("notiDate").value = n ? n.date || today : today;
+        document.getElementById("isRepeat").checked = n ? n.isRepeat : !1;
+        toggleDaySelector(n ? n.isRepeat : !1);
+        document
+          .querySelectorAll(".day-check input")
+          .forEach(
+            (chk) => (chk.checked = n ? n.days.includes(chk.value) : !1),
+          );
+        document.getElementById("notiModalTitle").innerText = id
+          ? T.modalNotiEdit
+          : T.modalNotiAdd;
+        sBtn.innerText = id ? T.btnEditNoti : T.btnAddNoti;
+        sBtn.dataset.i18n = id ? "btnEditNoti" : "btnAddNoti";
+        dBtn.style.display = id ? "block" : "none";
+        openModal("notiModal");
+        setTimeout(() => document.getElementById("notiTitle").focus(), 50);
+      };
+      const addShortcut = () => {
+        const n = document.getElementById("siteName").value,
+          u = document.getElementById("siteUrl").value;
+        if (n && u) {
+          currentShortcutIndex !== null
+            ? (shortcuts[currentShortcutIndex] = { name: n, url: u })
+            : shortcuts.push({ name: n, url: u });
+          renderShortcuts();
+          saveData();
+          closeModal("linkModal");
+        }
+      };
+      const addNotification = () => {
+        const t = document.getElementById("notiTitle").value,
+          h = document.getElementById("notiHour").value,
+          m = document.getElementById("notiMin").value,
+          r = document.getElementById("isRepeat").checked,
+          dt = document.getElementById("notiDate").value,
+          days = Array.from(
+            document.querySelectorAll(".day-check input:checked"),
+          ).map((x) => x.value);
+        if (t) {
+          const data = {
+            id: currentEditNotiId || Date.now(),
+            title: t,
+            desc: document.getElementById("notiDesc").value,
+            time: `${h}:${m}`,
+            isRepeat: r,
+            days,
+            date: dt,
+          };
+          currentEditNotiId
+            ? (notifications[
+                notifications.findIndex((x) => x.id == currentEditNotiId)
+              ] = data)
+            : notifications.push(data);
+          renderNotifications();
+          closeModal("notiModal");
+        }
+      };
+      const deleteCurrentNoti = () => {
+        if (confirm(LANG[userLang].alertDel)) {
+          notifications = notifications.filter(
+            (x) => x.id != currentEditNotiId,
+          );
+          renderNotifications();
+          closeModal("notiModal");
+        }
+      };
+      const addMemo = () => {
+        const t = document.getElementById("memoTitle").value,
+          c = document.getElementById("memoContent").value;
+        if (t) {
+          currentEditMemoId
+            ? (memos[memos.findIndex((x) => x.id == currentEditMemoId)] = {
+                ...memos.find((x) => x.id == currentEditMemoId),
+                title: t,
+                content: c,
+              })
+            : memos.push({ id: Date.now(), title: t, content: c });
+          renderMemos();
+          closeModal("memoModal");
+        }
+      };
+      const deleteCurrentMemo = () => {
+        if (confirm(LANG[userLang].alertDel)) {
+          memos = memos.filter((x) => x.id != currentEditMemoId);
+          renderMemos();
+          closeModal("memoModal");
+        }
+      };
+      const exportData = () => {
+        const d = {
+          shortcuts,
+          notifications,
+          memos,
+          theme: localStorage.getItem("dj_theme_color"),
+          seed: localStorage.getItem("dj_bg_seed"),
+          bgKeyword: localStorage.getItem("dj_bg_keyword"),
+        };
+        const blob = new Blob([JSON.stringify(d)], {
+            type: "application/json",
+          }),
+          a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "dj_smarthub.json";
+        a.click();
+      };
+      const importData = (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = (ev) => {
+          const d = JSON.parse(ev.target.result);
+          shortcuts = d.shortcuts || [];
+          notifications = d.notifications || [];
+          memos = d.memos || [];
+          saveData();
+          if (d.theme) setTheme(d.theme);
+          if (d.bgKeyword) localStorage.setItem("dj_bg_keyword", d.bgKeyword);
+          if (d.seed) {
+            localStorage.setItem("dj_bg_seed", d.seed);
+            setBackground(d.seed);
+          }
+          renderShortcuts();
+          renderNotifications();
+          renderMemos();
+          alert(LANG[userLang].alertRestore);
+        };
+        r.readAsText(f);
+      };
+      const toggleDaySelector = (s) => {
+        document.getElementById("day-selector-wrap").style.display = s
+          ? "block"
+          : "none";
+        document.getElementById("notiDate").disabled = s;
+      };
+      const openModal = (id) =>
+        (document.getElementById(id).style.display = "block");
+      const closeModal = (id) =>
+        (document.getElementById(id).style.display = "none");
+      const showTutorial = () => {
+        const driver = window.driver.js.driver,
+          T = LANG[userLang];
+        driver({
+          showProgress: !0,
+          nextBtnText: T.tutNext,
+          prevBtnText: T.tutPrev,
+          doneBtnText: T.tutDone,
+          allowClose: !1,
+          steps: [
+            {
+              element: "#weather-container",
+              popover: {
+                title: T.tutWeatherTitle,
+                description: T.tutWeatherDesc,
+                side: "left",
+                align: "start",
+              },
+            },
+            {
+              element: "#calendar-container",
+              popover: {
+                title: T.tutCalendarTitle,
+                description: T.tutCalendarDesc,
+                side: "top",
+                align: "end",
+              },
+            },
+            {
+              element: "#clock-container",
+              popover: {
+                title: T.tutClockTitle,
+                description: T.tutClockDesc,
+                side: "top",
+                align: "end",
+              },
+            },
+            {
+              element: ".bottom-widgets .left-area .fab-container",
+              popover: {
+                title: T.tutSettingTitle,
+                description: T.tutSettingDesc,
+                side: "top",
+                align: "start",
+              },
+            },
+            {
+              element: "#top-left-widgets .fab-container",
+              popover: {
+                title: T.tutFileTitle,
+                description: T.tutFileDesc,
+                side: "right",
+                align: "start",
+              },
+            },
+          ],
+        }).drive();
+      };
+      applyLanguage();
+      const sd =
+        localStorage.getItem("dj_bg_seed") || Math.floor(Math.random() * 10000);
+      setBackground(sd);
+      fetchQuote();
+      initTimePicker();
+      fetchWeather();
+      setInterval(updateAll, 1e3);
+      updateAll();
+      renderShortcuts();
+      renderNotifications();
+      renderMemos();
+      applyVisibility();
+      window.addEventListener(
+        "load",
+        () =>
+          !localStorage.getItem("dj_tutorial_done") &&
+          setTimeout(() => {
+            showTutorial();
+            localStorage.setItem("dj_tutorial_done", "true");
+          }, 800),
+      );
+    </script>
+  </body>
+</html>
