@@ -25,10 +25,14 @@
         --quote-shadow:
           0 4px 15px rgba(0, 0, 0, 1), 0 2px 4px rgba(0, 0, 0, 0.8);
         --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        --quote-size-large: 3rem;
+        --quote-size-medium: 2.4rem;
+        --quote-size-small: 1.8rem;
+        --quote-font-size: var(--quote-size-medium);
       }
       body {
         margin: 0;
-        padding: 100px 20px 180px;
+        padding: 150px 20px 180px;
         min-height: 100vh;
         background-color: #020617;
         background-size: cover;
@@ -265,30 +269,55 @@
       }
       #quote-section {
         text-align: center;
-        margin-bottom: 60px;
-        max-width: 1000px;
-        width: 100%;
+        margin-bottom: 50px;
+        max-width: 1200px;
+        width: 90%;
         animation: fadeIn 1.2s ease-out;
+        display: flex;
+        justify-content: center;
+      }
+      .quote-container {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        max-width: 100%;
       }
       #quote-text {
         font-family: "Noto Serif KR", serif;
-        font-size: 3rem;
+        font-size: var(--quote-font-size);
         font-weight: 700;
-        line-height: 1.5;
+        line-height: 1.4;
         color: #fff;
         text-shadow: var(--quote-shadow);
-        margin-bottom: 20px;
         word-break: keep-all;
+        text-align: center;
+      }
+      #quote-author-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        opacity: 0.8;
+        align-self: flex-end;
       }
       #quote-author {
-        font-size: 1.1rem;
+        font-size: 1rem;
         color: var(--accent-color);
-        text-align: right;
-        display: block;
-        letter-spacing: 4px;
+        letter-spacing: 2px;
         font-weight: 600;
         text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
-        padding-right: 20px;
+      }
+      .refresh-quote {
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: #fff;
+        opacity: 0.5;
+        transition: 0.3s;
+      }
+      .refresh-quote:hover {
+        opacity: 1;
+        transform: rotate(180deg);
+        color: var(--accent-color);
       }
       #shortcut-container {
         display: grid;
@@ -647,6 +676,73 @@
       .sat {
         color: #60a5fa !important;
       }
+      .setting-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        width: 100%;
+      }
+      .setting-inline-field {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #0f172a;
+        padding: 6px 12px;
+        border-radius: 10px;
+        border: 1px solid #334155;
+        height: 38px;
+        box-sizing: border-box;
+      }
+      /* Quote size field takes more space */
+      .field-quote-size {
+        flex: 1.4;
+      }
+      /* Weather toggle field is more compact and centered */
+      .field-weather-toggle {
+        flex: 1;
+        justify-content: center;
+      }
+      .setting-inline-field .setting-label {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        white-space: nowrap;
+      }
+      .compact-select {
+        background: transparent;
+        color: #fff;
+        border: none;
+        font-size: 0.85rem;
+        cursor: pointer;
+        outline: none;
+        padding: 0;
+        width: 100%;
+        text-align: right;
+        -webkit-appearance: none; /* Remove default arrow for cleaner look if needed */
+      }
+      .compact-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        color: #fff;
+        white-space: nowrap;
+      }
+      .compact-checkbox-label input[type="checkbox"] {
+        width: 16px !important;
+        height: 16px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        cursor: pointer;
+        appearance: checkbox;
+        -webkit-appearance: checkbox;
+      }
+      .compact-checkbox-label span {
+        line-height: 1.2;
+        display: inline-block;
+        margin-top: 1px; /* Subtle nudge down to match checkbox center */
+      }
       .modal {
         display: none;
         position: fixed;
@@ -819,6 +915,11 @@
         body {
           padding: 160px 15px 120px;
         }
+        :root {
+          --quote-size-large: 2.2rem;
+          --quote-size-medium: 1.8rem;
+          --quote-size-small: 1.4rem;
+        }
         #top-left-widgets {
           top: 15px;
           left: 15px;
@@ -831,9 +932,7 @@
           bottom: 15px;
           padding: 0 15px;
         }
-        #quote-text {
-          font-size: 2rem;
-        }
+
         #shortcut-container {
           max-width: 100%;
         }
@@ -903,9 +1002,6 @@
         .list-layout {
           grid-template-columns: repeat(3, 1fr);
           gap: 12px;
-        }
-        #quote-text {
-          font-size: 1.6rem;
         }
       }
     </style>
@@ -1000,8 +1096,13 @@
     </div>
     <div id="top-right-widgets"></div>
     <div id="quote-section">
-      <div id="quote-text">...</div>
-      <div id="quote-author"></div>
+      <div class="quote-container">
+        <span id="quote-text">...</span>
+        <span id="quote-author-wrap">
+          <span id="quote-author"></span>
+          <i class="fas fa-sync-alt refresh-quote" onclick="fetchQuote()"></i>
+        </span>
+      </div>
     </div>
     <div id="shortcut-container"></div>
     <div class="bottom-widgets">
@@ -1163,6 +1264,24 @@
           placeholder="예: nature, space, city, dark"
           onkeypress="event.key === 'Enter' && saveSettings()"
         />
+
+        <div class="setting-row">
+          <div class="setting-inline-field field-quote-size">
+            <div class="setting-label" data-i18n="lblQuoteSize">명언 크기</div>
+            <select id="quoteFontSizeSelect" class="compact-select">
+              <option value="large" data-i18n="optLarge">대</option>
+              <option value="medium" data-i18n="optMedium">중</option>
+              <option value="small" data-i18n="optSmall">소</option>
+            </select>
+          </div>
+          <div class="setting-inline-field field-weather-toggle">
+            <label class="compact-checkbox-label">
+              <input type="checkbox" id="showCurrentWeather" />
+              <span data-i18n="lblCurrentWeather">현지 날씨</span>
+            </label>
+          </div>
+        </div>
+
         <div
           style="
             font-size: 0.85rem;
@@ -1392,6 +1511,11 @@
           sideMemo: "메모",
           modalSetting: "환경 설정",
           lblTheme: "테마 색상",
+          lblQuoteSize: "명언 폰트 크기",
+          lblCurrentWeather: "현지 날씨",
+          optLarge: "대",
+          optMedium: "중",
+          optSmall: "소",
           lblWeatherLoc: "날씨 위치 설정",
           citySearchPh: "도시 검색 (예: 서울, London)",
           currentLoc: "현재 위치",
@@ -1463,6 +1587,11 @@
           sideMemo: "Memo",
           modalSetting: "Settings",
           lblTheme: "Theme Color",
+          lblQuoteSize: "Quote Font Size",
+          lblCurrentWeather: "Local Weather",
+          optLarge: "Large",
+          optMedium: "Medium",
+          optSmall: "Small",
           lblWeatherLoc: "Weather Locations",
           citySearchPh: "Search city (e.g. London, Seoul)",
           currentLoc: "Current Location",
@@ -1534,6 +1663,11 @@
           sideMemo: "メモ",
           modalSetting: "環境設定",
           lblTheme: "テーマカラー",
+          lblQuoteSize: "名言のフォントサイズ",
+          lblCurrentWeather: "現地の天気",
+          optLarge: "大",
+          optMedium: "中",
+          optSmall: "小",
           lblWeatherLoc: "天気の場所設定",
           citySearchPh: "都市を検索 (例: 東京, London)",
           currentLoc: "現在の位置",
@@ -1604,12 +1738,23 @@
         memos = JSON.parse(localStorage.getItem("dj_memos")) || [],
         weatherLocations = JSON.parse(
           localStorage.getItem("dj_weather_locations"),
-        ) || [{ type: "current" }],
+        ) || [],
+        showCurrentWeather = localStorage.getItem("dj_show_current_weather") !== "false",
         firedMinute = "",
         currentEditNotiId = null,
         currentEditMemoId = null,
         currentShortcutIndex = null;
       const savedTheme = localStorage.getItem("dj_theme_color");
+      const setQuoteFontSize = (size) => {
+        document.documentElement.style.setProperty(
+          "--quote-font-size",
+          `var(--quote-size-${size})`,
+        );
+        localStorage.setItem("dj_quote_font_size", size);
+      };
+      const savedFontSize = localStorage.getItem("dj_quote_font_size") || "medium";
+      setQuoteFontSize(savedFontSize);
+
       const setTheme = (color) => {
         document.documentElement.style.setProperty("--accent-color", color);
         localStorage.setItem("dj_theme_color", color);
@@ -1703,12 +1848,22 @@
       const openSettingModal = () => {
         document.getElementById("bgKeywordInput").value =
           localStorage.getItem("dj_bg_keyword") || "";
+        document.getElementById("quoteFontSizeSelect").value =
+          localStorage.getItem("dj_quote_font_size") || "medium";
+        document.getElementById("showCurrentWeather").checked = showCurrentWeather;
         renderWeatherLocationList();
         openModal("settingModal");
       };
       const saveSettings = () => {
         const keyword = document.getElementById("bgKeywordInput").value.trim();
         localStorage.setItem("dj_bg_keyword", keyword);
+        const fontSize = document.getElementById("quoteFontSizeSelect").value;
+        setQuoteFontSize(fontSize);
+
+        showCurrentWeather = document.getElementById("showCurrentWeather").checked;
+        localStorage.setItem("dj_show_current_weather", showCurrentWeather);
+        fetchWeather();
+
         changeBackgroundInstant();
         closeModal("settingModal");
       };
@@ -1923,70 +2078,84 @@
       };
       const fetchWeather = () => {
         document.getElementById("top-right-widgets").innerHTML = "";
-        weatherLocations.forEach((loc) => {
-          if (loc.type === "current") {
-            if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition(
-                (pos) =>
-                  getWeatherData(
-                    pos.coords.latitude,
-                    pos.coords.longitude,
-                    LANG[userLang].currentLoc,
-                    "current",
-                  ),
-                () =>
-                  getWeatherData(
-                    36.48,
-                    127.08,
-                    LANG[userLang].weatherDefault,
-                    "current",
-                  ),
-              );
-            } else {
-              getWeatherData(
-                36.48,
-                127.08,
-                LANG[userLang].weatherDefault,
-                "current",
-              );
-            }
+        if (showCurrentWeather) {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              (pos) =>
+                getWeatherData(
+                  pos.coords.latitude,
+                  pos.coords.longitude,
+                  LANG[userLang].currentLoc,
+                  "current",
+                ),
+              () =>
+                getWeatherData(
+                  36.48,
+                  127.08,
+                  LANG[userLang].weatherDefault,
+                  "current",
+                ),
+            );
           } else {
+            getWeatherData(
+              36.48,
+              127.08,
+              LANG[userLang].weatherDefault,
+              "current",
+            );
+          }
+        }
+        weatherLocations.forEach((loc) => {
+          if (loc.type !== "current") {
             getWeatherData(loc.lat, loc.lon, loc.name, loc.id);
           }
         });
       };
+      let searchTimeout;
       const searchCities = async (query) => {
         const results = document.getElementById("citySearchResults");
-        if (!query || query.length < 2) {
+        if (!query || query.trim().length < 2) {
           results.style.display = "none";
           return;
         }
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=${userLang}`,
-          );
-          const data = await res.json();
-          results.innerHTML = "";
-          if (data.length > 0) {
-            results.style.display = "block";
-            data.forEach((item) => {
-              const div = document.createElement("div");
-              div.className = "city-result-item";
-              div.innerText = item.display_name;
-              div.onclick = () => addWeatherLocation(item);
-              results.appendChild(div);
+        
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(async () => {
+          results.innerHTML = `<div class="city-result-item" style="opacity:0.6; cursor:default">검색 중...</div>`;
+          results.style.display = "block";
+          
+          try {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10&accept-language=${userLang}&addressdetails=1`;
+            const res = await fetch(url, {
+              headers: { "User-Agent": "OnTo-SmartHub/1.1" }
             });
-          } else {
+            const data = await res.json();
+            results.innerHTML = "";
+            if (data && data.length > 0) {
+              data.forEach((item) => {
+                const addr = item.address || {};
+                const city = addr.city || addr.town || addr.village || addr.suburb || addr.hamlet || addr.city_district || item.display_name.split(",")[0];
+                const state = addr.state || addr.province || "";
+                const country = addr.country || "";
+                const div = document.createElement("div");
+                div.className = "city-result-item";
+                div.innerText = `${city}${state ? ", " + state : ""}${country ? " (" + country + ")" : ""}`;
+                div.onclick = () => addWeatherLocation(item, city);
+                results.appendChild(div);
+              });
+            } else {
+              results.innerHTML = `<div class="city-result-item" style="opacity:0.6; cursor:default">검색 결과가 없습니다.</div>`;
+            }
+          } catch (e) {
+            console.error("Search error:", e);
             results.style.display = "none";
           }
-        } catch (e) {
-          console.error(e);
-        }
+        }, 400); // 400ms debounce
       };
-      const addWeatherLocation = (item) => {
+      const addWeatherLocation = (item, cityName) => {
         const loc = {
           type: "custom",
-          name: item.display_name.split(",")[0],
+          name: cityName || item.display_name.split(",")[0],
           lat: item.lat,
           lon: item.lon,
           id: Date.now(),
@@ -2014,13 +2183,10 @@
         const list = document.getElementById("weatherLocationList");
         list.innerHTML = "";
         weatherLocations.forEach((loc) => {
+          if (loc.type === "current") return;
           const tag = document.createElement("div");
           tag.className = "location-tag";
-          if (loc.type === "current") {
-            tag.innerHTML = `<span><i class="fas fa-location-arrow" style="margin-right:8px; color:var(--accent-color)"></i>${LANG[userLang].currentLoc}</span>`;
-          } else {
-            tag.innerHTML = `<span>${loc.name}</span><i class="fas fa-times" onclick="removeWeatherLocation(${loc.id})"></i>`;
-          }
+          tag.innerHTML = `<span>${loc.name}</span><i class="fas fa-times" onclick="removeWeatherLocation(${loc.id})"></i>`;
           list.appendChild(tag);
         });
       };
