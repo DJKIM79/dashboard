@@ -2574,9 +2574,19 @@
         currentContextId = id;
         const menu = document.getElementById("globalContextMenu");
         menu.style.display = "block";
-        let x = e.pageX || e.touches?.[0].pageX,
-          y = e.pageY || e.touches?.[0].pageY;
-        if (x + 120 > window.innerWidth) x = window.innerWidth - 130;
+        
+        let x = e.pageX || e.touches?.[0].pageX;
+        let y = e.pageY || e.touches?.[0].pageY;
+        
+        // 화면 오른쪽 끝 처리
+        if (x + 130 > window.innerWidth) x = window.innerWidth - 140;
+        
+        // 화면 아래쪽 끝 처리 (메뉴가 바닥을 뚫고 나가지 않게 위로 띄움)
+        const menuHeight = menu.offsetHeight;
+        if (y + menuHeight > window.innerHeight + window.scrollY) {
+          y = y - menuHeight;
+        }
+        
         menu.style.left = `${x}px`;
         menu.style.top = `${y}px`;
       };
