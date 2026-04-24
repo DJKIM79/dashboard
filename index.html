@@ -800,6 +800,7 @@
       }
       #settingModal .modal-content {
         width: 720px;
+        height: 530px; /* 도시 3개까지 충분히 수용 가능한 고정 높이 */
       }
       .setting-grid {
         display: grid;
@@ -1405,29 +1406,24 @@
               style="display: none"
             />
 
-            <div style="height: 235px; display: flex; flex-direction: column;">
-              <div
-                class="setting-group-title"
-                style="display: flex; justify-content: space-between"
-              >
-                <span data-i18n="lblWeather">날씨</span>
-                <label class="compact-checkbox-label">
-                  <input type="checkbox" id="showCurrentWeather" />
-                  <span data-i18n="lblCurrentWeather">현지 날씨</span>
-                </label>
-              </div>
-              <div id="weatherLocationList" class="location-list"></div>
-              <div class="city-search-container" style="margin-top: auto;">
-                <input
-                  type="text"
-                  id="citySearchInput"
-                  data-i18n-ph="citySearchPh"
-                  placeholder="도시 검색 (예: 서울, London)"
-                  autocomplete="off"
-                  oninput="searchCities(this.value)"
-                />
-                <div id="citySearchResults" class="city-results"></div>
-              </div>
+            <div class="setting-group-title" style="display: flex; justify-content: space-between">
+              <span data-i18n="lblWeather">날씨</span>
+              <label class="compact-checkbox-label">
+                <input type="checkbox" id="showCurrentWeather" />
+                <span data-i18n="lblCurrentWeather">현지 날씨</span>
+              </label>
+            </div>
+            <div id="weatherLocationList" class="location-list"></div>
+            <div class="city-search-container">
+              <input
+                type="text"
+                id="citySearchInput"
+                data-i18n-ph="citySearchPh"
+                placeholder="도시 검색 (예: 서울, London)"
+                autocomplete="off"
+                oninput="searchCities(this.value)"
+              />
+              <div id="citySearchResults" class="city-results"></div>
             </div>
           </div>
         </div>
