@@ -1140,6 +1140,7 @@
   </head>
   <body onclick="requestNotiPermission()">
     <div id="globalContextMenu" class="context-menu">
+      <div id="ctx-add" onclick="addCurrentItem()" data-i18n="cmAdd">추가</div>
       <div id="ctx-edit" onclick="editCurrentItem()" data-i18n="cmEdit">수정</div>
       <div
         id="ctx-del"
@@ -1669,6 +1670,7 @@
           cmEdit: "수정",
           cmDelete: "삭제",
           cmHide: "숨기기",
+          cmAdd: "추가",
           tipFile: "파일 관리",
           tipBackup: "데이터 백업",
           tipRestore: "데이터 복원",
@@ -1758,6 +1760,7 @@
           cmEdit: "Edit",
           cmDelete: "Delete",
           cmHide: "Hide",
+          cmAdd: "Add",
           tipFile: "File Management",
           tipBackup: "Backup",
           tipRestore: "Restore",
@@ -1846,7 +1849,8 @@
           cmEdit: "編集",
           cmDelete: "削除",
           cmHide: "隠す",
-          tipFile: "ファイル管理",
+          cmAdd: "追加",
+          tipFile: "파일 관리",
           tipBackup: "データバックアップ",
           tipRestore: "データ復元",
           tipMenu: "メニューを開く",
@@ -2303,6 +2307,7 @@
             e.stopPropagation();
             toggleForecast(id, daily, lat, lon);
           };
+          container.oncontextmenu = (e) => showContextMenu(e, "weather", id);
 
           const icon = getWeatherIcon(current.weather_code);
 
@@ -2627,17 +2632,30 @@
         currentContextId = id;
         const menu = document.getElementById("globalContextMenu");
         
-        // 메뉴 아이템 가시성 설정
+        const addItem = document.getElementById("ctx-add");
         const editItem = document.getElementById("ctx-edit");
         const delItem = document.getElementById("ctx-del");
         const hideItem = document.getElementById("ctx-hide");
         
-        const isManageable = ["shortcut", "memo", "noti"].includes(type);
-        editItem.style.display = isManageable ? "block" : "none";
-        delItem.style.display = isManageable ? "block" : "none";
-        
-        // 날씨, 시계, 달력 등은 '숨기기'만 표시 (필요시 'noti' 폴더 등도 추가 가능)
+        addItem.style.display = "none";
+        editItem.style.display = "none";
+        delItem.style.display = "none";
         hideItem.style.display = "block";
+
+        if (type === "shortcut") {
+          editItem.style.display = "block";
+          delItem.style.display = "block";
+          hideItem.style.display = "none";
+        } else if (type === "weather") {
+          addItem.style.display = "block";
+          if (id !== "current") {
+            editItem.style.display = "block";
+            delItem.style.display = "block";
+          }
+        } else if (["memo", "noti"].includes(type)) {
+          editItem.style.display = "block";
+          delItem.style.display = "block";
+        }
 
         menu.style.display = "block";
         
@@ -2767,11 +2785,22 @@
         document.getElementById("globalContextMenu").style.display = "none";
         openModal("deleteConfirmModal");
       };
+      const addCurrentItem = () => {
+        document.getElementById("globalContextMenu").style.display = "none";
+        if (currentContextType === "weather") {
+          openSettingModal();
+          setTimeout(() => document.getElementById("citySearchInput").focus(), 100);
+        }
+      };
       const editCurrentItem = () => {
         document.getElementById("globalContextMenu").style.display = "none";
         if (currentContextType === "shortcut") openLinkModal(currentContextId);
         else if (currentContextType === "memo") openMemoModal(currentContextId);
         else if (currentContextType === "noti") openNotiModal(currentContextId);
+        else if (currentContextType === "weather") {
+          openSettingModal();
+          setTimeout(() => document.getElementById("citySearchInput").focus(), 100);
+        }
       };
       const deleteCurrentItem = () => {
         closeModal("deleteConfirmModal");
@@ -2784,6 +2813,10 @@
         } else if (currentContextType === "noti") {
           notifications = notifications.filter((n) => n.id != currentContextId);
           renderNotifications();
+        } else if (currentContextType === "weather") {
+          weatherLocations = weatherLocations.filter((l) => l.id != currentContextId);
+          localStorage.setItem("dj_weather_locations", JSON.stringify(weatherLocations));
+          fetchWeather();
         }
         saveData();
       };
