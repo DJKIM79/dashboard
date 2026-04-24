@@ -1348,16 +1348,12 @@
               onkeypress="event.key === 'Enter' && saveSettings()"
             />
 
-            <div class="setting-group-title" data-i18n="lblGeneral">일반</div>
-            <div class="setting-row">
-              <div class="setting-inline-field field-quote-size">
-                <select id="quoteFontSizeSelect" class="compact-select" style="text-align: center">
-                  <option value="large" data-i18n="optLarge">대</option>
-                  <option value="medium" data-i18n="optMedium">중</option>
-                  <option value="small" data-i18n="optSmall">소</option>
-                </select>
-              </div>
-            </div>
+            <div class="setting-group-title" data-i18n="lblQuoteSize">명언 폰트 크기</div>
+            <select id="quoteFontSizeSelect">
+              <option value="large" data-i18n="optLarge">대</option>
+              <option value="medium" data-i18n="optMedium">중</option>
+              <option value="small" data-i18n="optSmall">소</option>
+            </select>
           </div>
 
           <div class="setting-column">
