@@ -30,6 +30,10 @@
         --quote-size-medium: 2.4rem;
         --quote-size-small: 1.8rem;
         --quote-font-size: var(--quote-size-medium);
+        --widget-scale-large: 1.15;
+        --widget-scale-medium: 1;
+        --widget-scale-small: 0.85;
+        --widget-scale: var(--widget-scale-medium);
       }
       body {
         margin: 0;
@@ -122,6 +126,8 @@
         gap: 20px;
         align-items: flex-start;
         transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: scale(var(--widget-scale));
+        transform-origin: top right;
       }
       .weather-item {
         position: relative;
@@ -330,6 +336,8 @@
         width: 100%;
         max-width: calc(100vw - 460px);
         margin: 0 auto;
+        transform: scale(var(--widget-scale));
+        transform-origin: center;
       }
       .grid-layout,
       .list-layout {
@@ -427,6 +435,8 @@
         pointer-events: auto;
         position: relative;
         z-index: 20;
+        transform: scale(var(--widget-scale));
+        transform-origin: bottom left;
       }
       .right-area {
         align-items: flex-end;
@@ -435,6 +445,8 @@
         pointer-events: auto;
         position: relative;
         z-index: 10;
+        transform: scale(var(--widget-scale));
+        transform-origin: bottom right;
       }
       #clock-container {
         margin-bottom: 0;
@@ -1352,12 +1364,27 @@
               onkeypress="event.key === 'Enter' && saveSettings()"
             />
 
-            <div class="setting-group-title" data-i18n="lblQuoteSize">명언 폰트 크기</div>
-            <select id="quoteFontSizeSelect" style="text-align: center; text-align-last: center;">
-              <option value="large" data-i18n="optLarge">대</option>
-              <option value="medium" data-i18n="optMedium">중</option>
-              <option value="small" data-i18n="optSmall">소</option>
-            </select>
+            <div class="setting-group-title" data-i18n="lblGeneral">일반</div>
+            <div class="setting-row">
+              <div class="setting-inline-field">
+                <div class="setting-label" data-i18n="lblQuoteSize">명언 크기</div>
+                <select id="quoteFontSizeSelect" class="compact-select">
+                  <option value="large" data-i18n="optLarge">대</option>
+                  <option value="medium" data-i18n="optMedium">중</option>
+                  <option value="small" data-i18n="optSmall">소</option>
+                </select>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-inline-field">
+                <div class="setting-label" data-i18n="lblWidgetSize">위젯 크기</div>
+                <select id="widgetSizeSelect" class="compact-select">
+                  <option value="large" data-i18n="optLarge">대</option>
+                  <option value="medium" data-i18n="optMedium">중</option>
+                  <option value="small" data-i18n="optSmall">소</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div class="setting-column">
@@ -1611,7 +1638,8 @@
           lblBgKeyword: "배경화면 키워드",
           bgKeywordPh: "예: space, nature, minimal",
           lblGeneral: "일반",
-          lblQuoteSize: "명언 폰트 크기",
+          lblQuoteSize: "명언 크기",
+          lblWidgetSize: "위젯 크기",
           lblSearchEngine: "검색 엔진",
           optCustom: "사용자 정의",
           searchPh: "검색어를 입력하세요",
@@ -1694,7 +1722,8 @@
           lblBgKeyword: "Background Keyword",
           bgKeywordPh: "e.g. space, nature, minimal",
           lblGeneral: "General",
-          lblQuoteSize: "Quote Font Size",
+          lblQuoteSize: "Quote Size",
+          lblWidgetSize: "Widget Size",
           lblSearchEngine: "Search Engine",
           optCustom: "Custom",
           searchPh: "Type to search...",
@@ -1777,7 +1806,8 @@
           lblBgKeyword: "壁紙キーワード",
           bgKeywordPh: "例: space, nature, minimal",
           lblGeneral: "全般",
-          lblQuoteSize: "名言のフォントサイズ",
+          lblQuoteSize: "名言のサイズ",
+          lblWidgetSize: "ウィジェットのサイズ",
           lblSearchEngine: "検索エンジン",
           optCustom: "カスタム",
           searchPh: "検索ワードを入力",
@@ -1872,6 +1902,16 @@
       };
       const savedFontSize = localStorage.getItem("dj_quote_font_size") || "medium";
       setQuoteFontSize(savedFontSize);
+
+      const setWidgetSize = (size) => {
+        document.documentElement.style.setProperty(
+          "--widget-scale",
+          `var(--widget-scale-${size})`,
+        );
+        localStorage.setItem("dj_widget_size", size);
+      };
+      const savedWidgetSize = localStorage.getItem("dj_widget_size") || "medium";
+      setWidgetSize(savedWidgetSize);
 
       const setTheme = (color) => {
         document.documentElement.style.setProperty("--accent-color", color);
@@ -1968,6 +2008,8 @@
           localStorage.getItem("dj_bg_keyword") || "";
         document.getElementById("quoteFontSizeSelect").value =
           localStorage.getItem("dj_quote_font_size") || "medium";
+        document.getElementById("widgetSizeSelect").value =
+          localStorage.getItem("dj_widget_size") || "medium";
         document.getElementById("showCurrentWeather").checked =
           showCurrentWeather;
 
@@ -1985,6 +2027,8 @@
         localStorage.setItem("dj_bg_keyword", keyword);
         const fontSize = document.getElementById("quoteFontSizeSelect").value;
         setQuoteFontSize(fontSize);
+        const widgetSize = document.getElementById("widgetSizeSelect").value;
+        setWidgetSize(widgetSize);
 
         const engine = document.getElementById("searchEngineSelect").value;
         localStorage.setItem("dj_search_engine", engine);
