@@ -800,7 +800,9 @@
       }
       #settingModal .modal-content {
         width: 720px;
-        height: 530px; /* 도시 3개까지 충분히 수용 가능한 고정 높이 */
+        height: 550px; /* 고정 높이 */
+        display: flex;
+        flex-direction: column;
       }
       .setting-grid {
         display: grid;
@@ -1294,7 +1296,8 @@
     >
       <div class="modal-content">
         <h3 data-i18n="modalSetting">환경 설정</h3>
-        <div class="setting-grid">
+        <div style="flex: 1; display: flex; flex-direction: column;">
+          <div class="setting-grid">
           <div class="setting-column">
             <div class="setting-group-title" data-i18n="lblTheme">
               테마 색상
