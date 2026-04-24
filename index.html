@@ -800,15 +800,18 @@
       }
       #settingModal .modal-content {
         width: 720px;
-        height: 550px; /* 고정 높이 */
+        height: 560px; /* 절대 고정 높이 */
+        max-height: 560px;
         display: flex;
         flex-direction: column;
+        overflow: hidden; /* 창 크기 변화 원천 차단 */
       }
       .setting-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 30px;
         margin-bottom: 25px;
+        flex: 1; /* 남은 공간 모두 차지 */
       }
       #search-section {
         width: 100%;
@@ -1409,24 +1412,26 @@
               style="display: none"
             />
 
-            <div class="setting-group-title" style="display: flex; justify-content: space-between">
-              <span data-i18n="lblWeather">날씨</span>
-              <label class="compact-checkbox-label">
-                <input type="checkbox" id="showCurrentWeather" />
-                <span data-i18n="lblCurrentWeather">현지 날씨</span>
-              </label>
-            </div>
-            <div id="weatherLocationList" class="location-list"></div>
-            <div class="city-search-container">
-              <input
-                type="text"
-                id="citySearchInput"
-                data-i18n-ph="citySearchPh"
-                placeholder="도시 검색 (예: 서울, London)"
-                autocomplete="off"
-                oninput="searchCities(this.value)"
-              />
-              <div id="citySearchResults" class="city-results"></div>
+            <div style="height: 200px; display: flex; flex-direction: column;">
+              <div class="setting-group-title" style="display: flex; justify-content: space-between">
+                <span data-i18n="lblWeather">날씨</span>
+                <label class="compact-checkbox-label">
+                  <input type="checkbox" id="showCurrentWeather" />
+                  <span data-i18n="lblCurrentWeather">현지 날씨</span>
+                </label>
+              </div>
+              <div id="weatherLocationList" class="location-list"></div>
+              <div class="city-search-container" style="margin-top: auto;">
+                <input
+                  type="text"
+                  id="citySearchInput"
+                  data-i18n-ph="citySearchPh"
+                  placeholder="도시 검색 (예: 서울, London)"
+                  autocomplete="off"
+                  oninput="searchCities(this.value)"
+                />
+                <div id="citySearchResults" class="city-results"></div>
+              </div>
             </div>
           </div>
         </div>
