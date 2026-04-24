@@ -681,8 +681,22 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
         width: 100%;
+      }
+      .setting-column {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        flex: 1;
+      }
+      .setting-group-title {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin-bottom: 10px;
+        font-weight: 600;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 5px;
       }
       .setting-inline-field {
         display: flex;
@@ -697,7 +711,7 @@
       }
       /* Quote size field takes more space */
       .field-quote-size {
-        flex: 1.4;
+        flex: 1;
       }
       /* Weather toggle field is more compact and centered */
       .field-weather-toggle {
@@ -719,7 +733,7 @@
         padding: 0;
         width: 100%;
         text-align: right;
-        -webkit-appearance: none; /* Remove default arrow for cleaner look if needed */
+        -webkit-appearance: none;
       }
       .compact-checkbox-label {
         display: flex;
@@ -742,7 +756,7 @@
       .compact-checkbox-label span {
         line-height: 1.2;
         display: inline-block;
-        margin-top: 1px; /* Subtle nudge down to match checkbox center */
+        margin-top: 1px;
       }
       .modal {
         display: none;
@@ -759,13 +773,61 @@
         background: #1e293b;
         padding: 35px;
         border-radius: 30px;
-        width: 340px;
+        width: 400px;
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         border: 1px solid var(--glass-border);
         box-sizing: border-box;
+      }
+      #settingModal .modal-content {
+        width: 720px;
+      }
+      .setting-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 25px;
+      }
+      #search-section {
+        width: 100%;
+        max-width: 600px;
+        margin-bottom: 50px;
+        animation: fadeIn 1.4s ease-out;
+      }
+      .search-box {
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(15px);
+        border: 1px solid var(--glass-border);
+        border-radius: 30px;
+        padding: 5px 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: 0.3s;
+        box-shadow: var(--btn-shadow);
+      }
+      .search-box:focus-within {
+        border-color: var(--accent-color);
+        background: rgba(0, 0, 0, 0.6);
+        transform: scale(1.02);
+      }
+      .search-box i {
+        color: #94a3b8;
+        font-size: 1.1rem;
+      }
+      #searchInput {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: #fff;
+        padding: 12px 0;
+        font-size: 1.1rem;
+        outline: none;
+      }
+      #searchInput::placeholder {
+        color: rgba(255, 255, 255, 0.4);
       }
       #memoModal .modal-content {
         width: 600px;
@@ -785,6 +847,7 @@
       }
       .modal-content input,
       .modal-content textarea,
+      .modal-content select,
       .time-select {
         width: 100%;
         padding: 12px;
@@ -795,6 +858,14 @@
         color: #fff;
         box-sizing: border-box;
         font-family: inherit;
+      }
+      .modal-content select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px;
+        padding-right: 40px;
       }
       .toggle-group {
         display: flex;
@@ -962,6 +1033,15 @@
           width: 90vw;
           padding: 25px;
         }
+        #settingModal .modal-content {
+          width: 95vw;
+          max-height: 90vh;
+          overflow-y: auto;
+        }
+        .setting-grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
         .folder-icon {
           display: flex !important;
         }
@@ -1105,6 +1185,18 @@
         </span>
       </div>
     </div>
+    <div id="search-section">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input
+          type="text"
+          id="searchInput"
+          data-i18n-ph="searchPh"
+          placeholder="검색어를 입력하세요"
+          onkeypress="event.key === 'Enter' && performSearch()"
+        />
+      </div>
+    </div>
     <div id="shortcut-container"></div>
     <div class="bottom-widgets">
       <div class="left-area">
@@ -1182,135 +1274,142 @@
       id="settingModal"
       onclick="event.target == this && closeModal('settingModal')"
     >
-      <div class="modal-content" style="width: 340px">
+      <div class="modal-content">
         <h3 data-i18n="modalSetting">환경 설정</h3>
-        <div
-          style="
-            font-size: 0.85rem;
-            color: #94a3b8;
-            margin-bottom: 10px;
-            font-weight: 600;
-          "
-          data-i18n="lblTheme"
-        >
-          테마 색상
-        </div>
-        <div class="theme-colors" style="margin-bottom: 25px">
-          <div
-            class="color-swatch"
-            style="background: #ef4444"
-            onclick="setTheme('#ef4444')"
-          ></div>
-          <div
-            class="color-swatch"
-            style="background: #f97316"
-            onclick="setTheme('#f97316')"
-          ></div>
-          <div
-            class="color-swatch"
-            style="background: #eab308"
-            onclick="setTheme('#eab308')"
-          ></div>
-          <div
-            class="color-swatch"
-            style="background: #22c55e"
-            onclick="setTheme('#22c55e')"
-          ></div>
-          <div
-            class="color-swatch"
-            style="background: #3b82f6"
-            onclick="setTheme('#3b82f6')"
-          ></div>
-          <div
-            class="color-swatch"
-            style="background: #6366f1"
-            onclick="setTheme('#6366f1')"
-          ></div>
-          <div
-            class="color-swatch"
-            style="background: #a855f7"
-            onclick="setTheme('#a855f7')"
-          ></div>
-          <div
-            class="color-swatch"
-            style="background: #ec4899"
-            onclick="setTheme('#ec4899')"
-          ></div>
-          <div
-            class="color-swatch"
-            style="background: #fff"
-            onclick="setTheme('#fff')"
-          ></div>
-          <div
-            class="color-swatch"
-            style="background: #000; border: 1px solid rgba(255, 255, 255, 0.3)"
-            onclick="setTheme('#000')"
-          ></div>
-        </div>
-        <div
-          style="
-            font-size: 0.85rem;
-            color: #94a3b8;
-            margin-bottom: 10px;
-            font-weight: 600;
-          "
-          data-i18n="lblBgKeyword"
-        >
-          배경화면 키워드 (영문 권장)
-        </div>
-        <input
-          type="text"
-          id="bgKeywordInput"
-          data-i18n-ph="bgKeywordPh"
-          placeholder="예: nature, space, city, dark"
-          onkeypress="event.key === 'Enter' && saveSettings()"
-        />
+        <div class="setting-grid">
+          <div class="setting-column">
+            <div class="setting-group-title" data-i18n="lblTheme">
+              테마 색상
+            </div>
+            <div class="theme-colors" style="margin-bottom: 20px">
+              <div
+                class="color-swatch"
+                style="background: #ef4444"
+                onclick="setTheme('#ef4444')"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background: #f97316"
+                onclick="setTheme('#f97316')"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background: #eab308"
+                onclick="setTheme('#eab308')"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background: #22c55e"
+                onclick="setTheme('#22c55e')"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background: #3b82f6"
+                onclick="setTheme('#3b82f6')"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background: #6366f1"
+                onclick="setTheme('#6366f1')"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background: #a855f7"
+                onclick="setTheme('#a855f7')"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background: #ec4899"
+                onclick="setTheme('#ec4899')"
+              ></div>
+              <div
+                class="color-swatch"
+                style="background: #fff"
+                onclick="setTheme('#fff')"
+              ></div>
+              <div
+                class="color-swatch"
+                style="
+                  background: #000;
+                  border: 1px solid rgba(255, 255, 255, 0.3);
+                "
+                onclick="setTheme('#000')"
+              ></div>
+            </div>
 
-        <div class="setting-row">
-          <div class="setting-inline-field field-quote-size">
-            <div class="setting-label" data-i18n="lblQuoteSize">명언 크기</div>
-            <select id="quoteFontSizeSelect" class="compact-select">
-              <option value="large" data-i18n="optLarge">대</option>
-              <option value="medium" data-i18n="optMedium">중</option>
-              <option value="small" data-i18n="optSmall">소</option>
+            <div class="setting-group-title" data-i18n="lblBgKeyword">
+              배경화면 키워드
+            </div>
+            <input
+              type="text"
+              id="bgKeywordInput"
+              data-i18n-ph="bgKeywordPh"
+              placeholder="예: nature, space, city, dark"
+              onkeypress="event.key === 'Enter' && saveSettings()"
+            />
+
+            <div class="setting-group-title" data-i18n="lblGeneral">일반</div>
+            <div class="setting-row">
+              <div class="setting-inline-field field-quote-size">
+                <div class="setting-label" data-i18n="lblQuoteSize">
+                  명언 크기
+                </div>
+                <select id="quoteFontSizeSelect" class="compact-select">
+                  <option value="large" data-i18n="optLarge">대</option>
+                  <option value="medium" data-i18n="optMedium">중</option>
+                  <option value="small" data-i18n="optSmall">소</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-column">
+            <div class="setting-group-title" data-i18n="lblSearchEngine">
+              검색 엔진
+            </div>
+            <select id="searchEngineSelect" onchange="toggleCustomSearchUrl()">
+              <option value="google">Google</option>
+              <option value="naver">Naver</option>
+              <option value="daum">Daum</option>
+              <option value="bing">Bing</option>
+              <option value="duckduckgo">DuckDuckGo</option>
+              <option value="custom" data-i18n="optCustom">Custom URL</option>
             </select>
-          </div>
-          <div class="setting-inline-field field-weather-toggle">
-            <label class="compact-checkbox-label">
-              <input type="checkbox" id="showCurrentWeather" />
-              <span data-i18n="lblCurrentWeather">현지 날씨</span>
-            </label>
-          </div>
-        </div>
+            <input
+              type="text"
+              id="customSearchUrlInput"
+              placeholder="https://example.com/search?q="
+              style="display: none"
+            />
 
-        <div
-          style="
-            font-size: 0.85rem;
-            color: #94a3b8;
-            margin-bottom: 10px;
-            font-weight: 600;
-          "
-          data-i18n="lblWeatherLoc"
-        >
-          날씨 위치 설정
-        </div>
-        <div id="weatherLocationList" class="location-list"></div>
-        <div class="city-search-container">
-          <input
-            type="text"
-            id="citySearchInput"
-            data-i18n-ph="citySearchPh"
-            placeholder="도시 검색 (예: 서울, London)"
-            autocomplete="off"
-            oninput="searchCities(this.value)"
-          />
-          <div id="citySearchResults" class="city-results"></div>
+            <div
+              class="setting-group-title"
+              style="display: flex; justify-content: space-between"
+            >
+              <span data-i18n="lblWeather">날씨</span>
+              <label class="compact-checkbox-label">
+                <input type="checkbox" id="showCurrentWeather" />
+                <span data-i18n="lblCurrentWeather">현지</span>
+              </label>
+            </div>
+            <div id="weatherLocationList" class="location-list"></div>
+            <div class="city-search-container">
+              <input
+                type="text"
+                id="citySearchInput"
+                data-i18n-ph="citySearchPh"
+                placeholder="도시 검색 (예: 서울, London)"
+                autocomplete="off"
+                oninput="searchCities(this.value)"
+              />
+              <div id="citySearchResults" class="city-results"></div>
+            </div>
+          </div>
         </div>
         <button
           class="btn-save"
           onclick="saveSettings()"
           data-i18n="btnSaveSettings"
-          style="margin-top: 10px"
         >
           저장 및 적용
         </button>
@@ -1512,8 +1611,15 @@
           sideMemo: "메모",
           modalSetting: "환경 설정",
           lblTheme: "테마 색상",
+          lblBgKeyword: "배경화면 키워드",
+          bgKeywordPh: "예: space, nature, minimal",
+          lblGeneral: "일반",
           lblQuoteSize: "명언 폰트 크기",
-          lblCurrentWeather: "현지 날씨",
+          lblSearchEngine: "검색 엔진",
+          optCustom: "사용자 정의",
+          searchPh: "검색어를 입력하세요",
+          lblWeather: "날씨",
+          lblCurrentWeather: "현지",
           optLarge: "대",
           optMedium: "중",
           optSmall: "소",
@@ -1588,8 +1694,15 @@
           sideMemo: "Memo",
           modalSetting: "Settings",
           lblTheme: "Theme Color",
+          lblBgKeyword: "Background Keyword",
+          bgKeywordPh: "e.g. space, nature, minimal",
+          lblGeneral: "General",
           lblQuoteSize: "Quote Font Size",
-          lblCurrentWeather: "Local Weather",
+          lblSearchEngine: "Search Engine",
+          optCustom: "Custom",
+          searchPh: "Type to search...",
+          lblWeather: "Weather",
+          lblCurrentWeather: "Local",
           optLarge: "Large",
           optMedium: "Medium",
           optSmall: "Small",
@@ -1664,8 +1777,15 @@
           sideMemo: "メモ",
           modalSetting: "環境設定",
           lblTheme: "テーマカラー",
+          lblBgKeyword: "壁紙キーワード",
+          bgKeywordPh: "例: space, nature, minimal",
+          lblGeneral: "全般",
           lblQuoteSize: "名言のフォントサイズ",
-          lblCurrentWeather: "現地の天気",
+          lblSearchEngine: "検索エンジン",
+          optCustom: "カスタム",
+          searchPh: "検索ワードを入力",
+          lblWeather: "天気",
+          lblCurrentWeather: "現地",
           optLarge: "大",
           optMedium: "中",
           optSmall: "小",
@@ -1851,7 +1971,15 @@
           localStorage.getItem("dj_bg_keyword") || "";
         document.getElementById("quoteFontSizeSelect").value =
           localStorage.getItem("dj_quote_font_size") || "medium";
-        document.getElementById("showCurrentWeather").checked = showCurrentWeather;
+        document.getElementById("showCurrentWeather").checked =
+          showCurrentWeather;
+
+        const engine = localStorage.getItem("dj_search_engine") || "google";
+        document.getElementById("searchEngineSelect").value = engine;
+        document.getElementById("customSearchUrlInput").value =
+          localStorage.getItem("dj_custom_search_url") || "";
+        toggleCustomSearchUrl();
+
         renderWeatherLocationList();
         openModal("settingModal");
       };
@@ -1861,12 +1989,68 @@
         const fontSize = document.getElementById("quoteFontSizeSelect").value;
         setQuoteFontSize(fontSize);
 
-        showCurrentWeather = document.getElementById("showCurrentWeather").checked;
+        const engine = document.getElementById("searchEngineSelect").value;
+        localStorage.setItem("dj_search_engine", engine);
+        if (engine === "custom") {
+          localStorage.setItem(
+            "dj_custom_search_url",
+            document.getElementById("customSearchUrlInput").value.trim(),
+          );
+        }
+
+        showCurrentWeather =
+          document.getElementById("showCurrentWeather").checked;
         localStorage.setItem("dj_show_current_weather", showCurrentWeather);
         fetchWeather();
 
         changeBackgroundInstant();
         closeModal("settingModal");
+      };
+
+      const toggleCustomSearchUrl = () => {
+        const isCustom =
+          document.getElementById("searchEngineSelect").value === "custom";
+        document.getElementById("customSearchUrlInput").style.display = isCustom
+          ? "block"
+          : "none";
+      };
+
+      const performSearch = () => {
+        const query = document.getElementById("searchInput").value.trim();
+        if (!query) return;
+
+        const engine = localStorage.getItem("dj_search_engine") || "google";
+        let url = "";
+
+        switch (engine) {
+          case "google":
+            url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            break;
+          case "naver":
+            url = `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
+            break;
+          case "daum":
+            url = `https://search.daum.net/search?q=${encodeURIComponent(query)}`;
+            break;
+          case "bing":
+            url = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+            break;
+          case "duckduckgo":
+            url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
+            break;
+          case "custom":
+            const customBase = localStorage.getItem("dj_custom_search_url");
+            if (customBase) {
+              url = customBase + encodeURIComponent(query);
+            } else {
+              url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            }
+            break;
+          default:
+            url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        }
+
+        window.location.href = url;
       };
       const toggleWidget = (type) => {
         const key = `dj_hide_${type}`;
