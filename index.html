@@ -2057,7 +2057,8 @@
         currentEditMemoId = null,
         currentShortcutIndex = null,
         currentContextType = null,
-        currentContextId = null;
+        currentContextId = null,
+        weatherCallId = 0;
       const savedTheme = localStorage.getItem("dj_theme_color");
       const setQuoteFontSize = (size) => {
         document.documentElement.style.setProperty(
@@ -2470,7 +2471,7 @@
           qa.innerText = LANG[userLang].quoteAuthorDefault;
         }
       };
-      const getWeatherData = async (lat, lon, locName, id) => {
+      const getWeatherData = async (lat, lon, locName, id, callId) => {
         try {
           const res = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`,
@@ -2478,6 +2479,9 @@
           if (!res.ok) throw new Error("Weather API failed");
           const d = await res.json();
           if (!d.current || !d.daily) throw new Error("Invalid weather data");
+
+          // 레이스 컨디션 체크: 현재 fetchWeather 요청이 최신인지 확인
+          if (callId !== undefined && callId !== weatherCallId) return;
 
           const current = d.current;
           const daily = d.daily;
@@ -2508,6 +2512,7 @@
           document.getElementById("top-right-widgets").appendChild(container);
         } catch (e) {
           console.error(e);
+          if (callId !== undefined && callId !== weatherCallId) return;
           if (id === "current") {
             const err = document.createElement("div");
             err.className = "weather-item";
@@ -2569,6 +2574,9 @@
         const container = document.getElementById("top-right-widgets");
         container.innerHTML = "";
 
+        // 호출 ID 증가 및 캡처
+        const myCallId = ++weatherCallId;
+
         // 표시할 날씨가 있는지 확인 (현지 날씨 ON 또는 추가된 도시가 있는 경우)
         const hasCustomLocations = weatherLocations.some(loc => loc.type !== "current");
         if (!showCurrentWeather && !hasCustomLocations) {
@@ -2583,6 +2591,7 @@
         container.appendChild(loadingEl);
 
         const removeLoading = () => {
+          if (myCallId !== weatherCallId) return;
           if (loadingEl && loadingEl.parentNode) {
             loadingEl.remove();
             loadingEl = null;
@@ -2594,6 +2603,7 @@
           if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
               async (pos) => {
+                if (myCallId !== weatherCallId) return;
                 const lat = pos.coords.latitude;
                 const lon = pos.coords.longitude;
                 let locName = LANG[userLang].currentLoc;
@@ -2604,6 +2614,7 @@
                     headers: { "User-Agent": "OnTo-SmartHub/1.1" },
                   });
                   const revData = await revRes.json();
+                  if (myCallId !== weatherCallId) return;
                   if (revData && revData.address) {
                     const addr = revData.address;
                     const area =
@@ -2624,15 +2635,17 @@
                 }
 
                 removeLoading();
-                getWeatherData(lat, lon, locName, "current");
+                getWeatherData(lat, lon, locName, "current", myCallId);
               },
               () => {
+                if (myCallId !== weatherCallId) return;
                 removeLoading();
                 getWeatherData(
                   36.48,
                   127.08,
                   LANG[userLang].weatherDefault,
                   "current",
+                  myCallId
                 );
               },
               { timeout: 5000 },
@@ -2644,6 +2657,7 @@
               127.08,
               LANG[userLang].weatherDefault,
               "current",
+              myCallId
             );
           }
         }
@@ -2651,7 +2665,7 @@
         // 추가된 도시들 처리
         weatherLocations.forEach((loc) => {
           if (loc.type !== "current") {
-            getWeatherData(loc.lat, loc.lon, loc.name, loc.id).finally(() =>
+            getWeatherData(loc.lat, loc.lon, loc.name, loc.id, myCallId).finally(() =>
               removeLoading(),
             );
           }
