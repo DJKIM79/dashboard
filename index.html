@@ -881,6 +881,18 @@
         color: rgba(255, 255, 255, 0.4);
       }
       .search-engine-icon {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
+        cursor: pointer;
+        position: relative;
+        z-index: 10;
+      }
+      #search-engine-current {
         width: 24px;
         height: 24px;
         border-radius: 50%;
@@ -889,33 +901,40 @@
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        flex-shrink: 0;
-        cursor: pointer;
-        position: relative;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: 0.3s;
       }
-      .search-engine-icon:hover {
+      .search-engine-icon:hover #search-engine-current {
         background: rgba(255, 255, 255, 0.2);
         transform: scale(1.1);
+        border-color: var(--accent-color);
+      }
+      #search-engine-current img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      #search-engine-current i {
+        font-size: 0.8rem;
+        color: #94a3b8;
       }
       .search-engine-menu {
         position: absolute;
         bottom: calc(100% + 15px);
-        right: -10px;
-        background: rgba(15, 23, 42, 0.9);
+        right: 0;
+        background: rgba(15, 23, 42, 0.95);
         backdrop-filter: blur(20px);
         border: 1px solid var(--glass-border);
-        border-radius: 15px;
-        padding: 8px;
+        border-radius: 20px;
+        padding: 10px;
         display: flex;
-        gap: 8px;
+        gap: 10px;
         opacity: 0;
         visibility: hidden;
         transform: translateY(10px) scale(0.9);
         transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 100;
-        box-shadow: var(--btn-shadow);
+        z-index: 2000;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       }
       .search-engine-menu.active {
         opacity: 1;
@@ -2214,10 +2233,11 @@
       };
 
       const quickSelectEngine = (engine, e) => {
-        e.stopPropagation();
+        if (e) e.stopPropagation();
         localStorage.setItem("dj_search_engine", engine);
         updateSearchEngineIcon();
-        document.getElementById("search-engine-menu").classList.remove("active");
+        const menu = document.getElementById("search-engine-menu");
+        if (menu) menu.classList.remove("active");
       };
 
       const updateSearchEngineIcon = () => {
