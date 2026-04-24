@@ -800,8 +800,8 @@
       }
       #settingModal .modal-content {
         width: 720px;
-        height: 580px; /* 더욱 여유 있는 절대 고정 높이 */
-        max-height: 580px;
+        height: 535px; /* 불필요한 간격을 줄인 고정 높이 */
+        max-height: 535px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -810,8 +810,7 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 30px;
-        margin-bottom: 25px;
-        flex: 1; /* 남은 공간 모두 차지 */
+        margin-bottom: 20px;
       }
       #search-section {
         width: 100%;
@@ -1299,8 +1298,7 @@
     >
       <div class="modal-content">
         <h3 data-i18n="modalSetting">환경 설정</h3>
-        <div style="flex: 1; display: flex; flex-direction: column;">
-          <div class="setting-grid">
+        <div class="setting-grid">
           <div class="setting-column">
             <div class="setting-group-title" data-i18n="lblTheme">
               테마 색상
@@ -1431,12 +1429,10 @@
               />
               <div id="citySearchResults" class="city-results"></div>
             </div>
-          </div>
-        </div>
-        <button
-          class="btn-save"
-          onclick="saveSettings()"
-          data-i18n="btnSaveSettings"
+            </div>
+            <button
+            class="btn-save"
+            onclick="saveSettings()"          data-i18n="btnSaveSettings"
         >
           저장 및 적용
         </button>
