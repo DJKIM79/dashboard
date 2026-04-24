@@ -2206,6 +2206,7 @@
 
         const engine = document.getElementById("searchEngineSelect").value;
         localStorage.setItem("dj_search_engine", engine);
+        currentSearchEngine = engine; // 영구 설정 시 임시 변수도 동기화
         if (engine === "custom") {
           localStorage.setItem(
             "dj_custom_search_url",
@@ -2231,6 +2232,8 @@
           : "none";
       };
 
+      let currentSearchEngine = localStorage.getItem("dj_search_engine") || "google";
+
       const toggleSearchEngineMenu = (e) => {
         e.stopPropagation();
         document.getElementById("search-engine-menu").classList.toggle("active");
@@ -2238,14 +2241,14 @@
 
       const quickSelectEngine = (engine, e) => {
         if (e) e.stopPropagation();
-        localStorage.setItem("dj_search_engine", engine);
+        currentSearchEngine = engine; // 임시 변경 (localStorage 저장 안 함)
         updateSearchEngineIcon();
         const menu = document.getElementById("search-engine-menu");
         if (menu) menu.classList.remove("active");
       };
 
       const updateSearchEngineIcon = () => {
-        const engine = localStorage.getItem("dj_search_engine") || "google";
+        const engine = currentSearchEngine; // 현재 선택된 엔진 기준 (임시 혹은 영구)
         const iconEl = document.getElementById("search-engine-current");
         if (!iconEl) return;
         
@@ -2276,7 +2279,7 @@
         const query = input.value.trim();
         if (!query) return;
 
-        const engine = localStorage.getItem("dj_search_engine") || "google";
+        const engine = currentSearchEngine; // 현재 임시 선택된 엔진 사용
         let url = "";
 
         switch (engine) {
@@ -2306,6 +2309,10 @@
           default:
             url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
         }
+
+        // 검색 후에는 다시 원래 설정된 엔진으로 초기화 (1회용)
+        currentSearchEngine = localStorage.getItem("dj_search_engine") || "google";
+        updateSearchEngineIcon();
 
         // 검색어 비우기
         input.value = "";
