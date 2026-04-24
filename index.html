@@ -2307,7 +2307,8 @@
             url = `https://gemini.google.com/app?q=${encodeURIComponent(query)}`;
             break;
           case "copilot":
-            url = `https://www.bing.com/chat?q=${encodeURIComponent(query)}`;
+            // Bing 검색 결과에서 대화 모드를 강제하고 쿼리를 즉시 전송
+            url = `https://www.bing.com/search?q=${encodeURIComponent(query)}&showconv=1&sendquery=1`;
             break;
           case "chatgpt":
             url = `https://chatgpt.com/?q=${encodeURIComponent(query)}`;
