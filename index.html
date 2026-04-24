@@ -414,6 +414,14 @@
         color: #ef4444;
         border-top: 1px solid rgba(255, 255, 255, 0.05);
       }
+      .context-menu .cm-hide {
+        color: #38bdf8; /* 연한 파란색 */
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      #clock-container,
+      .calendar-widget {
+        cursor: pointer;
+      }
       .bottom-widgets {
         position: fixed;
         bottom: 30px;
@@ -1141,7 +1149,7 @@
       >
         삭제
       </div>
-      <div id="ctx-hide" onclick="hideCurrentWidget()" data-i18n="cmHide">
+      <div id="ctx-hide" class="cm-hide" onclick="hideCurrentWidget()" data-i18n="cmHide">
         숨기기
       </div>
     </div>
