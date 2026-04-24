@@ -2821,8 +2821,11 @@
           hideItem.style.display = "none";
         } else if (type === "weather") {
           addItem.style.display = "block";
-          editItem.style.display = "block";
           delItem.style.display = "block";
+          // 현지 날씨('current')의 경우 '수정'은 숨김
+          if (id !== "current") {
+            editItem.style.display = "block";
+          }
         } else if (["memo", "noti"].includes(type)) {
           editItem.style.display = "block";
           delItem.style.display = "block";
