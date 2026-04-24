@@ -1669,7 +1669,7 @@
           quoteAuthorDefault: "- Chris Grosser",
           cmEdit: "수정",
           cmDelete: "삭제",
-          cmHide: "숨기기",
+          cmHide: "숨김",
           cmAdd: "추가",
           tipFile: "파일 관리",
           tipBackup: "데이터 백업",
@@ -2648,10 +2648,8 @@
           hideItem.style.display = "none";
         } else if (type === "weather") {
           addItem.style.display = "block";
-          if (id !== "current") {
-            editItem.style.display = "block";
-            delItem.style.display = "block";
-          }
+          editItem.style.display = "block";
+          delItem.style.display = "block";
         } else if (["memo", "noti"].includes(type)) {
           editItem.style.display = "block";
           delItem.style.display = "block";
@@ -2814,8 +2812,13 @@
           notifications = notifications.filter((n) => n.id != currentContextId);
           renderNotifications();
         } else if (currentContextType === "weather") {
-          weatherLocations = weatherLocations.filter((l) => l.id != currentContextId);
-          localStorage.setItem("dj_weather_locations", JSON.stringify(weatherLocations));
+          if (currentContextId === "current") {
+            showCurrentWeather = false;
+            localStorage.setItem("dj_show_current_weather", false);
+          } else {
+            weatherLocations = weatherLocations.filter((l) => l.id != currentContextId);
+            localStorage.setItem("dj_weather_locations", JSON.stringify(weatherLocations));
+          }
           fetchWeather();
         }
         saveData();
