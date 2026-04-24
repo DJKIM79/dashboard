@@ -1142,8 +1142,7 @@
     <div id="deleteConfirmModal" class="modal" onclick="event.target == this && closeModal('deleteConfirmModal')">
       <div class="modal-content delete-modal">
         <div class="delete-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        <h3 data-i18n="alertDel">삭제하시겠습니까?</h3>
-        <p style="text-align: center; color: #94a3b8; margin-bottom: 25px; font-size: 0.9rem;" data-i18n="txtDeleteWarn">이 작업은 되돌릴 수 없습니다.</p>
+        <h3 data-i18n="alertDel" style="margin-bottom: 30px;">삭제하시겠습니까?</h3>
         <div style="display: flex; gap: 12px;">
           <button class="btn-save" style="background: #334155; color: #fff; flex: 1;" onclick="closeModal('deleteConfirmModal')" data-i18n="btnCancel">취소</button>
           <button class="btn-save" style="background: #ef4444; color: #fff; flex: 1;" onclick="deleteCurrentItem()" data-i18n="btnConfirmDelete">삭제</button>
