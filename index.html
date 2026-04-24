@@ -1438,143 +1438,79 @@
         <h3 data-i18n="modalSetting">환경 설정</h3>
         <div style="flex: 1; display: flex; flex-direction: column;">
           <div class="setting-grid">
-          <div class="setting-column">
-            <div class="setting-group-title" data-i18n="lblTheme">
-              테마 색상
-            </div>
-            <div class="theme-colors" style="margin-bottom: 20px">
-              <div
-                class="color-swatch"
-                style="background: #ef4444"
-                onclick="setTheme('#ef4444')"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background: #f97316"
-                onclick="setTheme('#f97316')"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background: #eab308"
-                onclick="setTheme('#eab308')"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background: #22c55e"
-                onclick="setTheme('#22c55e')"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background: #3b82f6"
-                onclick="setTheme('#3b82f6')"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background: #6366f1"
-                onclick="setTheme('#6366f1')"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background: #a855f7"
-                onclick="setTheme('#a855f7')"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background: #ec4899"
-                onclick="setTheme('#ec4899')"
-              ></div>
-              <div
-                class="color-swatch"
-                style="background: #fff"
-                onclick="setTheme('#fff')"
-              ></div>
-              <div
-                class="color-swatch"
-                style="
-                  background: #000;
-                  border: 1px solid rgba(255, 255, 255, 0.3);
-                "
-                onclick="setTheme('#000')"
-              ></div>
+            <div class="setting-column">
+              <div class="setting-group-title" data-i18n="lblTheme">
+                테마 색상
+              </div>
+              <div class="theme-colors" style="margin-bottom: 20px">
+                <div class="color-swatch" style="background: #ef4444" onclick="setTheme('#ef4444')"></div>
+                <div class="color-swatch" style="background: #f97316" onclick="setTheme('#f97316')"></div>
+                <div class="color-swatch" style="background: #eab308" onclick="setTheme('#eab308')"></div>
+                <div class="color-swatch" style="background: #22c55e" onclick="setTheme('#22c55e')"></div>
+                <div class="color-swatch" style="background: #3b82f6" onclick="setTheme('#3b82f6')"></div>
+                <div class="color-swatch" style="background: #6366f1" onclick="setTheme('#6366f1')"></div>
+                <div class="color-swatch" style="background: #a855f7" onclick="setTheme('#a855f7')"></div>
+                <div class="color-swatch" style="background: #ec4899" onclick="setTheme('#ec4899')"></div>
+                <div class="color-swatch" style="background: #fff" onclick="setTheme('#fff')"></div>
+                <div class="color-swatch" style="background: #000; border: 1px solid rgba(255, 255, 255, 0.3);" onclick="setTheme('#000')"></div>
+              </div>
+
+              <div class="setting-group-title" data-i18n="lblBgKeyword">
+                배경화면 키워드
+              </div>
+              <input type="text" id="bgKeywordInput" data-i18n-ph="bgKeywordPh" placeholder="예: nature, space, city, dark" onkeypress="event.key === 'Enter' && saveSettings()"/>
+
+              <div class="setting-group-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <span data-i18n="lblSearch">검색</span>
+                <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer;">
+                  <input type="checkbox" id="searchNewTab" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
+                  <span style="font-size: 0.75rem; color: #94a3b8;" data-i18n="lblSearchNewTab">새 창으로 검색</span>
+                </label>
+              </div>
+              <select id="searchEngineSelect" onchange="toggleCustomSearchUrl()" style="margin-bottom: 10px;">
+                <option value="google">Google</option>
+                <option value="naver">Naver</option>
+                <option value="chatgpt">ChatGPT</option>
+                <option value="custom" data-i18n="optCustom">Custom URL</option>
+              </select>
+              <input type="text" id="customSearchUrlInput" placeholder="https://example.com/search?q=" style="display: none; margin-bottom: 10px;"/>
             </div>
 
-            <div class="setting-group-title" data-i18n="lblBgKeyword">
-              배경화면 키워드
-            </div>
-            <input
-              type="text"
-              id="bgKeywordInput"
-              data-i18n-ph="bgKeywordPh"
-              placeholder="예: nature, space, city, dark"
-              onkeypress="event.key === 'Enter' && saveSettings()"
-            />
+            <div class="setting-column">
+              <div class="setting-group-title" data-i18n="lblLayout">크기</div>
+              <div class="setting-row" style="gap: 15px; align-items: center; margin-bottom: 20px;">
+                <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap; margin: 0; display: flex; align-items: center;" data-i18n="lblQuoteSize">명언 크기</span>
+                  <select id="quoteFontSizeSelect" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; height: 32px; text-align: center; text-align-last: center; cursor: pointer; padding: 0; margin: 0; outline: none; box-sizing: border-box;">
+                    <option value="large" data-i18n="optLarge">대</option>
+                    <option value="medium" data-i18n="optMedium">중</option>
+                    <option value="small" data-i18n="optSmall">소</option>
+                  </select>
+                </div>
+                <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap; margin: 0; display: flex; align-items: center;" data-i18n="lblWidgetSize">위젯 크기</span>
+                  <select id="widgetSizeSelect" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; height: 32px; text-align: center; text-align-last: center; cursor: pointer; padding: 0; margin: 0; outline: none; box-sizing: border-box;">
+                    <option value="large" data-i18n="optLarge">대</option>
+                    <option value="medium" data-i18n="optMedium">중</option>
+                    <option value="small" data-i18n="optSmall">소</option>
+                  </select>
+                </div>
+              </div>
 
-            <div class="setting-group-title" data-i18n="lblGeneral">일반</div>
-            <div class="setting-row" style="gap: 15px; align-items: center;">
-              <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap; margin: 0; display: flex; align-items: center;" data-i18n="lblQuoteSize">명언 크기</span>
-                <select id="quoteFontSizeSelect" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; height: 32px; text-align: center; text-align-last: center; cursor: pointer; padding: 0; margin: 0; outline: none; box-sizing: border-box;">
-                  <option value="large" data-i18n="optLarge">대</option>
-                  <option value="medium" data-i18n="optMedium">중</option>
-                  <option value="small" data-i18n="optSmall">소</option>
-                </select>
+              <div class="setting-group-title" style="display: flex; justify-content: space-between">
+                <span data-i18n="lblWeather">날씨</span>
+                <label class="compact-checkbox-label">
+                  <input type="checkbox" id="showCurrentWeather" />
+                  <span data-i18n="lblCurrentWeather">현지 날씨</span>
+                </label>
               </div>
-              <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap; margin: 0; display: flex; align-items: center;" data-i18n="lblWidgetSize">위젯 크기</span>
-                <select id="widgetSizeSelect" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; height: 32px; text-align: center; text-align-last: center; cursor: pointer; padding: 0; margin: 0; outline: none; box-sizing: border-box;">
-                  <option value="large" data-i18n="optLarge">대</option>
-                  <option value="medium" data-i18n="optMedium">중</option>
-                  <option value="small" data-i18n="optSmall">소</option>
-                </select>
+              <div id="weatherLocationList" class="location-list"></div>
+              <div class="city-search-container">
+                <input type="text" id="citySearchInput" data-i18n-ph="citySearchPh" placeholder="도시 검색 (예: 서울, London)" autocomplete="off" oninput="searchCities(this.value)"/>
+                <div id="citySearchResults" class="city-results"></div>
               </div>
-            </div>
-            <div class="setting-row" style="gap: 15px; align-items: center; margin-top: 15px;">
-              <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" id="searchNewTab" style="width: 18px; height: 18px; cursor: pointer; margin: 0;">
-                <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap; margin: 0; display: flex; align-items: center;" data-i18n="lblSearchNewTab">새 창으로 검색</span>
-              </div>
-              <div style="flex: 1;"></div>
             </div>
           </div>
-
-          <div class="setting-column">
-            <div class="setting-group-title" data-i18n="lblSearchEngine">
-              검색 엔진
-            </div>
-            <select id="searchEngineSelect" onchange="toggleCustomSearchUrl()">
-              <option value="google">Google</option>
-              <option value="naver">Naver</option>
-              <option value="chatgpt">ChatGPT</option>
-              <option value="custom" data-i18n="optCustom">Custom URL</option>
-            </select>
-            <input
-              type="text"
-              id="customSearchUrlInput"
-              placeholder="https://example.com/search?q="
-              style="display: none"
-            />
-
-            <div class="setting-group-title" style="display: flex; justify-content: space-between">
-              <span data-i18n="lblWeather">날씨</span>
-              <label class="compact-checkbox-label">
-                <input type="checkbox" id="showCurrentWeather" />
-                <span data-i18n="lblCurrentWeather">현지 날씨</span>
-              </label>
-            </div>
-            <div id="weatherLocationList" class="location-list"></div>
-            <div class="city-search-container">
-              <input
-                type="text"
-                id="citySearchInput"
-                data-i18n-ph="citySearchPh"
-                placeholder="도시 검색 (예: 서울, London)"
-                autocomplete="off"
-                oninput="searchCities(this.value)"
-              />
-              <div id="citySearchResults" class="city-results"></div>
-              </div>
-              </div>
-              </div>
               <button
               class="btn-save"
               onclick="saveSettings()"
@@ -1785,6 +1721,8 @@
           lblTheme: "테마 색상",
           lblBgKeyword: "배경화면 키워드",
           bgKeywordPh: "예: space, nature, minimal",
+          lblSearch: "검색",
+          lblLayout: "크기",
           lblGeneral: "일반",
           lblQuoteSize: "명언 크기",
           lblWidgetSize: "위젯 크기",
@@ -1875,6 +1813,8 @@
           lblTheme: "Theme Color",
           lblBgKeyword: "Background Keyword",
           bgKeywordPh: "e.g. space, nature, minimal",
+          lblSearch: "Search",
+          lblLayout: "Size",
           lblGeneral: "General",
           lblQuoteSize: "Quote Size",
           lblWidgetSize: "Widget Size",
@@ -1965,6 +1905,8 @@
           lblTheme: "テーマカラー",
           lblBgKeyword: "壁紙キーワード",
           bgKeywordPh: "例: space, nature, minimal",
+          lblSearch: "検索",
+          lblLayout: "サイズ",
           lblGeneral: "全般",
           lblQuoteSize: "名言のサイズ",
           lblWidgetSize: "ウィジェットのサイズ",
