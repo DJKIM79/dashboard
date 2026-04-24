@@ -1115,14 +1115,14 @@
     </style>
   </head>
   <body onclick="requestNotiPermission()">
-    <div id="shortcutContextMenu" class="context-menu">
-      <div onclick="editCurrentShortcut()" data-i18n="cmEdit">수정하기</div>
+    <div id="globalContextMenu" class="context-menu">
+      <div onclick="editCurrentItem()" data-i18n="cmEdit">수정</div>
       <div
         class="cm-del"
-        onclick="deleteCurrentShortcut()"
+        onclick="deleteCurrentItem()"
         data-i18n="cmDelete"
       >
-        삭제하기
+        삭제
       </div>
     </div>
     <div id="top-left-widgets">
@@ -1625,8 +1625,8 @@
           weatherLow: "최저",
           quoteDefault: '"기회는 일어나는 것이 아니라 만드는 것이다."',
           quoteAuthorDefault: "- Chris Grosser",
-          cmEdit: "수정하기",
-          cmDelete: "삭제하기",
+          cmEdit: "수정",
+          cmDelete: "삭제",
           tipFile: "파일 관리",
           tipBackup: "데이터 백업",
           tipRestore: "데이터 복원",
@@ -1899,7 +1899,9 @@
         firedMinute = "",
         currentEditNotiId = null,
         currentEditMemoId = null,
-        currentShortcutIndex = null;
+        currentShortcutIndex = null,
+        currentContextType = null,
+        currentContextId = null;
       const savedTheme = localStorage.getItem("dj_theme_color");
       const setQuoteFontSize = (size) => {
         document.documentElement.style.setProperty(
@@ -1963,7 +1965,7 @@
           document
             .querySelectorAll(".smart-folder")
             .forEach((f) => f.classList.remove("open"));
-        const ctxMenu = document.getElementById("shortcutContextMenu");
+        const ctxMenu = document.getElementById("globalContextMenu");
         if (ctxMenu) ctxMenu.style.display = "none";
         if (!e.target.closest(".weather-item"))
           document
@@ -2565,10 +2567,12 @@
           }
         });
       };
-      const showShortcutMenu = (e, index) => {
+      const showContextMenu = (e, type, id) => {
         e.preventDefault();
-        currentShortcutIndex = index;
-        const menu = document.getElementById("shortcutContextMenu");
+        e.stopPropagation();
+        currentContextType = type;
+        currentContextId = id;
+        const menu = document.getElementById("globalContextMenu");
         menu.style.display = "block";
         let x = e.pageX || e.touches?.[0].pageX,
           y = e.pageY || e.touches?.[0].pageY;
@@ -2588,7 +2592,7 @@
             window.isDraggingShortcut
               ? (e.preventDefault(), (window.isDraggingShortcut = !1))
               : (window.location.href = url);
-          div.oncontextmenu = (e) => showShortcutMenu(e, i);
+          div.oncontextmenu = (e) => showContextMenu(e, "shortcut", i);
           div.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=128&domain=${new URL(url).hostname}"><span>${s.name}</span>`;
           c.appendChild(div);
         });
@@ -2629,6 +2633,7 @@
               e.stopPropagation();
               openNotiModal(n.id);
             };
+            div.oncontextmenu = (e) => showContextMenu(e, "noti", n.id);
             div.innerHTML = `<div class="title">${n.title}</div><div class="noti-info"><span>${n.time}</span><span class="remaining" style="color:var(--warning-color)">00:00:00</span></div>`;
             c.appendChild(div);
           });
@@ -2648,6 +2653,7 @@
             e.stopPropagation();
             openMemoModal(m.id);
           };
+          div.oncontextmenu = (e) => showContextMenu(e, "memo", m.id);
           div.innerHTML = `<div class="title">${m.title}</div>`;
           c.appendChild(div);
         });
@@ -2672,15 +2678,25 @@
         openModal("linkModal");
         setTimeout(() => document.getElementById("siteName").focus(), 50);
       };
-      const editCurrentShortcut = () => {
-        document.getElementById("shortcutContextMenu").style.display = "none";
-        openLinkModal(currentShortcutIndex);
+      const editCurrentItem = () => {
+        document.getElementById("globalContextMenu").style.display = "none";
+        if (currentContextType === "shortcut") openLinkModal(currentContextId);
+        else if (currentContextType === "memo") openMemoModal(currentContextId);
+        else if (currentContextType === "noti") openNotiModal(currentContextId);
       };
-      const deleteCurrentShortcut = () => {
-        document.getElementById("shortcutContextMenu").style.display = "none";
+      const deleteCurrentItem = () => {
+        document.getElementById("globalContextMenu").style.display = "none";
         if (confirm(LANG[userLang].alertDel)) {
-          shortcuts.splice(currentShortcutIndex, 1);
-          renderShortcuts();
+          if (currentContextType === "shortcut") {
+            shortcuts.splice(currentContextId, 1);
+            renderShortcuts();
+          } else if (currentContextType === "memo") {
+            memos = memos.filter((m) => m.id != currentContextId);
+            renderMemos();
+          } else if (currentContextType === "noti") {
+            notifications = notifications.filter((n) => n.id != currentContextId);
+            renderNotifications();
+          }
           saveData();
         }
       };
