@@ -1528,11 +1528,14 @@
                 </select>
               </div>
             </div>
-            <div class="setting-row" style="margin-top: 15px;">
-              <label class="compact-checkbox-label" style="justify-content: flex-start; width: 100%;">
-                <input type="checkbox" id="searchNewTab" />
-                <span data-i18n="lblSearchNewTab">새 창으로 검색</span>
-              </label>
+            <div class="setting-row" style="gap: 15px; align-items: center; margin-top: 15px;">
+              <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap; margin: 0; display: flex; align-items: center;" data-i18n="lblSearchNewTab">새 창으로 검색</span>
+                <div style="flex: 1; display: flex; justify-content: flex-end;">
+                  <input type="checkbox" id="searchNewTab" style="width: 18px; height: 18px; cursor: pointer; margin: 0;">
+                </div>
+              </div>
+              <div style="flex: 1;"></div> <!-- 공간 균형을 위한 빈 박스 -->
             </div>
           </div>
 
@@ -1543,8 +1546,6 @@
             <select id="searchEngineSelect" onchange="toggleCustomSearchUrl()">
               <option value="google">Google</option>
               <option value="naver">Naver</option>
-              <option value="gemini">Gemini</option>
-              <option value="copilot">Copilot</option>
               <option value="chatgpt">ChatGPT</option>
               <option value="custom" data-i18n="optCustom">Custom URL</option>
             </select>
@@ -2243,8 +2244,6 @@
         const engines = [
           { id: "google", domain: "google.com" },
           { id: "naver", domain: "naver.com" },
-          { id: "gemini", domain: "google.com" },
-          { id: "copilot", domain: "bing.com" },
           { id: "chatgpt", domain: "openai.com" }
         ];
 
@@ -2284,8 +2283,6 @@
         const domains = {
           google: "google.com",
           naver: "naver.com",
-          gemini: "google.com",
-          copilot: "bing.com",
           chatgpt: "openai.com",
         };
 
@@ -2317,13 +2314,6 @@
             break;
           case "naver":
             url = `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
-            break;
-          case "gemini":
-            url = `https://gemini.google.com/app?q=${encodeURIComponent(query)}`;
-            break;
-          case "copilot":
-            // Bing 검색 결과에서 대화 모드를 강제하고 쿼리를 즉시 전송
-            url = `https://www.bing.com/search?q=${encodeURIComponent(query)}&showconv=1&sendquery=1`;
             break;
           case "chatgpt":
             url = `https://chatgpt.com/?q=${encodeURIComponent(query)}`;
