@@ -923,7 +923,7 @@
       .search-engine-menu {
         position: absolute;
         top: calc(100% + 10px);
-        right: 0;
+        left: 50%;
         background: rgba(15, 23, 42, 0.95);
         backdrop-filter: blur(20px);
         border: 1px solid var(--glass-border);
@@ -934,7 +934,7 @@
         gap: 8px;
         opacity: 0;
         visibility: hidden;
-        transform: translateY(-10px) scale(0.9);
+        transform: translateX(-50%) translateY(-10px) scale(0.9);
         transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 2000;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
@@ -942,7 +942,7 @@
       .search-engine-menu.active {
         opacity: 1;
         visibility: visible;
-        transform: translateY(0) scale(1);
+        transform: translateX(-50%) translateY(0) scale(1);
       }
       .engine-option {
         width: 32px;
