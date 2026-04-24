@@ -945,17 +945,18 @@
         transform: translateX(-50%) translateY(0) scale(1);
       }
       .engine-option {
-        width: 32px;
-        height: 32px;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
         overflow: hidden;
         cursor: pointer;
         transition: 0.2s;
-        border: 2px solid transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
         background: rgba(255, 255, 255, 0.05);
+        flex-shrink: 0;
       }
       .engine-option:hover {
-        transform: scale(1.2);
+        transform: scale(1.1);
         border-color: var(--accent-color);
         background: rgba(255, 255, 255, 0.1);
       }
@@ -1351,23 +1352,7 @@
         <div class="search-engine-icon" onclick="toggleSearchEngineMenu(event)">
           <i class="fas fa-caret-down" style="font-size: 0.7rem; color: #94a3b8; margin-right: 5px; opacity: 0.7;"></i>
           <div id="search-engine-current"></div>
-          <div id="search-engine-menu" class="search-engine-menu">
-            <div class="engine-option" onclick="quickSelectEngine('google', event)">
-              <img src="https://www.google.com/s2/favicons?sz=64&domain=google.com" alt="google">
-            </div>
-            <div class="engine-option" onclick="quickSelectEngine('naver', event)">
-              <img src="https://www.google.com/s2/favicons?sz=64&domain=naver.com" alt="naver">
-            </div>
-            <div class="engine-option" onclick="quickSelectEngine('daum', event)">
-              <img src="https://www.google.com/s2/favicons?sz=64&domain=daum.net" alt="daum">
-            </div>
-            <div class="engine-option" onclick="quickSelectEngine('bing', event)">
-              <img src="https://www.google.com/s2/favicons?sz=64&domain=bing.com" alt="bing">
-            </div>
-            <div class="engine-option" onclick="quickSelectEngine('duckduckgo', event)">
-              <img src="https://www.google.com/s2/favicons?sz=64&domain=duckduckgo.com" alt="duckduckgo">
-            </div>
-          </div>
+          <div id="search-engine-menu" class="search-engine-menu"></div>
         </div>
       </div>
     </div>
@@ -2234,14 +2219,43 @@
 
       let currentSearchEngine = localStorage.getItem("dj_search_engine") || "google";
 
+      const renderSearchEngineMenu = () => {
+        const menu = document.getElementById("search-engine-menu");
+        if (!menu) return;
+        menu.innerHTML = "";
+        
+        const engines = [
+          { id: "google", domain: "google.com" },
+          { id: "naver", domain: "naver.com" },
+          { id: "daum", domain: "daum.net" },
+          { id: "bing", domain: "bing.com" },
+          { id: "duckduckgo", domain: "duckduckgo.com" }
+        ];
+
+        engines.forEach(engine => {
+          // 현재 선택된 엔진은 목록에서 제외
+          if (engine.id === currentSearchEngine) return;
+          
+          const div = document.createElement("div");
+          div.className = "engine-option";
+          div.onclick = (e) => quickSelectEngine(engine.id, e);
+          div.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}" alt="${engine.id}">`;
+          menu.appendChild(div);
+        });
+      };
+
       const toggleSearchEngineMenu = (e) => {
         e.stopPropagation();
-        document.getElementById("search-engine-menu").classList.toggle("active");
+        const menu = document.getElementById("search-engine-menu");
+        if (!menu.classList.contains("active")) {
+          renderSearchEngineMenu();
+        }
+        menu.classList.toggle("active");
       };
 
       const quickSelectEngine = (engine, e) => {
         if (e) e.stopPropagation();
-        currentSearchEngine = engine; // 임시 변경 (localStorage 저장 안 함)
+        currentSearchEngine = engine;
         updateSearchEngineIcon();
         const menu = document.getElementById("search-engine-menu");
         if (menu) menu.classList.remove("active");
