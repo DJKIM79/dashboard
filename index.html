@@ -1528,6 +1528,12 @@
                 </select>
               </div>
             </div>
+            <div class="setting-row" style="margin-top: 15px;">
+              <label class="compact-checkbox-label" style="justify-content: flex-start; width: 100%;">
+                <input type="checkbox" id="searchNewTab" />
+                <span data-i18n="lblSearchNewTab">새 창으로 검색</span>
+              </label>
+            </div>
           </div>
 
           <div class="setting-column">
@@ -1784,6 +1790,7 @@
           lblQuoteSize: "명언 크기",
           lblWidgetSize: "위젯 크기",
           lblSearchEngine: "검색 엔진",
+          lblSearchNewTab: "새 창으로 검색",
           optCustom: "사용자 정의",
           searchPh: "검색어를 입력하세요",
           lblWeather: "날씨",
@@ -1873,6 +1880,7 @@
           lblQuoteSize: "Quote Size",
           lblWidgetSize: "Widget Size",
           lblSearchEngine: "Search Engine",
+          lblSearchNewTab: "Open in New Tab",
           optCustom: "Custom",
           searchPh: "Type to search...",
           lblWeather: "Weather",
@@ -1962,6 +1970,7 @@
           lblQuoteSize: "名言のサイズ",
           lblWidgetSize: "ウィジェットのサイズ",
           lblSearchEngine: "検索エンジン",
+          lblSearchNewTab: "新しいタブで検索",
           optCustom: "カスタム",
           searchPh: "検索ワードを入力",
           lblWeather: "天気",
@@ -2170,6 +2179,8 @@
           localStorage.getItem("dj_quote_font_size") || "medium";
         document.getElementById("widgetSizeSelect").value =
           localStorage.getItem("dj_widget_size") || "medium";
+        document.getElementById("searchNewTab").checked =
+          localStorage.getItem("dj_search_new_tab") === "true";
         document.getElementById("showCurrentWeather").checked =
           showCurrentWeather;
 
@@ -2189,6 +2200,10 @@
         setQuoteFontSize(fontSize);
         const widgetSize = document.getElementById("widgetSizeSelect").value;
         setWidgetSize(widgetSize);
+        localStorage.setItem(
+          "dj_search_new_tab",
+          document.getElementById("searchNewTab").checked,
+        );
 
         const engine = document.getElementById("searchEngineSelect").value;
         localStorage.setItem("dj_search_engine", engine);
@@ -2331,7 +2346,13 @@
 
         // 검색어 비우기
         input.value = "";
-        window.location.href = url;
+
+        const openInNewTab = localStorage.getItem("dj_search_new_tab") === "true";
+        if (openInNewTab) {
+          window.open(url, "_blank");
+        } else {
+          window.location.href = url;
+        }
       };
       const toggleWidget = (type) => {
         const key = `dj_hide_${type}`;
