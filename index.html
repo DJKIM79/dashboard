@@ -1132,9 +1132,17 @@
   </head>
   <body onclick="requestNotiPermission()">
     <div id="globalContextMenu" class="context-menu">
-      <div onclick="editCurrentItem()" data-i18n="cmEdit">수정</div>
-      <div class="cm-del" onclick="showDeleteConfirm()" data-i18n="cmDelete">
+      <div id="ctx-edit" onclick="editCurrentItem()" data-i18n="cmEdit">수정</div>
+      <div
+        id="ctx-del"
+        class="cm-del"
+        onclick="showDeleteConfirm()"
+        data-i18n="cmDelete"
+      >
         삭제
+      </div>
+      <div id="ctx-hide" onclick="hideCurrentWidget()" data-i18n="cmHide">
+        숨기기
       </div>
     </div>
 
@@ -1227,7 +1235,7 @@
         <i class="fas fa-sticky-note"></i>
       </div>
     </div>
-    <div id="top-right-widgets"></div>
+    <div id="top-right-widgets" oncontextmenu="showContextMenu(event, 'weather')"></div>
     <div id="quote-section">
       <div class="quote-container">
         <span id="quote-text">...</span>
@@ -1252,7 +1260,7 @@
     <div id="shortcut-container"></div>
     <div class="bottom-widgets">
       <div class="left-area">
-        <div class="smart-folder" id="memo-folder">
+        <div class="smart-folder" id="memo-folder" oncontextmenu="showContextMenu(event, 'memo')">
           <div
             class="widget-btn folder-icon"
             onclick="toggleFolder('memo-folder', event)"
@@ -1302,15 +1310,15 @@
         </div>
       </div>
       <div class="right-area">
-        <div id="clock-container">
+        <div id="clock-container" oncontextmenu="showContextMenu(event, 'clock')">
           <div id="clock-time">00:00:00</div>
         </div>
-        <div id="calendar-container" class="calendar-widget">
+        <div id="calendar-container" class="calendar-widget" oncontextmenu="showContextMenu(event, 'calendar')">
           <div class="calendar-header" id="cal-month-year">...</div>
           <div class="calendar-days-header" id="cal-days-header"></div>
           <div class="calendar-grid" id="calendar-grid"></div>
         </div>
-        <div class="smart-folder" id="noti-folder">
+        <div class="smart-folder" id="noti-folder" oncontextmenu="showContextMenu(event, 'noti')">
           <div
             class="widget-btn folder-icon"
             onclick="toggleFolder('noti-folder', event)"
@@ -1652,6 +1660,7 @@
           quoteAuthorDefault: "- Chris Grosser",
           cmEdit: "수정",
           cmDelete: "삭제",
+          cmHide: "숨기기",
           tipFile: "파일 관리",
           tipBackup: "데이터 백업",
           tipRestore: "데이터 복원",
@@ -1740,6 +1749,7 @@
           quoteAuthorDefault: "- Chris Grosser",
           cmEdit: "Edit",
           cmDelete: "Delete",
+          cmHide: "Hide",
           tipFile: "File Management",
           tipBackup: "Backup",
           tipRestore: "Restore",
@@ -1827,6 +1837,7 @@
           quoteAuthorDefault: "- クリス・グロッサー",
           cmEdit: "編集",
           cmDelete: "削除",
+          cmHide: "隠す",
           tipFile: "ファイル管理",
           tipBackup: "データバックアップ",
           tipRestore: "データ復元",
@@ -2607,15 +2618,25 @@
         currentContextType = type;
         currentContextId = id;
         const menu = document.getElementById("globalContextMenu");
+        
+        // 메뉴 아이템 가시성 설정
+        const editItem = document.getElementById("ctx-edit");
+        const delItem = document.getElementById("ctx-del");
+        const hideItem = document.getElementById("ctx-hide");
+        
+        const isManageable = ["shortcut", "memo", "noti"].includes(type);
+        editItem.style.display = isManageable ? "block" : "none";
+        delItem.style.display = isManageable ? "block" : "none";
+        
+        // 날씨, 시계, 달력 등은 '숨기기'만 표시 (필요시 'noti' 폴더 등도 추가 가능)
+        hideItem.style.display = "block";
+
         menu.style.display = "block";
         
         let x = e.pageX || e.touches?.[0].pageX;
         let y = e.pageY || e.touches?.[0].pageY;
         
-        // 화면 오른쪽 끝 처리
         if (x + 130 > window.innerWidth) x = window.innerWidth - 140;
-        
-        // 화면 아래쪽 끝 처리 (메뉴가 바닥을 뚫고 나가지 않게 위로 띄움)
         const menuHeight = menu.offsetHeight;
         if (y + menuHeight > window.innerHeight + window.scrollY) {
           y = y - menuHeight;
@@ -2623,6 +2644,18 @@
         
         menu.style.left = `${x}px`;
         menu.style.top = `${y}px`;
+      };
+
+      const hideCurrentWidget = () => {
+        document.getElementById("globalContextMenu").style.display = "none";
+        if (["shortcut", "memo", "noti"].includes(currentContextType)) {
+          // 개별 아이템인 경우 해당 위젯(폴더) 전체를 숨김
+          const typeMap = { shortcut: "shortcut", memo: "memo", noti: "noti" };
+          toggleWidget(typeMap[currentContextType]);
+        } else {
+          // 직접 위젯을 우클릭한 경우 (weather, clock, calendar)
+          toggleWidget(currentContextType);
+        }
       };
       const renderShortcuts = () => {
         const c = document.getElementById("shortcut-container");
