@@ -800,8 +800,8 @@
       }
       #settingModal .modal-content {
         width: 720px;
-        height: 535px; /* 불필요한 간격을 줄인 고정 높이 */
-        max-height: 535px;
+        height: 580px; /* 다시 580px로 복구 */
+        max-height: 580px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -810,7 +810,8 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 30px;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        flex: 1; /* 다시 공간을 가득 채우도록 복구 */
       }
       #search-section {
         width: 100%;
@@ -1298,7 +1299,8 @@
     >
       <div class="modal-content">
         <h3 data-i18n="modalSetting">환경 설정</h3>
-        <div class="setting-grid">
+        <div style="flex: 1; display: flex; flex-direction: column;">
+          <div class="setting-grid">
           <div class="setting-column">
             <div class="setting-group-title" data-i18n="lblTheme">
               테마 색상
