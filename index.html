@@ -785,6 +785,7 @@
         height: 100%;
         background: rgba(0, 0, 0, 0.85);
         backdrop-filter: blur(10px);
+        pointer-events: auto;
       }
       .modal-content {
         background: #1e293b;
@@ -797,6 +798,7 @@
         transform: translate(-50%, -50%);
         border: 1px solid var(--glass-border);
         box-sizing: border-box;
+        pointer-events: auto;
       }
       #settingModal .modal-content {
         width: 720px;
@@ -816,8 +818,10 @@
       #search-section {
         width: 100%;
         max-width: 600px;
-        margin-bottom: 50px;
+        margin: 0 auto 50px auto;
         animation: fadeIn 1.4s ease-out;
+        position: relative;
+        z-index: 5;
       }
       .search-box {
         background: rgba(0, 0, 0, 0.45);
