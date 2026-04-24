@@ -880,6 +880,28 @@
       #searchInput::placeholder {
         color: rgba(255, 255, 255, 0.4);
       }
+      .search-engine-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        flex-shrink: 0;
+      }
+      .search-engine-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .search-engine-icon i {
+        font-size: 0.8rem;
+        color: #94a3b8;
+      }
       #memoModal .modal-content {
         width: 600px;
         max-width: 90vw;
@@ -1264,6 +1286,7 @@
           placeholder="검색어를 입력하세요"
           onkeypress="event.key === 'Enter' && performSearch()"
         />
+        <div id="search-engine-icon" class="search-engine-icon"></div>
       </div>
     </div>
     <div id="shortcut-container"></div>
@@ -2105,6 +2128,7 @@
             document.getElementById("customSearchUrlInput").value.trim(),
           );
         }
+        updateSearchEngineIcon();
 
         showCurrentWeather =
           document.getElementById("showCurrentWeather").checked;
@@ -2122,6 +2146,31 @@
           ? "block"
           : "none";
       };
+
+      const updateSearchEngineIcon = () => {
+        const engine = localStorage.getItem("dj_search_engine") || "google";
+        const iconEl = document.getElementById("search-engine-icon");
+        const domains = {
+          google: "google.com",
+          naver: "naver.com",
+          daum: "daum.net",
+          bing: "bing.com",
+          duckduckgo: "duckduckgo.com",
+        };
+
+        if (engine === "custom") {
+          const customUrl = localStorage.getItem("dj_custom_search_url") || "";
+          try {
+            const domain = new URL(customUrl).hostname;
+            iconEl.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=64&domain=${domain}" alt="custom">`;
+          } catch (e) {
+            iconEl.innerHTML = `<i class="fas fa-link"></i>`;
+          }
+        } else {
+          iconEl.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=64&domain=${domains[engine]}" alt="${engine}">`;
+        }
+      };
+      updateSearchEngineIcon();
 
       const performSearch = () => {
         const query = document.getElementById("searchInput").value.trim();
