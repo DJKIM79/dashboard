@@ -815,6 +815,22 @@
         margin-bottom: 25px;
         flex: 1; /* 다시 공간을 가득 채우도록 복구 */
       }
+      .modal-content.delete-modal {
+        width: 320px;
+        padding: 30px;
+        text-align: center;
+      }
+      .delete-icon {
+        font-size: 3rem;
+        color: #ef4444;
+        margin-bottom: 20px;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(1); opacity: 0.8; }
+      }
       #search-section {
         width: 100%;
         max-width: 600px;
@@ -1117,14 +1133,24 @@
   <body onclick="requestNotiPermission()">
     <div id="globalContextMenu" class="context-menu">
       <div onclick="editCurrentItem()" data-i18n="cmEdit">수정</div>
-      <div
-        class="cm-del"
-        onclick="deleteCurrentItem()"
-        data-i18n="cmDelete"
-      >
+      <div class="cm-del" onclick="showDeleteConfirm()" data-i18n="cmDelete">
         삭제
       </div>
     </div>
+
+    <!-- 커스텀 삭제 확인 모달 -->
+    <div id="deleteConfirmModal" class="modal" onclick="event.target == this && closeModal('deleteConfirmModal')">
+      <div class="modal-content delete-modal">
+        <div class="delete-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <h3 data-i18n="alertDel">삭제하시겠습니까?</h3>
+        <p style="text-align: center; color: #94a3b8; margin-bottom: 25px; font-size: 0.9rem;" data-i18n="txtDeleteWarn">이 작업은 되돌릴 수 없습니다.</p>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn-save" style="background: #334155; color: #fff; flex: 1;" onclick="closeModal('deleteConfirmModal')" data-i18n="btnCancel">취소</button>
+          <button class="btn-save" style="background: #ef4444; color: #fff; flex: 1;" onclick="deleteCurrentItem()" data-i18n="btnConfirmDelete">삭제</button>
+        </div>
+      </div>
+    </div>
+
     <div id="top-left-widgets">
       <div class="fab-container">
         <div
@@ -1678,6 +1704,8 @@
           btnAddNoti: "알림 추가",
           btnEditNoti: "알림 수정",
           btnDelete: "삭제",
+          btnCancel: "취소",
+          btnConfirmDelete: "삭제",
           modalMemoAdd: "메모 추가",
           modalMemoEdit: "메모 수정",
           memoTitle: "메모 제목",
@@ -1685,6 +1713,7 @@
           btnSaveMemo: "메모 저장",
           alertDel: "삭제하시겠습니까?",
           alertRestore: "복원 완료!",
+          txtDeleteWarn: "이 작업은 되돌릴 수 없습니다.",
           txtEnded: "종료됨",
           tutSidebarTitle: "🖱️ 위젯 사이드바",
           tutSidebarDesc:
@@ -1762,6 +1791,8 @@
           btnAddNoti: "Add Alert",
           btnEditNoti: "Update Alert",
           btnDelete: "Delete",
+          btnCancel: "Cancel",
+          btnConfirmDelete: "Delete",
           modalMemoAdd: "Add Memo",
           modalMemoEdit: "Edit Memo",
           memoTitle: "Memo Title",
@@ -1769,6 +1800,7 @@
           btnSaveMemo: "Save Memo",
           alertDel: "Are you sure you want to delete?",
           alertRestore: "Restored successfully!",
+          txtDeleteWarn: "This action cannot be undone.",
           txtEnded: "Ended",
           tutSidebarTitle: "🖱️ Widget Sidebar",
           tutSidebarDesc:
@@ -1846,6 +1878,8 @@
           btnAddNoti: "通知を追加",
           btnEditNoti: "通知を更新",
           btnDelete: "削除",
+          btnCancel: "キャンセル",
+          btnConfirmDelete: "削除",
           modalMemoAdd: "メモを追加",
           modalMemoEdit: "メモを編集",
           memoTitle: "メモタイトル",
@@ -1853,6 +1887,7 @@
           btnSaveMemo: "メモを保存",
           alertDel: "削除しますか？",
           alertRestore: "復元完了！",
+          txtDeleteWarn: "この操作は取り消せません。",
           txtEnded: "終了",
           tutSidebarTitle: "🖱️ ウィジェットサイドバー",
           tutSidebarDesc:
@@ -2688,6 +2723,10 @@
         openModal("linkModal");
         setTimeout(() => document.getElementById("siteName").focus(), 50);
       };
+      const showDeleteConfirm = () => {
+        document.getElementById("globalContextMenu").style.display = "none";
+        openModal("deleteConfirmModal");
+      };
       const editCurrentItem = () => {
         document.getElementById("globalContextMenu").style.display = "none";
         if (currentContextType === "shortcut") openLinkModal(currentContextId);
@@ -2695,20 +2734,18 @@
         else if (currentContextType === "noti") openNotiModal(currentContextId);
       };
       const deleteCurrentItem = () => {
-        document.getElementById("globalContextMenu").style.display = "none";
-        if (confirm(LANG[userLang].alertDel)) {
-          if (currentContextType === "shortcut") {
-            shortcuts.splice(currentContextId, 1);
-            renderShortcuts();
-          } else if (currentContextType === "memo") {
-            memos = memos.filter((m) => m.id != currentContextId);
-            renderMemos();
-          } else if (currentContextType === "noti") {
-            notifications = notifications.filter((n) => n.id != currentContextId);
-            renderNotifications();
-          }
-          saveData();
+        closeModal("deleteConfirmModal");
+        if (currentContextType === "shortcut") {
+          shortcuts.splice(currentContextId, 1);
+          renderShortcuts();
+        } else if (currentContextType === "memo") {
+          memos = memos.filter((m) => m.id != currentContextId);
+          renderMemos();
+        } else if (currentContextType === "noti") {
+          notifications = notifications.filter((n) => n.id != currentContextId);
+          renderNotifications();
         }
+        saveData();
       };
       const openMemoModal = (id = null) => {
         currentEditMemoId = id;
