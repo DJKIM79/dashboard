@@ -69,9 +69,10 @@ const utils = {
   },
 
   saveData() {
-    localStorage.setItem("dj_shortcuts", JSON.stringify(window.shortcuts));
-    localStorage.setItem("dj_notifications", JSON.stringify(window.notifications));
-    localStorage.setItem("dj_memos", JSON.stringify(window.memos));
+    if (window.shortcutMod) localStorage.setItem("dj_shortcuts", JSON.stringify(shortcutMod.items));
+    if (window.noti) localStorage.setItem("dj_notifications", JSON.stringify(noti.items));
+    if (window.memo) localStorage.setItem("dj_memos", JSON.stringify(memo.items));
+    if (window.weather) localStorage.setItem("dj_weather_locations", JSON.stringify(weather.locations));
   }
 };
 

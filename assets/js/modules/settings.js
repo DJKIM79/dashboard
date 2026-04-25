@@ -132,7 +132,18 @@ const settings = {
   },
 
   setQuoteFontSize(size) {
+    const authorEl = document.getElementById("quote-author");
+    const sizes = {
+      large: "24px",
+      medium: "16px",
+      small: "13px"
+    };
+    
     document.documentElement.style.setProperty("--quote-font-size", `var(--quote-size-${size})`);
+    if (authorEl) {
+      authorEl.style.fontSize = sizes[size];
+      authorEl.style.lineHeight = "1.5";
+    }
     localStorage.setItem("dj_quote_font_size", size);
   },
 

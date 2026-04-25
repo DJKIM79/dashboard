@@ -43,6 +43,8 @@ const noti = {
 
   openModal(id = null) {
     window.currentEditNotiId = id;
+    window.currentContextType = "noti";
+    window.currentContextId = id;
     const T = i18n.langData,
       dBtn = document.getElementById("notiDelBtn"),
       sBtn = document.getElementById("notiSaveBtn");
@@ -108,6 +110,7 @@ const noti = {
       } else {
         this.items.push(data);
       }
+      window.notifications = this.items;
       this.render();
       utils.saveData();
       utils.closeModal("notiModal");
@@ -116,13 +119,11 @@ const noti = {
 
   delete(id = null) {
     const targetId = id || window.currentEditNotiId;
-    if (confirm(i18n.get("alertDel"))) {
-      this.items = this.items.filter((x) => x.id != targetId);
-      window.notifications = this.items;
-      this.render();
-      utils.saveData();
-      utils.closeModal("notiModal");
-    }
+    this.items = this.items.filter((x) => x.id != targetId);
+    window.notifications = this.items;
+    this.render();
+    utils.saveData();
+    utils.closeModal("notiModal");
   },
 
   check(timeStr, todayStr, now) {

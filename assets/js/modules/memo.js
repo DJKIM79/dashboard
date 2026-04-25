@@ -27,6 +27,8 @@ const memo = {
 
   openModal(id = null) {
     window.currentEditMemoId = id;
+    window.currentContextType = "memo";
+    window.currentContextId = id;
     const T = i18n.langData,
       d = document.getElementById("memoDelBtn"),
       m = id ? this.items.find((x) => x.id == id) : null;
@@ -54,6 +56,7 @@ const memo = {
       } else {
         this.items.push({ id: Date.now(), title: t, content: c });
       }
+      window.memos = this.items;
       this.render();
       utils.saveData();
       utils.closeModal("memoModal");
@@ -62,13 +65,11 @@ const memo = {
 
   delete(id = null) {
     const targetId = id || window.currentEditMemoId;
-    if (confirm(i18n.get("alertDel"))) {
-      this.items = this.items.filter((x) => x.id != targetId);
-      window.memos = this.items;
-      this.render();
-      utils.saveData();
-      utils.closeModal("memoModal");
-    }
+    this.items = this.items.filter((x) => x.id != targetId);
+    window.memos = this.items;
+    this.render();
+    utils.saveData();
+    utils.closeModal("memoModal");
   }
 };
 

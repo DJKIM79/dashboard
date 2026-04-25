@@ -12,6 +12,10 @@
         --quote-size-medium: 2.4rem;
         --quote-size-small: 1.8rem;
         --quote-font-size: var(--quote-size-medium);
+        --quote-author-size-large: 1.4rem;
+        --quote-author-size-medium: 1.1rem;
+        --quote-author-size-small: 0.8rem;
+        --quote-author-font-size: var(--quote-author-size-medium);
         --widget-scale-large: 1.15;
         --widget-scale-medium: 1;
         --widget-scale-small: 0.85;
@@ -303,7 +307,6 @@
         align-self: flex-end;
       }
       #quote-author {
-        font-size: 1rem;
         color: var(--accent-color);
         letter-spacing: 2px;
         font-weight: 600;
@@ -860,6 +863,9 @@
       }
       #alertModal {
         z-index: 3000;
+      }
+      #deleteConfirmModal {
+        z-index: 9999 !important;
       }
       .modal-content {
         background: #1e293b;

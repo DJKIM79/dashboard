@@ -28,6 +28,7 @@
   "lblAIDisable": "사용 안 함",
   "msgConnSuccess": "서버 접속 성공",
   "msgConnFail": "서버 접속 실패",
+  "lblServerCheck": "서버 체크",
   "tipClearChat": "대화 초기화",
   "sideWeather": "날씨",
   "sideCalendar": "달력",

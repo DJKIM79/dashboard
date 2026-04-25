@@ -1,9 +1,4 @@
 // Global Variables
-window.shortcuts = JSON.parse(localStorage.getItem("dj_shortcuts")) || [];
-window.notifications = JSON.parse(localStorage.getItem("dj_notifications")) || [];
-window.memos = JSON.parse(localStorage.getItem("dj_memos")) || [];
-window.weatherLocations = JSON.parse(localStorage.getItem("dj_weather_locations")) || [];
-window.showCurrentWeather = localStorage.getItem("dj_show_current_weather") !== "false";
 window.currentEditNotiId = null;
 window.currentEditMemoId = null;
 window.currentShortcutIndex = null;
@@ -59,6 +54,9 @@ const app = {
   showDeleteConfirm() {
     const menu = document.getElementById("globalContextMenu");
     if (menu) menu.style.display = "none";
+    // Close existing modals to prevent overlap
+    utils.closeModal("memoModal");
+    utils.closeModal("notiModal");
     utils.openModal("deleteConfirmModal");
   },
 

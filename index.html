@@ -16,7 +16,7 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/css/style.css?v=1.0.4" />
   </head>
   <body onclick="requestNotiPermission()">
     <div id="globalContextMenu" class="context-menu">
@@ -383,7 +383,7 @@
               <div class="setting-group-title" style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                   <span data-i18n="lblAISetting">AI 설정</span>
-                  <span id="ai-connection-status" style="font-size: 0.75rem; display: none;"></span>
+                  <span id="ai-connection-status" style="font-size: 0.75rem; display: none;" data-i18n-title="lblServerCheck"></span>
                 </div>
                 <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; color: #94a3b8;">
                   <input type="checkbox" id="aiDisableCheck" onchange="toggleAiSettings(this.checked)" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
@@ -546,7 +546,7 @@
             class="btn-save"
             id="notiDelBtn"
             style="display: none; background: #ef4444; color: #fff; flex: 0.4"
-            onclick="deleteCurrentNoti()"
+            onclick="showDeleteConfirm()"
             data-i18n="btnDelete"
           >
             삭제
@@ -586,7 +586,7 @@
             class="btn-save"
             id="memoDelBtn"
             style="display: none; background: #ef4444; color: #fff; flex: 0.4"
-            onclick="deleteCurrentMemo()"
+            onclick="showDeleteConfirm()"
             data-i18n="btnDelete"
           >
             삭제
@@ -607,7 +607,7 @@
     <script src="assets/js/modules/memo.js"></script>
     <script src="assets/js/modules/noti.js"></script>
     <script src="assets/js/modules/quote.js"></script>
-    <script src="assets/js/modules/settings.js"></script>
+    <script src="assets/js/modules/settings.js?v=1.0.1"></script>
     <script src="assets/js/modules/ai.js"></script>
     <script src="assets/js/modules/files.js"></script>
     <script src="assets/js/modules/tutorial.js"></script>

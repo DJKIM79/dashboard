@@ -91,6 +91,7 @@ const shortcutMod = {
       } else {
         this.items.push({ name: n, url: u });
       }
+      window.shortcuts = this.items;
       this.render();
       utils.saveData();
       utils.closeModal("linkModal");

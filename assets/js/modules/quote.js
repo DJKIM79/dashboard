@@ -32,6 +32,11 @@ const quote = {
         if (qa) qa.innerText = i18n.get("quoteAuthorDefault");
       } finally {
         if (container) container.classList.remove("quote-switching");
+        // Re-apply font size to ensure author size is updated
+        if (window.settings) {
+          const size = localStorage.getItem("dj_quote_font_size") || "medium";
+          settings.setQuoteFontSize(size);
+        }
       }
     }, 400);
   }
