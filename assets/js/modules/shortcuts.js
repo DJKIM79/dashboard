@@ -48,7 +48,9 @@ const shortcutMod = {
 
     if (window.shortcutSortable) window.shortcutSortable.destroy();
     window.shortcutSortable = new Sortable(c, {
-      animation: 150,
+      animation: 300,
+      easing: "cubic-bezier(1, 0, 0, 1)",
+      ghostClass: "shortcut-ghost",
       delay: 400,
       delayOnTouchOnly: true,
       onStart: () => (this.isDragging = true),
