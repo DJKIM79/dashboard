@@ -393,13 +393,18 @@
         opacity: 0 !important;
       }
       .shortcut-fallback {
-        opacity: 0.9 !important;
-        transform: scale(1.1) !important;
+        opacity: 0.95 !important;
+        transform: scale(1.1) rotate(3deg) !important;
         z-index: 10000 !important;
-        background: rgba(30, 41, 59, 0.9) !important;
+        background: rgba(30, 41, 59, 0.95) !important;
         border: 2px solid var(--accent-color) !important;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5) !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
         pointer-events: none;
+        animation: fallback-float 1.5s ease-in-out infinite;
+      }
+      @keyframes fallback-float {
+        0%, 100% { transform: scale(1.1) rotate(3deg); }
+        50% { transform: scale(1.12) rotate(-1deg) translateY(-5px); }
       }
       .context-menu {
         display: none;
