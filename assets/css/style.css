@@ -605,6 +605,11 @@
       #noti-folder {
         transform-origin: right bottom;
       }
+      #calendar-container.widget-hidden,
+      #clock-container.widget-hidden,
+      #noti-folder.widget-hidden {
+        transform: scale(0.9) translateY(40px) !important;
+      }
       #memo-folder {
         transform-origin: left bottom;
       }
@@ -715,7 +720,7 @@
         line-height: 1;
         transition: opacity 0.3s ease, transform 0.3s ease;
         display: flex;
-        align-items: baseline;
+        align-items: center;
         justify-content: center;
         gap: 6px;
         white-space: nowrap;
