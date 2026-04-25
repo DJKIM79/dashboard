@@ -777,10 +777,14 @@
       .setting-group-title {
         font-size: 0.85rem;
         color: #94a3b8;
+        margin-top: 20px;
         margin-bottom: 10px;
         font-weight: 600;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         padding-bottom: 5px;
+      }
+      .setting-column .setting-group-title:first-child {
+        margin-top: 0;
       }
       .setting-inline-field {
         display: flex;
