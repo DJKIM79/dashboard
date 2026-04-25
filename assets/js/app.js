@@ -48,6 +48,12 @@ const app = {
         tutorial.show();
         localStorage.setItem("dj_tutorial_done", "true");
       }, 800);
+    } else {
+      // If tutorial is not showing, focus search input again to be sure
+      setTimeout(() => {
+        const input = document.getElementById("searchInput");
+        if (input) input.focus();
+      }, 500);
     }
   },
 
