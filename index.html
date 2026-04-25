@@ -16,7 +16,7 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="assets/css/style.css?v=1.2.7" />
+    <link rel="stylesheet" href="assets/css/style.css?v=1.3.2" />
   </head>
   <body onclick="requestNotiPermission()">
     <div id="globalContextMenu" class="context-menu">
@@ -191,18 +191,17 @@
     <div id="ai-chatbot-container" class="widget-hidden">
       <div class="ai-history-panel" id="ai-history">
         <div class="ai-history-header">
-          <span class="history-title" data-i18n="lblAIHistory">채팅 목록</span>
-          <div style="display: flex; gap: 10px;">
-            <i id="ai-btn-new-chat" class="fas fa-plus" onclick="ai.loadChat()" data-i18n-title="cmAdd"></i>
-            <i id="ai-history-toggle" class="fas fa-chevron-left" onclick="ai.toggleHistory()"></i>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i id="ai-btn-new-chat" class="fas fa-plus" onclick="ai.createNewChat()" data-i18n-title="cmAdd"></i>
+            <span class="history-title" data-i18n="lblAIHistory">채팅 목록</span>
           </div>
+          <i id="ai-history-toggle" class="fas fa-angles-left" onclick="ai.toggleHistory()"></i>
         </div>
         <div class="ai-history-list" id="ai-history-list"></div>
       </div>
       <div class="ai-main-panel">
         <div class="ai-chat-header">
           <div class="ai-status" id="ai-status">
-            <i class="fas fa-circle"></i>
             <span id="ai-model-name">...</span>
           </div>
           <div class="ai-actions">
@@ -608,7 +607,7 @@
     <script src="assets/js/modules/noti.js"></script>
     <script src="assets/js/modules/quote.js"></script>
     <script src="assets/js/modules/settings.js?v=1.0.2"></script>
-    <script src="assets/js/modules/ai.js?v=1.0.2"></script>
+    <script src="assets/js/modules/ai.js?v=1.0.7"></script>
     <script src="assets/js/modules/files.js"></script>
     <script src="assets/js/modules/tutorial.js"></script>
     <script src="assets/js/app.js"></script>

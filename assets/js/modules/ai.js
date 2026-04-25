@@ -57,9 +57,8 @@ const ai = {
       if (this.chats.length > 0) {
         this.currentChatId = this.chats[0].id;
       } else {
-        this.currentChatId = Date.now();
-        this.chats.push({ id: this.currentChatId, title: "새로운 대화", messages: [] });
-        this.saveChats();
+        this.createNewChat();
+        return;
       }
     } else {
       this.currentChatId = id;
@@ -74,6 +73,22 @@ const ai = {
       chat.messages.forEach(m => this.appendMessage(m.role, m.content, false));
     }
     this.updateModelDisplay();
+  },
+
+  createNewChat() {
+    // Check if the most recent chat is already an empty "New Chat"
+    if (this.chats.length > 0) {
+      const firstChat = this.chats[0];
+      if (firstChat.messages.length === 0 && firstChat.title === "새로운 대화") {
+        this.loadChat(firstChat.id);
+        return;
+      }
+    }
+
+    this.currentChatId = Date.now();
+    this.chats.unshift({ id: this.currentChatId, title: "새로운 대화", messages: [] });
+    this.saveChats();
+    this.loadChat(this.currentChatId);
   },
 
   renderHistory() {
@@ -206,7 +221,26 @@ const ai = {
   },
 
   attachFile() {
-    alert("파일 첨부 기능은 곧 업데이트 될 예정입니다.");
+    const btn = document.querySelector(".ai-icon-btn");
+    if (!btn) return;
+    
+    // Create tooltip element
+    const tip = document.createElement("div");
+    tip.className = "ai-tooltip";
+    tip.innerText = "조금만 기달려 주세요.";
+    document.body.appendChild(tip);
+    
+    const rect = btn.getBoundingClientRect();
+    tip.style.left = `${rect.left + rect.width / 2}px`;
+    tip.style.top = `${rect.top - 10}px`;
+    
+    setTimeout(() => {
+      tip.classList.add("show");
+      setTimeout(() => {
+        tip.classList.remove("show");
+        setTimeout(() => tip.remove(), 300);
+      }, 2000);
+    }, 10);
   },
 
   clearChat() {
@@ -219,7 +253,7 @@ const ai = {
     const toggleIcon = document.getElementById("ai-history-toggle");
     if (panel) panel.classList.toggle("collapsed", this.historyCollapsed);
     if (toggleIcon) {
-      toggleIcon.className = this.historyCollapsed ? "fas fa-chevron-right" : "fas fa-chevron-left";
+      toggleIcon.className = this.historyCollapsed ? "fas fa-angles-right" : "fas fa-angles-left";
     }
   },
 
