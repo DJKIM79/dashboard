@@ -31,12 +31,13 @@ const ui = {
   },
 
   applyVisibility() {
-    const types = ["weather", "quote", "search", "shortcut", "memo", "noti", "calendar", "clock"];
+    const types = ["weather", "quote", "search", "shortcut", "ai", "memo", "noti", "calendar", "clock"];
     const widgetMap = {
       weather: "top-right-widgets",
       quote: "quote-section",
       search: "search-section",
       shortcut: "shortcut-container",
+      ai: "ai-chatbot-container",
       memo: "memo-folder",
       noti: "noti-folder",
       calendar: "calendar-container",
@@ -52,6 +53,14 @@ const ui = {
   },
 
   toggleWidget(type) {
+    if (type === "ai" && !localStorage.getItem("dj_ai_model")) {
+      const isHidden = localStorage.getItem("dj_hide_ai") === "true";
+      // 만약 위젯이 현재 숨겨진 상태에서 켜려고 하는 경우에만 설정창 유도
+      if (isHidden) {
+        settings.openModal();
+        return;
+      }
+    }
     const key = `dj_hide_${type}`;
     const isCurrentlyHidden = localStorage.getItem(key) === "true";
     localStorage.setItem(key, isCurrentlyHidden ? "false" : "true");

@@ -128,6 +128,14 @@
       </div>
       <div
         class="sidebar-icon"
+        id="side-ai"
+        onclick="toggleWidget('ai')"
+        data-i18n-title="sideAI"
+      >
+        <i class="fas fa-robot"></i>
+      </div>
+      <div
+        class="sidebar-icon"
         id="side-memo"
         onclick="toggleWidget('memo')"
         data-i18n-title="sideMemo"
@@ -187,6 +195,33 @@
       </div>
     </div>
     <div id="shortcut-container"></div>
+    <div id="ai-chatbot-container" class="widget-hidden">
+      <div class="ai-history-panel" id="ai-history">
+        <div class="ai-history-header">
+          <span data-i18n="lblAIHistory">채팅 목록</span>
+          <i class="fas fa-bars" onclick="ai.toggleHistory()"></i>
+        </div>
+        <div class="ai-history-list" id="ai-history-list"></div>
+      </div>
+      <div class="ai-main-panel">
+        <div class="ai-chat-header">
+          <div class="ai-status" id="ai-status">
+            <i class="fas fa-circle"></i>
+            <span id="ai-model-name">...</span>
+          </div>
+          <div class="ai-actions">
+            <i class="fas fa-trash-alt" onclick="ai.clearChat()" data-i18n-title="tipClearChat"></i>
+          </div>
+        </div>
+        <div class="ai-chat-messages" id="ai-messages"></div>
+        <div class="ai-chat-input-area">
+          <textarea id="ai-user-input" data-i18n-ph="aiInputPh" placeholder="메시지를 입력하세요..." onkeydown="ai.handleKeyDown(event)"></textarea>
+          <button id="ai-send-btn" onclick="ai.sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="bottom-widgets">
       <div class="left-area">
         <div class="smart-folder" id="memo-folder" oncontextmenu="showContextMenu(event, 'memo')">
@@ -343,6 +378,33 @@
                 <div id="citySearchResults" class="city-results"></div>
               </div>
             </div>
+            
+            <!-- AI 설정 (가로 전체 사용) -->
+            <div class="setting-column" style="grid-column: 1 / span 2;">
+              <div class="setting-group-title" data-i18n="lblAISetting">AI 설정</div>
+              <div style="display: flex; gap: 15px; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">AI</span>
+                  <select id="aiProviderSelect" onchange="onAIProviderChange()" style="margin-bottom: 0; width: 120px;">
+                    <option value="local">Local</option>
+                    <option value="openai">ChatGPT</option>
+                    <option value="gemini">Gemini</option>
+                    <option value="claude">Claude</option>
+                  </select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                  <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">모델</span>
+                  <select id="aiModelSelect" disabled style="margin-bottom: 0; flex: 1;">
+                    <option value="" data-i18n="aiNoServer">서버에 접속할 수 없습니다.</option>
+                  </select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; flex: 1.5;">
+                  <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">Key</span>
+                  <input type="text" id="aiServerUrlInput" placeholder="URL" style="margin-bottom: 0; width: 100%;"/>
+                  <input type="password" id="aiApiKeyInput" placeholder="API Key" style="margin-bottom: 0; display: none; width: 100%;"/>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="setting-footer">
             <button
@@ -350,7 +412,7 @@
               onclick="saveSettings()"
               data-i18n="btnSaveSettings"
             >
-              저장 및 적용
+              적용
             </button>
           </div>
         </div>
@@ -537,6 +599,7 @@
     <script src="assets/js/modules/noti.js"></script>
     <script src="assets/js/modules/quote.js"></script>
     <script src="assets/js/modules/settings.js"></script>
+    <script src="assets/js/modules/ai.js"></script>
     <script src="assets/js/modules/files.js"></script>
     <script src="assets/js/modules/tutorial.js"></script>
     <script src="assets/js/app.js"></script>

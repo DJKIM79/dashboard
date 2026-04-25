@@ -19,11 +19,16 @@ const settings = {
     this.toggleCustomSearchUrl();
     if (window.renderWeatherLocationList) renderWeatherLocationList();
 
-    // 도시 검색 입력창 및 결과 초기화 (확실하게 하기 위해 modal 열기 직전에 수행)
+    // AI 설정 초기화
+    const aiProvider = localStorage.getItem("dj_ai_provider") || "local";
+    document.getElementById("aiProviderSelect").value = aiProvider;
+    document.getElementById("aiServerUrlInput").value = localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
+    document.getElementById("aiApiKeyInput").value = localStorage.getItem("dj_ai_api_key") || "";
+    this.onAIProviderChange();
+
+    // 도시 검색 입력창 및 결과 초기화
     const cityInput = document.getElementById("citySearchInput");
-    if (cityInput) {
-      cityInput.value = "";
-    }
+    if (cityInput) cityInput.value = "";
     const cityResults = document.getElementById("citySearchResults");
     if (cityResults) {
       cityResults.innerHTML = "";
@@ -43,26 +48,37 @@ const settings = {
     const widgetSize = document.getElementById("widgetSizeSelect").value;
     this.setWidgetSize(widgetSize);
     
-    localStorage.setItem(
-      "dj_search_new_tab",
-      document.getElementById("searchNewTab").checked
-    );
+    localStorage.setItem("dj_search_new_tab", document.getElementById("searchNewTab").checked);
 
     const engine = document.getElementById("searchEngineSelect").value;
     localStorage.setItem("dj_search_engine", engine);
     if (window.search) window.search.currentEngine = engine;
     
     if (engine === "custom") {
-      localStorage.setItem(
-        "dj_custom_search_url",
-        document.getElementById("customSearchUrlInput").value.trim()
-      );
+      localStorage.setItem("dj_custom_search_url", document.getElementById("customSearchUrlInput").value.trim());
     }
     if (window.updateSearchEngineIcon) updateSearchEngineIcon();
 
     const showWeather = document.getElementById("showCurrentWeather").checked;
     localStorage.setItem("dj_show_current_weather", showWeather);
     if (window.weather) window.weather.showCurrent = showWeather;
+    
+    // AI 설정 저장
+    const provider = document.getElementById("aiProviderSelect").value;
+    localStorage.setItem("dj_ai_provider", provider);
+    localStorage.setItem("dj_ai_server_url", document.getElementById("aiServerUrlInput").value.trim());
+    localStorage.setItem("dj_ai_api_key", document.getElementById("aiApiKeyInput").value.trim());
+    const model = document.getElementById("aiModelSelect").value;
+    localStorage.setItem("dj_ai_model", model);
+    
+    if (window.ai) {
+      ai.provider = provider;
+      ai.serverUrl = localStorage.getItem("dj_ai_server_url");
+      ai.apiKey = localStorage.getItem("dj_ai_api_key");
+      ai.model = model;
+      ai.updateModelDisplay();
+      ai.renderWelcome();
+    }
     
     if (window.fetchWeather) fetchWeather();
     utils.changeBackgroundInstant();
@@ -74,19 +90,28 @@ const settings = {
     document.getElementById("customSearchUrlInput").style.display = isCustom ? "block" : "none";
   },
 
+  onAIProviderChange() {
+    const provider = document.getElementById("aiProviderSelect").value;
+    const urlInput = document.getElementById("aiServerUrlInput");
+    const keyInput = document.getElementById("aiApiKeyInput");
+    
+    if (provider === "local") {
+      urlInput.style.display = "block";
+      keyInput.style.display = "none";
+    } else {
+      urlInput.style.display = "none";
+      keyInput.style.display = "block";
+    }
+    if (window.ai) ai.checkConnection();
+  },
+
   setQuoteFontSize(size) {
-    document.documentElement.style.setProperty(
-      "--quote-font-size",
-      `var(--quote-size-${size})`
-    );
+    document.documentElement.style.setProperty("--quote-font-size", `var(--quote-size-${size})`);
     localStorage.setItem("dj_quote_font_size", size);
   },
 
   setWidgetSize(size) {
-    document.documentElement.style.setProperty(
-      "--widget-scale",
-      `var(--widget-scale-${size})`
-    );
+    document.documentElement.style.setProperty("--widget-scale", `var(--widget-scale-${size})`);
     localStorage.setItem("dj_widget_size", size);
   },
 
@@ -102,6 +127,7 @@ window.settings = settings;
 window.openSettingModal = () => settings.openModal();
 window.saveSettings = () => settings.save();
 window.toggleCustomSearchUrl = () => settings.toggleCustomSearchUrl();
+window.onAIProviderChange = () => settings.onAIProviderChange();
 window.setTheme = (color) => settings.setTheme(color);
 window.setQuoteFontSize = (size) => settings.setQuoteFontSize(size);
 window.setWidgetSize = (size) => settings.setWidgetSize(size);
