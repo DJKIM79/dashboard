@@ -446,7 +446,6 @@
       .calendar-widget {
         cursor: pointer;
         border: 1px solid var(--glass-border);
-        transition: 0.3s;
       }
       #clock-container:hover,
       .calendar-widget:hover {
@@ -608,7 +607,9 @@
       #calendar-container.widget-hidden,
       #clock-container.widget-hidden,
       #noti-folder.widget-hidden {
-        transform: scale(0.9) translateY(40px) !important;
+        transform: scale(0.8) translateY(50px) !important;
+        filter: blur(10px);
+        opacity: 0 !important;
       }
       #memo-folder {
         transform-origin: left bottom;
@@ -631,7 +632,9 @@
       #calendar-container.widget-hidden,
       #clock-container.widget-hidden,
       #noti-folder.widget-hidden {
-        transform: scale(0.9) translateY(40px) !important;
+        transform: scale(0.8) translateY(50px) !important;
+        filter: blur(10px);
+        opacity: 0 !important;
       }
       #memo-folder.widget-hidden {
         transform: scale(0.9) translateX(-20px) !important;
