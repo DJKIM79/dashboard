@@ -394,10 +394,10 @@
       }
       .shortcut-fallback {
         opacity: 0.98 !important;
-        z-index: 10000 !important;
+        z-index: 100 !important;
         background: rgba(30, 41, 59, 0.98) !important;
         border: 2px solid var(--accent-color) !important;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
         pointer-events: none;
       }
       /* 애니메이션을 내부 요소에 걸어서 충돌 방지 */

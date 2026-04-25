@@ -53,9 +53,8 @@ const shortcutMod = {
       ghostClass: "shortcut-ghost",
       chosenClass: "shortcut-chosen",
       dragClass: "shortcut-drag",
-      forceFallback: true, // Use custom fallback for better control
+      forceFallback: true,
       fallbackClass: "shortcut-fallback",
-      fallbackOnBody: true,
       swapThreshold: 0.6,
       invertSwap: true,
       delay: 400,
