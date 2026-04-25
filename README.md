@@ -1,13 +1,15 @@
-Dashboard with following features for web browser. (Only one HTML file)
+Web Dashboard
 
-1. Background (Auto change daily or manually)
+Features
+
+1. Weather
 2. Quote
-3. Weather
-4. Time and date
-5. Alarm
-6. Memo
-7. Theme (10 Colors)
-8. Quick access for sites
-9. Import & Export Settings.
+3. Search
+4. Quick access
+5. Chatbot
+6. Calendar
+7. Time
+8. Memo
+9. Alarm
 
-<img width="1651" height="1302" alt="image" src="https://github.com/user-attachments/assets/d6d371df-113a-4592-8467-85e5809eede3" />
+<img width="1638" height="1298" alt="image" src="https://github.com/user-attachments/assets/f4aca1d4-871d-4f20-80ee-f57c2ff838f3" />
