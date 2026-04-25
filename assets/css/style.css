@@ -361,7 +361,7 @@
       .shortcut-item:active {
         transform: scale(0.95);
       }
-      .shortcut-item:hover {
+      #shortcut-container:not(.sorting-active) .shortcut-item:hover {
         background: rgba(255, 255, 255, 0.15);
         transform: translateY(-8px);
         border-color: var(--accent-color);
@@ -1307,10 +1307,11 @@
         transition: width 0.3s ease;
       }
       .ai-history-panel.collapsed {
-        width: 50px;
+        width: 80px;
         overflow: hidden;
       }
-      .ai-history-panel.collapsed .history-title {
+      .ai-history-panel.collapsed .history-title,
+      .ai-history-panel.collapsed #ai-btn-new-chat {
         display: none;
       }
       .ai-history-header {
@@ -1342,6 +1343,7 @@
       .ai-history-list {
         flex: 1;
         overflow-y: auto;
+        overflow-x: hidden;
         padding: 10px;
       }
       .ai-history-item {

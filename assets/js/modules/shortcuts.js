@@ -48,20 +48,24 @@ const shortcutMod = {
 
     if (window.shortcutSortable) window.shortcutSortable.destroy();
     window.shortcutSortable = new Sortable(c, {
-      animation: 400,
-      easing: "cubic-bezier(0.34, 1.56, 0.64, 1)", // Elastic-like feel
+      animation: 150, 
+      easing: "ease-in-out", 
       ghostClass: "shortcut-ghost",
       chosenClass: "shortcut-chosen",
       dragClass: "shortcut-drag",
       forceFallback: true,
       fallbackClass: "shortcut-fallback",
-      swapThreshold: 0.6,
+      swapThreshold: 1, 
       invertSwap: true,
-      delay: 400,
-      delayOnTouchOnly: true,
-      onStart: () => (this.isDragging = true),
+      delay: 0, 
+      touchStartThreshold: 5, 
+      onStart: () => {
+        this.isDragging = true;
+        c.classList.add("sorting-active");
+      },
       onEnd: (evt) => {
         setTimeout(() => (this.isDragging = false), 100);
+        c.classList.remove("sorting-active");
         if (evt.oldIndex !== evt.newIndex) {
           const item = this.items.splice(evt.oldIndex, 1)[0];
           this.items.splice(evt.newIndex, 0, item);

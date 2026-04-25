@@ -222,7 +222,11 @@ const ai = {
   toggleHistory() {
     this.historyCollapsed = !this.historyCollapsed;
     const panel = document.getElementById("ai-history");
+    const toggleIcon = document.getElementById("ai-history-toggle");
     if (panel) panel.classList.toggle("collapsed", this.historyCollapsed);
+    if (toggleIcon) {
+      toggleIcon.className = this.historyCollapsed ? "fas fa-outdent" : "fas fa-indent";
+    }
   },
 
   async checkConnection() {
