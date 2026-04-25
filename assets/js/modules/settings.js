@@ -18,6 +18,18 @@ const settings = {
 
     this.toggleCustomSearchUrl();
     if (window.renderWeatherLocationList) renderWeatherLocationList();
+
+    // 도시 검색 입력창 및 결과 초기화 (확실하게 하기 위해 modal 열기 직전에 수행)
+    const cityInput = document.getElementById("citySearchInput");
+    if (cityInput) {
+      cityInput.value = "";
+    }
+    const cityResults = document.getElementById("citySearchResults");
+    if (cityResults) {
+      cityResults.innerHTML = "";
+      cityResults.style.display = "none";
+    }
+
     utils.openModal("settingModal");
   },
 

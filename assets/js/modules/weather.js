@@ -213,6 +213,15 @@ const weather = {
   },
 
   addLocation(item, cityName) {
+    const isDuplicate = this.locations.some(
+      (loc) => loc.lat == item.lat && loc.lon == item.lon
+    );
+    
+    if (isDuplicate) {
+      utils.openModal("alertModal");
+      return;
+    }
+
     const loc = {
       type: "custom",
       name: cityName || item.display_name.split(",")[0],
