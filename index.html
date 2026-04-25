@@ -673,16 +673,17 @@
         background: rgba(0, 0, 0, 0.5);
         backdrop-filter: blur(10px);
         border: 1px solid var(--glass-border);
-        padding: 12px 22px;
+        padding: 12px 20px;
         border-radius: 18px;
-        text-align: right;
+        text-align: center;
         box-shadow: var(--btn-shadow);
         display: flex;
         flex-direction: column;
-        width: fit-content;
+        width: 210px;
         align-self: flex-end;
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
+        box-sizing: border-box;
       }
       #clock-time {
         font-family: "JetBrains Mono", monospace;
@@ -692,7 +693,7 @@
         transition: opacity 0.3s ease, transform 0.3s ease;
         display: flex;
         align-items: baseline;
-        justify-content: flex-end;
+        justify-content: center;
         gap: 6px;
         white-space: nowrap;
       }
