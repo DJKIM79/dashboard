@@ -876,7 +876,7 @@
         pointer-events: auto;
       }
       #settingModal .modal-content {
-        width: 750px;
+        width: 650px;
         height: 650px; 
         max-height: 90vh;
         display: flex;

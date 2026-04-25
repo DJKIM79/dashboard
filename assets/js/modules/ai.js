@@ -169,7 +169,7 @@ const ai = {
             `<option value="${m.name}" ${m.name === currentModel ? 'selected' : ''}>${m.name}</option>`
           ).join('');
         } else {
-          modelSelect.innerHTML = `<option value="">설치된 모델이 없습니다.</option>`;
+          modelSelect.innerHTML = `<option value="">접속 안됨</option>`;
           modelSelect.disabled = true;
         }
       } else {
@@ -178,7 +178,7 @@ const ai = {
     } catch (e) {
       // 실패 시 모델 선택창에만 메시지 표시
       modelSelect.disabled = true;
-      modelSelect.innerHTML = `<option value="">서버 오류</option>`;
+      modelSelect.innerHTML = `<option value="">접속 안됨</option>`;
     }
   }
 };

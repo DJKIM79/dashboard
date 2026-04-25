@@ -382,25 +382,25 @@
             <!-- AI 설정 (가로 전체 사용) -->
             <div class="setting-column" style="grid-column: 1 / span 2;">
               <div class="setting-group-title" data-i18n="lblAISetting">AI 설정</div>
-              <div style="display: flex; gap: 15px; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="display: flex; gap: 15px; align-items: center; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
                   <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">AI</span>
-                  <select id="aiProviderSelect" onchange="onAIProviderChange()" style="margin-bottom: 0; width: 120px;">
-                    <option value="local">Local</option>
-                    <option value="openai">ChatGPT</option>
-                    <option value="gemini">Gemini</option>
-                    <option value="claude">Claude</option>
+                  <select id="aiProviderSelect" onchange="onAIProviderChange()" style="margin-bottom: 0; flex: 1;">
+                    <option value="local">Local AI</option>
+                    <option value="openai">OpenAI API</option>
+                    <option value="gemini">Gemini API</option>
+                    <option value="claude">Claude API</option>
                   </select>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
                   <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">모델</span>
                   <select id="aiModelSelect" disabled style="margin-bottom: 0; flex: 1;">
-                    <option value="" data-i18n="aiNoServer">서버에 접속할 수 없습니다.</option>
+                    <option value="" data-i18n="aiNoServer">접속 안됨</option>
                   </select>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px; flex: 1.5;">
+                <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
                   <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">Key</span>
-                  <input type="text" id="aiServerUrlInput" placeholder="URL" style="margin-bottom: 0; width: 100%;"/>
+                  <input type="text" id="aiServerUrlInput" placeholder="서버 주소" style="margin-bottom: 0; width: 100%;"/>
                   <input type="password" id="aiApiKeyInput" placeholder="API Key" style="margin-bottom: 0; display: none; width: 100%;"/>
                 </div>
               </div>
