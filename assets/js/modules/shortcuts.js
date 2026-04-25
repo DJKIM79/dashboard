@@ -78,6 +78,7 @@ const shortcutMod = {
     document.getElementById("linkSaveBtn").innerText = isEdit
       ? T.btnEdit
       : T.btnSave;
+    utils.closeModal("settingModal");
     utils.openModal("linkModal");
     setTimeout(() => document.getElementById("siteName").focus(), 50);
   },

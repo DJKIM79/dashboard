@@ -327,15 +327,16 @@
       #shortcut-container {
         display: grid;
         gap: 15px;
-        width: 100%;
-        max-width: calc(100vw - 460px);
+        width: 90%;
+        max-width: 1200px;
         margin: 0 auto;
         transform: scale(var(--widget-scale));
         transform-origin: center;
       }
       .grid-layout,
       .list-layout {
-        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(110px, 180px));
+        justify-content: center;
       }
       .shortcut-item {
         background: rgba(0, 0, 0, 0.35);

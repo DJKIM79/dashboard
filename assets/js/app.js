@@ -57,6 +57,7 @@ const app = {
     // Close existing modals to prevent overlap
     utils.closeModal("memoModal");
     utils.closeModal("notiModal");
+    utils.closeModal("settingModal");
     utils.openModal("deleteConfirmModal");
   },
 

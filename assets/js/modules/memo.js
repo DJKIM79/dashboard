@@ -38,6 +38,7 @@ const memo = {
       ? T.modalMemoEdit
       : T.modalMemoAdd;
     if (d) d.style.display = id ? "block" : "none";
+    utils.closeModal("settingModal");
     utils.openModal("memoModal");
     setTimeout(() => document.getElementById("memoTitle").focus(), 50);
   },

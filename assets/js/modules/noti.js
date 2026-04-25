@@ -80,6 +80,7 @@ const noti = {
     sBtn.dataset.i18n = id ? "btnEditNoti" : "btnAddNoti";
     if (dBtn) dBtn.style.display = id ? "block" : "none";
     
+    utils.closeModal("settingModal");
     utils.openModal("notiModal");
     setTimeout(() => document.getElementById("notiTitle").focus(), 50);
   },
