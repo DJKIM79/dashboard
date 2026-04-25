@@ -1,0 +1,41 @@
+const quote = {
+  init() {
+    this.fetch();
+  },
+
+  async fetch() {
+    const container = document.querySelector(".quote-container");
+    const qt = document.getElementById("quote-text"),
+      qa = document.getElementById("quote-author");
+    
+    if (container) container.classList.add("quote-switching");
+    
+    setTimeout(async () => {
+      try {
+        const res = await fetch(
+            i18n.userLang === "ko"
+              ? "https://korean-advice-open-api.vercel.app/api/advice"
+              : "https://api.quotable.io/random",
+          ),
+          d = await res.json(),
+          text = i18n.userLang === "ko" ? d.message : d.content,
+          author =
+            d.author || (i18n.userLang === "ko" ? "지혜의 기록" : "Unknown");
+        if (text) {
+          if (qt) qt.innerText = `"${text}"`;
+          if (qa) qa.innerText = `- ${author}`;
+        } else {
+          throw new Error();
+        }
+      } catch (e) {
+        if (qt) qt.innerText = i18n.get("quoteDefault");
+        if (qa) qa.innerText = i18n.get("quoteAuthorDefault");
+      } finally {
+        if (container) container.classList.remove("quote-switching");
+      }
+    }, 400);
+  }
+};
+
+window.quote = quote;
+window.fetchQuote = () => quote.fetch();
