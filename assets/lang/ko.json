@@ -22,7 +22,7 @@
   "lblAIHistory": "채팅 목록",
   "lblAISetting": "AI 설정",
   "aiInputPh": "메시지를 입력하세요...",
-  "aiNoServer": "서버에 접속할 수 없습니다.",
+  "aiNoServer": "접속 안됨",
   "tipClearChat": "대화 초기화",
   "sideWeather": "날씨",
   "sideCalendar": "달력",
