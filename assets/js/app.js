@@ -35,6 +35,7 @@ const app = {
     
     quote.init();
     weather.init();
+    ai.init();
     shortcutMod.init();
     noti.init();
     memo.init();
