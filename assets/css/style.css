@@ -594,6 +594,11 @@
       #top-right-widgets.widget-hidden {
         transform: scale(0.9) translateY(-20px) !important;
       }
+      #calendar-container.widget-hidden,
+      #clock-container.widget-hidden,
+      #noti-folder.widget-hidden {
+        transform: scale(0.9) translateY(40px) !important;
+      }
       #memo-folder.widget-hidden {
         transform: scale(0.9) translateX(-20px) !important;
       }
