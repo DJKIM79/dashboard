@@ -607,8 +607,8 @@
       #calendar-container.widget-hidden,
       #clock-container.widget-hidden,
       #noti-folder.widget-hidden {
-        transform: scale(0.8) translateY(50px) !important;
-        filter: blur(10px);
+        transform: scale(0.8) translateY(60px) !important;
+        filter: blur(15px);
         opacity: 0 !important;
       }
       #memo-folder {
@@ -632,8 +632,8 @@
       #calendar-container.widget-hidden,
       #clock-container.widget-hidden,
       #noti-folder.widget-hidden {
-        transform: scale(0.8) translateY(50px) !important;
-        filter: blur(10px);
+        transform: scale(0.8) translateY(60px) !important;
+        filter: blur(15px);
         opacity: 0 !important;
       }
       #memo-folder.widget-hidden {
@@ -712,7 +712,6 @@
         flex-direction: column;
         width: 210px;
         align-self: flex-end;
-        transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
         box-sizing: border-box;
       }
