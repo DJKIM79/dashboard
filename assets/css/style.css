@@ -380,6 +380,11 @@
         white-space: nowrap;
         display: block;
       }
+      .shortcut-ghost {
+        opacity: 0.2;
+        background: var(--accent-color) !important;
+        border: 2px dashed var(--accent-color) !important;
+      }
       .context-menu {
         display: none;
         position: absolute;
