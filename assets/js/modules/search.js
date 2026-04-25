@@ -3,6 +3,10 @@ const search = {
 
   init() {
     this.updateIcon();
+    const input = document.getElementById("searchInput");
+    if (input) {
+      setTimeout(() => input.focus(), 100);
+    }
   },
 
   updateIcon() {
