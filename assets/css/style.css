@@ -417,7 +417,6 @@
       }
       #clock-container:hover,
       .calendar-widget:hover {
-        background: rgba(0, 0, 0, 0.4);
         border-color: var(--accent-color);
       }
       .bottom-widgets {
