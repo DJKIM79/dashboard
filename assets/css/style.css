@@ -307,7 +307,7 @@
         align-self: flex-end;
       }
       #quote-author {
-        color: var(--accent-color);
+        color: #fff;
         letter-spacing: 2px;
         font-weight: 600;
         text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
