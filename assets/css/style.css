@@ -348,7 +348,7 @@
         text-align: center;
         text-decoration: none;
         color: #fff;
-        transition: transform 0.2s, background 0.3s, border-color 0.3s, opacity 0.3s;
+        transition: background 0.3s, border-color 0.3s, opacity 0.3s;
         position: relative;
         cursor: pointer;
         -webkit-user-select: none;
@@ -380,20 +380,26 @@
         white-space: nowrap;
         display: block;
       }
-      /* Drag and Drop classes */
+      /* Drag and Drop classes for Spreading effect */
       .shortcut-chosen {
-        background: rgba(255, 255, 255, 0.1) !important;
+        background: rgba(255, 255, 255, 0.2) !important;
         border-color: var(--accent-color) !important;
-        opacity: 0.8;
+        box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+      }
+      .shortcut-ghost {
+        opacity: 0 !important; /* Make the actual element invisible to show the 'gap' */
       }
       .shortcut-drag {
         opacity: 0 !important;
       }
-      .shortcut-ghost {
-        opacity: 0.1 !important;
-        background: rgba(0, 0, 0, 0.5) !important;
-        border: 2px dashed var(--accent-color) !important;
-        transform: scale(0.85);
+      .shortcut-fallback {
+        opacity: 0.9 !important;
+        transform: scale(1.1) !important;
+        z-index: 10000 !important;
+        background: rgba(30, 41, 59, 0.9) !important;
+        border: 2px solid var(--accent-color) !important;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5) !important;
+        pointer-events: none;
       }
       .context-menu {
         display: none;

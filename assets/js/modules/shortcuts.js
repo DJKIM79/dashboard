@@ -48,12 +48,15 @@ const shortcutMod = {
 
     if (window.shortcutSortable) window.shortcutSortable.destroy();
     window.shortcutSortable = new Sortable(c, {
-      animation: 350,
-      easing: "cubic-bezier(0.2, 1, 0.3, 1)",
+      animation: 400,
+      easing: "cubic-bezier(0.34, 1.56, 0.64, 1)", // Elastic-like feel
       ghostClass: "shortcut-ghost",
       chosenClass: "shortcut-chosen",
       dragClass: "shortcut-drag",
-      swapThreshold: 0.65,
+      forceFallback: true, // Use custom fallback for better control
+      fallbackClass: "shortcut-fallback",
+      fallbackOnBody: true,
+      swapThreshold: 0.6,
       invertSwap: true,
       delay: 400,
       delayOnTouchOnly: true,
