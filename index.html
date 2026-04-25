@@ -381,7 +381,10 @@
             <!-- AI 설정 (가로 전체 사용) -->
             <div class="setting-column" style="grid-column: 1 / span 2;">
               <div class="setting-group-title" style="display: flex; justify-content: space-between; align-items: center;">
-                <span data-i18n="lblAISetting">AI 설정</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span data-i18n="lblAISetting">AI 설정</span>
+                  <span id="ai-connection-status" style="font-size: 0.75rem; display: none;"></span>
+                </div>
                 <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; color: #94a3b8;">
                   <input type="checkbox" id="aiDisableCheck" onchange="toggleAiSettings(this.checked)" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
                   <span class="setting-label-text" data-i18n="lblAIDisable">사용 안 함</span>
@@ -404,7 +407,7 @@
                   </select>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                  <span id="aiKeyLabel" style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;" data-i18n="lblAIKey">URL</span>
+                  <span id="aiKeyLabel" style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;" data-i18n="lblAIUrl">URL</span>
                   <input type="text" id="aiServerUrlInput" placeholder="서버 주소" style="margin-bottom: 2px; width: 100%; display: none;" onblur="if(window.ai) window.ai.checkConnection()"/>
                   <input type="password" id="aiApiKeyInput" placeholder="API Key" style="margin-bottom: 2px; width: 100%; display: none;" onblur="if(window.ai) window.ai.checkConnection()"/>
                   <i class="fas fa-sync-alt" onclick="if(window.ai) window.ai.checkConnection()" style="cursor: pointer; color: var(--accent-color);" data-i18n-title="tipCheckConn"></i>

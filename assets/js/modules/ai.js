@@ -230,6 +230,18 @@ const ai = {
     const provider = document.getElementById("aiProviderSelect").value;
     let url = document.getElementById("aiServerUrlInput").value;
     const currentModel = localStorage.getItem("dj_ai_model");
+    const statusSpan = document.getElementById("ai-connection-status");
+
+    const showStatus = (msg, color) => {
+      if (statusSpan) {
+        statusSpan.innerText = msg;
+        statusSpan.style.color = color;
+        statusSpan.style.display = "inline-block";
+        setTimeout(() => {
+          statusSpan.style.display = "none";
+        }, 3000);
+      }
+    };
 
     if (provider === "none") {
       modelSelect.disabled = true;
@@ -241,24 +253,28 @@ const ai = {
       const models = ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"];
       modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
       modelSelect.disabled = false;
+      showStatus(window.i18n ? window.i18n.get("msgConnSuccess") || "서버 접속 성공" : "서버 접속 성공", "#22c55e");
       return;
     }
     if (provider === "gemini") {
       const models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-1.0-pro"];
       modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
       modelSelect.disabled = false;
+      showStatus(window.i18n ? window.i18n.get("msgConnSuccess") || "서버 접속 성공" : "서버 접속 성공", "#22c55e");
       return;
     }
     if (provider === "claude") {
       const models = ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"];
       modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
       modelSelect.disabled = false;
+      showStatus(window.i18n ? window.i18n.get("msgConnSuccess") || "서버 접속 성공" : "서버 접속 성공", "#22c55e");
       return;
     }
 
     if (!url) {
       modelSelect.disabled = true;
       modelSelect.innerHTML = `<option value="">접속 안됨</option>`;
+      showStatus(window.i18n ? window.i18n.get("msgConnFail") || "서버 접속 실패" : "서버 접속 실패", "#ef4444");
       return;
     }
 
@@ -291,6 +307,7 @@ const ai = {
           modelSelect.innerHTML = `<option value="">접속 안됨</option>`;
           modelSelect.disabled = true;
         }
+        showStatus(window.i18n ? window.i18n.get("msgConnSuccess") || "서버 접속 성공" : "서버 접속 성공", "#22c55e");
       } else {
         throw new Error();
       }
@@ -298,6 +315,7 @@ const ai = {
       // 실패 시 모델 선택창에만 메시지 표시
       modelSelect.disabled = true;
       modelSelect.innerHTML = `<option value="">접속 안됨</option>`;
+      showStatus(window.i18n ? window.i18n.get("msgConnFail") || "서버 접속 실패" : "서버 접속 실패", "#ef4444");
     }
   }
 };

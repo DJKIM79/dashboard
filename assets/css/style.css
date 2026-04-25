@@ -1421,6 +1421,7 @@
         height: 60px;
         outline: none;
         transition: border-color 0.2s;
+        box-sizing: border-box;
       }
       #ai-user-input:focus {
         border-color: var(--accent-color);
