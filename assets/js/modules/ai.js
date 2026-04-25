@@ -17,19 +17,14 @@ const ai = {
   updateModelDisplay() {
     const nameEl = document.getElementById("ai-model-name");
     if (nameEl) {
-      nameEl.innerText = this.model || "Settings Required";
+      const chat = this.chats.find(c => c.id === this.currentChatId);
+      nameEl.innerText = chat ? chat.title : (this.model || "AI Chat");
     }
   },
 
   renderWelcome() {
     const msgContainer = document.getElementById("ai-messages");
-    if (!msgContainer) return;
-    msgContainer.innerHTML = "";
-    
-    const welcomeText = this.model 
-      ? `현재 사용 중인 모델은 ${this.model} 입니다.` 
-      : 'AI 설정을 완료해 주세요.';
-    this.appendMessage("bot", welcomeText);
+    if (msgContainer) msgContainer.innerHTML = "";
   },
 
   appendMessage(role, text, save = true) {
@@ -77,9 +72,8 @@ const ai = {
 
     if (chat && chat.messages.length > 0) {
       chat.messages.forEach(m => this.appendMessage(m.role, m.content, false));
-    } else {
-      this.renderWelcome();
     }
+    this.updateModelDisplay();
   },
 
   renderHistory() {
@@ -205,7 +199,7 @@ const ai = {
   },
 
   handleKeyDown(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       this.sendMessage();
     }
@@ -225,7 +219,7 @@ const ai = {
     const toggleIcon = document.getElementById("ai-history-toggle");
     if (panel) panel.classList.toggle("collapsed", this.historyCollapsed);
     if (toggleIcon) {
-      toggleIcon.className = this.historyCollapsed ? "fas fa-outdent" : "fas fa-indent";
+      toggleIcon.className = this.historyCollapsed ? "fas fa-chevron-right" : "fas fa-chevron-left";
     }
   },
 

@@ -1307,12 +1307,24 @@
         transition: width 0.3s ease;
       }
       .ai-history-panel.collapsed {
-        width: 80px;
+        width: 85px;
         overflow: hidden;
       }
       .ai-history-panel.collapsed .history-title,
       .ai-history-panel.collapsed #ai-btn-new-chat {
         display: none;
+      }
+      .ai-history-panel.collapsed .ai-history-item span {
+        display: block !important;
+        font-size: 0.75rem;
+        opacity: 0.8;
+      }
+      .ai-history-panel.collapsed .ai-history-item i {
+        display: none;
+      }
+      .ai-history-panel.collapsed .ai-history-item {
+        justify-content: center;
+        padding: 10px 5px;
       }
       .ai-history-header {
         padding: 15px 20px;
