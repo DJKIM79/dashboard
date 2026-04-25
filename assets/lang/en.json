@@ -22,6 +22,8 @@
   "lblAISetting": "AI Settings",
   "aiInputPh": "Type a message...",
   "aiNoServer": "Disconnected",
+  "aiNone": "None",
+  "lblAIUrl": "URL",
   "tipClearChat": "Clear Chat",
   "sideWeather": "Weather",
   "sideCalendar": "Calendar",

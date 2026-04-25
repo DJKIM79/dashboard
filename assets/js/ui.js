@@ -53,12 +53,17 @@ const ui = {
   },
 
   toggleWidget(type) {
-    if (type === "ai" && !localStorage.getItem("dj_ai_model")) {
-      const isHidden = localStorage.getItem("dj_hide_ai") === "true";
-      // 만약 위젯이 현재 숨겨진 상태에서 켜려고 하는 경우에만 설정창 유도
-      if (isHidden) {
-        settings.openModal();
-        return;
+    if (type === "ai") {
+      const isCurrentlyHidden = localStorage.getItem("dj_hide_ai") === "true";
+      const isDisabled = localStorage.getItem("dj_ai_disabled") === "true";
+      const hasModel = !!localStorage.getItem("dj_ai_model");
+
+      // 만약 위젯이 현재 숨겨진 상태에서 켜려고 하는 경우
+      if (isCurrentlyHidden) {
+        if (isDisabled || !hasModel) {
+          settings.openModal();
+          return;
+        }
       }
     }
     const key = `dj_hide_${type}`;

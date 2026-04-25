@@ -20,6 +20,10 @@ const settings = {
     if (window.renderWeatherLocationList) renderWeatherLocationList();
 
     // AI 설정 초기화
+    const aiDisabled = localStorage.getItem("dj_ai_disabled") === "true";
+    document.getElementById("aiDisableCheck").checked = aiDisabled;
+    this.toggleAiSettings(aiDisabled);
+
     const aiProvider = localStorage.getItem("dj_ai_provider") || "local";
     document.getElementById("aiProviderSelect").value = aiProvider;
     document.getElementById("aiServerUrlInput").value = localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
@@ -64,6 +68,8 @@ const settings = {
     if (window.weather) window.weather.showCurrent = showWeather;
     
     // AI 설정 저장
+    const aiDisabled = document.getElementById("aiDisableCheck").checked;
+    localStorage.setItem("dj_ai_disabled", aiDisabled);
     const provider = document.getElementById("aiProviderSelect").value;
     localStorage.setItem("dj_ai_provider", provider);
     localStorage.setItem("dj_ai_server_url", document.getElementById("aiServerUrlInput").value.trim());
@@ -90,19 +96,39 @@ const settings = {
     document.getElementById("customSearchUrlInput").style.display = isCustom ? "block" : "none";
   },
 
+  toggleAiSettings(isDisabled) {
+    const panel = document.getElementById("aiSettingsPanel");
+    if (panel) {
+      if (isDisabled) {
+        panel.style.opacity = "0.4";
+        panel.style.pointerEvents = "none";
+      } else {
+        panel.style.opacity = "1";
+        panel.style.pointerEvents = "auto";
+      }
+    }
+  },
+
   onAIProviderChange() {
     const provider = document.getElementById("aiProviderSelect").value;
     const urlInput = document.getElementById("aiServerUrlInput");
     const keyInput = document.getElementById("aiApiKeyInput");
+    const modelSelect = document.getElementById("aiModelSelect");
+    const keyLabel = document.getElementById("aiKeyLabel");
     
     if (provider === "local") {
       urlInput.style.display = "block";
       keyInput.style.display = "none";
+      if (keyLabel) keyLabel.innerText = window.i18n ? window.i18n.get("lblAIUrl") || "주소" : "주소";
     } else {
       urlInput.style.display = "none";
       keyInput.style.display = "block";
+      if (keyLabel) keyLabel.innerText = "Key";
     }
-    if (window.ai) ai.checkConnection();
+    
+    if (window.ai) {
+      window.ai.checkConnection();
+    }
   },
 
   setQuoteFontSize(size) {
@@ -127,6 +153,7 @@ window.settings = settings;
 window.openSettingModal = () => settings.openModal();
 window.saveSettings = () => settings.save();
 window.toggleCustomSearchUrl = () => settings.toggleCustomSearchUrl();
+window.toggleAiSettings = (isDisabled) => settings.toggleAiSettings(isDisabled);
 window.onAIProviderChange = () => settings.onAIProviderChange();
 window.setTheme = (color) => settings.setTheme(color);
 window.setQuoteFontSize = (size) => settings.setQuoteFontSize(size);

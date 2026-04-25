@@ -128,14 +128,6 @@
       </div>
       <div
         class="sidebar-icon"
-        id="side-ai"
-        onclick="toggleWidget('ai')"
-        data-i18n-title="sideAI"
-      >
-        <i class="fas fa-robot"></i>
-      </div>
-      <div
-        class="sidebar-icon"
         id="side-memo"
         onclick="toggleWidget('memo')"
         data-i18n-title="sideMemo"
@@ -179,7 +171,8 @@
     </div>
     <div id="search-section">
       <div class="search-box">
-        <i class="fas fa-search"></i>
+        <i class="fas fa-robot ai-search-icon" onclick="ui.toggleWidget('ai')" style="cursor: pointer; opacity: 0.7; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7" data-i18n-title="sideAI"></i>
+        <i class="fas fa-search" style="margin-left: 10px;"></i>
         <input
           type="text"
           id="searchInput"
@@ -198,8 +191,11 @@
     <div id="ai-chatbot-container" class="widget-hidden">
       <div class="ai-history-panel" id="ai-history">
         <div class="ai-history-header">
-          <span data-i18n="lblAIHistory">채팅 목록</span>
-          <i class="fas fa-bars" onclick="ai.toggleHistory()"></i>
+          <span class="history-title" data-i18n="lblAIHistory">채팅 목록</span>
+          <div style="display: flex; gap: 10px;">
+            <i class="fas fa-plus" onclick="ai.loadChat()" data-i18n-title="cmAdd"></i>
+            <i class="fas fa-bars" onclick="ai.toggleHistory()"></i>
+          </div>
         </div>
         <div class="ai-history-list" id="ai-history-list"></div>
       </div>
@@ -210,15 +206,18 @@
             <span id="ai-model-name">...</span>
           </div>
           <div class="ai-actions">
-            <i class="fas fa-trash-alt" onclick="ai.clearChat()" data-i18n-title="tipClearChat"></i>
+            <i class="fas fa-times" onclick="ui.toggleWidget('ai')" data-i18n-title="cmHide"></i>
           </div>
         </div>
         <div class="ai-chat-messages" id="ai-messages"></div>
         <div class="ai-chat-input-area">
-          <textarea id="ai-user-input" data-i18n-ph="aiInputPh" placeholder="메시지를 입력하세요..." onkeydown="ai.handleKeyDown(event)"></textarea>
-          <button id="ai-send-btn" onclick="ai.sendMessage()">
-            <i class="fas fa-paper-plane"></i>
-          </button>
+          <textarea id="ai-user-input" data-i18n-ph="aiInputPh" placeholder="메시지를 입력하세요... (Ctrl+Enter로 전송)" onkeydown="ai.handleKeyDown(event)"></textarea>
+          <div class="ai-input-actions">
+            <button class="ai-icon-btn" onclick="ai.attachFile()"><i class="fas fa-paperclip"></i></button>
+            <button id="ai-send-btn" onclick="ai.sendMessage()">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -326,22 +325,22 @@
               <div class="setting-group-title" data-i18n="lblBgKeyword">
                 배경화면 키워드
               </div>
-              <input type="text" id="bgKeywordInput" data-i18n-ph="bgKeywordPh" placeholder="예: nature, space, city, dark" onkeypress="event.key === 'Enter' && saveSettings()"/>
+              <input type="text" id="bgKeywordInput" data-i18n-ph="bgKeywordPh" placeholder="예: nature, space, city, dark" onkeypress="event.key === 'Enter' && saveSettings()" style="width: 98%; margin-left: 1%;"/>
 
               <div class="setting-group-title" style="display: flex; justify-content: space-between; align-items: center;">
-                <span data-i18n="lblSearch">검색</span>
+                <span data-i18n="lblSearchEngine">검색 엔진</span>
                 <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer;">
                   <input type="checkbox" id="searchNewTab" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
                   <span class="setting-label-text" data-i18n="lblSearchNewTab">새 창으로 검색</span>
                 </label>
               </div>
-              <select id="searchEngineSelect" onchange="toggleCustomSearchUrl()" style="margin-bottom: 10px;">
+              <select id="searchEngineSelect" onchange="toggleCustomSearchUrl()" style="margin-bottom: 10px; width: 98%; margin-left: 1%;">
                 <option value="google">Google</option>
                 <option value="naver">Naver</option>
                 <option value="chatgpt">ChatGPT</option>
                 <option value="custom" data-i18n="optCustom">Custom URL</option>
               </select>
-              <input type="text" id="customSearchUrlInput" placeholder="https://example.com/search?q=" style="display: none; margin-bottom: 10px;"/>
+              <input type="text" id="customSearchUrlInput" placeholder="https://example.com/search?q=" style="display: none; margin-bottom: 10px; width: 98%; margin-left: 1%;"/>
             </div>
 
             <div class="setting-column">
@@ -374,18 +373,24 @@
               </div>
               <div id="weatherLocationList" class="location-list"></div>
               <div class="city-search-container">
-                <input type="text" id="citySearchInput" data-i18n-ph="citySearchPh" placeholder="도시 검색 (예: 서울, London)" autocomplete="off" oninput="searchCities(this.value)"/>
+                <input type="text" id="citySearchInput" data-i18n-ph="citySearchPh" placeholder="도시 검색 (예: 서울, London)" autocomplete="off" oninput="searchCities(this.value)" style="width: 98%; margin-left: 1%;"/>
                 <div id="citySearchResults" class="city-results"></div>
               </div>
             </div>
             
             <!-- AI 설정 (가로 전체 사용) -->
             <div class="setting-column" style="grid-column: 1 / span 2;">
-              <div class="setting-group-title" data-i18n="lblAISetting">AI 설정</div>
-              <div style="display: flex; gap: 15px; align-items: center; width: 100%;">
+              <div class="setting-group-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <span data-i18n="lblAISetting">AI 설정</span>
+                <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; color: #94a3b8;">
+                  <input type="checkbox" id="aiDisableCheck" onchange="toggleAiSettings(this.checked)" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
+                  <span class="setting-label-text" data-i18n="lblAIDisable">사용 안 함</span>
+                </label>
+              </div>
+              <div id="aiSettingsPanel" style="display: flex; gap: 15px; align-items: center; width: 98%; margin-left: 1%; margin-bottom: 5px;">
                 <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
                   <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">AI</span>
-                  <select id="aiProviderSelect" onchange="onAIProviderChange()" style="margin-bottom: 0; flex: 1;">
+                  <select id="aiProviderSelect" onchange="onAIProviderChange()" style="margin-bottom: 2px; flex: 1;">
                     <option value="local">Local AI</option>
                     <option value="openai">OpenAI API</option>
                     <option value="gemini">Gemini API</option>
@@ -394,14 +399,15 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
                   <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">모델</span>
-                  <select id="aiModelSelect" disabled style="margin-bottom: 0; flex: 1;">
+                  <select id="aiModelSelect" disabled style="margin-bottom: 2px; flex: 1;">
                     <option value="" data-i18n="aiNoServer">접속 안됨</option>
                   </select>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                  <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">Key</span>
-                  <input type="text" id="aiServerUrlInput" placeholder="서버 주소" style="margin-bottom: 0; width: 100%;"/>
-                  <input type="password" id="aiApiKeyInput" placeholder="API Key" style="margin-bottom: 0; display: none; width: 100%;"/>
+                  <span id="aiKeyLabel" style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;" data-i18n="lblAIKey">URL</span>
+                  <input type="text" id="aiServerUrlInput" placeholder="서버 주소" style="margin-bottom: 2px; width: 100%; display: none;" onblur="if(window.ai) window.ai.checkConnection()"/>
+                  <input type="password" id="aiApiKeyInput" placeholder="API Key" style="margin-bottom: 2px; width: 100%; display: none;" onblur="if(window.ai) window.ai.checkConnection()"/>
+                  <i class="fas fa-sync-alt" onclick="if(window.ai) window.ai.checkConnection()" style="cursor: pointer; color: var(--accent-color);" data-i18n-title="tipCheckConn"></i>
                 </div>
               </div>
             </div>
