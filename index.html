@@ -298,6 +298,11 @@
         align-items: center;
         gap: 15px;
         max-width: 100%;
+        transition: opacity 0.4s ease, transform 0.4s ease;
+      }
+      .quote-switching {
+        opacity: 0;
+        transform: translateY(10px);
       }
       #quote-text {
         font-family: "Noto Serif KR", serif;
@@ -2471,28 +2476,36 @@
         setBackground(seed);
       };
       const fetchQuote = async () => {
+        const container = document.querySelector(".quote-container");
         const qt = document.getElementById("quote-text"),
           qa = document.getElementById("quote-author");
-        try {
-          const res = await fetch(
-              userLang === "ko"
-                ? "https://korean-advice-open-api.vercel.app/api/advice"
-                : "https://api.quotable.io/random",
-            ),
-            d = await res.json(),
-            text = userLang === "ko" ? d.message : d.content,
-            author =
-              d.author || (userLang === "ko" ? "지혜의 기록" : "Unknown");
-          if (text) {
-            qt.innerText = `"${text}"`;
-            qa.innerText = `- ${author}`;
-            return;
+        
+        if (container) container.classList.add("quote-switching");
+        
+        setTimeout(async () => {
+          try {
+            const res = await fetch(
+                userLang === "ko"
+                  ? "https://korean-advice-open-api.vercel.app/api/advice"
+                  : "https://api.quotable.io/random",
+              ),
+              d = await res.json(),
+              text = userLang === "ko" ? d.message : d.content,
+              author =
+                d.author || (userLang === "ko" ? "지혜의 기록" : "Unknown");
+            if (text) {
+              qt.innerText = `"${text}"`;
+              qa.innerText = `- ${author}`;
+            } else {
+              throw new Error();
+            }
+          } catch (e) {
+            qt.innerText = LANG[userLang].quoteDefault;
+            qa.innerText = LANG[userLang].quoteAuthorDefault;
+          } finally {
+            if (container) container.classList.remove("quote-switching");
           }
-          throw new Error();
-        } catch (e) {
-          qt.innerText = LANG[userLang].quoteDefault;
-          qa.innerText = LANG[userLang].quoteAuthorDefault;
-        }
+        }, 400);
       };
       const getWeatherData = async (lat, lon, locName, id, callId) => {
         try {
