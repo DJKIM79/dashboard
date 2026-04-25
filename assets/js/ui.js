@@ -37,7 +37,7 @@ const ui = {
       quote: "quote-section",
       search: "search-section",
       shortcut: "shortcut-container",
-      ai: "ai-chatbot-container",
+      ai: ["ai-chatbot-container", "ai-overlay"],
       memo: "memo-folder",
       noti: "noti-folder",
       calendar: "calendar-container",
@@ -45,9 +45,14 @@ const ui = {
     };
     types.forEach((type) => {
       const isHidden = localStorage.getItem(`dj_hide_${type}`) === "true";
-      const el = document.getElementById(widgetMap[type]);
+      const targets = Array.isArray(widgetMap[type]) ? widgetMap[type] : [widgetMap[type]];
+      
+      targets.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle("widget-hidden", isHidden);
+      });
+
       const sideIcon = document.getElementById(`side-${type}`);
-      if (el) el.classList.toggle("widget-hidden", isHidden);
       if (sideIcon) sideIcon.classList.toggle("active", !isHidden);
     });
   },
