@@ -48,18 +48,25 @@ const shortcutMod = {
 
     if (window.shortcutSortable) window.shortcutSortable.destroy();
     window.shortcutSortable = new Sortable(c, {
-      animation: 300,
-      easing: "cubic-bezier(1, 0, 0, 1)",
+      animation: 350,
+      easing: "cubic-bezier(0.2, 1, 0.3, 1)",
       ghostClass: "shortcut-ghost",
+      chosenClass: "shortcut-chosen",
+      dragClass: "shortcut-drag",
+      swapThreshold: 0.65,
+      invertSwap: true,
       delay: 400,
       delayOnTouchOnly: true,
       onStart: () => (this.isDragging = true),
       onEnd: (evt) => {
-        const item = this.items.splice(evt.oldIndex, 1)[0];
-        this.items.splice(evt.newIndex, 0, item);
-        utils.saveData();
         setTimeout(() => (this.isDragging = false), 100);
-        this.render();
+        if (evt.oldIndex !== evt.newIndex) {
+          const item = this.items.splice(evt.oldIndex, 1)[0];
+          this.items.splice(evt.newIndex, 0, item);
+          utils.saveData();
+          // We don't call this.render() here to keep the SortableJS animation smooth
+          // If you need to sync other UI elements, do it selectively
+        }
       },
     });
   },

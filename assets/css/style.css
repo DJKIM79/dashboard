@@ -348,7 +348,7 @@
         text-align: center;
         text-decoration: none;
         color: #fff;
-        transition: all 0.3s;
+        transition: transform 0.2s, background 0.3s, border-color 0.3s, opacity 0.3s;
         position: relative;
         cursor: pointer;
         -webkit-user-select: none;
@@ -380,10 +380,20 @@
         white-space: nowrap;
         display: block;
       }
+      /* Drag and Drop classes */
+      .shortcut-chosen {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: var(--accent-color) !important;
+        opacity: 0.8;
+      }
+      .shortcut-drag {
+        opacity: 0 !important;
+      }
       .shortcut-ghost {
-        opacity: 0.2;
-        background: var(--accent-color) !important;
+        opacity: 0.1 !important;
+        background: rgba(0, 0, 0, 0.5) !important;
         border: 2px dashed var(--accent-color) !important;
+        transform: scale(0.85);
       }
       .context-menu {
         display: none;
