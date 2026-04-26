@@ -16,9 +16,14 @@ const utils = {
     if (keyword === null) keyword = "landscape";
     keyword = keyword.trim().replace(/\s+/g, ",");
     
-    const url = keyword 
-      ? `https://loremflickr.com/1920/1080/${keyword}?random=${seed}`
-      : `https://loremflickr.com/1920/1080?random=${seed}`;
+    const engine = localStorage.getItem("dj_image_engine") || "unsplash";
+    
+    // LoremFlickr supports sources by adding them as tags
+    // e.g. https://loremflickr.com/1920/1080/nature,unsplash
+    const sourceTag = engine === "unsplash" ? "unsplash" : "flickr";
+    const tags = keyword ? `${keyword},${sourceTag}` : sourceTag;
+    
+    const url = `https://loremflickr.com/1920/1080/${tags}?random=${seed}`;
       
     document.body.style.backgroundImage = `url('${url}')`;
   },

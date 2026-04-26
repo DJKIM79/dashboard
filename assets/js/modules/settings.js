@@ -22,6 +22,16 @@ const settings = {
       if (el("searchEngineSelect")) el("searchEngineSelect").value = engine;
       if (el("customSearchUrlInput")) el("customSearchUrlInput").value = customUrl;
 
+      // Theme adjustment checkboxes
+      const themeAdj = localStorage.getItem("dj_theme_adjustment") || "none";
+      if (el("themeLighter")) el("themeLighter").checked = (themeAdj === "lighter");
+      if (el("themeDarker")) el("themeDarker").checked = (themeAdj === "darker");
+
+      // Image engine checkboxes
+      const imgEngine = localStorage.getItem("dj_image_engine") || "unsplash";
+      if (el("engineUnsplash")) el("engineUnsplash").checked = (imgEngine === "unsplash");
+      if (el("engineFlickr")) el("engineFlickr").checked = (imgEngine === "flickr");
+
       this.toggleCustomSearchUrl();
       if (window.renderWeatherLocationList) renderWeatherLocationList();
 
@@ -48,6 +58,12 @@ const settings = {
         cityResults.style.display = "none";
       }
 
+      // Reset AI connection status and icon color
+      const statusSpan = document.getElementById("ai-connection-status");
+      if (statusSpan) statusSpan.style.display = "none";
+      const refreshIcon = document.querySelector(".ai-refresh-icon");
+      if (refreshIcon) refreshIcon.style.color = "#94a3b8";
+
       utils.openModal("settingModal");
     } catch (e) {
       console.error("openModal error:", e);
@@ -61,6 +77,22 @@ const settings = {
     this.bgTimeout = setTimeout(() => {
       utils.changeBackgroundInstant();
     }, 1000);
+  },
+
+  updateImageEngine(engine) {
+    const unsplash = document.getElementById("engineUnsplash");
+    const flickr = document.getElementById("engineFlickr");
+    
+    if (engine === 'unsplash') {
+      flickr.checked = false;
+      unsplash.checked = true;
+      localStorage.setItem("dj_image_engine", "unsplash");
+    } else {
+      unsplash.checked = false;
+      flickr.checked = true;
+      localStorage.setItem("dj_image_engine", "flickr");
+    }
+    utils.changeBackgroundInstant();
   },
 
   updateSearchNewTab(checked) {
@@ -100,7 +132,16 @@ const settings = {
     this.onAIProviderChange();
     if (window.ai) {
       ai.provider = provider;
-      // Removed automatic ai.checkConnection()
+      // Reset model select UI
+      const modelSelect = document.getElementById("aiModelSelect");
+      if (modelSelect) {
+        modelSelect.disabled = true;
+        const msg = window.i18n ? window.i18n.get("aiNeedCheck") : "서버 확인 필요";
+        modelSelect.innerHTML = `<option value="">${msg}</option>`;
+      }
+      // Reset icon color
+      const refreshIcon = document.querySelector(".ai-refresh-icon");
+      if (refreshIcon) refreshIcon.style.color = "#94a3b8";
     }
     if (window.ui) ui.applyVisibility();
   },
@@ -109,7 +150,7 @@ const settings = {
     localStorage.setItem("dj_ai_server_url", url.trim());
     if (window.ai) {
       ai.serverUrl = url.trim();
-      ai.checkConnection();
+      // Removed automatic ai.checkConnection()
     }
   },
 
@@ -117,7 +158,7 @@ const settings = {
     localStorage.setItem("dj_ai_api_key", key.trim());
     if (window.ai) {
       ai.apiKey = key.trim();
-      ai.checkConnection();
+      // Removed automatic ai.checkConnection()
     }
   },
 
@@ -129,6 +170,25 @@ const settings = {
       ai.renderWelcome();
       if (window.ui) ui.applyVisibility();
     }
+  },
+
+  updateThemeAdjustment(type) {
+    const lighter = document.getElementById("themeLighter");
+    const darker = document.getElementById("themeDarker");
+    
+    if (type === 'lighter' && lighter.checked) {
+      darker.checked = false;
+      localStorage.setItem("dj_theme_adjustment", "lighter");
+    } else if (type === 'darker' && darker.checked) {
+      lighter.checked = false;
+      localStorage.setItem("dj_theme_adjustment", "darker");
+    } else {
+      localStorage.setItem("dj_theme_adjustment", "none");
+    }
+    
+    // Re-apply current theme color with new adjustment
+    const currentColor = localStorage.getItem("dj_theme_color") || "#3b82f6";
+    this.setTheme(currentColor);
   },
 
   toggleCustomSearchUrl() {
@@ -197,10 +257,38 @@ const settings = {
   },
 
   setTheme(color) {
-    document.documentElement.style.setProperty("--accent-color", color);
-    localStorage.setItem("dj_theme_color", color);
-    const contrast = (color === "#000" || color === "#000000") ? "#fff" : "#0f172a";
+    const adj = localStorage.getItem("dj_theme_adjustment") || "none";
+    let finalColor = color;
+    
+    if (adj !== "none") {
+      finalColor = this.adjustColor(color, adj === "lighter" ? 20 : -20);
+    }
+
+    document.documentElement.style.setProperty("--accent-color", finalColor);
+    localStorage.setItem("dj_theme_color", color); // Store original base color
+    
+    const contrast = (finalColor === "#000" || finalColor === "#000000" || finalColor === "#fff" || finalColor === "#ffffff") 
+      ? (finalColor.startsWith("#f") ? "#0f172a" : "#fff") 
+      : "#0f172a";
+      
     document.documentElement.style.setProperty("--accent-contrast", contrast);
+  },
+
+  adjustColor(hex, percent) {
+    // Basic hex color adjustment
+    let r = parseInt(hex.slice(1, 3), 16);
+    let g = parseInt(hex.slice(3, 5), 16);
+    let b = parseInt(hex.slice(5, 7), 16);
+
+    r = Math.min(255, Math.max(0, r + (r * percent / 100)));
+    g = Math.min(255, Math.max(0, g + (g * percent / 100)));
+    b = Math.min(255, Math.max(0, b + (b * percent / 100)));
+
+    const rr = Math.round(r).toString(16).padStart(2, '0');
+    const gg = Math.round(g).toString(16).padStart(2, '0');
+    const bb = Math.round(b).toString(16).padStart(2, '0');
+
+    return `#${rr}${gg}${bb}`;
   }
 };
 
@@ -212,6 +300,8 @@ window.onAIProviderChange = () => settings.onAIProviderChange();
 window.setTheme = (color) => settings.setTheme(color);
 window.setQuoteFontSize = (size) => settings.setQuoteFontSize(size);
 window.setWidgetSize = (size) => settings.setWidgetSize(size);
+window.updateThemeAdjustment = (type) => settings.updateThemeAdjustment(type);
+window.updateImageEngine = (engine) => settings.updateImageEngine(engine);
 
 // Individual update wrappers
 window.updateBgKeyword = (val) => settings.updateBgKeyword(val);
