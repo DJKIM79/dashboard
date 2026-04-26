@@ -1,12 +1,12 @@
 const ai = {
-  provider: localStorage.getItem("dj_ai_provider") || "none",
-  serverUrl: localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434",
-  apiKey: localStorage.getItem("dj_ai_api_key") || "",
-  model: localStorage.getItem("dj_ai_model") || "",
-  outputAtOnce: localStorage.getItem("dj_ai_output_at_once") !== "false",
+  provider: "none",
+  serverUrl: "http://127.0.0.1:11434",
+  apiKey: "",
+  model: "",
+  isConnected: false,
+  outputAtOnce: true,
   isGenerating: false,
   historyCollapsed: false,
-  isConnected: localStorage.getItem("dj_ai_is_connected") === "true",
   
   getStorageKey() {
     return `dj_ai_chats_${this.provider}_${this.model.replace(/[:/]/g, '_')}`;
@@ -24,11 +24,33 @@ const ai = {
   currentChatId: null,
 
   init() {
+    // 1. localStorage에서 설정값을 정확히 로드
+    this.provider = localStorage.getItem("dj_ai_provider") || "none";
+    this.serverUrl = localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
+    this.apiKey = localStorage.getItem("dj_ai_api_key") || "";
+    this.model = localStorage.getItem("dj_ai_model") || "";
+    this.isConnected = localStorage.getItem("dj_ai_is_connected") === "true";
+    this.outputAtOnce = localStorage.getItem("dj_ai_output_at_once") !== "false";
+
     this.updateModelDisplay();
     this.renderHistory();
     this.loadChat();
-    // Restore persistent connection status
-    this.updateChatbotAvailability(this.isConnected);
+    
+    // 2. 초기 UI 상태 복구
+    if (this.isConnected && this.provider !== "none") {
+      const savedModels = JSON.parse(localStorage.getItem("dj_ai_models_cache") || "[]");
+      if (savedModels.length > 0) {
+        this.updateModelSelectUI(savedModels);
+      }
+      // 아이콘 활성화 즉시 반영
+      this.updateChatbotAvailability(true);
+      
+      // 3. 백그라운드 체크 (중요: 실패해도 isConnected를 끄지 않음)
+      this.checkConnection(true);
+    } else {
+      this.updateChatbotAvailability(false);
+      this.updateModelSelectUI([]); 
+    }
   },
 
   updateModelDisplay() {
@@ -43,316 +65,33 @@ const ai = {
   updateChatbotAvailability(isConnected) {
     this.isConnected = isConnected;
     localStorage.setItem("dj_ai_is_connected", isConnected);
+    
     const aiIcon = document.querySelector(".ai-search-icon");
     if (aiIcon) {
       aiIcon.classList.toggle("active", isConnected);
       aiIcon.classList.toggle("can-chat", isConnected);
-      if (!isConnected) {
-        aiIcon.style.color = "#94a3b8";
-      } else {
-        aiIcon.style.color = "";
-      }
+      aiIcon.style.color = isConnected ? "" : "#94a3b8";
     }
+    
+    this.updateStatusUI();
   },
 
-  renderWelcome() {
-    const msgContainer = document.getElementById("ai-messages");
-    if (msgContainer) msgContainer.innerHTML = "";
-  },
+  updateModelSelectUI(models) {
+    const modelSelect = document.getElementById("aiModelSelect");
+    if (!modelSelect) return;
 
-  appendMessage(role, text, save = true, isHtml = false) {
-    const msgContainer = document.getElementById("ai-messages");
-    if (!msgContainer) return null;
-
-    const div = document.createElement("div");
-    div.className = `ai-message ${role}`;
-    if (isHtml) {
-      div.innerHTML = text;
+    if (models.length > 0 && this.isConnected) {
+      modelSelect.innerHTML = models.map(m => 
+        `<option value="${m}" ${m === this.model ? 'selected' : ''}>${m}</option>`
+      ).join('');
+      modelSelect.disabled = false;
+      localStorage.setItem("dj_ai_models_cache", JSON.stringify(models));
     } else {
-      div.innerText = text;
-    }
-    msgContainer.appendChild(div);
-    msgContainer.scrollTop = msgContainer.scrollHeight;
-
-    if (save && this.currentChatId) {
-      const chats = this.chats;
-      const chat = chats.find(c => c.id === this.currentChatId);
-      if (chat) {
-        chat.messages.push({ role, content: text });
-        this.chats = chats;
-        this.renderHistory();
-      }
-    }
-    return div;
-  },
-
-  loadChat(id = null) {
-    const chats = this.chats;
-    if (!id) {
-      if (chats.length > 0) {
-        this.currentChatId = chats[0].id;
-      } else {
-        this.createNewChat();
-        return;
-      }
-    } else {
-      this.currentChatId = id;
-    }
-    
-    this.renderHistory();
-    const chat = chats.find(c => c.id === this.currentChatId);
-    const msgContainer = document.getElementById("ai-messages");
-    if (msgContainer) msgContainer.innerHTML = "";
-
-    if (chat && chat.messages.length > 0) {
-      chat.messages.forEach(m => this.appendMessage(m.role, m.content, false));
-    }
-    this.updateModelDisplay();
-  },
-
-  createNewChat() {
-    const chats = this.chats;
-    if (chats.length > 0) {
-      const firstChat = chats[0];
-      if (firstChat.messages.length === 0 && (firstChat.title === "새로운 대화" || firstChat.title === "New Chat")) {
-        this.loadChat(firstChat.id);
-        return;
-      }
-    }
-
-    this.currentChatId = Date.now();
-    const title = window.i18n ? window.i18n.get("aiNewChat") || "새로운 대화" : "새로운 대화";
-    chats.unshift({ id: this.currentChatId, title: title, messages: [] });
-    this.chats = chats;
-    this.loadChat(this.currentChatId);
-  },
-
-  renderHistory() {
-    const list = document.getElementById("ai-history-list");
-    if (!list) return;
-    list.innerHTML = "";
-
-    this.chats.forEach(chat => {
-      const div = document.createElement("div");
-      div.className = `ai-history-item ${chat.id === this.currentChatId ? 'active' : ''}`;
-      div.onclick = () => this.loadChat(chat.id);
-      
-      div.innerHTML = `
-        <span>${chat.title}</span>
-        <i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>
-      `;
-      list.appendChild(div);
-    });
-  },
-
-  deleteChat(id, e) {
-    e.stopPropagation();
-    let chats = this.chats;
-    chats = chats.filter(c => c.id !== id);
-    this.chats = chats;
-    
-    if (chats.length === 0) {
-      this.createNewChat();
-    } else if (this.currentChatId === id) {
-      this.currentChatId = chats[0].id;
-      this.loadChat(this.currentChatId);
-    } else {
-      this.renderHistory();
-    }
-  },
-
-  async sendMessage() {
-    const input = document.getElementById("ai-user-input");
-    const text = input.value.trim();
-    if (!text || this.isGenerating) return;
-
-    if (!this.isConnected) {
-      alert("AI 서버 연결이 필요합니다. 설정에서 서버 체크를 해주세요.");
-      settings.openModal();
-      return;
-    }
-
-    const chats = this.chats;
-    const chat = chats.find(c => c.id === this.currentChatId);
-    if (chat && (chat.title === "새로운 대화" || chat.title === "New Chat")) {
-      chat.title = text.length > 15 ? text.substring(0, 15) + "..." : text;
-      this.chats = chats;
-    }
-
-    this.appendMessage("user", text);
-    input.value = "";
-    this.isGenerating = true;
-
-    const typingHtml = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
-    const botMsgDiv = this.appendMessage("bot", typingHtml, false, true);
-    
-    try {
-      if (this.provider === "local") {
-        await this.callLocalAI(text, botMsgDiv, chat);
-      } else if (this.provider === "openai") {
-        await this.callOpenAI(text, botMsgDiv, chat);
-      } else if (this.provider === "gemini") {
-        await this.callGemini(text, botMsgDiv, chat);
-      } else {
-        botMsgDiv.innerText = "선택하신 API 서비스는 현재 준비 중입니다.";
-        if (chat) {
-          const chats = this.chats;
-          const c = chats.find(x => x.id === chat.id);
-          c.messages.push({ role: "bot", content: botMsgDiv.innerText });
-          this.chats = chats;
-        }
-      }
-    } catch (e) {
-      botMsgDiv.innerText = "Error: AI 서버와 통신 중 오류가 발생했습니다.";
-      console.error(e);
-    } finally {
-      this.isGenerating = false;
-    }
-  },
-
-  async callLocalAI(prompt, msgDiv, chat) {
-    const isStream = !this.outputAtOnce;
-    const response = await fetch(`${this.serverUrl}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: this.model,
-        messages: chat.messages.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: prompt }]),
-        stream: isStream
-      })
-    });
-
-    if (!response.ok) throw new Error('Ollama connection failed');
-
-    let fullText = '';
-    if (isStream) {
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let isFirstChunk = true;
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const json = JSON.parse(line);
-            if (json.message && json.message.content) {
-              if (isFirstChunk) { msgDiv.innerHTML = ""; isFirstChunk = false; }
-              fullText += json.message.content;
-              msgDiv.innerText = fullText;
-              document.getElementById("ai-messages").scrollTop = document.getElementById("ai-messages").scrollHeight;
-            }
-          } catch (e) {}
-        }
-      }
-    } else {
-      const json = await response.json();
-      if (json.message && json.message.content) {
-        fullText = json.message.content;
-        msgDiv.innerHTML = "";
-        msgDiv.innerText = fullText;
-        document.getElementById("ai-messages").scrollTop = document.getElementById("ai-messages").scrollHeight;
-      }
-    }
-    
-    if (chat) {
-      const chats = this.chats;
-      const c = chats.find(x => x.id === chat.id);
-      c.messages.push({ role: "user", content: prompt });
-      c.messages.push({ role: "bot", content: fullText });
-      this.chats = chats;
-    }
-  },
-
-  async callOpenAI(prompt, msgDiv, chat) {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`
-      },
-      body: JSON.stringify({
-        model: this.model,
-        messages: chat.messages.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: prompt }])
-      })
-    });
-    if (!response.ok) throw new Error('OpenAI request failed');
-    const json = await response.json();
-    const fullText = json.choices[0].message.content;
-    msgDiv.innerHTML = "";
-    msgDiv.innerText = fullText;
-    
-    if (chat) {
-      const chats = this.chats;
-      const c = chats.find(x => x.id === chat.id);
-      c.messages.push({ role: "user", content: prompt });
-      c.messages.push({ role: "bot", content: fullText });
-      this.chats = chats;
-    }
-  },
-
-  async callGemini(prompt, msgDiv, chat) {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }] 
-      })
-    });
-    if (!response.ok) throw new Error('Gemini request failed');
-    const json = await response.json();
-    const fullText = json.candidates[0].content.parts[0].text;
-    msgDiv.innerHTML = "";
-    msgDiv.innerText = fullText;
-    
-    if (chat) {
-      const chats = this.chats;
-      const c = chats.find(x => x.id === chat.id);
-      c.messages.push({ role: "user", content: prompt });
-      c.messages.push({ role: "bot", content: fullText });
-      this.chats = chats;
-    }
-  },
-
-  handleKeyDown(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      this.sendMessage();
-    }
-  },
-
-  attachFile() {
-    const btn = document.querySelector(".ai-icon-btn");
-    if (!btn) return;
-    const tip = document.createElement("div");
-    tip.className = "ai-tooltip";
-    tip.innerText = "조금만 기달려 주세요.";
-    document.body.appendChild(tip);
-    const rect = btn.getBoundingClientRect();
-    tip.style.left = `${rect.left + rect.width / 2}px`;
-    tip.style.top = `${rect.top - 10}px`;
-    setTimeout(() => {
-      tip.classList.add("show");
-      setTimeout(() => {
-        tip.classList.remove("show");
-        setTimeout(() => tip.remove(), 300);
-      }, 2000);
-    }, 10);
-  },
-
-  clearChat() {
-    this.renderWelcome();
-  },
-
-  toggleHistory() {
-    this.historyCollapsed = !this.historyCollapsed;
-    const panel = document.getElementById("ai-history");
-    const toggleIcon = document.getElementById("ai-history-toggle");
-    if (panel) panel.classList.toggle("collapsed", this.historyCollapsed);
-    if (toggleIcon) {
-      toggleIcon.className = this.historyCollapsed ? "fas fa-angles-right" : "fas fa-angles-left";
+      // 모델 선택 칸에 상태 표시 (사용자 요청 로직)
+      const pName = this.provider === 'local' ? 'Local' : (this.provider === 'none' ? '' : this.provider.charAt(0).toUpperCase() + this.provider.slice(1));
+      const msg = this.isConnected ? `${pName} 연결중` : (window.i18n ? window.i18n.get("aiNoServer") : "서버 연결 안됨");
+      modelSelect.innerHTML = `<option value="">${msg}</option>`;
+      modelSelect.disabled = true;
     }
   },
 
@@ -367,165 +106,221 @@ const ai = {
       if (dot) dot.style.background = "#22c55e";
       if (text) {
         const pName = this.provider.charAt(0).toUpperCase() + this.provider.slice(1);
-        const connectMsg = T.aiConnecting || "연결 중";
-        text.innerText = `${pName} ${connectMsg}`;
+        const connMsg = T.aiConnecting || "연결중";
+        text.innerText = `${pName} ${connMsg}`;
       }
       statusSpan.style.color = "#22c55e";
     } else {
+      // 연결 안됨 시 회색(#94a3b8) 점과 글자 복구
       if (dot) dot.style.background = "#94a3b8";
-      if (text) text.innerText = T.aiNeedConnect || "서버 연결 필요";
+      if (text) text.innerText = T.aiNeedConnect || "서버 연결 안됨";
       statusSpan.style.color = "#94a3b8";
     }
   },
 
-  async checkConnection() {
-    const modelSelect = document.getElementById("aiModelSelect");
-    const provider = document.getElementById("aiProviderSelect").value;
-    let url = document.getElementById("aiServerUrlInput").value;
-    const apiKey = document.getElementById("aiApiKeyInput").value.trim();
-    const currentModel = localStorage.getItem("dj_ai_model");
-    const statusSpan = document.getElementById("ai-connection-status");
+  async checkConnection(isSilent = false) {
+    const providerEl = document.getElementById("aiProviderSelect");
+    const provider = providerEl ? providerEl.value : this.provider;
+    const url = document.getElementById("aiServerUrlInput")?.value || this.serverUrl;
+    const apiKey = document.getElementById("aiApiKeyInput")?.value.trim() || this.apiKey;
+    
     const tempMsgSpan = document.getElementById("ai-temp-msg");
     const refreshIcon = document.querySelector(".ai-refresh-icon");
 
-    if (!modelSelect) return;
-    if (refreshIcon) refreshIcon.style.color = "#94a3b8";
-
-    const showStatus = (isConnected) => {
-      this.isConnected = isConnected;
-      this.updateStatusUI();
-      
-      const T = window.i18n ? window.i18n.langData : {};
-      const pName = provider.charAt(0).toUpperCase() + provider.slice(1);
-      
-      if (tempMsgSpan) {
-        tempMsgSpan.innerText = isConnected 
-          ? `${pName} ${T.msgConnSuccess || "연결 성공!"}`
-          : `${pName} ${T.msgConnFail || "연결 실패!"}`;
-        tempMsgSpan.style.color = isConnected ? "#22c55e" : "#ef4444";
-        tempMsgSpan.style.display = "inline-block";
-        
-        setTimeout(() => {
-          tempMsgSpan.style.display = "none";
-        }, 4000);
+    const finalize = (isConnected, models = []) => {
+      // 자동 체크일 때는 성공 시에만 상태를 true로 업데이트, 실패 시에는 기존 상태 유지
+      if (!isSilent || isConnected) {
+        this.updateChatbotAvailability(isConnected);
       }
-
-      if (refreshIcon) refreshIcon.style.color = isConnected ? "#22c55e" : "#ef4444";
-    };
-
-    const updateModelSelect = (models, isDisabled = false) => {
-      if (models.length > 0) {
-        modelSelect.innerHTML = models.map(m => 
-          `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`
-        ).join('');
-        modelSelect.disabled = isDisabled;
-        this.updateChatbotAvailability(true);
-      } else {
-        const msg = window.i18n ? window.i18n.get("aiCheckFail") : "확인 불가";
-        modelSelect.innerHTML = `<option value="">${msg}</option>`;
-        modelSelect.disabled = true;
-        this.updateChatbotAvailability(false);
+      this.updateModelSelectUI(models);
+      
+      if (!isSilent) {
+        const pName = provider.charAt(0).toUpperCase() + provider.slice(1);
+        if (tempMsgSpan) {
+          tempMsgSpan.innerText = isConnected ? `${pName} 연결 성공!` : `${pName} 연결 실패!`;
+          tempMsgSpan.style.color = isConnected ? "#22c55e" : "#ef4444";
+          tempMsgSpan.style.display = "inline-block";
+          setTimeout(() => tempMsgSpan.style.display = "none", 4000);
+        }
+        if (refreshIcon) refreshIcon.style.color = isConnected ? "#22c55e" : "#ef4444";
       }
     };
 
-    if (provider === "none") {
-      modelSelect.disabled = true;
-      modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNoServer") : "접속 안됨"}</option>`;
-      this.updateChatbotAvailability(false);
-      showStatus(false);
-      return;
-    }
+    if (provider === "none") { finalize(false); return; }
 
-    if (provider === "openai") {
-      if (!apiKey) {
-        modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNeedKey") : "Key 필요"}</option>`;
-        modelSelect.disabled = true;
-        this.updateChatbotAvailability(false);
-        showStatus(false);
-        return;
-      }
-      try {
-        const res = await fetch("https://api.openai.com/v1/models", {
-          headers: { "Authorization": `Bearer ${apiKey}` }
-        });
+    try {
+      if (provider === "openai") {
+        if (!apiKey) { finalize(false); return; }
+        const res = await fetch("https://api.openai.com/v1/models", { headers: { "Authorization": `Bearer ${apiKey}` } });
         if (res.ok) {
           const data = await res.json();
           const models = data.data.filter(m => m.id.startsWith("gpt-")).map(m => m.id).sort();
-          updateModelSelect(models);
-          showStatus(true);
-        } else { throw new Error(); }
-      } catch (e) {
-        updateModelSelect([], true);
-        showStatus(false);
-      }
-      return;
-    }
-
-    if (provider === "gemini") {
-      if (!apiKey) {
-        modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNeedKey") : "Key 필요"}</option>`;
-        modelSelect.disabled = true;
-        this.updateChatbotAvailability(false);
-        showStatus(false);
-        return;
-      }
-      try {
+          finalize(true, models);
+        } else { finalize(false); }
+      } else if (provider === "gemini") {
+        if (!apiKey) { finalize(false); return; }
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
         if (res.ok) {
           const data = await res.json();
-          const models = data.models
-            .filter(m => m.supportedGenerationMethods.includes("generateContent"))
-            .map(m => m.name.replace("models/", ""));
-          updateModelSelect(models);
-          showStatus(true);
-        } else { throw new Error(); }
-      } catch (e) {
-        updateModelSelect([], true);
-        showStatus(false);
+          const models = data.models.filter(m => m.supportedGenerationMethods.includes("generateContent")).map(m => m.name.replace("models/", ""));
+          finalize(true, models);
+        } else { finalize(false); }
+      } else if (provider === "claude") {
+        if (!apiKey) finalize(false);
+        else finalize(true, ["claude-3-5-sonnet-20240620", "claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"]);
+      } else if (provider === "local") {
+        if (!url) { finalize(false); return; }
+        let fetchUrl = url.includes("localhost") ? url.replace("localhost", "127.0.0.1") : url;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(`${fetchUrl}/api/tags`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
+          finalize(true, (data.models || []).map(m => m.name));
+        } else { finalize(false); }
       }
-      return;
-    }
+    } catch (e) { finalize(false); }
+  },
 
-    if (provider === "claude") {
-      if (!apiKey) {
-        modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNeedKey") : "Key 필요"}</option>`;
-        modelSelect.disabled = true;
-        this.updateChatbotAvailability(false);
-        showStatus(false);
-      } else {
-        const models = ["claude-3-5-sonnet-20240620", "claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"];
-        updateModelSelect(models);
-        showStatus(true);
-      }
-      return;
+  async sendMessage() {
+    const input = document.getElementById("ai-user-input");
+    const text = input.value.trim();
+    if (!text || this.isGenerating) return;
+    if (!this.isConnected) { alert("AI 서버 연결이 필요합니다."); settings.openModal(); return; }
+    const chats = this.chats;
+    const chat = chats.find(c => c.id === this.currentChatId);
+    if (chat && (chat.title === "새로운 대화" || chat.title === "New Chat")) {
+      chat.title = text.length > 15 ? text.substring(0, 15) + "..." : text;
+      this.chats = chats;
     }
-
-    if (!url) {
-      modelSelect.disabled = true;
-      modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNoServer") : "접속 안됨"}</option>`;
-      this.updateChatbotAvailability(false);
-      showStatus(false);
-      return;
-    }
-
-    let fetchUrl = url.includes("localhost") ? url.replace("localhost", "127.0.0.1") : url;
+    this.appendMessage("user", text);
+    input.value = "";
+    this.isGenerating = true;
+    const botMsgDiv = this.appendMessage("bot", `<div class="typing-indicator"><span></span><span></span><span></span></div>`, false, true);
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
-      const res = await fetch(`${fetchUrl}/api/tags`, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.models && data.models.length > 0) {
-          const models = data.models.map(m => m.name);
-          updateModelSelect(models);
-          showStatus(true);
-        } else { throw new Error(); }
-      } else { throw new Error(); }
-    } catch (e) {
-      updateModelSelect([], true);
-      showStatus(false);
+      if (this.provider === "local") await this.callLocalAI(text, botMsgDiv, chat);
+      else if (this.provider === "openai") await this.callOpenAI(text, botMsgDiv, chat);
+      else if (this.provider === "gemini") await this.callGemini(text, botMsgDiv, chat);
+    } catch (e) { botMsgDiv.innerText = "오류: 서버와 통신할 수 없습니다."; }
+    finally { this.isGenerating = false; }
+  },
+
+  async callLocalAI(prompt, msgDiv, chat) {
+    const isStream = !this.outputAtOnce;
+    const response = await fetch(`${this.serverUrl}/api/chat`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: this.model, messages: chat.messages.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: prompt }]), stream: isStream })
+    });
+    if (!response.ok) throw new Error();
+    let fullText = '';
+    if (isStream) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        for (const line of chunk.split('\n')) {
+          if (!line.trim()) continue;
+          try {
+            const json = JSON.parse(line);
+            if (json.message?.content) {
+              if (fullText === '') msgDiv.innerHTML = "";
+              fullText += json.message.content;
+              msgDiv.innerText = fullText;
+              document.getElementById("ai-messages").scrollTop = document.getElementById("ai-messages").scrollHeight;
+            }
+          } catch (e) {}
+        }
+      }
+    } else {
+      const json = await response.json();
+      fullText = json.message?.content || "";
+      msgDiv.innerText = fullText;
     }
+    this.saveMessage(chat.id, prompt, fullText);
+  },
+
+  async callOpenAI(prompt, msgDiv, chat) {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.apiKey}` },
+      body: JSON.stringify({ model: this.model, messages: chat.messages.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: prompt }]) })
+    });
+    const json = await res.json();
+    const text = json.choices[0].message.content;
+    msgDiv.innerText = text;
+    this.saveMessage(chat.id, prompt, text);
+  },
+
+  async callGemini(prompt, msgDiv, chat) {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    const json = await res.json();
+    const text = json.candidates[0].content.parts[0].text;
+    msgDiv.innerText = text;
+    this.saveMessage(chat.id, prompt, text);
+  },
+
+  saveMessage(chatId, userPrompt, botResponse) {
+    const chats = this.chats;
+    const c = chats.find(x => x.id === chatId);
+    if (c) { c.messages.push({ role: "user", content: userPrompt }); c.messages.push({ role: "bot", content: botResponse }); this.chats = chats; }
+  },
+
+  handleKeyDown(e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); this.sendMessage(); } },
+  renderHistory() {
+    const list = document.getElementById("ai-history-list");
+    if (!list) return;
+    list.innerHTML = "";
+    this.chats.forEach(chat => {
+      const div = document.createElement("div");
+      div.className = `ai-history-item ${chat.id === this.currentChatId ? 'active' : ''}`;
+      div.onclick = () => this.loadChat(chat.id);
+      div.innerHTML = `<span>${chat.title}</span><i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>`;
+      list.appendChild(div);
+    });
+  },
+  loadChat(id = null) {
+    const chats = this.chats;
+    if (!id) { if (chats.length > 0) this.currentChatId = chats[0].id; else { this.createNewChat(); return; } }
+    else this.currentChatId = id;
+    this.renderHistory();
+    const chat = chats.find(c => c.id === this.currentChatId);
+    const msgContainer = document.getElementById("ai-messages");
+    if (msgContainer) { msgContainer.innerHTML = ""; if (chat) chat.messages.forEach(m => this.appendMessage(m.role, m.content, false)); }
+    this.updateModelDisplay();
+  },
+  createNewChat() {
+    const chats = this.chats;
+    this.currentChatId = Date.now();
+    chats.unshift({ id: this.currentChatId, title: "새 대화", messages: [] });
+    this.chats = chats;
+    this.loadChat(this.currentChatId);
+  },
+  deleteChat(id, e) {
+    e.stopPropagation();
+    this.chats = this.chats.filter(c => c.id !== id);
+    if (this.chats.length === 0) this.createNewChat();
+    else if (this.currentChatId === id) this.loadChat(this.chats[0].id);
+    else this.renderHistory();
+  },
+  toggleHistory() {
+    this.historyCollapsed = !this.historyCollapsed;
+    document.getElementById("ai-history")?.classList.toggle("collapsed", this.historyCollapsed);
+    document.getElementById("ai-history-toggle").className = this.historyCollapsed ? "fas fa-angles-right" : "fas fa-angles-left";
+  },
+  appendMessage(role, text, save = true, isHtml = false) {
+    const container = document.getElementById("ai-messages");
+    if (!container) return null;
+    const div = document.createElement("div");
+    div.className = `ai-message ${role}`;
+    if (isHtml) div.innerHTML = text; else div.innerText = text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
   }
 };
 

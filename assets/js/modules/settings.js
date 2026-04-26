@@ -131,21 +131,10 @@ const settings = {
     this.onAIProviderChange();
     if (window.ai) {
       ai.provider = provider;
-      // Reset connection and deactivate immediately
-      ai.isConnected = false;
-      if (typeof ai.updateChatbotAvailability === "function") {
-        ai.updateChatbotAvailability(false);
-      }
-      
-      const modelSelect = document.getElementById("aiModelSelect");
-      if (modelSelect) {
-        modelSelect.disabled = true;
-        const msg = window.i18n ? window.i18n.get("aiNeedCheck") : "서버 확인 필요";
-        modelSelect.innerHTML = `<option value="">${msg}</option>`;
-      }
-      // Reset icon color
-      const refreshIcon = document.querySelector(".ai-refresh-icon");
-      if (refreshIcon) refreshIcon.style.color = "#94a3b8";
+      // 제공자 변경 시 기존 모델 캐시 삭제 및 상태 리셋
+      localStorage.removeItem("dj_ai_models_cache");
+      ai.updateChatbotAvailability(false);
+      ai.updateModelSelectUI([]);
       
       if (typeof ai.updateStatusUI === "function") {
         ai.updateStatusUI();
@@ -174,10 +163,7 @@ const settings = {
     localStorage.setItem("dj_ai_model", model);
     if (window.ai) {
       ai.model = model;
-      ai.isConnected = false;
-      if (typeof ai.updateChatbotAvailability === "function") {
-        ai.updateChatbotAvailability(false);
-      }
+      // 모델 변경 시 연결 상태를 강제로 끊지 않고 유지합니다.
       ai.updateModelDisplay();
       ai.renderWelcome();
       if (window.ui) ui.applyVisibility();
