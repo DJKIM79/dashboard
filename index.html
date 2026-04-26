@@ -324,22 +324,22 @@
               <div class="setting-group-title" data-i18n="lblBgKeyword">
                 배경화면 키워드
               </div>
-              <input type="text" id="bgKeywordInput" data-i18n-ph="bgKeywordPh" placeholder="예: nature, space, city, dark" onkeypress="event.key === 'Enter' && saveSettings()" style="width: 98%; margin-left: 1%;"/>
+              <input type="text" id="bgKeywordInput" data-i18n-ph="bgKeywordPh" placeholder="예: nature, space, city, dark" oninput="updateBgKeyword(this.value)" style="width: 98%; margin-left: 1%;"/>
 
               <div class="setting-group-title" style="display: flex; justify-content: space-between; align-items: center;">
                 <span data-i18n="lblSearchEngine">검색 엔진</span>
                 <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer;">
-                  <input type="checkbox" id="searchNewTab" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
+                  <input type="checkbox" id="searchNewTab" onchange="updateSearchNewTab(this.checked)" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
                   <span class="setting-label-text" data-i18n="lblSearchNewTab">새 창으로 검색</span>
                 </label>
               </div>
-              <select id="searchEngineSelect" onchange="toggleCustomSearchUrl()" style="margin-bottom: 10px; width: 98%; margin-left: 1%;">
+              <select id="searchEngineSelect" onchange="updateSearchEngine(this.value)" style="margin-bottom: 10px; width: 98%; margin-left: 1%;">
                 <option value="google">Google</option>
                 <option value="naver">Naver</option>
                 <option value="chatgpt">ChatGPT</option>
                 <option value="custom" data-i18n="optCustom">Custom URL</option>
               </select>
-              <input type="text" id="customSearchUrlInput" placeholder="https://example.com/search?q=" style="display: none; margin-bottom: 10px; width: 98%; margin-left: 1%;"/>
+              <input type="text" id="customSearchUrlInput" placeholder="https://example.com/search?q=" oninput="updateCustomSearchUrl(this.value)" style="display: none; margin-bottom: 10px; width: 98%; margin-left: 1%;"/>
             </div>
 
             <div class="setting-column">
@@ -347,7 +347,7 @@
               <div class="setting-row" style="gap: 15px; align-items: center; margin-bottom: 20px;">
                 <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
                   <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap; margin: 0; display: flex; align-items: center;" data-i18n="lblQuoteSize">명언 크기</span>
-                  <select id="quoteFontSizeSelect" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; height: 32px; text-align: center; text-align-last: center; cursor: pointer; padding: 0; margin: 0; outline: none; box-sizing: border-box;">
+                  <select id="quoteFontSizeSelect" onchange="setQuoteFontSize(this.value)" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; height: 32px; text-align: center; text-align-last: center; cursor: pointer; padding: 0; margin: 0; outline: none; box-sizing: border-box;">
                     <option value="large" data-i18n="optLarge">대</option>
                     <option value="medium" data-i18n="optMedium">중</option>
                     <option value="small" data-i18n="optSmall">소</option>
@@ -355,7 +355,7 @@
                 </div>
                 <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
                   <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap; margin: 0; display: flex; align-items: center;" data-i18n="lblWidgetSize">위젯 크기</span>
-                  <select id="widgetSizeSelect" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; height: 32px; text-align: center; text-align-last: center; cursor: pointer; padding: 0; margin: 0; outline: none; box-sizing: border-box;">
+                  <select id="widgetSizeSelect" onchange="setWidgetSize(this.value)" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; height: 32px; text-align: center; text-align-last: center; cursor: pointer; padding: 0; margin: 0; outline: none; box-sizing: border-box;">
                     <option value="large" data-i18n="optLarge">대</option>
                     <option value="medium" data-i18n="optMedium">중</option>
                     <option value="small" data-i18n="optSmall">소</option>
@@ -366,7 +366,7 @@
               <div class="setting-group-title" style="display: flex; justify-content: space-between">
                 <span data-i18n="lblWeather">날씨</span>
                 <label class="compact-checkbox-label">
-                  <input type="checkbox" id="showCurrentWeather" />
+                  <input type="checkbox" id="showCurrentWeather" onchange="updateShowWeather(this.checked)" />
                   <span class="setting-label-text" data-i18n="lblCurrentWeather">현지 날씨</span>
                 </label>
               </div>
@@ -385,14 +385,14 @@
                   <span id="ai-connection-status" style="font-size: 0.75rem; display: none;" data-i18n-title="lblServerCheck"></span>
                 </div>
                 <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; color: #94a3b8;">
-                  <input type="checkbox" id="aiDisableCheck" onchange="toggleAiSettings(this.checked)" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
+                  <input type="checkbox" id="aiDisableCheck" onchange="updateAiDisabled(this.checked)" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
                   <span class="setting-label-text" data-i18n="lblAIDisable">사용 안 함</span>
                 </label>
               </div>
               <div id="aiSettingsPanel" style="display: flex; gap: 15px; align-items: center; width: 98%; margin-left: 1%; margin-bottom: 5px;">
                 <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
                   <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">AI</span>
-                  <select id="aiProviderSelect" onchange="onAIProviderChange()" style="margin-bottom: 2px; flex: 1;">
+                  <select id="aiProviderSelect" onchange="updateAiProvider(this.value)" style="margin-bottom: 2px; flex: 1;">
                     <option value="local">Local AI</option>
                     <option value="openai">OpenAI API</option>
                     <option value="gemini">Gemini API</option>
@@ -401,27 +401,18 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
                   <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">모델</span>
-                  <select id="aiModelSelect" disabled style="margin-bottom: 2px; flex: 1;">
+                  <select id="aiModelSelect" onchange="updateAiModel(this.value)" disabled style="margin-bottom: 2px; flex: 1;">
                     <option value="" data-i18n="aiNoServer">접속 안됨</option>
                   </select>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
                   <span id="aiKeyLabel" style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;" data-i18n="lblAIUrl">URL</span>
-                  <input type="text" id="aiServerUrlInput" placeholder="서버 주소" style="margin-bottom: 2px; width: 100%; display: none;" onblur="if(window.ai) window.ai.checkConnection()"/>
-                  <input type="password" id="aiApiKeyInput" placeholder="API Key" style="margin-bottom: 2px; width: 100%; display: none;" onblur="if(window.ai) window.ai.checkConnection()"/>
+                  <input type="text" id="aiServerUrlInput" placeholder="서버 주소" style="margin-bottom: 2px; width: 100%; display: none;" oninput="updateAiServerUrl(this.value)"/>
+                  <input type="password" id="aiApiKeyInput" placeholder="API Key" style="margin-bottom: 2px; width: 100%; display: none;" oninput="updateAiApiKey(this.value)"/>
                   <i class="fas fa-sync-alt" onclick="if(window.ai) window.ai.checkConnection()" style="cursor: pointer; color: var(--accent-color);" data-i18n-title="tipCheckConn"></i>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="setting-footer">
-            <button
-              class="btn-save"
-              onclick="saveSettings()"
-              data-i18n="btnSaveSettings"
-            >
-              적용
-            </button>
           </div>
         </div>
       </div>
