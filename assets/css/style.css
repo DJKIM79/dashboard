@@ -21,8 +21,13 @@
         --widget-scale-small: 0.85;
         --widget-scale: var(--widget-scale-medium);
       }
-      body {
+      html, body {
         margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden !important; /* 스크롤바 절대 차단 */
+      }
+      body {
         padding: 150px 20px 180px;
         min-height: 100vh;
         background-color: #020617;
@@ -37,7 +42,6 @@
         align-items: center;
         box-sizing: border-box;
         transition: background-image 0.8s ease-in-out;
-        overflow-x: hidden;
       }
       body::before {
         content: "";
@@ -786,12 +790,12 @@
         justify-content: space-between;
         align-items: center;
         margin-top: 4px;
-        font-size: 0.55rem;
-        font-weight: 400;
+        font-size: 0.65rem !important;
+        font-weight: 300 !important;
         font-family: "JetBrains Mono";
       }
       .noti-info .remaining {
-        font-weight: 400;
+        font-weight: 300 !important;
       }
       #clock-container {
         background: rgba(0, 0, 0, 0.5);
