@@ -8,9 +8,12 @@ const quote = {
     const qt = document.getElementById("quote-text"),
       qa = document.getElementById("quote-author");
     
-    if (container) container.classList.add("quote-switching");
+    // Only show switching effect if we already have content (not first load)
+    const isFirstLoad = !qt || qt.innerText === "..." || qt.innerText === "";
     
-    setTimeout(async () => {
+    if (container && !isFirstLoad) container.classList.add("quote-switching");
+    
+    const fetchAction = async () => {
       try {
         const res = await fetch(
             i18n.userLang === "ko"
@@ -38,7 +41,13 @@ const quote = {
           settings.setQuoteFontSize(size);
         }
       }
-    }, 400);
+    };
+
+    if (isFirstLoad) {
+      await fetchAction();
+    } else {
+      setTimeout(fetchAction, 400);
+    }
   }
 };
 

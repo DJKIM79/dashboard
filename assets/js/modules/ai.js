@@ -3,6 +3,7 @@ const ai = {
   serverUrl: localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434",
   apiKey: localStorage.getItem("dj_ai_api_key") || "",
   model: localStorage.getItem("dj_ai_model") || "",
+  outputAtOnce: localStorage.getItem("dj_ai_output_at_once") !== "false",
   isGenerating: false,
   historyCollapsed: false,
   chats: JSON.parse(localStorage.getItem("dj_ai_chats")) || [],
@@ -170,39 +171,50 @@ const ai = {
   },
 
   async callLocalAI(prompt, msgDiv, chat) {
+    const isStream = !this.outputAtOnce;
     const response = await fetch(`${this.serverUrl}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: this.model,
         messages: chat.messages.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: prompt }]),
-        stream: true
+        stream: isStream
       })
     });
 
     if (!response.ok) throw new Error('Ollama connection failed');
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
     let fullText = '';
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    if (isStream) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
 
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n');
-      
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        try {
-          const json = JSON.parse(line);
-          if (json.message && json.message.content) {
-            fullText += json.message.content;
-            msgDiv.innerText = fullText;
-            document.getElementById("ai-messages").scrollTop = document.getElementById("ai-messages").scrollHeight;
-          }
-        } catch (e) {}
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const json = JSON.parse(line);
+            if (json.message && json.message.content) {
+              fullText += json.message.content;
+              msgDiv.innerText = fullText;
+              document.getElementById("ai-messages").scrollTop = document.getElementById("ai-messages").scrollHeight;
+            }
+          } catch (e) {}
+        }
+      }
+    } else {
+      const json = await response.json();
+      if (json.message && json.message.content) {
+        fullText = json.message.content;
+        msgDiv.innerText = fullText;
+        document.getElementById("ai-messages").scrollTop = document.getElementById("ai-messages").scrollHeight;
       }
     }
     
