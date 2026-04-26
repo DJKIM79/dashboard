@@ -290,11 +290,7 @@ body::before {
   overflow-y: auto;
 }
 .location-list::-webkit-scrollbar {
-  width: 4px;
-}
-.location-list::-webkit-scrollbar-thumb {
-  background: var(--accent-color);
-  border-radius: 4px;
+  display: none;
 }
 .location-tag {
   display: flex;
@@ -1155,6 +1151,11 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   padding: 35px;
   border-radius: 30px;
   width: 400px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -1165,34 +1166,40 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   opacity: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.modal-content::-webkit-scrollbar {
+  display: none;
+}
 .modal.show .modal-content {
   transform: translate(-50%, -50%) scale(1);
   opacity: 1;
 }
 #settingModal .modal-content {
   width: 650px;
-  height: 650px;
+  height: auto;
+  min-height: 500px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+}
+@media (max-height: 700px) {
+  .modal-content {
+    padding: 20px 25px;
+  }
+  .modal-content h3 {
+    margin-bottom: 15px;
+  }
+  #settingModal .modal-content {
+    min-height: auto;
+  }
 }
 .setting-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 30px;
-  margin-bottom: 20px;
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 10px;
+  margin-bottom: 5px;
+  min-height: 0;
 }
-.setting-grid::-webkit-scrollbar {
-  width: 5px;
-}
-.setting-grid::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
-  border-radius: 10px;
-}
+/* .setting-grid overflow related styles removed as .modal-content handles it now */
 .modal-content.delete-modal {
   width: 320px;
   padding: 30px;

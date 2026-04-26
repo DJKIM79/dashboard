@@ -7,6 +7,18 @@ window.currentContextId = null;
 
 const app = {
   async init() {
+    // 0. Set default values if not exists
+    if (localStorage.getItem("dj_theme_color") === null)
+      localStorage.setItem("dj_theme_color", "#eab308");
+    if (localStorage.getItem("dj_image_engine") === null)
+      localStorage.setItem("dj_image_engine", "flickr");
+    if (localStorage.getItem("dj_ai_output_at_once") === null)
+      localStorage.setItem("dj_ai_output_at_once", "false");
+    if (localStorage.getItem("dj_bg_keyword") === null)
+      localStorage.setItem("dj_bg_keyword", "");
+    if (localStorage.getItem("dj_search_new_tab") === null)
+      localStorage.setItem("dj_search_new_tab", "true");
+
     // 1. Initialize i18n first
     await i18n.init();
 
