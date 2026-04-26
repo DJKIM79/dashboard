@@ -6,14 +6,56 @@ const tutorial = {
     
     const d = driver({
       showProgress: true,
-      nextBtnText: T.tutNext,
-      prevBtnText: T.tutPrev,
-      doneBtnText: T.tutDone,
+      nextBtnText: "→",
+      prevBtnText: "←",
+      doneBtnText: "✕",
       allowClose: false,
       animate: true,
+      onPopoverRender: (popover, { config, state }) => {
+        const prevBtn = popover.getPreviousButton();
+        const nextBtn = popover.getNextButton();
+        
+        // 1. 초기화: 모든 특수 클래스 일단 제거
+        if (prevBtn) {
+          prevBtn.classList.remove("tut-close-btn");
+          prevBtn.style.display = "flex";
+        }
+        if (nextBtn) {
+          nextBtn.classList.remove("tut-close-btn");
+        }
+
+        // 2. 1단계 (환영 메시지) 처리
+        if (state.activeIndex === 0) {
+          if (prevBtn) {
+            prevBtn.innerText = "✕";
+            prevBtn.classList.add("tut-close-btn");
+            prevBtn.onclick = (e) => {
+              e.preventDefault();
+              d.destroy();
+            };
+          }
+        } else {
+          // 2단계 이후부터는 정상적인 화살표 표시
+          if (prevBtn) {
+            prevBtn.innerText = "←";
+            // 기본 동작(이전 단계)으로 돌아가도록 onclick 리셋은 하지 않음 (라이브러리가 제어하도록 둠)
+          }
+        }
+        
+        // 3. 마지막 단계 처리
+        if (state.activeIndex === config.steps.length - 1) {
+          if (nextBtn) {
+            nextBtn.innerText = "✕";
+            nextBtn.classList.add("tut-close-btn");
+          }
+        } else {
+          if (nextBtn) {
+            nextBtn.innerText = "→";
+          }
+        }
+      },
       steps: [
         {
-          // 1. 환영 메시지
           popover: {
             title: "👋 반가워요!",
             description: "OnTo 대시보드의 주요 기능을 빠르게 살펴볼까요?<br><br>시작하려면 다음을 눌러주세요.",
@@ -22,7 +64,6 @@ const tutorial = {
           },
         },
         {
-          // 2. 파일 구조 (아이콘만 강조)
           element: "#top-left-widgets .fab-main",
           popover: {
             title: T.tutFileTitle || "💾 파일 및 데이터",
@@ -33,7 +74,6 @@ const tutorial = {
           padding: 5
         },
         {
-          // 3. 날씨
           element: "#top-right-widgets",
           popover: {
             title: T.tutWeatherTitle,
@@ -44,7 +84,6 @@ const tutorial = {
           padding: 10
         },
         {
-          // 4. 명언 표시
           element: "#quote-section",
           popover: {
             title: "📜 명언 표시",
@@ -55,7 +94,6 @@ const tutorial = {
           padding: 10,
         },
         {
-          // 5. 검색창
           element: ".search-box",
           popover: {
             title: T.tutSearchTitle || "🔍 검색 및 엔진",
@@ -66,7 +104,6 @@ const tutorial = {
           padding: 10,
         },
         {
-          // 6. AI 챗봇
           element: ".ai-icon-wrapper",
           popover: {
             title: T.tutAiTitle || "🤖 AI 챗봇",
@@ -77,7 +114,6 @@ const tutorial = {
           padding: 10,
         },
         {
-          // 7. 위젯 패널 (트리거만 강조)
           element: ".sidebar-trigger",
           popover: {
             title: T.tutSidebarTitle || "🖱️ 위젯 패널 관리",
@@ -88,7 +124,6 @@ const tutorial = {
           padding: 5
         },
         {
-          // 8. 달력과 시계
           element: ".bottom-widgets .right-area",
           popover: {
             title: T.tutBottomWidgetsTitle,
@@ -99,7 +134,6 @@ const tutorial = {
           padding: 10,
         },
         {
-          // 9. 설정 아이콘 (톱니바퀴만 강조)
           element: ".bottom-widgets .left-area .fab-main",
           popover: {
             title: T.tutSettingTitle || "⚙️ 환경 설정",
