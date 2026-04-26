@@ -77,12 +77,12 @@ const utils = {
 
   openModal(id) {
     const modal = document.getElementById(id);
-    if (modal) modal.style.display = "block";
+    if (modal) modal.classList.add("show");
   },
 
   closeModal(id) {
     const modal = document.getElementById(id);
-    if (modal) modal.style.display = "none";
+    if (modal) modal.classList.remove("show");
   },
 
   saveData() {
