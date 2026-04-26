@@ -786,12 +786,12 @@
         justify-content: space-between;
         align-items: center;
         margin-top: 4px;
-        font-size: 0.75rem;
+        font-size: 0.55rem;
+        font-weight: 400;
         font-family: "JetBrains Mono";
       }
       .noti-info .remaining {
-        color: var(--accent-color);
-        font-weight: 600;
+        font-weight: 400;
       }
       #clock-container {
         background: rgba(0, 0, 0, 0.5);

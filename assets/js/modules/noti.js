@@ -165,12 +165,26 @@ const noti = {
           rem = el.querySelector(".remaining");
         if (rem) {
           if (diff > 0) {
-            const hh = String(Math.floor(diff / 3600000)).padStart(2, "0"),
-              mm = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0"),
+            const hTotal = Math.floor(diff / 3600000);
+            const mm = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0"),
               ss = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
-            rem.innerText = `${hh}:${mm}:${ss}`;
+            rem.innerText = `${String(hTotal).padStart(2, "0")}:${mm}:${ss}`;
+
+            // --- 4단계 동적 색상 로직 ---
+            if (diff >= 604800000) rem.style.color = "#22c55e"; // 1주일 이상: 녹색
+            else if (diff >= 86400000) rem.style.color = "#38bdf8"; // 1일~1주일: 하늘색
+            else if (diff >= 3600000) rem.style.color = "#eab308"; // 1시간~1일: 노란색
+            else rem.style.color = "#ec4899"; // 1시간 미만: 핑크색
           } else {
-            rem.innerText = n.isRepeat ? "00:00:00" : i18n.get("txtEnded");
+            // 만료된 경우: 반복 알림이 아니면 자동 삭제
+            if (!n.isRepeat) {
+              this.items = this.items.filter(x => x.id != n.id);
+              this.render();
+              utils.saveData();
+            } else {
+              rem.innerText = "00:00:00";
+              rem.style.color = "#94a3b8";
+            }
           }
         }
       }
