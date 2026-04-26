@@ -62,6 +62,8 @@ const search = {
     
     if (!menu.classList.contains("active")) {
       this.renderMenu();
+      // Close other FAB menus when opening search menu
+      document.querySelectorAll(".fab-menu").forEach(m => m.classList.remove("active"));
     }
     menu.classList.toggle("active");
   },
@@ -72,6 +74,10 @@ const search = {
     this.updateIcon();
     const menu = document.getElementById("search-engine-menu");
     if (menu) menu.classList.remove("active");
+    
+    // Focus search input for immediate typing
+    const input = document.getElementById("searchInput");
+    if (input) input.focus();
   },
 
   perform() {

@@ -18,16 +18,26 @@ const ui = {
 
   toggleFab(id, event) {
     if (event) event.stopPropagation();
+    
+    // Close other FAB menus
+    document
+      .querySelectorAll(".fab-menu")
+      .forEach((m) => {
+        if (m.id !== id) m.classList.remove("active");
+      });
+      
+    // Close search engine menu
+    const searchMenu = document.getElementById("search-engine-menu");
+    if (searchMenu) searchMenu.classList.remove("active");
+
+    // Close smart folders
     document
       .querySelectorAll(".smart-folder")
       .forEach((f) => f.classList.remove("open"));
-    document
-      .querySelectorAll(".fab-menu")
-      .forEach((m) =>
-        m.id !== id
-          ? m.classList.remove("active")
-          : m.classList.toggle("active"),
-      );
+
+    // Toggle the target FAB
+    const target = document.getElementById(id);
+    if (target) target.classList.toggle("active");
   },
 
   applyVisibility() {
@@ -148,28 +158,32 @@ const ui = {
 
   init() {
     document.addEventListener("click", (e) => {
-      if (!e.target.closest(".fab-container"))
-        document
-          .querySelectorAll(".fab-menu")
-          .forEach((m) => m.classList.remove("active"));
-      if (!e.target.closest(".smart-folder"))
-        document
-          .querySelectorAll(".smart-folder")
-          .forEach((f) => f.classList.remove("open"));
-      
-      const ctxMenu = document.getElementById("globalContextMenu");
-      if (ctxMenu) ctxMenu.style.display = "none";
-      
-      if (!e.target.closest(".weather-item"))
-        document
-          .querySelectorAll(".forecast-window")
-          .forEach((w) => w.classList.remove("active"));
-          
+      // 1. Close FAB menus if clicked outside
+      if (!e.target.closest(".fab-container")) {
+        document.querySelectorAll(".fab-menu").forEach((m) => m.classList.remove("active"));
+      }
+
+      // 2. Close search engine menu if clicked outside
       if (!e.target.closest(".search-engine-icon")) {
         const menu = document.getElementById("search-engine-menu");
         if (menu) menu.classList.remove("active");
       }
+
+      // 3. Close smart folders if clicked outside
+      if (!e.target.closest(".smart-folder")) {
+        document.querySelectorAll(".smart-folder").forEach((f) => f.classList.remove("open"));
+      }
       
+      // 4. Close context menu
+      const ctxMenu = document.getElementById("globalContextMenu");
+      if (ctxMenu) ctxMenu.style.display = "none";
+      
+      // 5. Close weather forecast windows if clicked outside
+      if (!e.target.closest(".weather-item")) {
+        document.querySelectorAll(".forecast-window").forEach((w) => w.classList.remove("active"));
+      }
+          
+      // 6. Close city search results if clicked outside
       if (!e.target.closest(".city-search-container")) {
         const results = document.getElementById("citySearchResults");
         if (results) results.style.display = "none";
