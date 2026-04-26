@@ -491,11 +491,19 @@
         transform-origin: bottom right;
       }
       .setting-label-text {
-        font-size: 0.85rem;
-        color: #fff;
+        font-size: 0.75rem;
+        color: #94a3b8;
         line-height: 1.2;
         display: inline-block;
         margin-top: 1px;
+      }
+      .compact-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: normal;
+        cursor: pointer;
+        color: #94a3b8;
       }
       #clock-container {
         margin-bottom: 0;
@@ -1532,6 +1540,27 @@
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid var(--glass-border);
         border-bottom-left-radius: 4px;
+      }
+      .typing-indicator {
+        display: flex;
+        gap: 5px;
+        padding: 5px 0;
+        align-items: center;
+        height: 12px;
+      }
+      .typing-indicator span {
+        width: 8px;
+        height: 8px;
+        background: #94a3b8;
+        border-radius: 50%;
+        display: inline-block;
+        animation: typing-bounce 1.4s infinite ease-in-out both;
+      }
+      .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+      .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+      @keyframes typing-bounce {
+        0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+        40% { transform: scale(1); opacity: 1; }
       }
       .ai-chat-input-area {
         padding: 15px 25px;

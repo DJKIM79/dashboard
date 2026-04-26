@@ -28,13 +28,17 @@ const ai = {
     if (msgContainer) msgContainer.innerHTML = "";
   },
 
-  appendMessage(role, text, save = true) {
+  appendMessage(role, text, save = true, isHtml = false) {
     const msgContainer = document.getElementById("ai-messages");
     if (!msgContainer) return null;
 
     const div = document.createElement("div");
     div.className = `ai-message ${role}`;
-    div.innerText = text;
+    if (isHtml) {
+      div.innerHTML = text;
+    } else {
+      div.innerText = text;
+    }
     msgContainer.appendChild(div);
     msgContainer.scrollTop = msgContainer.scrollHeight;
 
@@ -77,7 +81,6 @@ const ai = {
   },
 
   createNewChat() {
-    // Check if the most recent chat is already an empty "New Chat"
     if (this.chats.length > 0) {
       const firstChat = this.chats[0];
       if (firstChat.messages.length === 0 && firstChat.title === "새로운 대화") {
@@ -144,15 +147,15 @@ const ai = {
     input.value = "";
     this.isGenerating = true;
 
-    const botMsgDiv = this.appendMessage("bot", "...");
-    // temporarily remove from history until stream finishes
-    if (chat) chat.messages.pop();
+    const typingHtml = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+    const botMsgDiv = this.appendMessage("bot", typingHtml, false, true);
+    if (chat) chat.messages.pop(); // Remove the dummy typing msg from logic temporarily
     
     try {
       if (this.provider === "local") {
         await this.callLocalAI(text, botMsgDiv, chat);
       } else {
-        botMsgDiv.innerText = "현재 로컬 AI(Ollama)만 지원됩니다. 다른 API는 곧 추가될 예정입니다.";
+        botMsgDiv.innerText = "선택하신 API 서비스는 현재 준비 중입니다.";
         if (chat) {
           chat.messages.push({ role: "bot", content: botMsgDiv.innerText });
           this.saveChats();
@@ -189,6 +192,7 @@ const ai = {
     if (isStream) {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let isFirstChunk = true;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -202,6 +206,10 @@ const ai = {
           try {
             const json = JSON.parse(line);
             if (json.message && json.message.content) {
+              if (isFirstChunk) {
+                msgDiv.innerHTML = ""; // Clear typing indicator
+                isFirstChunk = false;
+              }
               fullText += json.message.content;
               msgDiv.innerText = fullText;
               document.getElementById("ai-messages").scrollTop = document.getElementById("ai-messages").scrollHeight;
@@ -213,6 +221,7 @@ const ai = {
       const json = await response.json();
       if (json.message && json.message.content) {
         fullText = json.message.content;
+        msgDiv.innerHTML = ""; // Clear typing indicator
         msgDiv.innerText = fullText;
         document.getElementById("ai-messages").scrollTop = document.getElementById("ai-messages").scrollHeight;
       }
@@ -235,8 +244,6 @@ const ai = {
   attachFile() {
     const btn = document.querySelector(".ai-icon-btn");
     if (!btn) return;
-    
-    // Create tooltip element
     const tip = document.createElement("div");
     tip.className = "ai-tooltip";
     tip.innerText = "조금만 기달려 주세요.";
@@ -273,9 +280,12 @@ const ai = {
     const modelSelect = document.getElementById("aiModelSelect");
     const provider = document.getElementById("aiProviderSelect").value;
     let url = document.getElementById("aiServerUrlInput").value;
+    const apiKey = document.getElementById("aiApiKeyInput").value.trim();
     const currentModel = localStorage.getItem("dj_ai_model");
     const statusSpan = document.getElementById("ai-connection-status");
     const refreshIcon = document.querySelector(".ai-refresh-icon");
+
+    if (!modelSelect) return;
 
     // Reset icon color during check
     if (refreshIcon) refreshIcon.style.color = "#94a3b8";
@@ -287,110 +297,124 @@ const ai = {
         statusSpan.style.display = "inline-block";
         setTimeout(() => {
           statusSpan.style.display = "none";
-        }, 3000);
+        }, 6000); // Doubled from 3000
       }
       if (refreshIcon) refreshIcon.style.color = color;
     };
 
+    const updateModelSelect = (models, isDisabled = false) => {
+      if (models.length > 0) {
+        modelSelect.innerHTML = models.map(m => 
+          `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`
+        ).join('');
+        modelSelect.disabled = isDisabled;
+      } else {
+        const msg = window.i18n ? window.i18n.get("aiCheckFail") : "확인 불가";
+        modelSelect.innerHTML = `<option value="">${msg}</option>`;
+        modelSelect.disabled = true;
+      }
+    };
+
     if (provider === "none") {
       modelSelect.disabled = true;
-      modelSelect.innerHTML = `<option value="">접속 안됨</option>`;
+      modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNoServer") : "접속 안됨"}</option>`;
       if (refreshIcon) refreshIcon.style.color = "#94a3b8";
       return;
     }
 
     if (provider === "openai") {
-      const models = ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"];
-      modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
-      modelSelect.disabled = false;
-      showStatus(window.i18n ? window.i18n.get("msgConnSuccess") || "서버 접속 성공" : "서버 접속 성공", "#22c55e");
-      return;
-    }
-    if (provider === "gemini") {
-      const apiKey = document.getElementById("aiApiKeyInput").value.trim();
       if (!apiKey) {
-        const models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-1.0-pro"];
-        modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
-        modelSelect.disabled = false;
+        modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNeedKey") : "Key 필요"}</option>`;
+        modelSelect.disabled = true;
+        showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
         return;
       }
-
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        const res = await fetch("https://api.openai.com/v1/models", {
+          headers: { "Authorization": `Bearer ${apiKey}` }
+        });
         if (res.ok) {
           const data = await res.json();
-          // generateContent가 가능한 모델만 필터링
-          const models = data.models
-            .filter(m => m.supportedGenerationMethods.includes("generateContent"))
-            .map(m => m.name.replace("models/", ""));
-          
-          modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
-          modelSelect.disabled = false;
+          const models = data.data
+            .filter(m => m.id.startsWith("gpt-"))
+            .map(m => m.id)
+            .sort();
+          updateModelSelect(models);
           showStatus(window.i18n ? window.i18n.get("msgConnSuccess") : "성공", "#22c55e");
-        } else {
-          throw new Error();
-        }
+        } else { throw new Error(); }
       } catch (e) {
-        const models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-1.0-pro"];
-        modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
-        modelSelect.disabled = false;
+        updateModelSelect([], true);
         showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
       }
       return;
     }
-    if (provider === "claude") {
-      const models = ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"];
-      modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
-      modelSelect.disabled = false;
-      showStatus(window.i18n ? window.i18n.get("msgConnSuccess") || "서버 접속 성공" : "서버 접속 성공", "#22c55e");
+
+    if (provider === "gemini") {
+      if (!apiKey) {
+        modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNeedKey") : "Key 필요"}</option>`;
+        modelSelect.disabled = true;
+        showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
+        return;
+      }
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        if (res.ok) {
+          const data = await res.json();
+          const models = data.models
+            .filter(m => m.supportedGenerationMethods.includes("generateContent"))
+            .map(m => m.name.replace("models/", ""));
+          updateModelSelect(models);
+          showStatus(window.i18n ? window.i18n.get("msgConnSuccess") : "성공", "#22c55e");
+        } else { throw new Error(); }
+      } catch (e) {
+        updateModelSelect([], true);
+        showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
+      }
       return;
     }
 
+    if (provider === "claude") {
+      // Claude typically doesn't have a simple public model list API without strict CORS or headers
+      // We'll use a standard list if key is present
+      if (!apiKey) {
+        modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNeedKey") : "Key 필요"}</option>`;
+        modelSelect.disabled = true;
+        showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
+      } else {
+        const models = ["claude-3-5-sonnet-20240620", "claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"];
+        updateModelSelect(models);
+        showStatus(window.i18n ? window.i18n.get("msgConnSuccess") : "성공", "#22c55e");
+      }
+      return;
+    }
+
+    // Local AI (Ollama)
     if (!url) {
       modelSelect.disabled = true;
-      modelSelect.innerHTML = `<option value="">접속 안됨</option>`;
-      showStatus(window.i18n ? window.i18n.get("msgConnFail") || "서버 접속 실패" : "서버 접속 실패", "#ef4444");
+      modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNoServer") : "접속 안됨"}</option>`;
+      showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
       return;
     }
 
-    // localhost를 127.0.0.1로 시도 (CORS 등 이슈 대비)
-    let fetchUrl = url;
-    if (fetchUrl.includes("localhost")) {
-      fetchUrl = fetchUrl.replace("localhost", "127.0.0.1");
-    }
+    let fetchUrl = url.includes("localhost") ? url.replace("localhost", "127.0.0.1") : url;
 
     try {
-      // 타임아웃 3초 설정
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
-      
-      const res = await fetch(`${fetchUrl}/api/tags`, { 
-        method: 'GET',
-        signal: controller.signal 
-      });
+      const res = await fetch(`${fetchUrl}/api/tags`, { signal: controller.signal });
       clearTimeout(timeoutId);
 
       if (res.ok) {
         const data = await res.json();
-        modelSelect.disabled = false;
-        
         if (data.models && data.models.length > 0) {
-          modelSelect.innerHTML = data.models.map(m => 
-            `<option value="${m.name}" ${m.name === currentModel ? 'selected' : ''}>${m.name}</option>`
-          ).join('');
-        } else {
-          modelSelect.innerHTML = `<option value="">접속 안됨</option>`;
-          modelSelect.disabled = true;
-        }
-        showStatus(window.i18n ? window.i18n.get("msgConnSuccess") || "서버 접속 성공" : "서버 접속 성공", "#22c55e");
-      } else {
-        throw new Error();
-      }
+          const models = data.models.map(m => m.name);
+          updateModelSelect(models);
+          showStatus(window.i18n ? window.i18n.get("msgConnSuccess") : "성공", "#22c55e");
+        } else { throw new Error(); }
+      } else { throw new Error(); }
     } catch (e) {
-      // 실패 시 모델 선택창에만 메시지 표시
-      modelSelect.disabled = true;
-      modelSelect.innerHTML = `<option value="">접속 안됨</option>`;
-      showStatus(window.i18n ? window.i18n.get("msgConnFail") || "서버 접속 실패" : "서버 접속 실패", "#ef4444");
+      updateModelSelect([], true);
+      showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
     }
   }
 };
