@@ -8,7 +8,7 @@ const settings = {
       }
 
       let bgKeyword = localStorage.getItem("dj_bg_keyword");
-      if (bgKeyword === null) bgKeyword = "landscape";
+      if (bgKeyword === null) bgKeyword = "";
 
       const quoteFontSize =
         localStorage.getItem("dj_quote_font_size") || "medium";
@@ -33,12 +33,12 @@ const settings = {
       if (el("customSearchUrlInput"))
         el("customSearchUrlInput").value = customUrl;
 
-      const themeColor = localStorage.getItem("dj_theme_color") || "#3b82f6";
+      const themeColor = localStorage.getItem("dj_theme_color") || "#eab308";
       const themeAdj = localStorage.getItem("dj_theme_adjustment") || "none";
 
       this.updateThemeAdjustmentUI(themeColor, themeAdj);
 
-      const imgEngine = localStorage.getItem("dj_image_engine") || "unsplash";
+      const imgEngine = localStorage.getItem("dj_image_engine") || "flickr";
       if (el("engineUnsplash"))
         el("engineUnsplash").checked = imgEngine === "unsplash";
       if (el("engineFlickr"))
