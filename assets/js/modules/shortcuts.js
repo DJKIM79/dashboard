@@ -10,15 +10,21 @@ const shortcutMod = {
   checkLayout() {
     const c = document.getElementById("shortcut-container");
     if (!c) return;
+    
+    // Reset first to measure original height
     c.classList.remove("shortcut-list-view");
+    
     const items = c.querySelectorAll(".shortcut-item");
     if (items.length === 0) return;
-    let rows = 0, lastTop = -1;
-    items.forEach(item => {
-      const top = item.offsetTop;
-      if (Math.abs(top - lastTop) > 10) { rows++; lastTop = top; }
-    });
-    if (rows >= 3) c.classList.add("shortcut-list-view");
+    
+    // Check if the bottom of the last item exceeds 85% of window height
+    const lastItem = items[items.length - 1];
+    const rect = lastItem.getBoundingClientRect();
+    const threshold = window.innerHeight * 0.85;
+
+    if (rect.bottom > threshold) {
+      c.classList.add("shortcut-list-view");
+    }
   },
 
   render() {
@@ -71,6 +77,7 @@ const shortcutMod = {
           const item = this.items.splice(evt.oldIndex, 1)[0];
           this.items.splice(evt.newIndex, 0, item);
           utils.saveData();
+          this.checkLayout();
         }
       },
     });
