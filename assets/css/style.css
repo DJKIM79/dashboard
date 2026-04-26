@@ -1819,6 +1819,89 @@
         gap: 12px;
         align-items: flex-end;
       }
+      /* Tutorial (Driver.js) Custom Styling */
+      .driver-popover {
+        background: rgba(15, 23, 42, 0.6) !important; /* 위젯과 동일한 수준의 투명도 */
+        backdrop-filter: blur(25px) saturate(180%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+        color: #fff !important;
+        max-width: 300px !important;
+      }
+      .driver-popover-title {
+        font-family: inherit !important;
+        font-size: 1.1rem !important;
+        font-weight: 800 !important;
+        color: #fff !important; /* 제목도 흰색으로 통일하여 심플하게 */
+        margin-bottom: 8px !important;
+        letter-spacing: -0.02em !important;
+      }
+      .driver-popover-description {
+        font-family: inherit !important;
+        font-size: 0.9rem !important;
+        line-height: 1.5 !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+      }
+      .driver-popover-footer {
+        margin-top: 24px !important;
+        gap: 8px !important;
+        justify-content: flex-end !important;
+      }
+      .driver-popover-btn {
+        background: transparent !important;
+        color: #ffffff !important;
+        border: none !important;
+        padding: 5px !important;
+        font-size: 1.5rem !important; /* 화살표 크기 키움 */
+        font-weight: normal !important;
+        text-shadow: none !important;
+        box-shadow: none !important;
+        min-width: 40px !important;
+        opacity: 0.7 !important;
+      }
+      .driver-popover-btn:hover {
+        opacity: 1 !important;
+        transform: scale(1.2) !important;
+      }
+      .driver-popover-next-btn {
+        margin-left: 10px !important;
+      }
+      .driver-popover-description, .driver-popover-title {
+        color: #ffffff !important;
+        text-shadow: none !important;
+      }
+      /* Tutorial Close Button Colors (Green Glass) */
+      .tut-close-btn {
+        background: rgba(34, 197, 94, 0.15) !important;
+        color: #22c55e !important;
+        border: 1px solid rgba(34, 197, 94, 0.3) !important;
+        border-radius: 50% !important;
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        font-size: 1rem !important;
+        min-width: 32px !important;
+        transition: all 0.2s ease !important;
+      }
+      .tut-close-btn:hover {
+        background: rgba(34, 197, 94, 0.3) !important;
+        border-color: #22c55e !important;
+        transform: scale(1.1) !important;
+      }
+      .driver-popover-progress-text {
+        color: rgba(255, 255, 255, 0.4) !important;
+        font-size: 0.75rem !important;
+        margin-right: auto !important;
+      }
+      .driver-popover-arrow {
+        display: none !important; /* 화살표를 없애서 더 깔끔하고 모던하게 */
+      }
+
       /* Tutorial Blink Effect: 2회 깜빡임 */
       .driver-active-element {
         animation: tutorialStepBlink 0.8s ease-in-out;
