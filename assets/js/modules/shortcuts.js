@@ -1,9 +1,37 @@
 const shortcutMod = {
   items: JSON.parse(localStorage.getItem("dj_shortcuts")) || [],
   isDragging: false,
+  resizeListenerAdded: false,
 
   init() {
     this.render();
+  },
+
+  checkLayout() {
+    const c = document.getElementById("shortcut-container");
+    if (!c) return;
+    
+    // Temporarily remove to measure natural state
+    c.classList.remove("shortcut-list-view");
+    
+    const items = c.querySelectorAll(".shortcut-item");
+    if (items.length === 0) return;
+    
+    let rows = 0;
+    let lastTop = -1;
+    // We measure carefully
+    items.forEach(item => {
+      const top = item.offsetTop;
+      if (Math.abs(top - lastTop) > 10) {
+        rows++;
+        lastTop = top;
+      }
+    });
+
+    // If rows would be 3 or more in normal grid, switch to list view
+    if (rows >= 3) {
+      c.classList.add("shortcut-list-view");
+    }
   },
 
   render() {
@@ -26,25 +54,16 @@ const shortcutMod = {
     });
 
     requestAnimationFrame(() => {
-      const items = c.querySelectorAll(".shortcut-item");
-      if (items.length === 0) return;
-      
-      let rows = 0;
-      let lastTop = -1;
-      items.forEach(item => {
-        const top = item.offsetTop;
-        if (top !== lastTop) {
-          rows++;
-          lastTop = top;
-        }
-      });
-
-      if (rows >= 3) {
-        c.classList.add("shortcut-list-view");
-      } else {
-        c.classList.remove("shortcut-list-view");
-      }
+      this.checkLayout();
     });
+
+    if (!this.resizeListenerAdded) {
+      window.addEventListener("resize", () => {
+        if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
+        this.resizeTimeout = setTimeout(() => this.checkLayout(), 200);
+      });
+      this.resizeListenerAdded = true;
+    }
 
     if (window.shortcutSortable) window.shortcutSortable.destroy();
     window.shortcutSortable = new Sortable(c, {

@@ -274,7 +274,7 @@
         text-align: center;
         margin-bottom: 50px;
         max-width: 1200px;
-        width: 90%;
+        width: calc(100% - 60px);
         display: flex;
         justify-content: center;
         transform-origin: center;
@@ -286,7 +286,10 @@
         align-items: center;
         gap: 15px;
         max-width: 100%;
-        transition: opacity 0.4s ease, transform 0.4s ease;
+        transition: all 0.4s ease;
+        padding: 15px 40px;
+        border-radius: 20px;
+        cursor: pointer;
       }
       .quote-switching {
         opacity: 0;
@@ -330,17 +333,43 @@
       #shortcut-container {
         display: grid;
         gap: 15px;
-        width: 90%;
-        max-width: 1200px;
+        width: calc(100% - 40px);
+        max-width: 915px; /* (140 * 6) + (15 * 5) = 840 + 75 = 915 */
         margin: 0 auto;
         transform: scale(var(--widget-scale));
         transform-origin: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .grid-layout,
-      .list-layout {
-        grid-template-columns: repeat(auto-fit, minmax(110px, 180px));
+      .list-layout,
+      .shortcut-list-view {
+        grid-template-columns: repeat(auto-fill, 140px) !important;
         justify-content: center;
+        transition: all 0.4s ease;
+        display: grid !important;
+        max-width: 930px; /* 140*6 + gaps approx */
+        margin: 0 auto;
       }
+
+      .shortcut-list-view .shortcut-item {
+        flex-direction: row;
+        padding: 8px 12px;
+        border-radius: 12px;
+        gap: 10px;
+        text-align: left;
+        width: 140px;
+        min-width: 140px;
+      }
+      .shortcut-list-view .shortcut-item img {
+        width: 24px;
+        height: 24px;
+        margin-bottom: 0;
+        border-radius: 6px;
+      }
+      .shortcut-list-view .shortcut-item span {
+        font-size: 0.8rem;
+      }
+
       .shortcut-item {
         background: rgba(0, 0, 0, 0.35);
         backdrop-filter: blur(15px);
@@ -351,7 +380,7 @@
         text-align: center;
         text-decoration: none;
         color: #fff;
-        transition: background 0.3s, border-color 0.3s, opacity 0.3s;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         cursor: pointer;
         -webkit-user-select: none;
@@ -360,13 +389,14 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        width: 100%;
+        box-sizing: border-box;
       }
       .shortcut-item:active {
         transform: scale(0.95);
       }
       #shortcut-container:not(.sorting-active) .shortcut-item:hover {
         background: rgba(255, 255, 255, 0.15);
-        transform: translateY(-8px);
         border-color: var(--accent-color);
       }
       .shortcut-item img {
@@ -375,13 +405,16 @@
         border-radius: 12px;
         margin-bottom: 8px;
         pointer-events: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .shortcut-item span {
+        flex: 1;
         width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         display: block;
+        transition: all 0.4s ease;
       }
       /* Drag and Drop classes for Spreading effect */
       .shortcut-chosen {
@@ -994,7 +1027,7 @@
         100% { transform: scale(1); opacity: 0.8; }
       }
       #search-section {
-        width: 100%;
+        width: calc(100% - 60px);
         max-width: 600px;
         margin: 0 auto 50px auto;
         position: relative;
@@ -1110,33 +1143,6 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
         background: rgba(255, 255, 255, 0.05);
         flex-shrink: 0;
-      }
-      /* Shortcut list layout */
-      .shortcut-list-view {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
-        justify-content: center !important;
-        gap: 10px !important;
-        max-width: 95vw !important;
-      }
-      .shortcut-list-view .shortcut-item {
-        flex-direction: row !important;
-        padding: 8px 15px !important;
-        border-radius: 12px !important;
-        gap: 10px !important;
-        width: auto !important;
-        min-width: 140px;
-        justify-content: flex-start;
-      }
-      .shortcut-list-view .shortcut-item img {
-        width: 20px !important;
-        height: 20px !important;
-        margin-bottom: 0 !important;
-      }
-      .shortcut-list-view .shortcut-item span {
-        text-align: left !important;
-        font-size: 0.85rem !important;
       }
       .engine-option:hover {
         transform: scale(1.1);
