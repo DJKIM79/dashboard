@@ -2,7 +2,8 @@ const ai = {
   get provider() { return localStorage.getItem("dj_ai_provider") || "none"; },
   get serverUrl() { return localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434"; },
   get apiKey() { return localStorage.getItem("dj_ai_api_key") || ""; },
-  get model() { return localStorage.getItem("dj_ai_model") || ""; },
+  // settingsModel: 환경 설정에서 선택한 기본 모델
+  get settingsModel() { return localStorage.getItem("dj_ai_model") || ""; },
   get isConnected() { return localStorage.getItem("dj_ai_is_connected") === "true"; },
   set isConnected(val) { localStorage.setItem("dj_ai_is_connected", val); },
 
@@ -10,12 +11,13 @@ const ai = {
   isGenerating: false,
   historyCollapsed: false,
   
+  // 채팅 목록은 여전히 제공자+기본모델별로 관리하여 데이터 분리 유지
   getStorageKey() {
-    return `dj_ai_chats_${this.provider}_${this.model.replace(/[:/]/g, '_')}`;
+    return `dj_ai_chats_${this.provider}_${this.settingsModel.replace(/[:/]/g, '_')}`;
   },
 
   get chats() {
-    if (this.provider === "none" || !this.model) return [];
+    if (this.provider === "none" || !this.settingsModel) return [];
     return JSON.parse(localStorage.getItem(this.getStorageKey()) || "[]");
   },
 
@@ -26,9 +28,8 @@ const ai = {
   currentChatId: null,
 
   init() {
-    this.updateModelDisplay();
     this.renderHistory();
-    this.loadChat();
+    this.loadChat(); // 내부에서 updateModelDisplay 호출됨
     
     const savedModels = JSON.parse(localStorage.getItem("dj_ai_models_cache") || "[]");
     
@@ -40,19 +41,31 @@ const ai = {
       this.updateChatbotAvailability(false);
       this.updateModelSelectUI([]);
     }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.history-title') && !e.target.closest('.ai-model-popup')) {
+        document.getElementById('ai-model-popup')?.classList.remove('show');
+      }
+    });
+  },
+
+  // 현재 활성화된 채팅 객체 가져오기
+  getCurrentChat() {
+    return this.chats.find(c => c.id === this.currentChatId);
   },
 
   updateModelDisplay() {
     const titleInput = document.getElementById("ai-chat-title-input");
     const historyTitleEl = document.getElementById("ai-history-model-name");
-    
-    const chat = this.chats.find(c => c.id === this.currentChatId);
+    const chat = this.getCurrentChat();
     
     if (titleInput) {
       titleInput.value = chat ? chat.title : "새 대화";
     }
     if (historyTitleEl) {
-      historyTitleEl.innerText = this.model || "AI Chat";
+      // 채팅창 자체에 설정된 모델이 있으면 그것을, 없으면 기본 설정 모델을 표시
+      const activeModel = chat?.model || this.settingsModel;
+      historyTitleEl.innerText = activeModel || "AI Chat";
     }
   },
 
@@ -64,6 +77,56 @@ const ai = {
       chat.title = newTitle.trim() || "새 대화";
       this.chats = chats;
       this.renderHistory();
+    }
+  },
+
+  toggleModelPopup(e) {
+    e.stopPropagation();
+    if (!this.isConnected) return;
+    
+    const popup = document.getElementById('ai-model-popup');
+    if (!popup) return;
+
+    if (popup.classList.contains('show')) {
+      popup.classList.remove('show');
+      return;
+    }
+
+    const models = JSON.parse(localStorage.getItem("dj_ai_models_cache") || "[]");
+    popup.innerHTML = "";
+
+    const chat = this.getCurrentChat();
+    const activeModel = chat?.model || this.settingsModel;
+
+    if (models.length > 1) {
+      models.forEach(m => {
+        const div = document.createElement('div');
+        div.className = `ai-model-item ${m === activeModel ? 'active' : ''}`;
+        div.innerHTML = `<span>${m}</span>${m === activeModel ? '<i class="fas fa-check" style="font-size:0.7rem;"></i>' : ''}`;
+        div.onclick = () => {
+          this.selectTemporaryModel(m);
+          popup.classList.remove('show');
+        };
+        popup.appendChild(div);
+      });
+    } else {
+      const tip = document.createElement('div');
+      tip.className = "ai-model-tip";
+      tip.innerText = "다른 모델을 사용하려면\n서버에 모델을 추가 설치해주세요.";
+      popup.appendChild(tip);
+    }
+
+    popup.classList.add('show');
+  },
+
+  // 특정 채팅창의 모델만 임시 변경
+  selectTemporaryModel(m) {
+    const chats = this.chats;
+    const chat = chats.find(c => c.id === this.currentChatId);
+    if (chat) {
+      chat.model = m; // 해당 채팅 객체에 모델 정보 저장
+      this.chats = chats;
+      this.updateModelDisplay();
     }
   },
 
@@ -84,7 +147,7 @@ const ai = {
 
     if (this.isConnected && models.length > 0) {
       modelSelect.innerHTML = models.map(m => 
-        `<option value="${m}" ${m === this.model ? 'selected' : ''}>${m}</option>`
+        `<option value="${m}" ${m === this.settingsModel ? 'selected' : ''}>${m}</option>`
       ).join('');
       modelSelect.disabled = false;
       localStorage.setItem("dj_ai_models_cache", JSON.stringify(models));
@@ -93,7 +156,6 @@ const ai = {
       const msg = window.i18n ? window.i18n.get("aiNoServer") : "서버 연결 안됨";
       modelSelect.innerHTML = `<option value="">${msg}</option>`;
       modelSelect.disabled = true;
-      if (models.length === 0 && !this.isConnected) localStorage.removeItem("dj_ai_models_cache");
     }
   },
 
@@ -129,6 +191,7 @@ const ai = {
     const provider = providerEl ? providerEl.value : this.provider;
     const url = document.getElementById("aiServerUrlInput")?.value || this.serverUrl;
     const apiKey = document.getElementById("aiApiKeyInput")?.value.trim() || this.apiKey;
+    
     const tempMsgSpan = document.getElementById("ai-temp-msg");
     const refreshIcon = document.querySelector(".ai-refresh-icon");
 
@@ -197,14 +260,17 @@ const ai = {
     if (!this.isConnected) { alert("AI 서버 연결이 필요합니다."); settings.openModal(); return; }
     
     const chats = this.chats;
-    const chat = chats.find(c => c.id === this.currentChatId);
+    const chat = this.getCurrentChat();
+    if (!chat) return;
+
+    // 현재 채팅에 설정된 모델 사용 (없으면 기본값)
+    const activeModel = chat.model || this.settingsModel;
     
-    // 첫 메시지 전송 시 첫 줄을 제목으로 설정
-    if (chat && chat.messages.length === 0 && (chat.title === "새 대화" || chat.title === "새로운 대화")) {
+    if (chat.messages.length === 0 && (chat.title === "새 대화" || chat.title === "새로운 대화")) {
       const firstLine = text.split('\n')[0];
       chat.title = firstLine.length > 20 ? firstLine.substring(0, 20) + "..." : firstLine;
       this.chats = chats;
-      this.updateModelDisplay(); // UI 즉시 반영
+      this.updateModelDisplay();
     }
     
     this.appendMessage("user", text);
@@ -213,9 +279,9 @@ const ai = {
     const botMsgDiv = this.appendMessage("bot", `<div class="typing-indicator"><span></span><span></span><span></span></div>`, false, true);
     
     try {
-      if (this.provider === "local") await this.callLocalAI(text, botMsgDiv, chat);
-      else if (this.provider === "openai") await this.callOpenAI(text, botMsgDiv, chat);
-      else if (this.provider === "gemini") await this.callGemini(text, botMsgDiv, chat);
+      if (this.provider === "local") await this.callLocalAI(text, botMsgDiv, chat, activeModel);
+      else if (this.provider === "openai") await this.callOpenAI(text, botMsgDiv, chat, activeModel);
+      else if (this.provider === "gemini") await this.callGemini(text, botMsgDiv, chat, activeModel);
       this.updateStatusUI(); 
     } catch (e) {
       botMsgDiv.innerText = "오류: 서버와 통신할 수 없습니다.";
@@ -225,11 +291,15 @@ const ai = {
     }
   },
 
-  async callLocalAI(prompt, msgDiv, chat) {
+  async callLocalAI(prompt, msgDiv, chat, model) {
     const isStream = !this.outputAtOnce;
     const response = await fetch(`${this.serverUrl}/api/chat`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: this.model, messages: chat.messages.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: prompt }]), stream: isStream })
+      body: JSON.stringify({ 
+        model: model, 
+        messages: chat.messages.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: prompt }]), 
+        stream: isStream 
+      })
     });
     if (!response.ok) throw new Error();
     let fullText = '';
@@ -261,10 +331,13 @@ const ai = {
     this.saveMessage(chat.id, prompt, fullText);
   },
 
-  async callOpenAI(prompt, msgDiv, chat) {
+  async callOpenAI(prompt, msgDiv, chat, model) {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.apiKey}` },
-      body: JSON.stringify({ model: this.model, messages: chat.messages.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: prompt }]) })
+      body: JSON.stringify({ 
+        model: model, 
+        messages: chat.messages.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: prompt }]) 
+      })
     });
     if (!res.ok) throw new Error();
     const json = await res.json();
@@ -273,8 +346,8 @@ const ai = {
     this.saveMessage(chat.id, prompt, text);
   },
 
-  async callGemini(prompt, msgDiv, chat) {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`, {
+  async callGemini(prompt, msgDiv, chat, model) {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
@@ -288,15 +361,23 @@ const ai = {
   saveMessage(chatId, userPrompt, botResponse) {
     const chats = this.chats;
     const c = chats.find(x => x.id === chatId);
-    if (c) { c.messages.push({ role: "user", content: userPrompt }); c.messages.push({ role: "bot", content: botResponse }); this.chats = chats; this.renderHistory(); }
+    if (c) { 
+      c.messages.push({ role: "user", content: userPrompt }); 
+      c.messages.push({ role: "bot", content: botResponse }); 
+      this.chats = chats; 
+      this.renderHistory(); 
+    }
   },
 
   handleKeyDown(e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); this.sendMessage(); } },
-  renderHistory() {
+  
+  renderHistory(searchTerm = "") {
     const list = document.getElementById("ai-history-list");
     if (!list) return;
     list.innerHTML = "";
+    const lowerSearch = searchTerm.toLowerCase();
     this.chats.forEach(chat => {
+      if (searchTerm && !chat.title.toLowerCase().includes(lowerSearch)) return;
       const div = document.createElement("div");
       div.className = `ai-history-item ${chat.id === this.currentChatId ? 'active' : ''}`;
       div.onclick = () => this.loadChat(chat.id);
@@ -304,23 +385,50 @@ const ai = {
       list.appendChild(div);
     });
   },
+
+  filterHistory(val) { this.renderHistory(val); },
+
   loadChat(id = null) {
     const chats = this.chats;
-    if (!id) { if (chats.length > 0) this.currentChatId = chats[0].id; else { this.createNewChat(); return; } }
-    else this.currentChatId = id;
+    if (!id) { 
+      if (chats.length > 0) this.currentChatId = chats[0].id; 
+      else { this.createNewChat(); return; } 
+    } else {
+      this.currentChatId = id;
+    }
     this.renderHistory();
-    const chat = chats.find(c => c.id === this.currentChatId);
+    const chat = this.getCurrentChat();
     const msgContainer = document.getElementById("ai-messages");
-    if (msgContainer) { msgContainer.innerHTML = ""; if (chat) chat.messages.forEach(m => this.appendMessage(m.role, m.content, false)); }
+    if (msgContainer) { 
+      msgContainer.innerHTML = ""; 
+      if (chat) chat.messages.forEach(m => this.appendMessage(m.role, m.content, false)); 
+    }
     this.updateModelDisplay();
   },
+
   createNewChat() {
     const chats = this.chats;
+    // 1. 이미 비어있는 '새 대화'가 있는지 확인
+    const emptyChat = chats.find(c => c.messages.length === 0 && (c.title === "새 대화" || c.title === "새로운 대화"));
+    
+    if (emptyChat) {
+      // 있다면 새로 만들지 않고 해당 대화로 이동
+      this.loadChat(emptyChat.id);
+      return;
+    }
+
+    // 2. 없다면 새로 생성
     this.currentChatId = Date.now();
-    chats.unshift({ id: this.currentChatId, title: "새 대화", messages: [] });
+    chats.unshift({ 
+      id: this.currentChatId, 
+      title: "새 대화", 
+      messages: [],
+      model: this.settingsModel // 생성 시점의 환경 설정 모델을 기본으로 저장
+    });
     this.chats = chats;
     this.loadChat(this.currentChatId);
   },
+
   deleteChat(id, e) {
     e.stopPropagation();
     this.chats = this.chats.filter(c => c.id !== id);
@@ -328,11 +436,18 @@ const ai = {
     else if (this.currentChatId === id) this.loadChat(this.chats[0].id);
     else this.renderHistory();
   },
+
   toggleHistory() {
     this.historyCollapsed = !this.historyCollapsed;
     document.getElementById("ai-history")?.classList.toggle("collapsed", this.historyCollapsed);
     document.getElementById("ai-history-toggle").className = this.historyCollapsed ? "fas fa-angles-right" : "fas fa-angles-left";
   },
+
+  renderWelcome() {
+    const msgContainer = document.getElementById("ai-messages");
+    if (msgContainer) msgContainer.innerHTML = "";
+  },
+
   appendMessage(role, text, save = true, isHtml = false) {
     const container = document.getElementById("ai-messages");
     if (!container) return null;

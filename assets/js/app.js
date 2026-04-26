@@ -39,7 +39,17 @@ const app = {
     search.init();
 
     // 5. Set up Intervals
-    setInterval(() => clock.update(), 1000);
+    setInterval(() => {
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      
+      clock.update();
+      if (window.noti) {
+        noti.check(timeStr, todayStr, now);
+        noti.updateRemaining(now);
+      }
+    }, 1000);
     clock.update();
 
     // 6. Tutorial Check

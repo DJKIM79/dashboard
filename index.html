@@ -171,7 +171,14 @@
     </div>
     <div id="search-section">
       <div class="search-box">
-        <i class="fas fa-robot ai-search-icon" onclick="ui.toggleWidget('ai')" data-i18n-title="sideAI"></i>
+        <div class="ai-icon-wrapper" onclick="ui.toggleWidget('ai')">
+          <i class="fas fa-robot ai-search-icon" data-i18n-title="sideAI"></i>
+          <div class="ai-orbit">
+            <div class="ai-orbit-dot dot-1"></div>
+            <div class="ai-orbit-dot dot-2"></div>
+            <div class="ai-orbit-dot dot-3"></div>
+          </div>
+        </div>
         <i class="fas fa-search" style="margin-left: 10px;"></i>
         <input
           type="text"
@@ -192,14 +199,19 @@
     <div id="ai-chatbot-container" class="widget-hidden">
       <div class="ai-history-panel" id="ai-history">
         <div class="ai-history-header">
-          <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px; position: relative;">
             <i id="ai-btn-new-chat" class="fas fa-plus" onclick="ai.createNewChat()" data-i18n-title="cmAdd" style="font-size: 0.9rem; cursor: pointer;"></i>
             <span id="ai-history-status-dot" style="width: 6px; height: 6px; border-radius: 50%; background: #94a3b8; display: inline-block; margin-left: 2px;"></span>
-            <span class="history-title" id="ai-history-model-name" style="font-size: 0.85rem;">...</span>
+            <span class="history-title" id="ai-history-model-name" style="font-size: 0.85rem;" onclick="ai.toggleModelPopup(event)">...</span>
+            <div id="ai-model-popup" class="ai-model-popup"></div>
           </div>
           <i id="ai-history-toggle" class="fas fa-angles-left" onclick="ai.toggleHistory()"></i>
         </div>
         <div class="ai-history-list" id="ai-history-list"></div>
+        <div class="ai-history-footer">
+          <i class="fas fa-search" style="font-size: 0.8rem; opacity: 0.5;"></i>
+          <input type="text" id="ai-history-search" placeholder="검색..." oninput="ai.filterHistory(this.value)">
+        </div>
       </div>
       <div class="ai-main-panel">
         <div class="ai-chat-header">

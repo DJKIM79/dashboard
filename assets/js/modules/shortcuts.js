@@ -10,28 +10,15 @@ const shortcutMod = {
   checkLayout() {
     const c = document.getElementById("shortcut-container");
     if (!c) return;
-    
-    // Temporarily remove to measure natural state
     c.classList.remove("shortcut-list-view");
-    
     const items = c.querySelectorAll(".shortcut-item");
     if (items.length === 0) return;
-    
-    let rows = 0;
-    let lastTop = -1;
-    // We measure carefully
+    let rows = 0, lastTop = -1;
     items.forEach(item => {
       const top = item.offsetTop;
-      if (Math.abs(top - lastTop) > 10) {
-        rows++;
-        lastTop = top;
-      }
+      if (Math.abs(top - lastTop) > 10) { rows++; lastTop = top; }
     });
-
-    // If rows would be 3 or more in normal grid, switch to list view
-    if (rows >= 3) {
-      c.classList.add("shortcut-list-view");
-    }
+    if (rows >= 3) c.classList.add("shortcut-list-view");
   },
 
   render() {
@@ -44,18 +31,22 @@ const shortcutMod = {
       const url = s.url.startsWith("http") ? s.url : `http://${s.url}`,
         div = document.createElement("a");
       div.className = "shortcut-item";
-      div.onclick = (e) =>
-        this.isDragging
-          ? (e.preventDefault(), (this.isDragging = false))
-          : (window.location.href = url);
+      div.onclick = (e) => this.isDragging ? (e.preventDefault(), (this.isDragging = false)) : (window.location.href = url);
       div.oncontextmenu = (e) => showContextMenu(e, "shortcut", i);
-      div.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=128&domain=${new URL(url).hostname}"><span>${s.name}</span>`;
+      
+      div.innerHTML = `
+        <div class="shortcut-icon-wrapper">
+          <img src="https://www.google.com/s2/favicons?sz=128&domain=${new URL(url).hostname}" 
+               class="shortcut-img"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.parentElement.classList.add('no-favicon')">
+          <div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>
+        </div>
+        <span>${s.name}</span>
+      `;
       c.appendChild(div);
     });
 
-    requestAnimationFrame(() => {
-      this.checkLayout();
-    });
+    requestAnimationFrame(() => this.checkLayout());
 
     if (!this.resizeListenerAdded) {
       window.addEventListener("resize", () => {
@@ -67,21 +58,12 @@ const shortcutMod = {
 
     if (window.shortcutSortable) window.shortcutSortable.destroy();
     window.shortcutSortable = new Sortable(c, {
-      animation: 150, 
-      easing: "ease-in-out", 
+      animation: 250, 
       ghostClass: "shortcut-ghost",
       chosenClass: "shortcut-chosen",
       dragClass: "shortcut-drag",
-      forceFallback: true,
-      fallbackClass: "shortcut-fallback",
-      swapThreshold: 1, 
-      invertSwap: true,
-      delay: 0, 
-      touchStartThreshold: 5, 
-      onStart: () => {
-        this.isDragging = true;
-        c.classList.add("sorting-active");
-      },
+      forceFallback: true, 
+      onStart: () => { this.isDragging = true; c.classList.add("sorting-active"); },
       onEnd: (evt) => {
         setTimeout(() => (this.isDragging = false), 100);
         c.classList.remove("sorting-active");
@@ -89,8 +71,6 @@ const shortcutMod = {
           const item = this.items.splice(evt.oldIndex, 1)[0];
           this.items.splice(evt.newIndex, 0, item);
           utils.saveData();
-          // We don't call this.render() here to keep the SortableJS animation smooth
-          // If you need to sync other UI elements, do it selectively
         }
       },
     });
@@ -98,34 +78,21 @@ const shortcutMod = {
 
   openModal(index = null) {
     window.currentShortcutIndex = index;
-    const T = i18n.langData,
-      isEdit = index !== null;
-    document.getElementById("siteName").value = isEdit
-      ? this.items[index].name
-      : "";
-    document.getElementById("siteUrl").value = isEdit
-      ? this.items[index].url
-      : "";
-    document.getElementById("linkModalTitle").innerText = isEdit
-      ? T.modalLinkEdit
-      : T.modalLinkAdd;
-    document.getElementById("linkSaveBtn").innerText = isEdit
-      ? T.btnEdit
-      : T.btnSave;
+    const T = i18n.langData, isEdit = index !== null;
+    document.getElementById("siteName").value = isEdit ? this.items[index].name : "";
+    document.getElementById("siteUrl").value = isEdit ? this.items[index].url : "";
+    document.getElementById("linkModalTitle").innerText = isEdit ? T.modalLinkEdit : T.modalLinkAdd;
+    document.getElementById("linkSaveBtn").innerText = isEdit ? T.btnEdit : T.btnSave;
     utils.closeModal("settingModal");
     utils.openModal("linkModal");
     setTimeout(() => document.getElementById("siteName").focus(), 50);
   },
 
   add() {
-    const n = document.getElementById("siteName").value,
-      u = document.getElementById("siteUrl").value;
+    const n = document.getElementById("siteName").value, u = document.getElementById("siteUrl").value;
     if (n && u) {
-      if (window.currentShortcutIndex !== null) {
-        this.items[window.currentShortcutIndex] = { name: n, url: u };
-      } else {
-        this.items.push({ name: n, url: u });
-      }
+      if (window.currentShortcutIndex !== null) this.items[window.currentShortcutIndex] = { name: n, url: u };
+      else this.items.push({ name: n, url: u });
       window.shortcuts = this.items;
       this.render();
       utils.saveData();
@@ -133,15 +100,11 @@ const shortcutMod = {
     }
   },
 
-  delete(index) {
-    this.items.splice(index, 1);
-    this.render();
-    utils.saveData();
-  }
+  delete(index) { this.items.splice(index, 1); this.render(); utils.saveData(); }
 };
 
 window.shortcutMod = shortcutMod;
-window.shortcuts = shortcutMod.items; // For backward compatibility
+window.shortcuts = shortcutMod.items;
 window.renderShortcuts = () => shortcutMod.render();
 window.openLinkModal = (index) => shortcutMod.openModal(index);
 window.addShortcut = () => shortcutMod.add();

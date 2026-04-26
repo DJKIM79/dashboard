@@ -83,6 +83,32 @@ const utils = {
     if (window.noti) localStorage.setItem("dj_notifications", JSON.stringify(noti.items));
     if (window.memo) localStorage.setItem("dj_memos", JSON.stringify(memo.items));
     if (window.weather) localStorage.setItem("dj_weather_locations", JSON.stringify(weather.locations));
+  },
+
+  showValidationTip(elementId, message) {
+    const btn = document.getElementById(elementId);
+    if (!btn) return;
+    
+    // 기존 팁 제거
+    const existing = document.querySelector(".validation-tip");
+    if (existing) existing.remove();
+
+    const tip = document.createElement("div");
+    tip.className = "validation-tip";
+    tip.innerText = message;
+    document.body.appendChild(tip);
+
+    const rect = btn.getBoundingClientRect();
+    tip.style.left = `${rect.left + rect.width / 2}px`;
+    tip.style.top = `${rect.top - 10}px`;
+
+    setTimeout(() => {
+      tip.classList.add("show");
+      setTimeout(() => {
+        tip.classList.remove("show");
+        setTimeout(() => tip.remove(), 300);
+      }, 2000);
+    }, 10);
   }
 };
 

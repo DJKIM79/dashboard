@@ -115,6 +115,8 @@ const noti = {
       this.render();
       utils.saveData();
       utils.closeModal("notiModal");
+    } else {
+      utils.showValidationTip("notiSaveBtn", "제목을 입력해 주세요.");
     }
   },
 
