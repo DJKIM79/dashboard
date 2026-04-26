@@ -65,25 +65,12 @@ const ui = {
       const sideIcon = document.getElementById(`side-${type}`);
       if (sideIcon) sideIcon.classList.toggle("active", !isHidden);
     });
-
-    // AI 아이콘 색상 업데이트 (검색창 옆 아이콘)
-    const aiIcon = document.querySelector(".ai-search-icon");
-    if (aiIcon) {
-      const isDisabled = localStorage.getItem("dj_ai_disabled") === "true";
-      const hasModel = !!localStorage.getItem("dj_ai_model");
-      const isAvailable = !isDisabled && hasModel;
-      
-      aiIcon.classList.toggle("active", isAvailable);
-    }
   },
 
   toggleWidget(type) {
     if (type === "ai") {
-      const isDisabled = localStorage.getItem("dj_ai_disabled") === "true";
-      const hasModel = !!localStorage.getItem("dj_ai_model");
-
-      // 설정이 안 되어 있다면 바로 설정창 열기
-      if (isDisabled || !hasModel) {
+      // Use strictly isConnected status
+      if (!window.ai || !ai.isConnected) {
         if (window.settings) settings.openModal();
         return;
       }
