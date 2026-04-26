@@ -22,7 +22,7 @@
   "lblAIHistory": "채팅 목록",
   "lblAISetting": "AI 설정",
   "aiNeedConnect": "서버 연결 안됨",
-  "aiConnecting": "연결중",
+  "aiConnecting": "AI 연결됨",
   "aiInputPh": "메시지를 입력하세요...",
   "aiNoServer": "서버 연결 안됨",
   "aiNeedCheck": "-",

@@ -1,10 +1,12 @@
 const ai = {
-  provider: "none",
-  serverUrl: "http://127.0.0.1:11434",
-  apiKey: "",
-  model: "",
-  isConnected: false,
-  outputAtOnce: true,
+  get provider() { return localStorage.getItem("dj_ai_provider") || "none"; },
+  get serverUrl() { return localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434"; },
+  get apiKey() { return localStorage.getItem("dj_ai_api_key") || ""; },
+  get model() { return localStorage.getItem("dj_ai_model") || ""; },
+  get isConnected() { return localStorage.getItem("dj_ai_is_connected") === "true"; },
+  set isConnected(val) { localStorage.setItem("dj_ai_is_connected", val); },
+
+  outputAtOnce: localStorage.getItem("dj_ai_output_at_once") !== "false",
   isGenerating: false,
   historyCollapsed: false,
   
@@ -24,32 +26,23 @@ const ai = {
   currentChatId: null,
 
   init() {
-    // 1. localStorage에서 설정값을 정확히 로드
-    this.provider = localStorage.getItem("dj_ai_provider") || "none";
-    this.serverUrl = localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
-    this.apiKey = localStorage.getItem("dj_ai_api_key") || "";
-    this.model = localStorage.getItem("dj_ai_model") || "";
-    this.isConnected = localStorage.getItem("dj_ai_is_connected") === "true";
-    this.outputAtOnce = localStorage.getItem("dj_ai_output_at_once") !== "false";
-
     this.updateModelDisplay();
     this.renderHistory();
     this.loadChat();
     
-    // 2. 초기 UI 상태 복구
+    // 초기 로드 시 캐시된 모델 목록을 먼저 표시하여 끊김 없는 UI 제공
+    const savedModels = JSON.parse(localStorage.getItem("dj_ai_models_cache") || "[]");
+    
     if (this.isConnected && this.provider !== "none") {
-      const savedModels = JSON.parse(localStorage.getItem("dj_ai_models_cache") || "[]");
       if (savedModels.length > 0) {
         this.updateModelSelectUI(savedModels);
       }
-      // 아이콘 활성화 즉시 반영
       this.updateChatbotAvailability(true);
-      
-      // 3. 백그라운드 체크 (중요: 실패해도 isConnected를 끄지 않음)
+      // 백그라운드 체크 수행
       this.checkConnection(true);
     } else {
       this.updateChatbotAvailability(false);
-      this.updateModelSelectUI([]); 
+      this.updateModelSelectUI([]); // 연결 안 된 상태에서는 무조건 '서버 연결 안됨'
     }
   },
 
@@ -64,15 +57,12 @@ const ai = {
 
   updateChatbotAvailability(isConnected) {
     this.isConnected = isConnected;
-    localStorage.setItem("dj_ai_is_connected", isConnected);
-    
     const aiIcon = document.querySelector(".ai-search-icon");
     if (aiIcon) {
       aiIcon.classList.toggle("active", isConnected);
       aiIcon.classList.toggle("can-chat", isConnected);
       aiIcon.style.color = isConnected ? "" : "#94a3b8";
     }
-    
     this.updateStatusUI();
   },
 
@@ -80,18 +70,22 @@ const ai = {
     const modelSelect = document.getElementById("aiModelSelect");
     if (!modelSelect) return;
 
-    if (models.length > 0 && this.isConnected) {
+    // 연결 상태이고 모델 목록이 있을 때만 목록 생성
+    if (this.isConnected && models.length > 0) {
       modelSelect.innerHTML = models.map(m => 
         `<option value="${m}" ${m === this.model ? 'selected' : ''}>${m}</option>`
       ).join('');
       modelSelect.disabled = false;
       localStorage.setItem("dj_ai_models_cache", JSON.stringify(models));
     } else {
-      // 모델 선택 칸에 상태 표시 (사용자 요청 로직)
-      const pName = this.provider === 'local' ? 'Local' : (this.provider === 'none' ? '' : this.provider.charAt(0).toUpperCase() + this.provider.slice(1));
-      const msg = this.isConnected ? `${pName} 연결중` : (window.i18n ? window.i18n.get("aiNoServer") : "서버 연결 안됨");
+      // 그 외의 경우 (연결 전, 연결 실패 등) 무조건 '서버 연결 안됨'으로 통일
+      const msg = window.i18n ? window.i18n.get("aiNoServer") : "서버 연결 안됨";
       modelSelect.innerHTML = `<option value="">${msg}</option>`;
       modelSelect.disabled = true;
+      // 모델이 실제로 없는 경우에만 캐시 삭제
+      if (models.length === 0 && !this.isConnected) {
+        localStorage.removeItem("dj_ai_models_cache");
+      }
     }
   },
 
@@ -105,13 +99,12 @@ const ai = {
     if (this.isConnected) {
       if (dot) dot.style.background = "#22c55e";
       if (text) {
-        const pName = this.provider.charAt(0).toUpperCase() + this.provider.slice(1);
-        const connMsg = T.aiConnecting || "연결중";
-        text.innerText = `${pName} ${connMsg}`;
+        let pName = this.provider.charAt(0).toUpperCase() + this.provider.slice(1);
+        if (this.provider === 'local') pName = "로컬 AI";
+        text.innerText = `${pName} 연결됨`;
       }
       statusSpan.style.color = "#22c55e";
     } else {
-      // 연결 안됨 시 회색(#94a3b8) 점과 글자 복구
       if (dot) dot.style.background = "#94a3b8";
       if (text) text.innerText = T.aiNeedConnect || "서버 연결 안됨";
       statusSpan.style.color = "#94a3b8";
@@ -128,14 +121,18 @@ const ai = {
     const refreshIcon = document.querySelector(".ai-refresh-icon");
 
     const finalize = (isConnected, models = []) => {
-      // 자동 체크일 때는 성공 시에만 상태를 true로 업데이트, 실패 시에는 기존 상태 유지
-      if (!isSilent || isConnected) {
-        this.updateChatbotAvailability(isConnected);
+      // 자동 체크일 경우 성공했을 때만 UI 업데이트 (실패 시 기존 캐시 유지)
+      if (isConnected) {
+        this.updateChatbotAvailability(true);
+        this.updateModelSelectUI(models);
+      } else if (!isSilent) {
+        // 사용자가 직접 누른 체크에서 실패했을 때만 상태 해제 및 목록 제거
+        this.updateChatbotAvailability(false);
+        this.updateModelSelectUI([]);
       }
-      this.updateModelSelectUI(models);
       
       if (!isSilent) {
-        const pName = provider.charAt(0).toUpperCase() + provider.slice(1);
+        const pName = provider === 'local' ? '로컬 AI' : provider.charAt(0).toUpperCase() + provider.slice(1);
         if (tempMsgSpan) {
           tempMsgSpan.innerText = isConnected ? `${pName} 연결 성공!` : `${pName} 연결 실패!`;
           tempMsgSpan.style.color = isConnected ? "#22c55e" : "#ef4444";

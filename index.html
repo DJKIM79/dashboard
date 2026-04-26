@@ -334,13 +334,13 @@
               <div class="setting-group-title" style="display: flex; justify-content: space-between; align-items: center;">
                 <span data-i18n="lblBgKeyword">배경 키워드</span>
                 <div style="display: flex; gap: 10px;">
-                  <label class="compact-checkbox-label">
+                  <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
                     <input type="checkbox" id="engineUnsplash" onchange="updateImageEngine('unsplash')" style="width: 12px; height: 12px; margin: 0;">
-                    <span>Unsplash</span>
+                    <span class="setting-label-text">Unsplash</span>
                   </label>
-                  <label class="compact-checkbox-label">
+                  <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
                     <input type="checkbox" id="engineFlickr" onchange="updateImageEngine('flickr')" style="width: 12px; height: 12px; margin: 0;">
-                    <span>Flickr</span>
+                    <span class="setting-label-text">Flickr</span>
                   </label>
                 </div>
               </div>
@@ -420,7 +420,7 @@
                   <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">AI</span>
                   <select id="aiProviderSelect" onchange="updateAiProvider(this.value)" style="margin-bottom: 2px; flex: 1;">
                     <option value="none" data-i18n="optNone">사용 안 함</option>
-                    <option value="local">Local AI</option>
+                    <option value="local">로컬 AI</option>
                     <option value="openai">OpenAI API</option>
                     <option value="gemini">Gemini API</option>
                     <option value="claude">Claude API</option>
