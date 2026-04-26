@@ -1362,7 +1362,7 @@
         transition: width 0.3s ease;
       }
       .ai-history-panel.collapsed {
-        width: 85px;
+        width: 75px;
         overflow: hidden;
       }
       .ai-history-panel.collapsed .history-title,
@@ -1371,15 +1371,20 @@
       }
       .ai-history-panel.collapsed .ai-history-item span {
         display: block !important;
-        font-size: 0.85rem;
-        opacity: 0.8;
+        font-size: 0.85rem !important;
+        opacity: 0.9;
+        text-align: left;
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: clip; /* 점 없이 그냥 자름 */
       }
       .ai-history-panel.collapsed .ai-history-item i {
         display: none;
       }
       .ai-history-panel.collapsed .ai-history-item {
-        justify-content: center;
-        padding: 10px 5px;
+        justify-content: flex-start;
+        padding: 10px 15px;
       }
       .ai-history-header {
         padding: 15px 20px;
@@ -1396,6 +1401,19 @@
       .ai-history-panel.collapsed .ai-history-header {
         justify-content: center;
         padding: 15px 0;
+        position: relative;
+      }
+      .ai-history-panel.collapsed .ai-history-header .history-title,
+      .ai-history-panel.collapsed .ai-history-header #ai-btn-new-chat {
+        display: none;
+      }
+      .ai-history-panel.collapsed .ai-history-header #ai-history-status-dot {
+        margin: 0 !important;
+        position: absolute;
+        left: 20px;
+      }
+      .ai-history-panel.collapsed .ai-history-header #ai-history-toggle {
+        margin-left: 25px;
       }
       .ai-history-header i {
         cursor: pointer;
@@ -1504,11 +1522,29 @@
       .ai-status {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 0.85rem;
-        font-weight: 600;
+        gap: 12px;
+        flex: 1;
       }
-      .ai-actions i {
+      .ai-title-input {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 5px 0;
+        width: 100%;
+        outline: none;
+        transition: none;
+        border-radius: 0;
+      }
+      .ai-title-input:hover, .ai-title-input:focus {
+        background: transparent;
+        padding-left: 0;
+      }
+      .ai-title-input::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+      }
+      .ai-actions {
         cursor: pointer;
         opacity: 0.5;
         transition: 0.2s;

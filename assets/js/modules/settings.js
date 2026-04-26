@@ -215,9 +215,9 @@ const settings = {
       const isWhite = (color === "#fff" || color === "#ffffff");
       const isBlack = (color === "#000" || color === "#000000");
 
-      if (isWhite && adj === "darker") finalColor = "#e2e8f0";
-      else if (isBlack && adj === "lighter") finalColor = "#1e293b"; // 더 어두운 톤으로 조정
-      else finalColor = this.adjustColor(color, adj === "lighter" ? 20 : -20);
+      if (isWhite && adj === "darker") finalColor = "#cbd5e1"; // 더 어둡게 (Slate 300)
+      else if (isBlack && adj === "lighter") finalColor = "#0f172a"; // 훨씬 차분한 진회색 (Slate 900)
+      else finalColor = this.adjustColor(color, adj === "lighter" ? 35 : -35); // 변화 폭 20% -> 35%로 강화
     }
 
     document.documentElement.style.setProperty("--accent-color", finalColor);

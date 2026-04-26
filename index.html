@@ -192,9 +192,10 @@
     <div id="ai-chatbot-container" class="widget-hidden">
       <div class="ai-history-panel" id="ai-history">
         <div class="ai-history-header">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <i id="ai-btn-new-chat" class="fas fa-plus" onclick="ai.createNewChat()" data-i18n-title="cmAdd"></i>
-            <span class="history-title" data-i18n="lblAIHistory">채팅 목록</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i id="ai-btn-new-chat" class="fas fa-plus" onclick="ai.createNewChat()" data-i18n-title="cmAdd" style="font-size: 0.9rem; cursor: pointer;"></i>
+            <span id="ai-history-status-dot" style="width: 6px; height: 6px; border-radius: 50%; background: #94a3b8; display: inline-block; margin-left: 2px;"></span>
+            <span class="history-title" id="ai-history-model-name" style="font-size: 0.85rem;">...</span>
           </div>
           <i id="ai-history-toggle" class="fas fa-angles-left" onclick="ai.toggleHistory()"></i>
         </div>
@@ -203,7 +204,7 @@
       <div class="ai-main-panel">
         <div class="ai-chat-header">
           <div class="ai-status" id="ai-status">
-            <span id="ai-model-name">...</span>
+            <input type="text" id="ai-chat-title-input" class="ai-title-input" onchange="ai.updateChatTitle(this.value)" placeholder="새 대화">
           </div>
           <div class="ai-actions">
           </div>

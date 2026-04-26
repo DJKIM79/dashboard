@@ -30,28 +30,40 @@ const ai = {
     this.renderHistory();
     this.loadChat();
     
-    // 초기 로드 시 캐시된 모델 목록을 먼저 표시하여 끊김 없는 UI 제공
     const savedModels = JSON.parse(localStorage.getItem("dj_ai_models_cache") || "[]");
     
     if (this.isConnected && this.provider !== "none") {
-      if (savedModels.length > 0) {
-        this.updateModelSelectUI(savedModels);
-      }
+      if (savedModels.length > 0) this.updateModelSelectUI(savedModels);
       this.updateChatbotAvailability(true);
-      // 백그라운드 체크 수행
       this.checkConnection(true);
     } else {
       this.updateChatbotAvailability(false);
-      this.updateModelSelectUI([]); // 연결 안 된 상태에서는 무조건 '서버 연결 안됨'
+      this.updateModelSelectUI([]);
     }
   },
 
   updateModelDisplay() {
-    const nameEl = document.getElementById("ai-model-name");
-    if (nameEl) {
-      const chats = this.chats;
-      const chat = chats.find(c => c.id === this.currentChatId);
-      nameEl.innerText = chat ? chat.title : (this.model || "AI Chat");
+    const titleInput = document.getElementById("ai-chat-title-input");
+    const historyTitleEl = document.getElementById("ai-history-model-name");
+    
+    const chat = this.chats.find(c => c.id === this.currentChatId);
+    
+    if (titleInput) {
+      titleInput.value = chat ? chat.title : "새 대화";
+    }
+    if (historyTitleEl) {
+      historyTitleEl.innerText = this.model || "AI Chat";
+    }
+  },
+
+  updateChatTitle(newTitle) {
+    if (!this.currentChatId) return;
+    const chats = this.chats;
+    const chat = chats.find(c => c.id === this.currentChatId);
+    if (chat) {
+      chat.title = newTitle.trim() || "새 대화";
+      this.chats = chats;
+      this.renderHistory();
     }
   },
 
@@ -70,44 +82,45 @@ const ai = {
     const modelSelect = document.getElementById("aiModelSelect");
     if (!modelSelect) return;
 
-    // 연결 상태이고 모델 목록이 있을 때만 목록 생성
     if (this.isConnected && models.length > 0) {
       modelSelect.innerHTML = models.map(m => 
         `<option value="${m}" ${m === this.model ? 'selected' : ''}>${m}</option>`
       ).join('');
       modelSelect.disabled = false;
       localStorage.setItem("dj_ai_models_cache", JSON.stringify(models));
+      this.updateModelDisplay();
     } else {
-      // 그 외의 경우 (연결 전, 연결 실패 등) 무조건 '서버 연결 안됨'으로 통일
       const msg = window.i18n ? window.i18n.get("aiNoServer") : "서버 연결 안됨";
       modelSelect.innerHTML = `<option value="">${msg}</option>`;
       modelSelect.disabled = true;
-      // 모델이 실제로 없는 경우에만 캐시 삭제
-      if (models.length === 0 && !this.isConnected) {
-        localStorage.removeItem("dj_ai_models_cache");
-      }
+      if (models.length === 0 && !this.isConnected) localStorage.removeItem("dj_ai_models_cache");
     }
   },
 
   updateStatusUI() {
     const statusSpan = document.getElementById("ai-connection-status");
-    if (!statusSpan) return;
-    const dot = statusSpan.querySelector(".status-dot");
-    const text = statusSpan.querySelector(".status-text");
+    const dot = statusSpan?.querySelector(".status-dot");
+    const text = statusSpan?.querySelector(".status-text");
     const T = window.i18n ? window.i18n.langData : {};
+    const historyDot = document.getElementById("ai-history-status-dot");
     
     if (this.isConnected) {
-      if (dot) dot.style.background = "#22c55e";
+      const green = "#22c55e";
+      if (dot) dot.style.background = green;
+      if (historyDot) historyDot.style.background = green;
       if (text) {
         let pName = this.provider.charAt(0).toUpperCase() + this.provider.slice(1);
         if (this.provider === 'local') pName = "로컬 AI";
         text.innerText = `${pName} 연결됨`;
       }
-      statusSpan.style.color = "#22c55e";
+      if (statusSpan) statusSpan.style.color = green;
     } else {
-      if (dot) dot.style.background = "#94a3b8";
+      const gray = "#94a3b8";
+      const red = "#ef4444";
+      if (dot) dot.style.background = gray; 
+      if (historyDot) historyDot.style.background = (this.provider !== 'none') ? red : gray;
       if (text) text.innerText = T.aiNeedConnect || "서버 연결 안됨";
-      statusSpan.style.color = "#94a3b8";
+      if (statusSpan) statusSpan.style.color = gray;
     }
   },
 
@@ -116,17 +129,14 @@ const ai = {
     const provider = providerEl ? providerEl.value : this.provider;
     const url = document.getElementById("aiServerUrlInput")?.value || this.serverUrl;
     const apiKey = document.getElementById("aiApiKeyInput")?.value.trim() || this.apiKey;
-    
     const tempMsgSpan = document.getElementById("ai-temp-msg");
     const refreshIcon = document.querySelector(".ai-refresh-icon");
 
     const finalize = (isConnected, models = []) => {
-      // 자동 체크일 경우 성공했을 때만 UI 업데이트 (실패 시 기존 캐시 유지)
       if (isConnected) {
         this.updateChatbotAvailability(true);
         this.updateModelSelectUI(models);
       } else if (!isSilent) {
-        // 사용자가 직접 누른 체크에서 실패했을 때만 상태 해제 및 목록 제거
         this.updateChatbotAvailability(false);
         this.updateModelSelectUI([]);
       }
@@ -185,22 +195,34 @@ const ai = {
     const text = input.value.trim();
     if (!text || this.isGenerating) return;
     if (!this.isConnected) { alert("AI 서버 연결이 필요합니다."); settings.openModal(); return; }
+    
     const chats = this.chats;
     const chat = chats.find(c => c.id === this.currentChatId);
-    if (chat && (chat.title === "새로운 대화" || chat.title === "New Chat")) {
-      chat.title = text.length > 15 ? text.substring(0, 15) + "..." : text;
+    
+    // 첫 메시지 전송 시 첫 줄을 제목으로 설정
+    if (chat && chat.messages.length === 0 && (chat.title === "새 대화" || chat.title === "새로운 대화")) {
+      const firstLine = text.split('\n')[0];
+      chat.title = firstLine.length > 20 ? firstLine.substring(0, 20) + "..." : firstLine;
       this.chats = chats;
+      this.updateModelDisplay(); // UI 즉시 반영
     }
+    
     this.appendMessage("user", text);
     input.value = "";
     this.isGenerating = true;
     const botMsgDiv = this.appendMessage("bot", `<div class="typing-indicator"><span></span><span></span><span></span></div>`, false, true);
+    
     try {
       if (this.provider === "local") await this.callLocalAI(text, botMsgDiv, chat);
       else if (this.provider === "openai") await this.callOpenAI(text, botMsgDiv, chat);
       else if (this.provider === "gemini") await this.callGemini(text, botMsgDiv, chat);
-    } catch (e) { botMsgDiv.innerText = "오류: 서버와 통신할 수 없습니다."; }
-    finally { this.isGenerating = false; }
+      this.updateStatusUI(); 
+    } catch (e) {
+      botMsgDiv.innerText = "오류: 서버와 통신할 수 없습니다.";
+      this.updateChatbotAvailability(false);
+    } finally {
+      this.isGenerating = false;
+    }
   },
 
   async callLocalAI(prompt, msgDiv, chat) {
@@ -244,6 +266,7 @@ const ai = {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.apiKey}` },
       body: JSON.stringify({ model: this.model, messages: chat.messages.map(m => ({ role: m.role, content: m.content })).concat([{ role: 'user', content: prompt }]) })
     });
+    if (!res.ok) throw new Error();
     const json = await res.json();
     const text = json.choices[0].message.content;
     msgDiv.innerText = text;
@@ -255,6 +278,7 @@ const ai = {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
+    if (!res.ok) throw new Error();
     const json = await res.json();
     const text = json.candidates[0].content.parts[0].text;
     msgDiv.innerText = text;
@@ -264,7 +288,7 @@ const ai = {
   saveMessage(chatId, userPrompt, botResponse) {
     const chats = this.chats;
     const c = chats.find(x => x.id === chatId);
-    if (c) { c.messages.push({ role: "user", content: userPrompt }); c.messages.push({ role: "bot", content: botResponse }); this.chats = chats; }
+    if (c) { c.messages.push({ role: "user", content: userPrompt }); c.messages.push({ role: "bot", content: botResponse }); this.chats = chats; this.renderHistory(); }
   },
 
   handleKeyDown(e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); this.sendMessage(); } },
