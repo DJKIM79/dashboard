@@ -105,10 +105,20 @@ const utils = {
     setTimeout(() => {
       tip.classList.add("show");
       setTimeout(() => {
-        tip.classList.remove("show");
-        setTimeout(() => tip.remove(), 300);
+        if (tip.parentNode) {
+          tip.classList.remove("show");
+          setTimeout(() => tip.remove(), 300);
+        }
       }, 2000);
     }, 10);
+  },
+
+  hideValidationTip() {
+    const existing = document.querySelector(".validation-tip");
+    if (existing) {
+      existing.classList.remove("show");
+      setTimeout(() => existing.remove(), 300);
+    }
   }
 };
 

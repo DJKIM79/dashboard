@@ -225,7 +225,9 @@
         <div class="ai-chat-input-area">
           <textarea id="ai-user-input" data-i18n-ph="aiInputPh" placeholder="메시지를 입력하세요... (Ctrl+Enter로 전송)" onkeydown="ai.handleKeyDown(event)"></textarea>
           <div class="ai-input-actions">
-            <button class="ai-icon-btn" onclick="ai.attachFile()"><i class="fas fa-paperclip"></i></button>
+            <div id="ai-attach-wrapper" style="display: inline-block;" onmouseover="ai.attachFile(event)" onmouseout="ai.hideAttachTip()">
+              <button id="ai-attach-btn" class="ai-icon-btn"><i class="fas fa-paperclip"></i></button>
+            </div>
             <button id="ai-send-btn" onclick="ai.sendMessage()">
               <i class="fas fa-paper-plane"></i>
             </button>

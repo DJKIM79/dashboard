@@ -84,6 +84,7 @@ const settings = {
     localStorage.setItem("dj_show_current_weather", show);
     if (window.weather) { window.weather.showCurrent = show; window.weather.fetch(); }
   },
+  
   updateAiOutputAtOnce(checked) {
     localStorage.setItem("dj_ai_output_at_once", checked);
     if (window.ai) ai.outputAtOnce = checked;
@@ -96,59 +97,50 @@ const settings = {
     this.toggleAiSettings(isDisabled);
     this.onAIProviderChange();
     if (window.ai) {
-      ai.provider = provider;
+      // 제공자 변경 시 캐시 삭제 및 강제 재초기화 (다른 AI 데이터 노출 방지)
       localStorage.removeItem("dj_ai_models_cache");
       ai.updateChatbotAvailability(false);
-      ai.updateModelSelectUI([]);
       
-      // 아이콘 색상 초기화
+      // 챗봇 모듈을 새로운 제공자에 맞게 완전히 다시 로드
+      ai.init(); 
+      
       const refreshIcon = document.querySelector(".ai-refresh-icon");
       if (refreshIcon) refreshIcon.style.color = "#94a3b8";
-      
-      if (typeof ai.updateStatusUI === "function") ai.updateStatusUI();
     }
     if (window.ui) ui.applyVisibility();
   },
 
-  updateAiServerUrl(url) { localStorage.setItem("dj_ai_server_url", url.trim()); if (window.ai) { ai.serverUrl = url.trim(); } },
-  updateAiApiKey(key) { localStorage.setItem("dj_ai_api_key", key.trim()); if (window.ai) { ai.apiKey = key.trim(); } },
+  updateAiServerUrl(url) { localStorage.setItem("dj_ai_server_url", url.trim()); },
+  updateAiApiKey(key) { localStorage.setItem("dj_ai_api_key", key.trim()); },
+  
   updateAiModel(model) {
     localStorage.setItem("dj_ai_model", model);
-    if (window.ai) { ai.model = model; ai.updateModelDisplay(); ai.renderWelcome(); if (window.ui) ui.applyVisibility(); }
+    if (window.ai) {
+      // 기본 모델이 바뀌면 챗봇 목록을 새로고침하여 데이터 동기화
+      ai.init();
+      if (window.ui) ui.applyVisibility();
+    }
   },
 
   updateThemeAdjustment(type) {
     const lighter = document.getElementById("themeLighter");
     const darker = document.getElementById("themeDarker");
     const themeColor = localStorage.getItem("dj_theme_color") || "#3b82f6";
-    
-    if (type === 'lighter' && lighter.checked) {
-      darker.checked = false;
-      localStorage.setItem("dj_theme_adjustment", "lighter");
-    } else if (type === 'darker' && darker.checked) {
-      lighter.checked = false;
-      localStorage.setItem("dj_theme_adjustment", "darker");
-    } else {
-      localStorage.setItem("dj_theme_adjustment", "none");
-    }
-    
-    this.setTheme(themeColor, true); // explicitly not resetting adj
+    if (type === 'lighter' && lighter.checked) { darker.checked = false; localStorage.setItem("dj_theme_adjustment", "lighter"); }
+    else if (type === 'darker' && darker.checked) { lighter.checked = false; localStorage.setItem("dj_theme_adjustment", "darker"); }
+    else { localStorage.setItem("dj_theme_adjustment", "none"); }
+    this.setTheme(themeColor, true);
   },
 
   updateThemeAdjustmentUI(color, adjustment) {
     const lighter = document.getElementById("themeLighter");
     const darker = document.getElementById("themeDarker");
     if (!lighter || !darker) return;
-
-    const isWhite = (color === "#fff" || color === "#ffffff");
-    const isBlack = (color === "#000" || color === "#000000");
-
+    const isWhite = (color === "#fff" || color === "#ffffff"), isBlack = (color === "#000" || color === "#000000");
     lighter.disabled = isWhite;
     darker.disabled = isBlack;
-
     lighter.checked = (adjustment === "lighter");
     darker.checked = (adjustment === "darker");
-    
     lighter.parentElement.style.opacity = isWhite ? "0.3" : "1";
     lighter.parentElement.style.pointerEvents = isWhite ? "none" : "auto";
     darker.parentElement.style.opacity = isBlack ? "0.3" : "1";
@@ -156,29 +148,20 @@ const settings = {
   },
 
   toggleCustomSearchUrl() {
-    const select = document.getElementById("searchEngineSelect");
-    const input = document.getElementById("customSearchUrlInput");
-    if (select && input) {
-      const isCustom = select.value === "custom";
-      input.style.display = isCustom ? "block" : "none";
-    }
+    const select = document.getElementById("searchEngineSelect"), input = document.getElementById("customSearchUrlInput");
+    if (select && input) input.style.display = select.value === "custom" ? "block" : "none";
   },
 
   toggleAiSettings(isDisabled) {
     const panel = document.getElementById("aiSettingsPanel");
-    if (panel) {
-      panel.style.opacity = isDisabled ? "0.4" : "1";
-      panel.style.pointerEvents = isDisabled ? "none" : "auto";
-    }
+    if (panel) { panel.style.opacity = isDisabled ? "0.4" : "1"; panel.style.pointerEvents = isDisabled ? "none" : "auto"; }
   },
 
   onAIProviderChange() {
     const providerEl = document.getElementById("aiProviderSelect");
     if (!providerEl) return;
-    const provider = providerEl.value;
-    const urlInput = document.getElementById("aiServerUrlInput");
-    const keyInput = document.getElementById("aiApiKeyInput");
-    const keyLabel = document.getElementById("aiKeyLabel");
+    const provider = providerEl.value, urlInput = document.getElementById("aiServerUrlInput"), 
+          keyInput = document.getElementById("aiApiKeyInput"), keyLabel = document.getElementById("aiKeyLabel");
     if (urlInput && keyInput) {
       if (provider === "local") {
         urlInput.style.display = "block"; keyInput.style.display = "none";
@@ -204,29 +187,18 @@ const settings = {
   },
 
   setTheme(color, keepAdj = false) {
-    if (!keepAdj) {
-      localStorage.setItem("dj_theme_adjustment", "none");
-    }
-    
+    if (!keepAdj) localStorage.setItem("dj_theme_adjustment", "none");
     const adj = localStorage.getItem("dj_theme_adjustment") || "none";
     let finalColor = color;
-    
     if (adj !== "none") {
-      const isWhite = (color === "#fff" || color === "#ffffff");
-      const isBlack = (color === "#000" || color === "#000000");
-
-      if (isWhite && adj === "darker") finalColor = "#cbd5e1"; // 더 어둡게 (Slate 300)
-      else if (isBlack && adj === "lighter") finalColor = "#0f172a"; // 훨씬 차분한 진회색 (Slate 900)
-      else finalColor = this.adjustColor(color, adj === "lighter" ? 35 : -35); // 변화 폭 20% -> 35%로 강화
+      const isWhite = (color === "#fff" || color === "#ffffff"), isBlack = (color === "#000" || color === "#000000");
+      if (isWhite && adj === "darker") finalColor = "#cbd5e1";
+      else if (isBlack && adj === "lighter") finalColor = "#0f172a";
+      else finalColor = this.adjustColor(color, adj === "lighter" ? 35 : -35);
     }
-
     document.documentElement.style.setProperty("--accent-color", finalColor);
     localStorage.setItem("dj_theme_color", color);
-    
-    const contrast = (finalColor === "#000" || finalColor === "#000000" || finalColor === "#fff" || finalColor === "#ffffff") 
-      ? (finalColor.startsWith("#f") ? "#0f172a" : "#fff") 
-      : "#0f172a";
-      
+    const contrast = (finalColor === "#000" || finalColor === "#000000" || finalColor === "#fff" || finalColor === "#ffffff") ? (finalColor.startsWith("#f") ? "#0f172a" : "#fff") : "#0f172a";
     document.documentElement.style.setProperty("--accent-contrast", contrast);
     this.updateThemeAdjustmentUI(color, adj);
   },

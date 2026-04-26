@@ -1807,6 +1807,9 @@
         background: var(--accent-color);
         color: var(--accent-contrast, #0f172a);
       }
+      .ai-icon-btn i {
+        pointer-events: none; /* 아이콘이 마우스 이벤트를 방해하지 않게 함 */
+      }
       .ai-icon-btn:hover {
         background: rgba(255, 255, 255, 0.2);
         border-color: var(--glass-border);

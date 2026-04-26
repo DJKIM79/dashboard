@@ -77,7 +77,15 @@ const ui = {
     }
     const key = `dj_hide_${type}`;
     const isCurrentlyHidden = localStorage.getItem(key) === "true";
-    localStorage.setItem(key, isCurrentlyHidden ? "false" : "true");
+    const newState = !isCurrentlyHidden;
+    localStorage.setItem(key, newState);
+    
+    // AI 위젯을 닫는 시점에 입력창 비우기
+    if (type === "ai" && newState === true) {
+      const input = document.getElementById("ai-user-input");
+      if (input) input.value = "";
+    }
+    
     this.applyVisibility();
   },
 
