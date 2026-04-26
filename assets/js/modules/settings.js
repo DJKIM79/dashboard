@@ -42,53 +42,77 @@ const settings = {
     utils.openModal("settingModal");
   },
 
-  save() {
-    const keyword = document.getElementById("bgKeywordInput").value.trim();
-    localStorage.setItem("dj_bg_keyword", keyword);
-    
-    const fontSize = document.getElementById("quoteFontSizeSelect").value;
-    this.setQuoteFontSize(fontSize);
-    
-    const widgetSize = document.getElementById("widgetSizeSelect").value;
-    this.setWidgetSize(widgetSize);
-    
-    localStorage.setItem("dj_search_new_tab", document.getElementById("searchNewTab").checked);
+  updateBgKeyword(value) {
+    localStorage.setItem("dj_bg_keyword", value.trim());
+    if (this.bgTimeout) clearTimeout(this.bgTimeout);
+    this.bgTimeout = setTimeout(() => {
+      utils.changeBackgroundInstant();
+    }, 1000);
+  },
 
-    const engine = document.getElementById("searchEngineSelect").value;
+  updateSearchNewTab(checked) {
+    localStorage.setItem("dj_search_new_tab", checked);
+  },
+
+  updateSearchEngine(engine) {
     localStorage.setItem("dj_search_engine", engine);
     if (window.search) window.search.currentEngine = engine;
-    
-    if (engine === "custom") {
-      localStorage.setItem("dj_custom_search_url", document.getElementById("customSearchUrlInput").value.trim());
-    }
+    this.toggleCustomSearchUrl();
     if (window.updateSearchEngineIcon) updateSearchEngineIcon();
+  },
 
-    const showWeather = document.getElementById("showCurrentWeather").checked;
-    localStorage.setItem("dj_show_current_weather", showWeather);
-    if (window.weather) window.weather.showCurrent = showWeather;
-    
-    // AI 설정 저장
-    const aiDisabled = document.getElementById("aiDisableCheck").checked;
-    localStorage.setItem("dj_ai_disabled", aiDisabled);
-    const provider = document.getElementById("aiProviderSelect").value;
+  updateCustomSearchUrl(url) {
+    localStorage.setItem("dj_custom_search_url", url.trim());
+    if (window.updateSearchEngineIcon) updateSearchEngineIcon();
+  },
+
+  updateShowWeather(show) {
+    localStorage.setItem("dj_show_current_weather", show);
+    if (window.weather) {
+      window.weather.showCurrent = show;
+      window.weather.fetch();
+    }
+  },
+
+  updateAiDisabled(disabled) {
+    localStorage.setItem("dj_ai_disabled", disabled);
+    this.toggleAiSettings(disabled);
+    if (window.ui) ui.applyVisibility();
+  },
+
+  updateAiProvider(provider) {
     localStorage.setItem("dj_ai_provider", provider);
-    localStorage.setItem("dj_ai_server_url", document.getElementById("aiServerUrlInput").value.trim());
-    localStorage.setItem("dj_ai_api_key", document.getElementById("aiApiKeyInput").value.trim());
-    const model = document.getElementById("aiModelSelect").value;
-    localStorage.setItem("dj_ai_model", model);
-    
+    this.onAIProviderChange();
     if (window.ai) {
       ai.provider = provider;
-      ai.serverUrl = localStorage.getItem("dj_ai_server_url");
-      ai.apiKey = localStorage.getItem("dj_ai_api_key");
+      ai.checkConnection();
+    }
+  },
+
+  updateAiServerUrl(url) {
+    localStorage.setItem("dj_ai_server_url", url.trim());
+    if (window.ai) {
+      ai.serverUrl = url.trim();
+      ai.checkConnection();
+    }
+  },
+
+  updateAiApiKey(key) {
+    localStorage.setItem("dj_ai_api_key", key.trim());
+    if (window.ai) {
+      ai.apiKey = key.trim();
+      ai.checkConnection();
+    }
+  },
+
+  updateAiModel(model) {
+    localStorage.setItem("dj_ai_model", model);
+    if (window.ai) {
       ai.model = model;
       ai.updateModelDisplay();
       ai.renderWelcome();
+      if (window.ui) ui.applyVisibility();
     }
-    
-    if (window.fetchWeather) fetchWeather();
-    utils.changeBackgroundInstant();
-    utils.closeModal("settingModal");
   },
 
   toggleCustomSearchUrl() {
@@ -113,7 +137,6 @@ const settings = {
     const provider = document.getElementById("aiProviderSelect").value;
     const urlInput = document.getElementById("aiServerUrlInput");
     const keyInput = document.getElementById("aiApiKeyInput");
-    const modelSelect = document.getElementById("aiModelSelect");
     const keyLabel = document.getElementById("aiKeyLabel");
     
     if (provider === "local") {
@@ -124,10 +147,6 @@ const settings = {
       urlInput.style.display = "none";
       keyInput.style.display = "block";
       if (keyLabel) keyLabel.innerText = "Key";
-    }
-    
-    if (window.ai) {
-      window.ai.checkConnection();
     }
   },
 
@@ -162,10 +181,21 @@ const settings = {
 
 window.settings = settings;
 window.openSettingModal = () => settings.openModal();
-window.saveSettings = () => settings.save();
 window.toggleCustomSearchUrl = () => settings.toggleCustomSearchUrl();
 window.toggleAiSettings = (isDisabled) => settings.toggleAiSettings(isDisabled);
 window.onAIProviderChange = () => settings.onAIProviderChange();
 window.setTheme = (color) => settings.setTheme(color);
 window.setQuoteFontSize = (size) => settings.setQuoteFontSize(size);
 window.setWidgetSize = (size) => settings.setWidgetSize(size);
+
+// Individual update wrappers
+window.updateBgKeyword = (val) => settings.updateBgKeyword(val);
+window.updateSearchNewTab = (checked) => settings.updateSearchNewTab(checked);
+window.updateSearchEngine = (val) => settings.updateSearchEngine(val);
+window.updateCustomSearchUrl = (val) => settings.updateCustomSearchUrl(val);
+window.updateShowWeather = (show) => settings.updateShowWeather(show);
+window.updateAiDisabled = (disabled) => settings.updateAiDisabled(disabled);
+window.updateAiProvider = (val) => settings.updateAiProvider(val);
+window.updateAiServerUrl = (val) => settings.updateAiServerUrl(val);
+window.updateAiApiKey = (val) => settings.updateAiApiKey(val);
+window.updateAiModel = (val) => settings.updateAiModel(val);
