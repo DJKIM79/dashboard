@@ -100,7 +100,7 @@ const settings = {
     this.onAIProviderChange();
     if (window.ai) {
       ai.provider = provider;
-      ai.checkConnection();
+      // Removed automatic ai.checkConnection()
     }
     if (window.ui) ui.applyVisibility();
   },

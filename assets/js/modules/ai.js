@@ -275,6 +275,10 @@ const ai = {
     let url = document.getElementById("aiServerUrlInput").value;
     const currentModel = localStorage.getItem("dj_ai_model");
     const statusSpan = document.getElementById("ai-connection-status");
+    const refreshIcon = document.querySelector(".ai-refresh-icon");
+
+    // Reset icon color during check
+    if (refreshIcon) refreshIcon.style.color = "#94a3b8";
 
     const showStatus = (msg, color) => {
       if (statusSpan) {
@@ -285,11 +289,13 @@ const ai = {
           statusSpan.style.display = "none";
         }, 3000);
       }
+      if (refreshIcon) refreshIcon.style.color = color;
     };
 
     if (provider === "none") {
       modelSelect.disabled = true;
       modelSelect.innerHTML = `<option value="">접속 안됨</option>`;
+      if (refreshIcon) refreshIcon.style.color = "#94a3b8";
       return;
     }
 
@@ -328,6 +334,7 @@ const ai = {
         const models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-1.0-pro"];
         modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
         modelSelect.disabled = false;
+        showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
       }
       return;
     }
