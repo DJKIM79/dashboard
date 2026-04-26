@@ -3,7 +3,7 @@ const tutorial = {
     const driver = window.driver.js.driver,
       T = i18n.langData;
     if (!T) return;
-    
+
     const d = driver({
       showProgress: true,
       nextBtnText: "→",
@@ -14,7 +14,7 @@ const tutorial = {
       onPopoverRender: (popover, { config, state }) => {
         const prevBtn = popover.getPreviousButton();
         const nextBtn = popover.getNextButton();
-        
+
         // 1. 초기화: 모든 특수 클래스 일단 제거
         if (prevBtn) {
           prevBtn.classList.remove("tut-close-btn");
@@ -41,7 +41,7 @@ const tutorial = {
             // 기본 동작(이전 단계)으로 돌아가도록 onclick 리셋은 하지 않음 (라이브러리가 제어하도록 둠)
           }
         }
-        
+
         // 3. 마지막 단계 처리
         if (state.activeIndex === config.steps.length - 1) {
           if (nextBtn) {
@@ -58,7 +58,8 @@ const tutorial = {
         {
           popover: {
             title: "👋 반가워요!",
-            description: "OnTo 대시보드의 주요 기능을 빠르게 살펴볼까요?<br><br>시작하려면 다음을 눌러주세요.",
+            description:
+              "OnTo 대시보드의 주요 기능을 빠르게 살펴볼까요?<br><br>시작하려면 다음을 눌러주세요.",
             side: "center",
             align: "center",
           },
@@ -71,7 +72,7 @@ const tutorial = {
             side: "right",
             align: "start",
           },
-          padding: 5
+          padding: 5,
         },
         {
           element: "#top-right-widgets",
@@ -81,13 +82,14 @@ const tutorial = {
             side: "left",
             align: "start",
           },
-          padding: 10
+          padding: 10,
         },
         {
           element: "#quote-section",
           popover: {
             title: "📜 명언 표시",
-            description: "매번 새로운 영감을 주는 명언이 표시됩니다. 클릭하면 다른 명언으로 바뀝니다.",
+            description:
+              "매번 새로운 영감을 주는 명언이 표시됩니다. 클릭하면 다른 명언으로 바뀝니다.",
             side: "bottom",
             align: "center",
           },
@@ -117,11 +119,12 @@ const tutorial = {
           element: ".sidebar-trigger",
           popover: {
             title: T.tutSidebarTitle || "🖱️ 위젯 패널 관리",
-            description: "화면 끝의 화살표에 마우스를 가져가면 패널이 열립니다. 각 아이콘을 클릭하여 날씨, 시계, 메모 등 원하는 위젯을 자유롭게 켜고 끌 수 있습니다.",
+            description:
+              "화면 끝의 화살표에 마우스를 가져가면 패널이 열립니다. 각 아이콘을 클릭하여 날씨, 시계, 메모 등 원하는 위젯을 자유롭게 켜고 끌 수 있습니다.",
             side: "left",
             align: "center",
           },
-          padding: 5
+          padding: 5,
         },
         {
           element: ".bottom-widgets .right-area",
@@ -141,13 +144,13 @@ const tutorial = {
             side: "top",
             align: "start",
           },
-          padding: 5
+          padding: 5,
         },
       ],
     });
     d.drive();
-  }
+  },
 };
 
 window.tutorial = tutorial;
-window.showTutorial = () => tutorial.show();
+window.showTutorial = tutorial.show.bind(tutorial);

@@ -15,13 +15,20 @@
       href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"
     />
     <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link
+      rel="stylesheet"
+      as="style"
+      crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+    />
     <link rel="stylesheet" href="assets/css/style.css?v=1.3.6" />
   </head>
   <body onclick="requestNotiPermission()">
     <div id="globalContextMenu" class="context-menu">
       <div id="ctx-add" onclick="addCurrentItem()" data-i18n="cmAdd">추가</div>
-      <div id="ctx-edit" onclick="editCurrentItem()" data-i18n="cmEdit">수정</div>
+      <div id="ctx-edit" onclick="editCurrentItem()" data-i18n="cmEdit">
+        수정
+      </div>
       <div
         id="ctx-del"
         class="cm-del"
@@ -30,42 +37,114 @@
       >
         삭제
       </div>
-      <div id="ctx-hide" class="cm-hide" onclick="hideCurrentWidget()" data-i18n="cmHide">
+      <div
+        id="ctx-hide"
+        class="cm-hide"
+        onclick="hideCurrentWidget()"
+        data-i18n="cmHide"
+      >
         숨기기
       </div>
     </div>
 
     <!-- 커스텀 삭제 확인 모달 -->
-    <div id="deleteConfirmModal" class="modal" onclick="event.target == this && closeModal('deleteConfirmModal')">
+    <div
+      id="deleteConfirmModal"
+      class="modal"
+      onclick="event.target == this && closeModal('deleteConfirmModal')"
+    >
       <div class="modal-content delete-modal">
-        <div class="delete-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        <h3 data-i18n="alertDel" style="margin-bottom: 30px;">삭제하시겠습니까?</h3>
-        <div style="display: flex; gap: 12px;">
-          <button class="btn-save" style="background: #334155; color: #fff; flex: 1;" onclick="closeModal('deleteConfirmModal')" data-i18n="btnCancel">취소</button>
-          <button class="btn-save" style="background: #ef4444; color: #fff; flex: 1;" onclick="deleteCurrentItem()" data-i18n="btnConfirmDelete">삭제</button>
+        <div class="delete-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 data-i18n="alertDel" style="margin-bottom: 30px">
+          삭제하시겠습니까?
+        </h3>
+        <div style="display: flex; gap: 12px">
+          <button
+            class="btn-save"
+            style="background: #334155; color: #fff; flex: 1"
+            onclick="closeModal('deleteConfirmModal')"
+            data-i18n="btnCancel"
+          >
+            취소
+          </button>
+          <button
+            class="btn-save"
+            style="background: #ef4444; color: #fff; flex: 1"
+            onclick="deleteCurrentItem()"
+            data-i18n="btnConfirmDelete"
+          >
+            삭제
+          </button>
         </div>
       </div>
     </div>
 
     <!-- 범용 안내 모달 -->
-    <div id="alertModal" class="modal" onclick="event.target == this && closeModal('alertModal')">
+    <div
+      id="alertModal"
+      class="modal"
+      onclick="event.target == this && closeModal('alertModal')"
+    >
       <div class="modal-content delete-modal">
-        <div class="delete-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        <h3 id="alertModalMsg" data-i18n="alertLocExists" style="margin-bottom: 30px;">이미 추가된 지역입니다.</h3>
-        <div style="display: flex; justify-content: center;">
-          <button class="btn-save" style="background: var(--accent-color); color: var(--accent-contrast); min-width: 120px;" onclick="closeModal('alertModal')" data-i18n="btnOk">확인</button>
+        <div class="delete-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3
+          id="alertModalMsg"
+          data-i18n="alertLocExists"
+          style="margin-bottom: 30px"
+        >
+          이미 추가된 지역입니다.
+        </h3>
+        <div style="display: flex; justify-content: center">
+          <button
+            class="btn-save"
+            style="
+              background: var(--accent-color);
+              color: var(--accent-contrast);
+              min-width: 120px;
+            "
+            onclick="closeModal('alertModal')"
+            data-i18n="btnOk"
+          >
+            확인
+          </button>
         </div>
       </div>
     </div>
 
     <!-- 전체 초기화 확인 모달 -->
-    <div id="resetConfirmModal" class="modal" onclick="event.target == this && closeModal('resetConfirmModal')">
+    <div
+      id="resetConfirmModal"
+      class="modal"
+      onclick="event.target == this && closeModal('resetConfirmModal')"
+    >
       <div class="modal-content delete-modal">
         <div class="delete-icon"><i class="fas fa-history"></i></div>
-        <h3 style="margin-bottom: 30px;">정말로 초기화 하시겠습니까?<br><span style="font-size: 0.8rem; font-weight: normal; opacity: 0.7;">(모든 설정과 데이터가 영구 삭제됩니다)</span></h3>
-        <div style="display: flex; gap: 12px;">
-          <button class="btn-save" style="background: #334155; color: #fff; flex: 1;" onclick="closeModal('resetConfirmModal')" data-i18n="btnCancel">취소</button>
-          <button class="btn-save" style="background: #ef4444; color: #fff; flex: 1;" onclick="resetAllData()">초기화</button>
+        <h3 style="margin-bottom: 30px">
+          정말로 초기화 하시겠습니까?<br /><span
+            style="font-size: 0.8rem; font-weight: normal; opacity: 0.7"
+            >(모든 설정과 데이터가 영구 삭제됩니다)</span
+          >
+        </h3>
+        <div style="display: flex; gap: 12px">
+          <button
+            class="btn-save"
+            style="background: #334155; color: #fff; flex: 1"
+            onclick="closeModal('resetConfirmModal')"
+            data-i18n="btnCancel"
+          >
+            취소
+          </button>
+          <button
+            class="btn-save"
+            style="background: #ef4444; color: #fff; flex: 1"
+            onclick="resetAllData()"
+          >
+            초기화
+          </button>
         </div>
       </div>
     </div>
@@ -171,7 +250,10 @@
         <i class="fas fa-clock"></i>
       </div>
     </div>
-    <div id="top-right-widgets" oncontextmenu="showContextMenu(event, 'weather')"></div>
+    <div
+      id="top-right-widgets"
+      oncontextmenu="showContextMenu(event, 'weather')"
+    ></div>
     <div id="quote-section">
       <div class="quote-container" onclick="fetchQuote()">
         <span id="quote-text">...</span>
@@ -190,7 +272,7 @@
             <div class="ai-orbit-dot dot-3"></div>
           </div>
         </div>
-        <i class="fas fa-search" style="margin-left: 10px;"></i>
+        <i class="fas fa-search" style="margin-left: 10px"></i>
         <input
           type="text"
           id="searchInput"
@@ -200,44 +282,111 @@
         />
         <div class="search-engine-icon" onclick="toggleSearchEngineMenu(event)">
           <div id="search-engine-current"></div>
-          <i class="fas fa-caret-right" style="font-size: 0.7rem; color: #94a3b8; margin-left: 5px; opacity: 0.7;"></i>
+          <i
+            class="fas fa-caret-right"
+            style="
+              font-size: 0.7rem;
+              color: #94a3b8;
+              margin-left: 5px;
+              opacity: 0.7;
+            "
+          ></i>
           <div id="search-engine-menu" class="search-engine-menu"></div>
         </div>
       </div>
     </div>
     <div id="shortcut-container"></div>
-    <div id="ai-overlay" class="modal-overlay widget-hidden" onclick="ui.toggleWidget('ai')"></div>
+    <div
+      id="ai-overlay"
+      class="modal-overlay widget-hidden"
+      onclick="ui.toggleWidget('ai')"
+    ></div>
     <div id="ai-chatbot-container" class="widget-hidden">
       <div class="ai-history-panel" id="ai-history">
         <div class="ai-history-header">
-          <div style="display: flex; align-items: center; gap: 8px; position: relative;">
-            <i id="ai-btn-new-chat" class="fas fa-plus" onclick="ai.createNewChat()" data-i18n-title="cmAdd" style="font-size: 0.9rem; cursor: pointer;"></i>
-            <span id="ai-history-status-dot" style="width: 6px; height: 6px; border-radius: 50%; background: #94a3b8; display: inline-block; margin-left: 2px;"></span>
-            <span class="history-title" id="ai-history-model-name" style="font-size: 0.85rem;" onclick="ai.toggleModelPopup(event)">...</span>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              position: relative;
+            "
+          >
+            <i
+              id="ai-btn-new-chat"
+              class="fas fa-plus"
+              onclick="ai.createNewChat()"
+              data-i18n-title="cmAdd"
+              style="font-size: 0.9rem; cursor: pointer"
+            ></i>
+            <span
+              id="ai-history-status-dot"
+              style="
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: #94a3b8;
+                display: inline-block;
+                margin-left: 2px;
+              "
+            ></span>
+            <span
+              class="history-title"
+              id="ai-history-model-name"
+              style="font-size: 0.85rem"
+              onclick="ai.toggleModelPopup(event)"
+              >...</span
+            >
             <div id="ai-model-popup" class="ai-model-popup"></div>
           </div>
-          <i id="ai-history-toggle" class="fas fa-angles-left" onclick="ai.toggleHistory()"></i>
+          <i
+            id="ai-history-toggle"
+            class="fas fa-angles-left"
+            onclick="ai.toggleHistory()"
+          ></i>
         </div>
         <div class="ai-history-list" id="ai-history-list"></div>
         <div class="ai-history-footer">
-          <i class="fas fa-search" style="font-size: 0.8rem; opacity: 0.5;"></i>
-          <input type="text" id="ai-history-search" placeholder="검색..." oninput="ai.filterHistory(this.value)">
+          <i class="fas fa-search" style="font-size: 0.8rem; opacity: 0.5"></i>
+          <input
+            type="text"
+            id="ai-history-search"
+            placeholder="검색..."
+            oninput="ai.filterHistory(this.value)"
+          />
         </div>
       </div>
       <div class="ai-main-panel">
         <div class="ai-chat-header">
           <div class="ai-status" id="ai-status">
-            <input type="text" id="ai-chat-title-input" class="ai-title-input" onchange="ai.updateChatTitle(this.value)" placeholder="새 대화">
+            <input
+              type="text"
+              id="ai-chat-title-input"
+              class="ai-title-input"
+              onchange="ai.updateChatTitle(this.value)"
+              placeholder="새 대화"
+            />
           </div>
-          <div class="ai-actions">
-          </div>
+          <div class="ai-actions"></div>
         </div>
         <div class="ai-chat-messages" id="ai-messages"></div>
         <div class="ai-chat-input-area">
-          <textarea id="ai-user-input" data-i18n-ph="aiInputPh" placeholder="메시지를 입력하세요... (Ctrl+Enter로 전송)" onkeydown="ai.handleKeyDown(event)"></textarea>
+          <textarea
+            id="ai-user-input"
+            data-i18n-ph="aiInputPh"
+            placeholder="메시지를 입력하세요... (Ctrl+Enter로 전송)"
+            onkeydown="ai.handleKeyDown(event)"
+          ></textarea>
           <div class="ai-input-actions">
-            <div id="ai-attach-wrapper" style="display: inline-block;" onmouseover="ai.attachFile(event)" onmouseout="ai.hideAttachTip()">
-              <button id="ai-attach-btn" class="ai-icon-btn"><i class="fas fa-paperclip"></i></button>
+            <div
+              id="ai-attach-wrapper"
+              style="display: inline-block"
+              onmouseover="ai.attachFile(event)"
+              onmouseout="ai.hideAttachTip()"
+            >
+              <button id="ai-attach-btn" class="ai-icon-btn">
+                <i class="fas fa-paperclip"></i>
+              </button>
             </div>
             <button id="ai-send-btn" onclick="ai.sendMessage()">
               <i class="fas fa-paper-plane"></i>
@@ -248,7 +397,11 @@
     </div>
     <div class="bottom-widgets">
       <div class="left-area">
-        <div class="smart-folder" id="memo-folder" oncontextmenu="showContextMenu(event, 'memo')">
+        <div
+          class="smart-folder"
+          id="memo-folder"
+          oncontextmenu="showContextMenu(event, 'memo')"
+        >
           <div
             class="widget-btn folder-icon"
             onclick="toggleFolder('memo-folder', event)"
@@ -298,10 +451,18 @@
         </div>
       </div>
       <div class="right-area">
-        <div id="clock-container" oncontextmenu="showContextMenu(event, 'clock')" onclick="toggleTimeFormat()">
+        <div
+          id="clock-container"
+          oncontextmenu="showContextMenu(event, 'clock')"
+          onclick="toggleTimeFormat()"
+        >
           <div id="clock-time">00:00:00</div>
         </div>
-        <div id="calendar-container" class="calendar-widget" oncontextmenu="showContextMenu(event, 'calendar')">
+        <div
+          id="calendar-container"
+          class="calendar-widget"
+          oncontextmenu="showContextMenu(event, 'calendar')"
+        >
           <div class="calendar-header">
             <i class="fas fa-caret-left cal-nav" onclick="changeMonth(-1)"></i>
             <span id="cal-month-year">...</span>
@@ -310,7 +471,11 @@
           <div class="calendar-days-header" id="cal-days-header"></div>
           <div class="calendar-grid" id="calendar-grid"></div>
         </div>
-        <div class="smart-folder" id="noti-folder" oncontextmenu="showContextMenu(event, 'noti')">
+        <div
+          class="smart-folder"
+          id="noti-folder"
+          oncontextmenu="showContextMenu(event, 'noti')"
+        >
           <div
             class="widget-btn folder-icon"
             onclick="toggleFolder('noti-folder', event)"
@@ -328,80 +493,308 @@
     >
       <div class="modal-content">
         <h3 data-i18n="modalSetting">환경 설정</h3>
-        <div style="flex: 1; display: flex; flex-direction: column;">
+        <div style="flex: 1; display: flex; flex-direction: column">
           <div class="setting-grid">
             <div class="setting-column">
-              <div class="setting-group-title" style="display: flex; justify-content: space-between; align-items: center;">
+              <div
+                class="setting-group-title"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
                 <span data-i18n="lblTheme">테마 색상</span>
-                <div style="display: flex; gap: 10px;">
-                  <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                    <input type="checkbox" id="themeLighter" onchange="updateThemeAdjustment('lighter')" style="width: 12px; height: 12px; margin: 0;">
-                    <span class="setting-label-text" data-i18n="lblLighter">더 밝게</span>
+                <div style="display: flex; gap: 10px">
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="themeLighter"
+                      onchange="updateThemeAdjustment('lighter')"
+                      style="width: 12px; height: 12px; margin: 0"
+                    />
+                    <span class="setting-label-text" data-i18n="lblLighter"
+                      >더 밝게</span
+                    >
                   </label>
-                  <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                    <input type="checkbox" id="themeDarker" onchange="updateThemeAdjustment('darker')" style="width: 12px; height: 12px; margin: 0;">
-                    <span class="setting-label-text" data-i18n="lblDarker">더 어둡게</span>
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="themeDarker"
+                      onchange="updateThemeAdjustment('darker')"
+                      style="width: 12px; height: 12px; margin: 0"
+                    />
+                    <span class="setting-label-text" data-i18n="lblDarker"
+                      >더 어둡게</span
+                    >
                   </label>
                 </div>
               </div>
               <div class="theme-colors" style="margin-bottom: 20px">
-                <div class="color-swatch" style="background: #ef4444" onclick="setTheme('#ef4444')"></div>
-                <div class="color-swatch" style="background: #f97316" onclick="setTheme('#f97316')"></div>
-                <div class="color-swatch" style="background: #eab308" onclick="setTheme('#eab308')"></div>
-                <div class="color-swatch" style="background: #22c55e" onclick="setTheme('#22c55e')"></div>
-                <div class="color-swatch" style="background: #3b82f6" onclick="setTheme('#3b82f6')"></div>
-                <div class="color-swatch" style="background: #6366f1" onclick="setTheme('#6366f1')"></div>
-                <div class="color-swatch" style="background: #a855f7" onclick="setTheme('#a855f7')"></div>
-                <div class="color-swatch" style="background: #ec4899" onclick="setTheme('#ec4899')"></div>
-                <div class="color-swatch" style="background: #fff" onclick="setTheme('#fff')"></div>
-                <div class="color-swatch" style="background: #000; border: 1px solid rgba(255, 255, 255, 0.3);" onclick="setTheme('#000')"></div>
+                <div
+                  class="color-swatch"
+                  style="background: #ef4444"
+                  onclick="setTheme('#ef4444')"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #f97316"
+                  onclick="setTheme('#f97316')"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #eab308"
+                  onclick="setTheme('#eab308')"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #22c55e"
+                  onclick="setTheme('#22c55e')"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #3b82f6"
+                  onclick="setTheme('#3b82f6')"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #6366f1"
+                  onclick="setTheme('#6366f1')"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #a855f7"
+                  onclick="setTheme('#a855f7')"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #ec4899"
+                  onclick="setTheme('#ec4899')"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #fff"
+                  onclick="setTheme('#fff')"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="
+                    background: #000;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                  "
+                  onclick="setTheme('#000')"
+                ></div>
               </div>
 
-              <div class="setting-group-title" style="display: flex; justify-content: space-between; align-items: center;">
+              <div
+                class="setting-group-title"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
                 <span data-i18n="lblBgKeyword">배경 키워드</span>
-                <div style="display: flex; gap: 10px;">
-                  <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                    <input type="checkbox" id="engineUnsplash" onchange="updateImageEngine('unsplash')" style="width: 12px; height: 12px; margin: 0;">
+                <div style="display: flex; gap: 10px">
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="engineUnsplash"
+                      onchange="updateImageEngine('unsplash')"
+                      style="width: 12px; height: 12px; margin: 0"
+                    />
                     <span class="setting-label-text">Unsplash</span>
                   </label>
-                  <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                    <input type="checkbox" id="engineFlickr" onchange="updateImageEngine('flickr')" style="width: 12px; height: 12px; margin: 0;">
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="engineFlickr"
+                      onchange="updateImageEngine('flickr')"
+                      style="width: 12px; height: 12px; margin: 0"
+                    />
                     <span class="setting-label-text">Flickr</span>
                   </label>
                 </div>
               </div>
-              <input type="text" id="bgKeywordInput" data-i18n-ph="bgKeywordPh" placeholder="예: nature, space, city, dark" oninput="updateBgKeyword(this.value)" style="width: 98%; margin-left: 1%;"/>
+              <input
+                type="text"
+                id="bgKeywordInput"
+                data-i18n-ph="bgKeywordPh"
+                placeholder="예: nature, space, city, dark"
+                oninput="updateBgKeyword(this.value)"
+                style="width: 98%; margin-left: 1%"
+              />
 
-              <div class="setting-group-title" style="display: flex; justify-content: space-between; align-items: center;">
+              <div
+                class="setting-group-title"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
                 <span data-i18n="lblSearchEngine">검색 엔진</span>
-                <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer;">
-                  <input type="checkbox" id="searchNewTab" onchange="updateSearchNewTab(this.checked)" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
-                  <span class="setting-label-text" data-i18n="lblSearchNewTab">새 창으로 검색</span>
+                <label
+                  class="compact-checkbox-label"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-weight: normal;
+                    cursor: pointer;
+                  "
+                >
+                  <input
+                    type="checkbox"
+                    id="searchNewTab"
+                    onchange="updateSearchNewTab(this.checked)"
+                    style="
+                      width: 14px;
+                      height: 14px;
+                      margin: 0;
+                      cursor: pointer;
+                    "
+                  />
+                  <span class="setting-label-text" data-i18n="lblSearchNewTab"
+                    >새 창으로 검색</span
+                  >
                 </label>
               </div>
-              <select id="searchEngineSelect" onchange="updateSearchEngine(this.value)" style="margin-bottom: 10px; width: 98%; margin-left: 1%;">
+              <select
+                id="searchEngineSelect"
+                onchange="updateSearchEngine(this.value)"
+                style="margin-bottom: 10px; width: 98%; margin-left: 1%"
+              >
                 <option value="google">Google</option>
                 <option value="naver">Naver</option>
                 <option value="chatgpt">ChatGPT</option>
                 <option value="custom" data-i18n="optCustom">Custom URL</option>
               </select>
-              <input type="text" id="customSearchUrlInput" placeholder="https://example.com/search?q=" oninput="updateCustomSearchUrl(this.value)" style="display: none; margin-bottom: 10px; width: 98%; margin-left: 1%;"/>
+              <input
+                type="text"
+                id="customSearchUrlInput"
+                placeholder="https://example.com/search?q="
+                oninput="updateCustomSearchUrl(this.value)"
+                style="
+                  display: none;
+                  margin-bottom: 10px;
+                  width: 98%;
+                  margin-left: 1%;
+                "
+              />
             </div>
 
             <div class="setting-column">
               <div class="setting-group-title" data-i18n="lblLayout">크기</div>
-              <div class="setting-row" style="gap: 15px; align-items: center; margin-bottom: 20px;">
-                <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap; margin: 0; display: flex; align-items: center;" data-i18n="lblQuoteSize">명언 크기</span>
-                  <select id="quoteFontSizeSelect" onchange="setQuoteFontSize(this.value)" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; height: 32px; text-align: center; text-align-last: center; cursor: pointer; padding: 0; margin: 0; outline: none; box-sizing: border-box;">
+              <div
+                class="setting-row"
+                style="gap: 15px; align-items: center; margin-bottom: 20px"
+              >
+                <div
+                  style="flex: 1; display: flex; align-items: center; gap: 8px"
+                >
+                  <span
+                    style="
+                      font-size: 0.85rem;
+                      color: #94a3b8;
+                      white-space: nowrap;
+                      margin: 0;
+                      display: flex;
+                      align-items: center;
+                    "
+                    data-i18n="lblQuoteSize"
+                    >명언 크기</span
+                  >
+                  <select
+                    id="quoteFontSizeSelect"
+                    onchange="setQuoteFontSize(this.value)"
+                    style="
+                      flex: 1;
+                      background: #0f172a;
+                      border: 1px solid #334155;
+                      border-radius: 8px;
+                      color: #fff;
+                      height: 32px;
+                      text-align: center;
+                      text-align-last: center;
+                      cursor: pointer;
+                      padding: 0;
+                      margin: 0;
+                      outline: none;
+                      box-sizing: border-box;
+                    "
+                  >
                     <option value="large" data-i18n="optLarge">대</option>
                     <option value="medium" data-i18n="optMedium">중</option>
                     <option value="small" data-i18n="optSmall">소</option>
                   </select>
                 </div>
-                <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap; margin: 0; display: flex; align-items: center;" data-i18n="lblWidgetSize">위젯 크기</span>
-                  <select id="widgetSizeSelect" onchange="setWidgetSize(this.value)" style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; height: 32px; text-align: center; text-align-last: center; cursor: pointer; padding: 0; margin: 0; outline: none; box-sizing: border-box;">
+                <div
+                  style="flex: 1; display: flex; align-items: center; gap: 8px"
+                >
+                  <span
+                    style="
+                      font-size: 0.85rem;
+                      color: #94a3b8;
+                      white-space: nowrap;
+                      margin: 0;
+                      display: flex;
+                      align-items: center;
+                    "
+                    data-i18n="lblWidgetSize"
+                    >위젯 크기</span
+                  >
+                  <select
+                    id="widgetSizeSelect"
+                    onchange="setWidgetSize(this.value)"
+                    style="
+                      flex: 1;
+                      background: #0f172a;
+                      border: 1px solid #334155;
+                      border-radius: 8px;
+                      color: #fff;
+                      height: 32px;
+                      text-align: center;
+                      text-align-last: center;
+                      cursor: pointer;
+                      padding: 0;
+                      margin: 0;
+                      outline: none;
+                      box-sizing: border-box;
+                    "
+                  >
                     <option value="large" data-i18n="optLarge">대</option>
                     <option value="medium" data-i18n="optMedium">중</option>
                     <option value="small" data-i18n="optSmall">소</option>
@@ -409,42 +802,136 @@
                 </div>
               </div>
 
-              <div class="setting-group-title" style="display: flex; justify-content: space-between">
+              <div
+                class="setting-group-title"
+                style="display: flex; justify-content: space-between"
+              >
                 <span data-i18n="lblWeather">날씨</span>
                 <label class="compact-checkbox-label">
-                  <input type="checkbox" id="showCurrentWeather" onchange="updateShowWeather(this.checked)" />
-                  <span class="setting-label-text" data-i18n="lblCurrentWeather">현지 날씨</span>
+                  <input
+                    type="checkbox"
+                    id="showCurrentWeather"
+                    onchange="updateShowWeather(this.checked)"
+                  />
+                  <span class="setting-label-text" data-i18n="lblCurrentWeather"
+                    >현지 날씨</span
+                  >
                 </label>
               </div>
               <div id="weatherLocationList" class="location-list"></div>
               <div class="city-search-container">
-                <input type="text" id="citySearchInput" data-i18n-ph="citySearchPh" placeholder="도시 검색 (예: 서울, London)" autocomplete="off" oninput="searchCities(this.value)" style="width: 98%; margin-left: 1%;"/>
+                <input
+                  type="text"
+                  id="citySearchInput"
+                  data-i18n-ph="citySearchPh"
+                  placeholder="도시 검색 (예: 서울, London)"
+                  autocomplete="off"
+                  oninput="searchCities(this.value)"
+                  style="width: 98%; margin-left: 1%"
+                />
                 <div id="citySearchResults" class="city-results"></div>
               </div>
             </div>
-            
+
             <!-- AI 설정 (가로 전체 사용) -->
-            <div class="setting-column" style="grid-column: 1 / span 2;">
-              <div class="setting-group-title" style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="setting-column" style="grid-column: 1 / span 2">
+              <div
+                class="setting-group-title"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <div style="display: flex; align-items: center; gap: 10px">
                   <span data-i18n="lblAISetting">AI 설정</span>
-                  <span id="ai-temp-msg" style="font-size: 0.75rem; display: none;"></span>
+                  <span
+                    id="ai-temp-msg"
+                    style="font-size: 0.75rem; display: none"
+                  ></span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                  <div id="ai-connection-status" style="font-size: 0.75rem; display: flex; align-items: center; gap: 5px; color: #94a3b8;" data-i18n-title="lblServerCheck">
-                    <span class="status-dot" style="width: 4px; height: 4px; border-radius: 50%; background: #94a3b8; display: inline-block;"></span>
-                    <span class="status-text" data-i18n="aiNeedConnect">서버 연결 필요</span>
+                <div style="display: flex; align-items: center; gap: 15px">
+                  <div
+                    id="ai-connection-status"
+                    style="
+                      font-size: 0.75rem;
+                      display: flex;
+                      align-items: center;
+                      gap: 5px;
+                      color: #94a3b8;
+                    "
+                    data-i18n-title="lblServerCheck"
+                  >
+                    <span
+                      class="status-dot"
+                      style="
+                        width: 4px;
+                        height: 4px;
+                        border-radius: 50%;
+                        background: #94a3b8;
+                        display: inline-block;
+                      "
+                    ></span>
+                    <span class="status-text" data-i18n="aiNeedConnect"
+                      >서버 연결 필요</span
+                    >
                   </div>
-                  <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; color: #94a3b8;">
-                    <input type="checkbox" id="aiOutputAtOnceCheck" onchange="updateAiOutputAtOnce(this.checked)" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
-                    <span class="setting-label-text" data-i18n="lblAIOutputAtOnce">답변 한번에 출력</span>
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 6px;
+                      font-weight: normal;
+                      cursor: pointer;
+                      color: #94a3b8;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="aiOutputAtOnceCheck"
+                      onchange="updateAiOutputAtOnce(this.checked)"
+                      style="
+                        width: 14px;
+                        height: 14px;
+                        margin: 0;
+                        cursor: pointer;
+                      "
+                    />
+                    <span
+                      class="setting-label-text"
+                      data-i18n="lblAIOutputAtOnce"
+                      >답변 한번에 출력</span
+                    >
                   </label>
                 </div>
               </div>
-              <div style="display: flex; gap: 15px; align-items: center; width: 98%; margin-left: 1%; margin-bottom: 5px;">
-                <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                  <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">AI</span>
-                  <select id="aiProviderSelect" onchange="updateAiProvider(this.value)" style="margin-bottom: 2px; flex: 1;">
+              <div
+                style="
+                  display: flex;
+                  gap: 15px;
+                  align-items: center;
+                  width: 98%;
+                  margin-left: 1%;
+                  margin-bottom: 5px;
+                "
+              >
+                <div
+                  style="display: flex; align-items: center; gap: 8px; flex: 1"
+                >
+                  <span
+                    style="
+                      font-size: 0.85rem;
+                      color: #94a3b8;
+                      white-space: nowrap;
+                    "
+                    >AI</span
+                  >
+                  <select
+                    id="aiProviderSelect"
+                    onchange="updateAiProvider(this.value)"
+                    style="margin-bottom: 2px; flex: 1"
+                  >
                     <option value="none" data-i18n="optNone">사용 안 함</option>
                     <option value="local">로컬 AI</option>
                     <option value="openai">OpenAI API</option>
@@ -452,24 +939,94 @@
                     <option value="claude">Claude API</option>
                   </select>
                 </div>
-                <div id="aiSettingsPanel" style="display: flex; gap: 15px; align-items: center; flex: 2;">
-                  <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                    <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">모델</span>
-                    <select id="aiModelSelect" onchange="updateAiModel(this.value)" disabled style="margin-bottom: 2px; flex: 1;">
+                <div
+                  id="aiSettingsPanel"
+                  style="display: flex; gap: 15px; align-items: center; flex: 2"
+                >
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      flex: 1;
+                    "
+                  >
+                    <span
+                      style="
+                        font-size: 0.85rem;
+                        color: #94a3b8;
+                        white-space: nowrap;
+                      "
+                      >모델</span
+                    >
+                    <select
+                      id="aiModelSelect"
+                      onchange="updateAiModel(this.value)"
+                      disabled
+                      style="margin-bottom: 2px; flex: 1"
+                    >
                       <option value="" data-i18n="aiNoServer">접속 안됨</option>
                     </select>
                   </div>
-                  <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                    <span id="aiKeyLabel" style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;" data-i18n="lblAIUrl">URL</span>
-                    <input type="text" id="aiServerUrlInput" placeholder="서버 주소" style="margin-bottom: 2px; width: 100%; display: none;" oninput="updateAiServerUrl(this.value)"/>
-                    <input type="password" id="aiApiKeyInput" placeholder="API Key" style="margin-bottom: 2px; width: 100%; display: none;" oninput="updateAiApiKey(this.value)"/>
-                    <i class="fas fa-sync-alt ai-refresh-icon" onclick="if(window.ai) window.ai.checkConnection()" style="cursor: pointer;" data-i18n-title="tipCheckConn"></i>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      flex: 1;
+                    "
+                  >
+                    <span
+                      id="aiKeyLabel"
+                      style="
+                        font-size: 0.85rem;
+                        color: #94a3b8;
+                        white-space: nowrap;
+                      "
+                      data-i18n="lblAIUrl"
+                      >URL</span
+                    >
+                    <input
+                      type="text"
+                      id="aiServerUrlInput"
+                      placeholder="서버 주소"
+                      style="margin-bottom: 2px; width: 100%; display: none"
+                      oninput="updateAiServerUrl(this.value)"
+                    />
+                    <input
+                      type="password"
+                      id="aiApiKeyInput"
+                      placeholder="API Key"
+                      style="margin-bottom: 2px; width: 100%; display: none"
+                      oninput="updateAiApiKey(this.value)"
+                    />
+                    <i
+                      class="fas fa-sync-alt ai-refresh-icon"
+                      onclick="if (window.ai) window.ai.checkConnection();"
+                      style="cursor: pointer"
+                      data-i18n-title="tipCheckConn"
+                    ></i>
                   </div>
                 </div>
               </div>
               <!-- 초기화 버튼 추가 -->
-              <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-                <button class="btn-save" style="background: #ef4444; color: #fff; padding: 8px 20px; font-size: 0.85rem;" onclick="openModal('resetConfirmModal')">
+              <div
+                style="
+                  display: flex;
+                  justify-content: flex-end;
+                  margin-top: 20px;
+                "
+              >
+                <button
+                  class="btn-save"
+                  style="
+                    background: #ef4444;
+                    color: #fff;
+                    padding: 8px 20px;
+                    font-size: 0.85rem;
+                  "
+                  onclick="openModal('resetConfirmModal')"
+                >
                   전체 초기화
                 </button>
               </div>

@@ -10,22 +10,18 @@ const ui = {
     document
       .querySelectorAll(".smart-folder")
       .forEach((f) =>
-        f.id !== id
-          ? f.classList.remove("open")
-          : f.classList.toggle("open"),
+        f.id !== id ? f.classList.remove("open") : f.classList.toggle("open"),
       );
   },
 
   toggleFab(id, event) {
     if (event) event.stopPropagation();
-    
+
     // Close other FAB menus
-    document
-      .querySelectorAll(".fab-menu")
-      .forEach((m) => {
-        if (m.id !== id) m.classList.remove("active");
-      });
-      
+    document.querySelectorAll(".fab-menu").forEach((m) => {
+      if (m.id !== id) m.classList.remove("active");
+    });
+
     // Close search engine menu
     const searchMenu = document.getElementById("search-engine-menu");
     if (searchMenu) searchMenu.classList.remove("active");
@@ -41,7 +37,17 @@ const ui = {
   },
 
   applyVisibility() {
-    const types = ["weather", "quote", "search", "shortcut", "ai", "memo", "noti", "calendar", "clock"];
+    const types = [
+      "weather",
+      "quote",
+      "search",
+      "shortcut",
+      "ai",
+      "memo",
+      "noti",
+      "calendar",
+      "clock",
+    ];
     const widgetMap = {
       weather: "top-right-widgets",
       quote: "quote-section",
@@ -55,16 +61,18 @@ const ui = {
     };
     types.forEach((type) => {
       let isHidden = localStorage.getItem(`dj_hide_${type}`) === "true";
-      
+
       // 초기 상태(null)일 때, AI 챗봇만 기본적으로 숨김
       if (localStorage.getItem(`dj_hide_${type}`) === null) {
         if (type === "ai") isHidden = true;
         else isHidden = false;
       }
 
-      const targets = Array.isArray(widgetMap[type]) ? widgetMap[type] : [widgetMap[type]];
-      
-      targets.forEach(id => {
+      const targets = Array.isArray(widgetMap[type])
+        ? widgetMap[type]
+        : [widgetMap[type]];
+
+      targets.forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.classList.toggle("widget-hidden", isHidden);
       });
@@ -83,13 +91,13 @@ const ui = {
         return;
       }
     }
-    
+
     // If opening any widget, we might want to close the settings modal
     utils.closeModal("settingModal");
 
     const key = `dj_hide_${type}`;
     let isCurrentlyHidden = localStorage.getItem(key) === "true";
-    
+
     // 초기 설정값이 없을 때(null)의 기본 상태를 toggle 로직에도 반영
     if (localStorage.getItem(key) === null) {
       if (type === "ai") isCurrentlyHidden = true;
@@ -98,13 +106,13 @@ const ui = {
 
     const newState = !isCurrentlyHidden;
     localStorage.setItem(key, newState);
-    
+
     // AI 위젯을 닫는 시점에 입력창 비우기
     if (type === "ai" && newState === true) {
       const input = document.getElementById("ai-user-input");
       if (input) input.value = "";
     }
-    
+
     this.applyVisibility();
   },
 
@@ -119,12 +127,12 @@ const ui = {
 
     const menu = document.getElementById("globalContextMenu");
     if (!menu) return;
-    
+
     const addItem = document.getElementById("ctx-add");
     const editItem = document.getElementById("ctx-edit");
     const delItem = document.getElementById("ctx-del");
     const hideItem = document.getElementById("ctx-hide");
-    
+
     if (addItem) addItem.style.display = "none";
     if (editItem) editItem.style.display = "none";
     if (delItem) delItem.style.display = "none";
@@ -148,16 +156,16 @@ const ui = {
     }
 
     menu.style.display = "block";
-    
+
     let x = e.pageX || e.touches?.[0].pageX;
     let y = e.pageY || e.touches?.[0].pageY;
-    
+
     if (x + 130 > window.innerWidth) x = window.innerWidth - 140;
     const menuHeight = menu.offsetHeight;
     if (y + menuHeight > window.innerHeight + window.scrollY) {
       y = y - menuHeight;
     }
-    
+
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
   },
@@ -176,7 +184,9 @@ const ui = {
     document.addEventListener("click", (e) => {
       // 1. Close FAB menus if clicked outside
       if (!e.target.closest(".fab-container")) {
-        document.querySelectorAll(".fab-menu").forEach((m) => m.classList.remove("active"));
+        document
+          .querySelectorAll(".fab-menu")
+          .forEach((m) => m.classList.remove("active"));
       }
 
       // 2. Close search engine menu if clicked outside
@@ -187,31 +197,35 @@ const ui = {
 
       // 3. Close smart folders if clicked outside
       if (!e.target.closest(".smart-folder")) {
-        document.querySelectorAll(".smart-folder").forEach((f) => f.classList.remove("open"));
+        document
+          .querySelectorAll(".smart-folder")
+          .forEach((f) => f.classList.remove("open"));
       }
-      
+
       // 4. Close context menu
       const ctxMenu = document.getElementById("globalContextMenu");
       if (ctxMenu) ctxMenu.style.display = "none";
-      
+
       // 5. Close weather forecast windows if clicked outside
       if (!e.target.closest(".weather-item")) {
-        document.querySelectorAll(".forecast-window").forEach((w) => w.classList.remove("active"));
+        document
+          .querySelectorAll(".forecast-window")
+          .forEach((w) => w.classList.remove("active"));
       }
-          
+
       // 6. Close city search results if clicked outside
       if (!e.target.closest(".city-search-container")) {
         const results = document.getElementById("citySearchResults");
         if (results) results.style.display = "none";
       }
     });
-  }
+  },
 };
 
 window.ui = ui;
-window.toggleFolder = (id, e) => ui.toggleFolder(id, e);
-window.toggleFab = (id, e) => ui.toggleFab(id, e);
-window.toggleWidget = (type) => ui.toggleWidget(type);
-window.applyVisibility = () => ui.applyVisibility();
-window.showContextMenu = (e, type, id) => ui.showContextMenu(e, type, id);
-window.hideCurrentWidget = () => ui.hideCurrentWidget();
+window.toggleFolder = ui.toggleFolder.bind(ui);
+window.toggleFab = ui.toggleFab.bind(ui);
+window.toggleWidget = ui.toggleWidget.bind(ui);
+window.applyVisibility = ui.applyVisibility.bind(ui);
+window.showContextMenu = ui.showContextMenu.bind(ui);
+window.hideCurrentWidget = ui.hideCurrentWidget.bind(ui);

@@ -32,21 +32,24 @@ const files = {
         if (d.notifications) {
           window.notifications = d.notifications;
           window.noti.items = d.notifications;
-          localStorage.setItem("dj_notifications", JSON.stringify(d.notifications));
+          localStorage.setItem(
+            "dj_notifications",
+            JSON.stringify(d.notifications),
+          );
         }
         if (d.memos) {
           window.memos = d.memos;
           window.memo.items = d.memos;
           localStorage.setItem("dj_memos", JSON.stringify(d.memos));
         }
-        
+
         if (d.theme) settings.setTheme(d.theme);
         if (d.bgKeyword) localStorage.setItem("dj_bg_keyword", d.bgKeyword);
         if (d.seed) {
           localStorage.setItem("dj_bg_seed", d.seed);
           utils.setBackground(d.seed);
         }
-        
+
         renderShortcuts();
         renderNotifications();
         renderMemos();
@@ -57,9 +60,9 @@ const files = {
       }
     };
     r.readAsText(f);
-  }
+  },
 };
 
 window.files = files;
-window.exportData = () => files.export();
-window.importData = (e) => files.import(e);
+window.exportData = files.export.bind(files);
+window.importData = files.import.bind(files);

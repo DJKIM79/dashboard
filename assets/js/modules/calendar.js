@@ -10,19 +10,31 @@ const calendar = {
     const year = this.currentDate.getFullYear(),
       month = this.currentDate.getMonth(),
       todayDate = new Date(),
-      isCurrentMonth = todayDate.getFullYear() === year && todayDate.getMonth() === month,
+      isCurrentMonth =
+        todayDate.getFullYear() === year && todayDate.getMonth() === month,
       today = todayDate.getDate();
-      
+
     const monthsEn = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
 
     const monthYearEl = document.getElementById("cal-month-year");
     if (monthYearEl) {
-      monthYearEl.innerText = i18n.userLang === "ko"
-        ? `${year}.${String(month + 1).padStart(2, "0")}`
-        : `${monthsEn[month]} ${year}`;
+      monthYearEl.innerText =
+        i18n.userLang === "ko"
+          ? `${year}.${String(month + 1).padStart(2, "0")}`
+          : `${monthsEn[month]} ${year}`;
     }
 
     const daysHeader = document.getElementById("cal-days-header");
@@ -43,11 +55,11 @@ const calendar = {
     const grid = document.getElementById("calendar-grid");
     if (!grid) return;
     grid.innerHTML = "";
-    
+
     const firstDay = new Date(year, month, 1).getDay(),
       lastDate = new Date(year, month + 1, 0).getDate(),
       prevLastDate = new Date(year, month, 0).getDate();
-      
+
     for (let i = firstDay; i > 0; i--) {
       const div = document.createElement("div");
       div.className = "calendar-day other-month";
@@ -70,10 +82,10 @@ const calendar = {
       div.innerText = i;
       grid.appendChild(div);
     }
-  }
+  },
 };
 
 window.calendar = calendar;
 window.currentCalDate = calendar.currentDate; // For backward compatibility
-window.changeMonth = (val) => calendar.changeMonth(val);
-window.renderCalendar = () => calendar.render();
+window.changeMonth = calendar.changeMonth.bind(calendar);
+window.renderCalendar = calendar.render.bind(calendar);

@@ -38,7 +38,7 @@ const i18n = {
 
   get(key) {
     return this.langData[key] || key;
-  }
+  },
 };
 
 window.i18n = i18n;

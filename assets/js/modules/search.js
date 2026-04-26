@@ -13,7 +13,7 @@ const search = {
     const engine = this.currentEngine;
     const iconEl = document.getElementById("search-engine-current");
     if (!iconEl) return;
-    
+
     const domains = {
       google: "google.com",
       naver: "naver.com",
@@ -37,16 +37,16 @@ const search = {
     const menu = document.getElementById("search-engine-menu");
     if (!menu) return;
     menu.innerHTML = "";
-    
+
     const engines = [
       { id: "google", domain: "google.com" },
       { id: "naver", domain: "naver.com" },
-      { id: "chatgpt", domain: "openai.com" }
+      { id: "chatgpt", domain: "openai.com" },
     ];
 
-    engines.forEach(engine => {
+    engines.forEach((engine) => {
       if (engine.id === this.currentEngine) return;
-      
+
       const div = document.createElement("div");
       div.className = "engine-option";
       div.onclick = (e) => this.quickSelect(engine.id, e);
@@ -59,11 +59,13 @@ const search = {
     if (e) e.stopPropagation();
     const menu = document.getElementById("search-engine-menu");
     if (!menu) return;
-    
+
     if (!menu.classList.contains("active")) {
       this.renderMenu();
       // Close other FAB menus when opening search menu
-      document.querySelectorAll(".fab-menu").forEach(m => m.classList.remove("active"));
+      document
+        .querySelectorAll(".fab-menu")
+        .forEach((m) => m.classList.remove("active"));
     }
     menu.classList.toggle("active");
   },
@@ -74,7 +76,7 @@ const search = {
     this.updateIcon();
     const menu = document.getElementById("search-engine-menu");
     if (menu) menu.classList.remove("active");
-    
+
     // Focus search input for immediate typing
     const input = document.getElementById("searchInput");
     if (input) input.focus();
@@ -121,12 +123,12 @@ const search = {
     } else {
       window.location.href = url;
     }
-  }
+  },
 };
 
 window.search = search;
 window.currentSearchEngine = search.currentEngine; // Keep in sync for other modules
-window.toggleSearchEngineMenu = (e) => search.toggleMenu(e);
-window.quickSelectEngine = (engine, e) => search.quickSelect(engine, e);
-window.updateSearchEngineIcon = () => search.updateIcon();
-window.performSearch = () => search.perform();
+window.toggleSearchEngineMenu = search.toggleMenu.bind(search);
+window.quickSelectEngine = search.quickSelect.bind(search);
+window.updateSearchEngineIcon = search.updateIcon.bind(search);
+window.performSearch = search.perform.bind(search);

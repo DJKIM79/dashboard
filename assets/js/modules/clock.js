@@ -12,13 +12,13 @@ const clock = {
   renderContainer() {
     const timeEl = document.getElementById("clock-time");
     if (!timeEl) return;
-    
+
     timeEl.innerHTML = `
-      ${this.createDigitGroup('h1')}${this.createDigitGroup('h2')}
+      ${this.createDigitGroup("h1")}${this.createDigitGroup("h2")}
       <span class="clock-separator">:</span>
-      ${this.createDigitGroup('m1')}${this.createDigitGroup('m2')}
+      ${this.createDigitGroup("m1")}${this.createDigitGroup("m2")}
       <span class="clock-separator">:</span>
-      ${this.createDigitGroup('s1')}${this.createDigitGroup('s2')}
+      ${this.createDigitGroup("s1")}${this.createDigitGroup("s2")}
       <span id="clock-ampm-container"></span>
     `;
   },
@@ -30,7 +30,7 @@ const clock = {
       digits += `<div class="clock-digit">${i}</div>`;
     }
     digits += `<div class="clock-digit">0</div>`; // 9 다음의 0
-    
+
     return `
       <div class="clock-digit-group">
         <div id="digit-${id}" class="clock-digit-strip">
@@ -48,7 +48,7 @@ const clock = {
       this.is24Hour = !this.is24Hour;
       localStorage.setItem("dj_clock_24h", this.is24Hour);
       this.update(true);
-      
+
       setTimeout(() => {
         if (timeEl) timeEl.classList.remove("animating");
       }, 300);
@@ -68,7 +68,7 @@ const clock = {
     let h = now.getHours();
     const m = now.getMinutes();
     const s = now.getSeconds();
-    
+
     let ampm = "";
     if (!this.is24Hour) {
       ampm = h >= 12 ? "PM" : "AM";
@@ -80,13 +80,11 @@ const clock = {
     if (!this.is24Hour && hStr.length === 1) {
       hStr = " " + hStr; // 한 자릿수일 때 앞에 공백 추가 (자리 맞춤용)
     } else {
-      hStr = hStr.padStart(2, '0');
+      hStr = hStr.padStart(2, "0");
     }
 
-    const timeStr = 
-      hStr + 
-      m.toString().padStart(2, '0') + 
-      s.toString().padStart(2, '0');
+    const timeStr =
+      hStr + m.toString().padStart(2, "0") + s.toString().padStart(2, "0");
 
     if (force || timeStr !== this.lastTimeStr) {
       if (!document.getElementById("digit-h1")) this.renderContainer();
@@ -94,7 +92,7 @@ const clock = {
       for (let i = 0; i < 6; i++) {
         const id = ["h1", "h2", "m1", "m2", "s1", "s2"][i];
         const val = timeStr[i];
-        
+
         const elGroup = document.getElementById(`digit-${id}`)?.parentElement;
         if (id === "h1") {
           // 12시간제에서 앞자리가 공백이면 숨김 처리
@@ -108,7 +106,7 @@ const clock = {
           this.animateDigit(id, val);
         }
       }
-      
+
       this.updateAMPM(ampm);
       this.lastTimeStr = timeStr;
     }
@@ -117,9 +115,11 @@ const clock = {
   animateDigit(id, value) {
     const el = document.getElementById(`digit-${id}`);
     if (!el) return;
-    
+
     const newValue = parseInt(value);
-    const lastValue = parseInt(this.lastTimeStr[ ["h1", "h2", "m1", "m2", "s1", "s2"].indexOf(id) ] || "0");
+    const lastValue = parseInt(
+      this.lastTimeStr[["h1", "h2", "m1", "m2", "s1", "s2"].indexOf(id)] || "0",
+    );
 
     // 9에서 0으로 넘어가는 특수 상황 처리
     if (lastValue === 9 && newValue === 0) {
@@ -151,8 +151,8 @@ const clock = {
       container.innerHTML = "";
       container.style.display = "none";
     }
-  }
+  },
 };
 
 window.clock = clock;
-window.toggleTimeFormat = () => clock.toggleFormat();
+window.toggleTimeFormat = clock.toggleFormat.bind(clock);

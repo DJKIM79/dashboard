@@ -9,25 +9,27 @@ const app = {
   async init() {
     // 1. Initialize i18n first
     await i18n.init();
-    
+
     // 2. Initialize Utils & UI
     utils.initTimePicker();
     ui.init();
-    
+
     // 3. Initialize Settings (Theme, etc.)
     const savedTheme = localStorage.getItem("dj_theme_color");
     if (savedTheme) settings.setTheme(savedTheme);
-    
-    const savedFontSize = localStorage.getItem("dj_quote_font_size") || "medium";
+
+    const savedFontSize =
+      localStorage.getItem("dj_quote_font_size") || "medium";
     settings.setQuoteFontSize(savedFontSize);
-    
+
     const savedWidgetSize = localStorage.getItem("dj_widget_size") || "medium";
     settings.setWidgetSize(savedWidgetSize);
 
     // 4. Background and Initial Data Fetch
-    const sd = localStorage.getItem("dj_bg_seed") || Math.floor(Math.random() * 10000);
+    const sd =
+      localStorage.getItem("dj_bg_seed") || Math.floor(Math.random() * 10000);
     utils.setBackground(sd);
-    
+
     quote.init();
     weather.init();
     ai.init();
@@ -43,7 +45,7 @@ const app = {
       const now = new Date();
       const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
       const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-      
+
       clock.update();
       if (window.noti) {
         noti.check(timeStr, todayStr, now);
@@ -135,15 +137,15 @@ const app = {
     if (Notification.permission === "default") {
       Notification.requestPermission();
     }
-  }
+  },
 };
 
 window.app = app;
-window.showDeleteConfirm = () => app.showDeleteConfirm();
-window.addCurrentItem = () => app.addCurrentItem();
-window.editCurrentItem = () => app.editCurrentItem();
-window.deleteCurrentItem = () => app.deleteCurrentItem();
-window.requestNotiPermission = () => app.requestNotiPermission();
+window.showDeleteConfirm = app.showDeleteConfirm.bind(app);
+window.addCurrentItem = app.addCurrentItem.bind(app);
+window.editCurrentItem = app.editCurrentItem.bind(app);
+window.deleteCurrentItem = app.deleteCurrentItem.bind(app);
+window.requestNotiPermission = app.requestNotiPermission.bind(app);
 
 window.addEventListener("DOMContentLoaded", () => {
   app.init();

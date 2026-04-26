@@ -12,6 +12,7 @@ Features
 8. Alarm
 
 Upcoming features.
+
 1. AI Chatbot (Using AI API)
 2. and what else I want?
 

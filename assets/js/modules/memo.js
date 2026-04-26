@@ -48,7 +48,9 @@ const memo = {
       c = document.getElementById("memoContent").value;
     if (t) {
       if (window.currentEditMemoId) {
-        const idx = this.items.findIndex((x) => x.id == window.currentEditMemoId);
+        const idx = this.items.findIndex(
+          (x) => x.id == window.currentEditMemoId,
+        );
         this.items[idx] = {
           ...this.items[idx],
           title: t,
@@ -73,12 +75,12 @@ const memo = {
     this.render();
     utils.saveData();
     utils.closeModal("memoModal");
-  }
+  },
 };
 
 window.memo = memo;
 window.memos = memo.items; // For backward compatibility
-window.renderMemos = () => memo.render();
-window.openMemoModal = (id) => memo.openModal(id);
-window.addMemo = () => memo.add();
-window.deleteCurrentMemo = () => memo.delete();
+window.renderMemos = memo.render.bind(memo);
+window.openMemoModal = memo.openModal.bind(memo);
+window.addMemo = memo.add.bind(memo);
+window.deleteCurrentMemo = memo.delete.bind(memo);

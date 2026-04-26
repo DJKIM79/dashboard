@@ -14,7 +14,9 @@ const weather = {
     container.innerHTML = "";
 
     const myCallId = ++this.callId;
-    const customLocations = this.locations.filter(loc => loc.type !== "current");
+    const customLocations = this.locations.filter(
+      (loc) => loc.type !== "current",
+    );
 
     if (!this.showCurrent && customLocations.length === 0) return;
 
@@ -40,16 +42,27 @@ const weather = {
         navigator.geolocation.getCurrentPosition(
           async (pos) => {
             if (myCallId !== this.callId) return;
-            const lat = pos.coords.latitude, lon = pos.coords.longitude;
+            const lat = pos.coords.latitude,
+              lon = pos.coords.longitude;
             let locName = i18n.get("currentLoc");
             try {
               const reverseUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=${i18n.userLang}`;
-              const revRes = await fetch(reverseUrl, { headers: { "User-Agent": "OnTo-SmartHub/1.1" } });
+              const revRes = await fetch(reverseUrl, {
+                headers: { "User-Agent": "OnTo-SmartHub/1.1" },
+              });
               const revData = await revRes.json();
               if (myCallId === this.callId && revData?.address) {
                 const a = revData.address;
-                const area = a.city || a.town || a.village || a.suburb || a.hamlet || a.city_district || a.borough;
-                if (area) locName = `${i18n.userLang === "ko" ? "현지" : i18n.get("lblCurrentWeather")} (${area})`;
+                const area =
+                  a.city ||
+                  a.town ||
+                  a.village ||
+                  a.suburb ||
+                  a.hamlet ||
+                  a.city_district ||
+                  a.borough;
+                if (area)
+                  locName = `${i18n.userLang === "ko" ? "현지" : i18n.get("lblCurrentWeather")} (${area})`;
               }
             } catch (e) {}
             await this.getData(lat, lon, locName, "current", myCallId);
@@ -57,25 +70,39 @@ const weather = {
           },
           async () => {
             if (myCallId !== this.callId) return;
-            await this.getData(36.48, 127.08, i18n.get("weatherDefault"), "current", myCallId);
+            await this.getData(
+              36.48,
+              127.08,
+              i18n.get("weatherDefault"),
+              "current",
+              myCallId,
+            );
             requestFinished();
           },
-          { timeout: 5000 }
+          { timeout: 5000 },
         );
       } else {
-        this.getData(36.48, 127.08, i18n.get("weatherDefault"), "current", myCallId).then(requestFinished);
+        this.getData(
+          36.48,
+          127.08,
+          i18n.get("weatherDefault"),
+          "current",
+          myCallId,
+        ).then(requestFinished);
       }
     }
 
     customLocations.forEach((loc) => {
-      this.getData(loc.lat, loc.lon, loc.name, loc.id, myCallId).finally(requestFinished);
+      this.getData(loc.lat, loc.lon, loc.name, loc.id, myCallId).finally(
+        requestFinished,
+      );
     });
   },
 
   async getData(lat, lon, locName, id, callId) {
     try {
       const res = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`,
       );
       if (!res.ok) throw new Error("Weather API failed");
       const d = await res.json();
@@ -131,7 +158,8 @@ const weather = {
     if (code <= 3) return "fa-cloud-sun";
     if ([45, 48].includes(code)) return "fa-smog";
     if ([51, 53, 55].includes(code)) return "fa-cloud-rain";
-    if ([61, 63, 65, 80, 81, 82].includes(code)) return "fa-cloud-showers-heavy";
+    if ([61, 63, 65, 80, 81, 82].includes(code))
+      return "fa-cloud-showers-heavy";
     if ([71, 73, 75].includes(code)) return "fa-snowflake";
     if ([95, 96, 99].includes(code)) return "fa-bolt";
     return "fa-cloud";
@@ -140,7 +168,9 @@ const weather = {
   toggleForecast(id, daily) {
     const el = document.getElementById(`forecast-${id}`);
     const isActive = el.classList.contains("active");
-    document.querySelectorAll(".forecast-window").forEach((w) => w.classList.remove("active"));
+    document
+      .querySelectorAll(".forecast-window")
+      .forEach((w) => w.classList.remove("active"));
     if (!isActive) {
       this.renderForecast(el, daily);
       el.classList.add("active");
@@ -177,23 +207,30 @@ const weather = {
       results.style.display = "none";
       return;
     }
-    
+
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(async () => {
       results.innerHTML = `<div class="city-result-item" style="opacity:0.6; cursor:default">검색 중...</div>`;
       results.style.display = "block";
-      
+
       try {
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10&accept-language=${i18n.userLang}&addressdetails=1`;
         const res = await fetch(url, {
-          headers: { "User-Agent": "OnTo-SmartHub/1.1" }
+          headers: { "User-Agent": "OnTo-SmartHub/1.1" },
         });
         const data = await res.json();
         results.innerHTML = "";
         if (data && data.length > 0) {
           data.forEach((item) => {
             const addr = item.address || {};
-            const city = addr.city || addr.town || addr.village || addr.suburb || addr.hamlet || addr.city_district || item.display_name.split(",")[0];
+            const city =
+              addr.city ||
+              addr.town ||
+              addr.village ||
+              addr.suburb ||
+              addr.hamlet ||
+              addr.city_district ||
+              item.display_name.split(",")[0];
             const state = addr.state || addr.province || "";
             const country = addr.country || "";
             const div = document.createElement("div");
@@ -214,9 +251,9 @@ const weather = {
 
   addLocation(item, cityName) {
     const isDuplicate = this.locations.some(
-      (loc) => loc.lat == item.lat && loc.lon == item.lon
+      (loc) => loc.lat == item.lat && loc.lon == item.lon,
     );
-    
+
     if (isDuplicate) {
       utils.openModal("alertModal");
       return;
@@ -245,15 +282,20 @@ const weather = {
   },
 
   saveLocations() {
-    localStorage.setItem("dj_weather_locations", JSON.stringify(this.locations));
+    localStorage.setItem(
+      "dj_weather_locations",
+      JSON.stringify(this.locations),
+    );
   },
 
   renderLocationList() {
     const list = document.getElementById("weatherLocationList");
     if (!list) return;
-    
-    const customLocations = this.locations.filter(loc => loc.type !== "current");
-    
+
+    const customLocations = this.locations.filter(
+      (loc) => loc.type !== "current",
+    );
+
     if (customLocations.length === 0) {
       list.innerHTML = `<div style="font-size: 0.8rem; opacity: 0.5; padding: 10px; text-align: center;">추가된 도시가 없습니다.</div>`;
       return;
@@ -264,22 +306,26 @@ const weather = {
         <span>추가된 도시 (${customLocations.length})</span>
         <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
         <div id="weather-location-popup" class="ai-model-popup weather-popup">
-          ${customLocations.map(loc => `
+          ${customLocations
+            .map(
+              (loc) => `
             <div class="ai-model-item" style="cursor: default;">
               <span>${loc.name}</span>
               <i class="fas fa-trash-alt" style="cursor: pointer; color: #ef4444; font-size: 0.8rem;" 
                  onclick="event.stopPropagation(); removeWeatherLocation(${loc.id})"></i>
             </div>
-          `).join('')}
+          `,
+            )
+            .join("")}
         </div>
       </div>
     `;
 
     if (!this.clickListenerAdded) {
-      document.addEventListener('click', (e) => {
-        const popup = document.getElementById('weather-location-popup');
-        if (popup && !e.target.closest('.weather-custom-select')) {
-          popup.classList.remove('show');
+      document.addEventListener("click", (e) => {
+        const popup = document.getElementById("weather-location-popup");
+        if (popup && !e.target.closest(".weather-custom-select")) {
+          popup.classList.remove("show");
         }
       });
       this.clickListenerAdded = true;
@@ -288,16 +334,16 @@ const weather = {
 
   toggleLocationPopup(e) {
     e.stopPropagation();
-    const popup = document.getElementById('weather-location-popup');
+    const popup = document.getElementById("weather-location-popup");
     if (popup) {
-      popup.classList.toggle('show');
+      popup.classList.toggle("show");
     }
-  }
+  },
 };
 
 window.weather = weather;
-window.fetchWeather = () => weather.fetch();
-window.searchCities = (query) => weather.searchCities(query);
-window.removeWeatherLocation = (id) => weather.removeLocation(id);
-window.renderWeatherLocationList = () => weather.renderLocationList();
+window.fetchWeather = weather.fetch.bind(weather);
+window.searchCities = weather.searchCities.bind(weather);
+window.removeWeatherLocation = weather.removeLocation.bind(weather);
+window.renderWeatherLocationList = weather.renderLocationList.bind(weather);
 window.weatherLocations = weather.locations;

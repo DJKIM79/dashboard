@@ -7,12 +7,12 @@ const quote = {
     const container = document.querySelector(".quote-container");
     const qt = document.getElementById("quote-text"),
       qa = document.getElementById("quote-author");
-    
+
     // Only show switching effect if we already have content (not first load)
     const isFirstLoad = !qt || qt.innerText === "..." || qt.innerText === "";
-    
+
     if (container && !isFirstLoad) container.classList.add("quote-switching");
-    
+
     const fetchAction = async () => {
       try {
         const res = await fetch(
@@ -48,8 +48,8 @@ const quote = {
     } else {
       setTimeout(fetchAction, 400);
     }
-  }
+  },
 };
 
 window.quote = quote;
-window.fetchQuote = () => quote.fetch();
+window.fetchQuote = quote.fetch.bind(quote);

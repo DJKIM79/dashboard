@@ -10,13 +10,13 @@ const shortcutMod = {
   checkLayout() {
     const c = document.getElementById("shortcut-container");
     if (!c) return;
-    
+
     // Reset first to measure original height
     c.classList.remove("shortcut-list-view");
-    
+
     const items = c.querySelectorAll(".shortcut-item");
     if (items.length === 0) return;
-    
+
     // Check if the bottom of the last item exceeds 85% of window height
     const lastItem = items[items.length - 1];
     const rect = lastItem.getBoundingClientRect();
@@ -32,14 +32,17 @@ const shortcutMod = {
     if (!c) return;
     c.innerHTML = "";
     c.className = "grid-layout";
-    
+
     this.items.forEach((s, i) => {
       const url = s.url.startsWith("http") ? s.url : `http://${s.url}`,
         div = document.createElement("a");
       div.className = "shortcut-item";
-      div.onclick = (e) => this.isDragging ? (e.preventDefault(), (this.isDragging = false)) : (window.location.href = url);
+      div.onclick = (e) =>
+        this.isDragging
+          ? (e.preventDefault(), (this.isDragging = false))
+          : (window.location.href = url);
       div.oncontextmenu = (e) => showContextMenu(e, "shortcut", i);
-      
+
       div.innerHTML = `
         <div class="shortcut-icon-wrapper">
           <img src="https://www.google.com/s2/favicons?sz=128&domain=${new URL(url).hostname}" 
@@ -64,12 +67,15 @@ const shortcutMod = {
 
     if (window.shortcutSortable) window.shortcutSortable.destroy();
     window.shortcutSortable = new Sortable(c, {
-      animation: 250, 
+      animation: 250,
       ghostClass: "shortcut-ghost",
       chosenClass: "shortcut-chosen",
       dragClass: "shortcut-drag",
-      forceFallback: true, 
-      onStart: () => { this.isDragging = true; c.classList.add("sorting-active"); },
+      forceFallback: true,
+      onStart: () => {
+        this.isDragging = true;
+        c.classList.add("sorting-active");
+      },
       onEnd: (evt) => {
         setTimeout(() => (this.isDragging = false), 100);
         c.classList.remove("sorting-active");
@@ -85,11 +91,20 @@ const shortcutMod = {
 
   openModal(index = null) {
     window.currentShortcutIndex = index;
-    const T = i18n.langData, isEdit = index !== null;
-    document.getElementById("siteName").value = isEdit ? this.items[index].name : "";
-    document.getElementById("siteUrl").value = isEdit ? this.items[index].url : "";
-    document.getElementById("linkModalTitle").innerText = isEdit ? T.modalLinkEdit : T.modalLinkAdd;
-    document.getElementById("linkSaveBtn").innerText = isEdit ? T.btnEdit : T.btnSave;
+    const T = i18n.langData,
+      isEdit = index !== null;
+    document.getElementById("siteName").value = isEdit
+      ? this.items[index].name
+      : "";
+    document.getElementById("siteUrl").value = isEdit
+      ? this.items[index].url
+      : "";
+    document.getElementById("linkModalTitle").innerText = isEdit
+      ? T.modalLinkEdit
+      : T.modalLinkAdd;
+    document.getElementById("linkSaveBtn").innerText = isEdit
+      ? T.btnEdit
+      : T.btnSave;
     utils.closeModal("settingModal");
     utils.openModal("linkModal");
     setTimeout(() => document.getElementById("siteName").focus(), 50);
@@ -116,11 +131,15 @@ const shortcutMod = {
     }
   },
 
-  delete(index) { this.items.splice(index, 1); this.render(); utils.saveData(); }
+  delete(index) {
+    this.items.splice(index, 1);
+    this.render();
+    utils.saveData();
+  },
 };
 
 window.shortcutMod = shortcutMod;
 window.shortcuts = shortcutMod.items;
-window.renderShortcuts = () => shortcutMod.render();
-window.openLinkModal = (index) => shortcutMod.openModal(index);
-window.addShortcut = () => shortcutMod.add();
+window.renderShortcuts = shortcutMod.render.bind(shortcutMod);
+window.openLinkModal = shortcutMod.openModal.bind(shortcutMod);
+window.addShortcut = shortcutMod.add.bind(shortcutMod);

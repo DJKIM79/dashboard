@@ -1,10 +1,17 @@
+let sharedAudioCtx = null;
+
 const utils = {
   playBeep() {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)(),
-      osc = ctx.createOscillator(),
-      gain = ctx.createGain();
+    if (!sharedAudioCtx) {
+      sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (sharedAudioCtx.state === "suspended") {
+      sharedAudioCtx.resume();
+    }
+    const osc = sharedAudioCtx.createOscillator(),
+      gain = sharedAudioCtx.createGain();
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(sharedAudioCtx.destination);
     osc.frequency.value = 880;
     gain.gain.value = 0.05;
     osc.start();
@@ -15,16 +22,16 @@ const utils = {
     let keyword = localStorage.getItem("dj_bg_keyword");
     if (keyword === null) keyword = "landscape";
     keyword = keyword.trim().replace(/\s+/g, ",");
-    
+
     const engine = localStorage.getItem("dj_image_engine") || "unsplash";
-    
+
     // LoremFlickr supports sources by adding them as tags
     // e.g. https://loremflickr.com/1920/1080/nature,unsplash
     const sourceTag = engine === "unsplash" ? "unsplash" : "flickr";
     const tags = keyword ? `${keyword},${sourceTag}` : sourceTag;
-    
+
     const url = `https://loremflickr.com/1920/1080/${tags}?random=${seed}`;
-      
+
     document.body.style.backgroundImage = `url('${url}')`;
   },
 
@@ -38,26 +45,26 @@ const utils = {
     const h = document.getElementById("notiHour"),
       m = document.getElementById("notiMin");
     if (!h || !m) return;
-    
+
     const hSuffix = i18n.userLang === "ko" ? "시" : "h",
       mSuffix = i18n.userLang === "ko" ? "분" : "m";
-      
+
     h.innerHTML = "";
     m.innerHTML = "";
-    
+
     for (let i = 0; i < 24; i++)
       h.options.add(
         new Option(
           `${String(i).padStart(2, "0")}${hSuffix}`,
           String(i).padStart(2, "0"),
-        )
+        ),
       );
     for (let i = 0; i < 60; i++)
       m.options.add(
         new Option(
           `${String(i).padStart(2, "0")}${mSuffix}`,
           String(i).padStart(2, "0"),
-        )
+        ),
       );
   },
 
@@ -79,16 +86,23 @@ const utils = {
   },
 
   saveData() {
-    if (window.shortcutMod) localStorage.setItem("dj_shortcuts", JSON.stringify(shortcutMod.items));
-    if (window.noti) localStorage.setItem("dj_notifications", JSON.stringify(noti.items));
-    if (window.memo) localStorage.setItem("dj_memos", JSON.stringify(memo.items));
-    if (window.weather) localStorage.setItem("dj_weather_locations", JSON.stringify(weather.locations));
+    if (window.shortcutMod)
+      localStorage.setItem("dj_shortcuts", JSON.stringify(shortcutMod.items));
+    if (window.noti)
+      localStorage.setItem("dj_notifications", JSON.stringify(noti.items));
+    if (window.memo)
+      localStorage.setItem("dj_memos", JSON.stringify(memo.items));
+    if (window.weather)
+      localStorage.setItem(
+        "dj_weather_locations",
+        JSON.stringify(weather.locations),
+      );
   },
 
   showValidationTip(elementId, message) {
     const btn = document.getElementById(elementId);
     if (!btn) return;
-    
+
     // 기존 팁 제거
     const existing = document.querySelector(".validation-tip");
     if (existing) existing.remove();
@@ -131,16 +145,16 @@ const utils = {
       document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
     }
     location.reload();
-  }
+  },
 };
 
 window.utils = utils;
 window.openModal = utils.openModal;
 window.closeModal = utils.closeModal;
-window.toggleDaySelector = (s) => utils.toggleDaySelector(s);
-window.setBackground = (seed) => utils.setBackground(seed);
-window.saveData = () => utils.saveData();
-window.playBeep = () => utils.playBeep();
-window.initTimePicker = () => utils.initTimePicker();
-window.changeBackgroundInstant = () => utils.changeBackgroundInstant();
-window.resetAllData = () => utils.resetAllData();
+window.toggleDaySelector = utils.toggleDaySelector;
+window.setBackground = utils.setBackground.bind(utils);
+window.saveData = utils.saveData;
+window.playBeep = utils.playBeep;
+window.initTimePicker = utils.initTimePicker;
+window.changeBackgroundInstant = utils.changeBackgroundInstant.bind(utils);
+window.resetAllData = utils.resetAllData;
