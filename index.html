@@ -385,14 +385,15 @@
                   <span id="ai-connection-status" style="font-size: 0.75rem; display: none;" data-i18n-title="lblServerCheck"></span>
                 </div>
                 <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; color: #94a3b8;">
-                  <input type="checkbox" id="aiDisableCheck" onchange="updateAiDisabled(this.checked)" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
-                  <span class="setting-label-text" data-i18n="lblAIDisable">사용 안 함</span>
+                  <input type="checkbox" id="aiOutputAtOnceCheck" onchange="updateAiOutputAtOnce(this.checked)" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
+                  <span class="setting-label-text" data-i18n="lblAIOutputAtOnce">답변 한번에 출력</span>
                 </label>
               </div>
               <div id="aiSettingsPanel" style="display: flex; gap: 15px; align-items: center; width: 98%; margin-left: 1%; margin-bottom: 5px;">
                 <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
                   <span style="font-size: 0.85rem; color: #94a3b8; white-space: nowrap;">AI</span>
                   <select id="aiProviderSelect" onchange="updateAiProvider(this.value)" style="margin-bottom: 2px; flex: 1;">
+                    <option value="none" data-i18n="optNone">사용 안 함</option>
                     <option value="local">Local AI</option>
                     <option value="openai">OpenAI API</option>
                     <option value="gemini">Gemini API</option>

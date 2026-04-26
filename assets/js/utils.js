@@ -12,10 +12,15 @@ const utils = {
   },
 
   setBackground(seed) {
-    const keyword = (
-      localStorage.getItem("dj_bg_keyword") || "landscape"
-    ).replace(/\s+/g, ",");
-    document.body.style.backgroundImage = `url('https://loremflickr.com/1920/1080/${keyword}?random=${seed}')`;
+    let keyword = localStorage.getItem("dj_bg_keyword");
+    if (keyword === null) keyword = "landscape";
+    keyword = keyword.trim().replace(/\s+/g, ",");
+    
+    const url = keyword 
+      ? `https://loremflickr.com/1920/1080/${keyword}?random=${seed}`
+      : `https://loremflickr.com/1920/1080?random=${seed}`;
+      
+    document.body.style.backgroundImage = `url('${url}')`;
   },
 
   changeBackgroundInstant() {

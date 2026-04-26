@@ -278,7 +278,7 @@
         display: flex;
         justify-content: center;
         transform-origin: center;
-        animation: widgetFadeIn 1.2s ease-out forwards;
+        animation: widgetFadeIn 0.6s ease-out forwards;
       }
       .quote-container {
         display: inline-flex;
@@ -983,7 +983,7 @@
         position: relative;
         z-index: 5;
         transform-origin: center top;
-        animation: widgetFadeIn 1.2s ease-out forwards;
+        animation: widgetFadeIn 0.6s ease-out forwards;
       }
       .search-box {
         background: rgba(0, 0, 0, 0.45);
