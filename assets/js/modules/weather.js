@@ -251,14 +251,47 @@ const weather = {
   renderLocationList() {
     const list = document.getElementById("weatherLocationList");
     if (!list) return;
-    list.innerHTML = "";
-    this.locations.forEach((loc) => {
-      if (loc.type === "current") return;
-      const tag = document.createElement("div");
-      tag.className = "location-tag";
-      tag.innerHTML = `<span>${loc.name}</span><i class="fas fa-times" onclick="removeWeatherLocation(${loc.id})"></i>`;
-      list.appendChild(tag);
-    });
+    
+    const customLocations = this.locations.filter(loc => loc.type !== "current");
+    
+    if (customLocations.length === 0) {
+      list.innerHTML = `<div style="font-size: 0.8rem; opacity: 0.5; padding: 10px; text-align: center;">추가된 도시가 없습니다.</div>`;
+      return;
+    }
+
+    list.innerHTML = `
+      <div class="weather-custom-select" onclick="weather.toggleLocationPopup(event)">
+        <span>추가된 도시 (${customLocations.length})</span>
+        <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
+        <div id="weather-location-popup" class="ai-model-popup weather-popup">
+          ${customLocations.map(loc => `
+            <div class="ai-model-item" style="cursor: default;">
+              <span>${loc.name}</span>
+              <i class="fas fa-trash-alt" style="cursor: pointer; color: #ef4444; font-size: 0.8rem;" 
+                 onclick="event.stopPropagation(); removeWeatherLocation(${loc.id})"></i>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    if (!this.clickListenerAdded) {
+      document.addEventListener('click', (e) => {
+        const popup = document.getElementById('weather-location-popup');
+        if (popup && !e.target.closest('.weather-custom-select')) {
+          popup.classList.remove('show');
+        }
+      });
+      this.clickListenerAdded = true;
+    }
+  },
+
+  toggleLocationPopup(e) {
+    e.stopPropagation();
+    const popup = document.getElementById('weather-location-popup');
+    if (popup) {
+      popup.classList.toggle('show');
+    }
   }
 };
 
