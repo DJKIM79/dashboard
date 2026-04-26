@@ -132,7 +132,12 @@ const settings = {
     this.onAIProviderChange();
     if (window.ai) {
       ai.provider = provider;
-      // Reset model select UI
+      // Reset connection and deactivate immediately
+      ai.isConnected = false;
+      if (typeof ai.updateChatbotAvailability === "function") {
+        ai.updateChatbotAvailability(false);
+      }
+      
       const modelSelect = document.getElementById("aiModelSelect");
       if (modelSelect) {
         modelSelect.disabled = true;
@@ -166,6 +171,10 @@ const settings = {
     localStorage.setItem("dj_ai_model", model);
     if (window.ai) {
       ai.model = model;
+      ai.isConnected = false;
+      if (typeof ai.updateChatbotAvailability === "function") {
+        ai.updateChatbotAvailability(false);
+      }
       ai.updateModelDisplay();
       ai.renderWelcome();
       if (window.ui) ui.applyVisibility();

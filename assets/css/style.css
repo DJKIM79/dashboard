@@ -1655,12 +1655,33 @@
   transition: all 0.2s ease;
   margin-right: 5px;
 }
+.ai-search-icon.can-chat {
+  color: var(--accent-color);
+  opacity: 1;
+  animation: robot-sparkle 2s infinite;
+}
+
+@keyframes robot-sparkle {
+  0% {
+    text-shadow: 0 0 0 rgba(var(--accent-color-rgb, 56, 189, 248), 0);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(var(--accent-color-rgb, 56, 189, 248), 0.8),
+                 0 0 40px rgba(var(--accent-color-rgb, 56, 189, 248), 0.4);
+    transform: scale(1.1);
+  }
+  100% {
+    text-shadow: 0 0 0 rgba(var(--accent-color-rgb, 56, 189, 248), 0);
+    transform: scale(1);
+  }
+}
+
 .ai-search-icon:hover {
   opacity: 0.8;
   transform: scale(1.1);
 }
 .ai-search-icon.active {
   opacity: 1 !important;
-  color: var(--accent-color) !important;
 }
 
