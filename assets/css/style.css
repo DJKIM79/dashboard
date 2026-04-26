@@ -640,7 +640,7 @@
         right: 0;
         top: 50%;
         transform: translateY(-50%);
-        width: 15px;
+        width: 40px;
         height: 80px;
         z-index: 2499;
         cursor: pointer;
@@ -1089,7 +1089,7 @@
       .modal {
         display: none;
         position: fixed;
-        z-index: 2000;
+        z-index: 3000;
         top: 0;
         left: 0;
         width: 100%;
@@ -1098,11 +1098,8 @@
         backdrop-filter: blur(10px);
         pointer-events: auto;
       }
-      #alertModal {
-        z-index: 3000;
-      }
-      #deleteConfirmModal {
-        z-index: 9999 !important;
+      #alertModal, #deleteConfirmModal, #resetConfirmModal {
+        z-index: 10000 !important;
       }
       .modal-content {
         background: #1e293b;
@@ -1821,6 +1818,14 @@
         display: flex;
         gap: 12px;
         align-items: flex-end;
+      }
+      /* Tutorial Blink Effect: 2회 깜빡임 */
+      .driver-active-element {
+        animation: tutorialStepBlink 0.8s ease-in-out;
+      }
+      @keyframes tutorialStepBlink {
+        0%, 50%, 100% { opacity: 1; filter: brightness(1.2); }
+        25%, 75% { opacity: 0.4; filter: brightness(0.8); }
       }
       #ai-user-input {
         flex: 1;

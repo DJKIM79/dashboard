@@ -1,6 +1,12 @@
 const settings = {
   openModal() {
     try {
+      // Close AI widget if it's open
+      if (localStorage.getItem("dj_hide_ai") !== "true") {
+        localStorage.setItem("dj_hide_ai", "true");
+        if (window.ui) ui.applyVisibility();
+      }
+
       let bgKeyword = localStorage.getItem("dj_bg_keyword");
       if (bgKeyword === null) bgKeyword = "landscape";
       

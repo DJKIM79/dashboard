@@ -54,7 +54,14 @@ const ui = {
       clock: "clock-container",
     };
     types.forEach((type) => {
-      const isHidden = localStorage.getItem(`dj_hide_${type}`) === "true";
+      let isHidden = localStorage.getItem(`dj_hide_${type}`) === "true";
+      
+      // 초기 상태(null)일 때, AI 챗봇만 기본적으로 숨김
+      if (localStorage.getItem(`dj_hide_${type}`) === null) {
+        if (type === "ai") isHidden = true;
+        else isHidden = false;
+      }
+
       const targets = Array.isArray(widgetMap[type]) ? widgetMap[type] : [widgetMap[type]];
       
       targets.forEach(id => {
@@ -71,12 +78,24 @@ const ui = {
     if (type === "ai") {
       // Use strictly isConnected status
       if (!window.ai || !ai.isConnected) {
+        utils.closeModal("settingModal"); // Ensure any existing modal is closed
         if (window.settings) settings.openModal();
         return;
       }
     }
+    
+    // If opening any widget, we might want to close the settings modal
+    utils.closeModal("settingModal");
+
     const key = `dj_hide_${type}`;
-    const isCurrentlyHidden = localStorage.getItem(key) === "true";
+    let isCurrentlyHidden = localStorage.getItem(key) === "true";
+    
+    // 초기 설정값이 없을 때(null)의 기본 상태를 toggle 로직에도 반영
+    if (localStorage.getItem(key) === null) {
+      if (type === "ai") isCurrentlyHidden = true;
+      else isCurrentlyHidden = false;
+    }
+
     const newState = !isCurrentlyHidden;
     localStorage.setItem(key, newState);
     

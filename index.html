@@ -58,6 +58,18 @@
       </div>
     </div>
 
+    <!-- 전체 초기화 확인 모달 -->
+    <div id="resetConfirmModal" class="modal" onclick="event.target == this && closeModal('resetConfirmModal')">
+      <div class="modal-content delete-modal">
+        <div class="delete-icon"><i class="fas fa-history"></i></div>
+        <h3 style="margin-bottom: 30px;">정말로 초기화 하시겠습니까?<br><span style="font-size: 0.8rem; font-weight: normal; opacity: 0.7;">(모든 설정과 데이터가 영구 삭제됩니다)</span></h3>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn-save" style="background: #334155; color: #fff; flex: 1;" onclick="closeModal('resetConfirmModal')" data-i18n="btnCancel">취소</button>
+          <button class="btn-save" style="background: #ef4444; color: #fff; flex: 1;" onclick="resetAllData()">초기화</button>
+        </div>
+      </div>
+    </div>
+
     <div id="top-left-widgets">
       <div class="fab-container">
         <div
@@ -454,6 +466,12 @@
                     <i class="fas fa-sync-alt ai-refresh-icon" onclick="if(window.ai) window.ai.checkConnection()" style="cursor: pointer;" data-i18n-title="tipCheckConn"></i>
                   </div>
                 </div>
+              </div>
+              <!-- 초기화 버튼 추가 -->
+              <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                <button class="btn-save" style="background: #ef4444; color: #fff; padding: 8px 20px; font-size: 0.85rem;" onclick="openModal('resetConfirmModal')">
+                  전체 초기화
+                </button>
               </div>
             </div>
           </div>
