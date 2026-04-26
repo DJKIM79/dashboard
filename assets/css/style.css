@@ -1658,21 +1658,22 @@
 .ai-search-icon.can-chat {
   color: var(--accent-color);
   opacity: 1;
-  animation: robot-sparkle 2s infinite;
+  animation: ai-pulse 2s infinite ease-in-out;
+  filter: drop-shadow(0 0 5px var(--accent-color));
 }
 
-@keyframes robot-sparkle {
+@keyframes ai-pulse {
   0% {
-    text-shadow: 0 0 0 rgba(var(--accent-color-rgb, 56, 189, 248), 0);
+    opacity: 0.6;
     transform: scale(1);
   }
   50% {
-    text-shadow: 0 0 20px rgba(var(--accent-color-rgb, 56, 189, 248), 0.8),
-                 0 0 40px rgba(var(--accent-color-rgb, 56, 189, 248), 0.4);
+    opacity: 1;
     transform: scale(1.1);
+    filter: drop-shadow(0 0 10px var(--accent-color));
   }
   100% {
-    text-shadow: 0 0 0 rgba(var(--accent-color-rgb, 56, 189, 248), 0);
+    opacity: 0.6;
     transform: scale(1);
   }
 }

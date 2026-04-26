@@ -20,6 +20,8 @@
   "sideAI": "AI Chatbot",
   "lblAIHistory": "Chat History",
   "lblAISetting": "AI Settings",
+  "aiNeedConnect": "Server Connection Required",
+  "aiConnecting": "Connected",
   "aiInputPh": "Type a message...",
   "aiNoServer": "Disconnected",
   "aiNeedCheck": "Check Required",

@@ -58,18 +58,17 @@ const settings = {
         cityResults.style.display = "none";
       }
 
-      // Reset AI connection status and icon color
-      const statusSpan = document.getElementById("ai-connection-status");
-      if (statusSpan) statusSpan.style.display = "none";
-      const refreshIcon = document.querySelector(".ai-refresh-icon");
-      if (refreshIcon) refreshIcon.style.color = "#94a3b8";
+      // Reset or update AI connection status UI
+      if (window.ai && typeof ai.updateStatusUI === "function") {
+        ai.updateStatusUI();
+      }
 
       utils.openModal("settingModal");
-    } catch (e) {
+      } catch (e) {
       console.error("openModal error:", e);
       utils.openModal("settingModal");
-    }
-  },
+      }
+      },
 
   updateBgKeyword(value) {
     localStorage.setItem("dj_bg_keyword", value.trim());
@@ -147,6 +146,10 @@ const settings = {
       // Reset icon color
       const refreshIcon = document.querySelector(".ai-refresh-icon");
       if (refreshIcon) refreshIcon.style.color = "#94a3b8";
+      
+      if (typeof ai.updateStatusUI === "function") {
+        ai.updateStatusUI();
+      }
     }
     if (window.ui) ui.applyVisibility();
   },

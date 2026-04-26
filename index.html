@@ -402,12 +402,18 @@
               <div class="setting-group-title" style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                   <span data-i18n="lblAISetting">AI 설정</span>
-                  <span id="ai-connection-status" style="font-size: 0.75rem; display: none;" data-i18n-title="lblServerCheck"></span>
+                  <span id="ai-temp-msg" style="font-size: 0.75rem; display: none;"></span>
                 </div>
-                <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; color: #94a3b8;">
-                  <input type="checkbox" id="aiOutputAtOnceCheck" onchange="updateAiOutputAtOnce(this.checked)" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
-                  <span class="setting-label-text" data-i18n="lblAIOutputAtOnce">답변 한번에 출력</span>
-                </label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                  <div id="ai-connection-status" style="font-size: 0.75rem; display: flex; align-items: center; gap: 5px; color: #94a3b8;" data-i18n-title="lblServerCheck">
+                    <span class="status-dot" style="width: 4px; height: 4px; border-radius: 50%; background: #94a3b8; display: inline-block;"></span>
+                    <span class="status-text" data-i18n="aiNeedConnect">서버 연결 필요</span>
+                  </div>
+                  <label class="compact-checkbox-label" style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; color: #94a3b8;">
+                    <input type="checkbox" id="aiOutputAtOnceCheck" onchange="updateAiOutputAtOnce(this.checked)" style="width: 14px; height: 14px; margin: 0; cursor: pointer;">
+                    <span class="setting-label-text" data-i18n="lblAIOutputAtOnce">답변 한번에 출력</span>
+                  </label>
+                </div>
               </div>
               <div style="display: flex; gap: 15px; align-items: center; width: 98%; margin-left: 1%; margin-bottom: 5px;">
                 <div style="display: flex; align-items: center; gap: 8px; flex: 1;">

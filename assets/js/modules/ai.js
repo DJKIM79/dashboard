@@ -6,9 +6,8 @@ const ai = {
   outputAtOnce: localStorage.getItem("dj_ai_output_at_once") !== "false",
   isGenerating: false,
   historyCollapsed: false,
-  isConnected: false,
+  isConnected: localStorage.getItem("dj_ai_is_connected") === "true",
   
-  // Storage keys depend on provider and model
   getStorageKey() {
     return `dj_ai_chats_${this.provider}_${this.model.replace(/[:/]/g, '_')}`;
   },
@@ -28,8 +27,8 @@ const ai = {
     this.updateModelDisplay();
     this.renderHistory();
     this.loadChat();
-    // On start, we don't know the connection status yet
-    this.updateChatbotAvailability(false);
+    // Restore persistent connection status
+    this.updateChatbotAvailability(this.isConnected);
   },
 
   updateModelDisplay() {
@@ -43,14 +42,15 @@ const ai = {
 
   updateChatbotAvailability(isConnected) {
     this.isConnected = isConnected;
+    localStorage.setItem("dj_ai_is_connected", isConnected);
     const aiIcon = document.querySelector(".ai-search-icon");
     if (aiIcon) {
       aiIcon.classList.toggle("active", isConnected);
       aiIcon.classList.toggle("can-chat", isConnected);
       if (!isConnected) {
-        aiIcon.style.color = "#94a3b8"; // Ensure gray color when disconnected
+        aiIcon.style.color = "#94a3b8";
       } else {
-        aiIcon.style.color = ""; // Revert to CSS controlled color (accent-color via can-chat)
+        aiIcon.style.color = "";
       }
     }
   },
@@ -79,7 +79,7 @@ const ai = {
       const chat = chats.find(c => c.id === this.currentChatId);
       if (chat) {
         chat.messages.push({ role, content: text });
-        this.chats = chats; // Save back to localStorage
+        this.chats = chats;
         this.renderHistory();
       }
     }
@@ -267,7 +267,6 @@ const ai = {
   },
 
   async callOpenAI(prompt, msgDiv, chat) {
-    // Basic implementation for non-streaming OpenAI
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: 'POST',
       headers: { 
@@ -299,7 +298,7 @@ const ai = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }] // Simplified context for now
+        contents: [{ parts: [{ text: prompt }] }] 
       })
     });
     if (!response.ok) throw new Error('Gemini request failed');
@@ -357,6 +356,28 @@ const ai = {
     }
   },
 
+  updateStatusUI() {
+    const statusSpan = document.getElementById("ai-connection-status");
+    if (!statusSpan) return;
+    const dot = statusSpan.querySelector(".status-dot");
+    const text = statusSpan.querySelector(".status-text");
+    const T = window.i18n ? window.i18n.langData : {};
+    
+    if (this.isConnected) {
+      if (dot) dot.style.background = "#22c55e";
+      if (text) {
+        const pName = this.provider.charAt(0).toUpperCase() + this.provider.slice(1);
+        const connectMsg = T.aiConnecting || "연결 중";
+        text.innerText = `${pName} ${connectMsg}`;
+      }
+      statusSpan.style.color = "#22c55e";
+    } else {
+      if (dot) dot.style.background = "#94a3b8";
+      if (text) text.innerText = T.aiNeedConnect || "서버 연결 필요";
+      statusSpan.style.color = "#94a3b8";
+    }
+  },
+
   async checkConnection() {
     const modelSelect = document.getElementById("aiModelSelect");
     const provider = document.getElementById("aiProviderSelect").value;
@@ -364,19 +385,32 @@ const ai = {
     const apiKey = document.getElementById("aiApiKeyInput").value.trim();
     const currentModel = localStorage.getItem("dj_ai_model");
     const statusSpan = document.getElementById("ai-connection-status");
+    const tempMsgSpan = document.getElementById("ai-temp-msg");
     const refreshIcon = document.querySelector(".ai-refresh-icon");
 
     if (!modelSelect) return;
     if (refreshIcon) refreshIcon.style.color = "#94a3b8";
 
-    const showStatus = (msg, color) => {
-      if (statusSpan) {
-        statusSpan.innerText = msg;
-        statusSpan.style.color = color;
-        statusSpan.style.display = "inline-block";
-        setTimeout(() => statusSpan.style.display = "none", 6000);
+    const showStatus = (isConnected) => {
+      this.isConnected = isConnected;
+      this.updateStatusUI();
+      
+      const T = window.i18n ? window.i18n.langData : {};
+      const pName = provider.charAt(0).toUpperCase() + provider.slice(1);
+      
+      if (tempMsgSpan) {
+        tempMsgSpan.innerText = isConnected 
+          ? `${pName} ${T.msgConnSuccess || "연결 성공!"}`
+          : `${pName} ${T.msgConnFail || "연결 실패!"}`;
+        tempMsgSpan.style.color = isConnected ? "#22c55e" : "#ef4444";
+        tempMsgSpan.style.display = "inline-block";
+        
+        setTimeout(() => {
+          tempMsgSpan.style.display = "none";
+        }, 4000);
       }
-      if (refreshIcon) refreshIcon.style.color = color;
+
+      if (refreshIcon) refreshIcon.style.color = isConnected ? "#22c55e" : "#ef4444";
     };
 
     const updateModelSelect = (models, isDisabled = false) => {
@@ -398,6 +432,7 @@ const ai = {
       modelSelect.disabled = true;
       modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNoServer") : "접속 안됨"}</option>`;
       this.updateChatbotAvailability(false);
+      showStatus(false);
       return;
     }
 
@@ -406,7 +441,7 @@ const ai = {
         modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNeedKey") : "Key 필요"}</option>`;
         modelSelect.disabled = true;
         this.updateChatbotAvailability(false);
-        showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
+        showStatus(false);
         return;
       }
       try {
@@ -417,11 +452,11 @@ const ai = {
           const data = await res.json();
           const models = data.data.filter(m => m.id.startsWith("gpt-")).map(m => m.id).sort();
           updateModelSelect(models);
-          showStatus(window.i18n ? window.i18n.get("msgConnSuccess") : "성공", "#22c55e");
+          showStatus(true);
         } else { throw new Error(); }
       } catch (e) {
         updateModelSelect([], true);
-        showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
+        showStatus(false);
       }
       return;
     }
@@ -431,7 +466,7 @@ const ai = {
         modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNeedKey") : "Key 필요"}</option>`;
         modelSelect.disabled = true;
         this.updateChatbotAvailability(false);
-        showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
+        showStatus(false);
         return;
       }
       try {
@@ -442,11 +477,11 @@ const ai = {
             .filter(m => m.supportedGenerationMethods.includes("generateContent"))
             .map(m => m.name.replace("models/", ""));
           updateModelSelect(models);
-          showStatus(window.i18n ? window.i18n.get("msgConnSuccess") : "성공", "#22c55e");
+          showStatus(true);
         } else { throw new Error(); }
       } catch (e) {
         updateModelSelect([], true);
-        showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
+        showStatus(false);
       }
       return;
     }
@@ -456,11 +491,11 @@ const ai = {
         modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNeedKey") : "Key 필요"}</option>`;
         modelSelect.disabled = true;
         this.updateChatbotAvailability(false);
-        showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
+        showStatus(false);
       } else {
         const models = ["claude-3-5-sonnet-20240620", "claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"];
         updateModelSelect(models);
-        showStatus(window.i18n ? window.i18n.get("msgConnSuccess") : "성공", "#22c55e");
+        showStatus(true);
       }
       return;
     }
@@ -469,7 +504,7 @@ const ai = {
       modelSelect.disabled = true;
       modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNoServer") : "접속 안됨"}</option>`;
       this.updateChatbotAvailability(false);
-      showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
+      showStatus(false);
       return;
     }
 
@@ -484,12 +519,12 @@ const ai = {
         if (data.models && data.models.length > 0) {
           const models = data.models.map(m => m.name);
           updateModelSelect(models);
-          showStatus(window.i18n ? window.i18n.get("msgConnSuccess") : "성공", "#22c55e");
+          showStatus(true);
         } else { throw new Error(); }
       } else { throw new Error(); }
     } catch (e) {
       updateModelSelect([], true);
-      showStatus(window.i18n ? window.i18n.get("msgConnFail") : "실패", "#ef4444");
+      showStatus(false);
     }
   }
 };
