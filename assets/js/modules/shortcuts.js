@@ -89,14 +89,23 @@ const shortcutMod = {
   },
 
   add() {
-    const n = document.getElementById("siteName").value, u = document.getElementById("siteUrl").value;
+    const n = document.getElementById("siteName").value,
+      u = document.getElementById("siteUrl").value;
     if (n && u) {
-      if (window.currentShortcutIndex !== null) this.items[window.currentShortcutIndex] = { name: n, url: u };
+      if (window.currentShortcutIndex !== null)
+        this.items[window.currentShortcutIndex] = { name: n, url: u };
       else this.items.push({ name: n, url: u });
       window.shortcuts = this.items;
       this.render();
       utils.saveData();
       utils.closeModal("linkModal");
+    } else {
+      // 메모/알림과 동일한 풍선 경고창 적용
+      if (!n) {
+        utils.showValidationTip("linkSaveBtn", "이름을 입력해 주세요.");
+      } else if (!u) {
+        utils.showValidationTip("linkSaveBtn", "URL을 입력해 주세요.");
+      }
     }
   },
 
