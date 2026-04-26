@@ -273,9 +273,10 @@
         margin-bottom: 50px;
         max-width: 1200px;
         width: 90%;
-        animation: fadeIn 1.2s ease-out;
         display: flex;
         justify-content: center;
+        transform-origin: center;
+        animation: widgetFadeIn 1.2s ease-out forwards;
       }
       .quote-container {
         display: inline-flex;
@@ -595,6 +596,16 @@
           padding 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         transform-origin: center;
         max-height: 1000px;
+      }
+      @keyframes widgetFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px) scale(1);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(var(--widget-scale));
+        }
       }
       #top-right-widgets {
         transform-origin: right top;
@@ -966,11 +977,10 @@
         width: 100%;
         max-width: 600px;
         margin: 0 auto 50px auto;
-        animation: fadeIn 1.4s ease-out;
         position: relative;
         z-index: 5;
-        transform: scale(var(--widget-scale));
         transform-origin: center top;
+        animation: widgetFadeIn 1.2s ease-out forwards;
       }
       .search-box {
         background: rgba(0, 0, 0, 0.45);
@@ -1587,3 +1597,20 @@
         transform: scale(1.05);
         opacity: 0.9;
       }
+
+.ai-search-icon {
+  cursor: pointer;
+  opacity: 0.5;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+  margin-right: 5px;
+}
+.ai-search-icon:hover {
+  opacity: 0.8;
+  transform: scale(1.1);
+}
+.ai-search-icon.active {
+  opacity: 1 !important;
+  color: var(--accent-color) !important;
+}
+

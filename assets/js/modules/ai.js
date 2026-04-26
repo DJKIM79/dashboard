@@ -289,10 +289,34 @@ const ai = {
       return;
     }
     if (provider === "gemini") {
-      const models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-1.0-pro"];
-      modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
-      modelSelect.disabled = false;
-      showStatus(window.i18n ? window.i18n.get("msgConnSuccess") || "서버 접속 성공" : "서버 접속 성공", "#22c55e");
+      const apiKey = document.getElementById("aiApiKeyInput").value.trim();
+      if (!apiKey) {
+        const models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-1.0-pro"];
+        modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
+        modelSelect.disabled = false;
+        return;
+      }
+
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        if (res.ok) {
+          const data = await res.json();
+          // generateContent가 가능한 모델만 필터링
+          const models = data.models
+            .filter(m => m.supportedGenerationMethods.includes("generateContent"))
+            .map(m => m.name.replace("models/", ""));
+          
+          modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
+          modelSelect.disabled = false;
+          showStatus(window.i18n ? window.i18n.get("msgConnSuccess") : "성공", "#22c55e");
+        } else {
+          throw new Error();
+        }
+      } catch (e) {
+        const models = ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-1.0-pro"];
+        modelSelect.innerHTML = models.map(m => `<option value="${m}" ${m === currentModel ? 'selected' : ''}>${m}</option>`).join('');
+        modelSelect.disabled = false;
+      }
       return;
     }
     if (provider === "claude") {

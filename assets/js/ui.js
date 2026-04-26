@@ -55,20 +55,27 @@ const ui = {
       const sideIcon = document.getElementById(`side-${type}`);
       if (sideIcon) sideIcon.classList.toggle("active", !isHidden);
     });
+
+    // AI 아이콘 색상 업데이트 (검색창 옆 아이콘)
+    const aiIcon = document.querySelector(".ai-search-icon");
+    if (aiIcon) {
+      const isDisabled = localStorage.getItem("dj_ai_disabled") === "true";
+      const hasModel = !!localStorage.getItem("dj_ai_model");
+      const isAvailable = !isDisabled && hasModel;
+      
+      aiIcon.classList.toggle("active", isAvailable);
+    }
   },
 
   toggleWidget(type) {
     if (type === "ai") {
-      const isCurrentlyHidden = localStorage.getItem("dj_hide_ai") === "true";
       const isDisabled = localStorage.getItem("dj_ai_disabled") === "true";
       const hasModel = !!localStorage.getItem("dj_ai_model");
 
-      // 만약 위젯이 현재 숨겨진 상태에서 켜려고 하는 경우
-      if (isCurrentlyHidden) {
-        if (isDisabled || !hasModel) {
-          settings.openModal();
-          return;
-        }
+      // 설정이 안 되어 있다면 바로 설정창 열기
+      if (isDisabled || !hasModel) {
+        if (window.settings) settings.openModal();
+        return;
       }
     }
     const key = `dj_hide_${type}`;
