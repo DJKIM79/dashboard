@@ -127,8 +127,10 @@ const ui = {
         editItem.style.display = "block";
       }
     } else if (["memo", "noti"].includes(type)) {
-      if (editItem) editItem.style.display = "block";
-      if (delItem) delItem.style.display = "block";
+      if (delItem) delItem.style.display = id ? "block" : "none";
+      // Ensure Edit and Add are hidden for memo/noti
+      if (addItem) addItem.style.display = "none";
+      if (editItem) editItem.style.display = "none";
     }
 
     menu.style.display = "block";
