@@ -161,11 +161,10 @@
     </div>
     <div id="top-right-widgets" oncontextmenu="showContextMenu(event, 'weather')"></div>
     <div id="quote-section">
-      <div class="quote-container">
+      <div class="quote-container" onclick="fetchQuote()">
         <span id="quote-text">...</span>
         <span id="quote-author-wrap">
           <span id="quote-author"></span>
-          <i class="fas fa-sync-alt refresh-quote" onclick="fetchQuote()"></i>
         </span>
       </div>
     </div>

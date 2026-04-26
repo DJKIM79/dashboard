@@ -41,12 +41,24 @@ const clock = {
   },
 
   toggleFormat() {
-    this.is24Hour = !this.is24Hour;
-    localStorage.setItem("dj_clock_24h", this.is24Hour);
-    this.update(true);
+    const timeEl = document.getElementById("clock-time");
+    if (timeEl) timeEl.classList.add("animating");
+
+    setTimeout(() => {
+      this.is24Hour = !this.is24Hour;
+      localStorage.setItem("dj_clock_24h", this.is24Hour);
+      this.update(true);
+      
+      setTimeout(() => {
+        if (timeEl) timeEl.classList.remove("animating");
+      }, 300);
+    }, 300);
   },
 
   update(force = false) {
+    const timeEl = document.getElementById("clock-time");
+    if (timeEl && timeEl.classList.contains("animating") && !force) return;
+
     if (!this.initialized && !force) {
       this.init();
       return;

@@ -116,7 +116,7 @@
         position: fixed;
         top: 30px;
         right: 30px;
-        z-index: 500;
+        z-index: 2000;
         display: flex;
         flex-direction: row;
         gap: 20px;
@@ -179,7 +179,7 @@
         border-radius: 18px;
         padding: 15px;
         width: 250px;
-        z-index: 2000;
+        z-index: 2400;
         margin-top: 10px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
         animation: fadeIn 0.3s ease-out;
@@ -322,18 +322,6 @@
         font-weight: 600;
         text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
       }
-      .refresh-quote {
-        cursor: pointer;
-        font-size: 0.9rem;
-        color: #fff;
-        opacity: 0.5;
-        transition: 0.3s;
-      }
-      .refresh-quote:hover {
-        opacity: 1;
-        transform: rotate(180deg);
-        color: var(--accent-color);
-      }
       #shortcut-container {
         display: grid;
         gap: 15px;
@@ -343,6 +331,8 @@
         transform: scale(var(--widget-scale));
         transform-origin: center;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: 10;
       }
       .grid-layout,
       .list-layout,
@@ -527,7 +517,7 @@
         padding: 0 30px;
         box-sizing: border-box;
         pointer-events: none;
-        z-index: 100;
+        z-index: 1000;
       }
       .left-area {
         align-items: flex-start;
@@ -588,7 +578,7 @@
         display: flex;
         flex-direction: column;
         gap: 15px;
-        z-index: 1000;
+        z-index: 2500;
         transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .sidebar-trigger {
@@ -598,7 +588,7 @@
         transform: translateY(-50%);
         width: 40px;
         height: 80px;
-        z-index: 999;
+        z-index: 2499;
         cursor: pointer;
       }
       .sidebar-hint {
@@ -825,6 +815,14 @@
         white-space: nowrap;
         overflow: hidden;
         height: 1.2em;
+      }
+      #clock-time.animating {
+        animation: clockFade 0.6s ease-in-out;
+      }
+      @keyframes clockFade {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0; transform: scale(0.95); }
+        100% { opacity: 1; transform: scale(1); }
       }
       .clock-digit-group {
         height: 1.2em;
@@ -1396,7 +1394,7 @@
         height: 100%;
         background: rgba(0, 0, 0, 0.4);
         backdrop-filter: blur(5px);
-        z-index: 390;
+        z-index: 2100;
         transition: opacity 0.5s ease;
       }
       .modal-overlay.widget-hidden {
@@ -1420,7 +1418,7 @@
         left: 50%;
         bottom: 30px;
         transform: translateX(-50%);
-        z-index: 400;
+        z-index: 2200;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         visibility: visible;
         pointer-events: auto;
