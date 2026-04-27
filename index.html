@@ -461,14 +461,33 @@
           id="calendar-container"
           class="calendar-widget"
           oncontextmenu="showContextMenu(event, 'calendar')"
+          onclick="calendar.handleWidgetClick(event)"
         >
           <div class="calendar-header">
-            <i class="fas fa-caret-left cal-nav" onclick="changeMonth(-1)"></i>
-            <span id="cal-month-year">...</span>
-            <i class="fas fa-caret-right cal-nav" onclick="changeMonth(1)"></i>
+            <i
+              class="fas fa-caret-left cal-nav"
+              onclick="calendar.changeMonth(-1); event.stopPropagation();"
+            ></i>
+            <div class="calendar-header-center">
+              <span id="cal-month-year">...</span>
+              <i
+                class="fas fa-undo today-icon"
+                onclick="calendar.resetToToday(); event.stopPropagation();"
+                data-i18n-title="tipToday"
+              ></i>
+            </div>
+            <i
+              class="fas fa-caret-right cal-nav"
+              onclick="calendar.changeMonth(1); event.stopPropagation();"
+            ></i>
           </div>
-          <div class="calendar-days-header" id="cal-days-header"></div>
-          <div class="calendar-grid" id="calendar-grid"></div>
+          <div class="calendar-body-container" id="calendar-body">
+            <div class="calendar-days-header" id="cal-days-header"></div>
+            <div class="calendar-grid-wrapper">
+              <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+          </div>
+          <div class="month-selector" id="month-selector"></div>
         </div>
         <div
           class="smart-folder"

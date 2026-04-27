@@ -39,7 +39,7 @@ const noti = {
       });
   },
 
-  openModal(id = null) {
+  openModal(id = null, specificDate = null) {
     window.currentEditNotiId = id;
     window.currentContextType = "noti";
     window.currentContextId = id;
@@ -62,7 +62,13 @@ const noti = {
 
     document.getElementById("notiHour").value = h;
     document.getElementById("notiMin").value = m;
-    document.getElementById("notiDate").value = n ? n.date || today : today;
+    
+    // Set date: priority is (existing noti date) > (specifically passed date) > (today)
+    let defaultDate = today;
+    if (n && n.date) defaultDate = n.date;
+    else if (specificDate) defaultDate = specificDate;
+    
+    document.getElementById("notiDate").value = defaultDate;
     document.getElementById("isRepeat").checked = n ? n.isRepeat : false;
 
     if (window.toggleDaySelector) toggleDaySelector(n ? n.isRepeat : false);
