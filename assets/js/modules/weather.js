@@ -297,13 +297,13 @@ const weather = {
     );
 
     if (customLocations.length === 0) {
-      list.innerHTML = `<div style="font-size: 0.8rem; opacity: 0.5; padding: 10px; text-align: center;">추가된 도시가 없습니다.</div>`;
+      list.innerHTML = `<div style="font-size: 0.8rem; opacity: 0.5; padding: 10px; text-align: center;">도시가 없습니다.</div>`;
       return;
     }
 
     list.innerHTML = `
       <div class="weather-custom-select" onclick="weather.toggleLocationPopup(event)">
-        <span>추가된 도시 (${customLocations.length})</span>
+        <span>도시 목록</span>
         <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
         <div id="weather-location-popup" class="ai-model-popup weather-popup">
           ${customLocations

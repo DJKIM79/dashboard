@@ -29,9 +29,8 @@ const settings = {
       if (el("searchNewTab")) el("searchNewTab").checked = searchNewTab;
       if (el("showCurrentWeather"))
         el("showCurrentWeather").checked = showWeather;
-      if (el("searchEngineSelect")) el("searchEngineSelect").value = engine;
       if (el("customSearchUrlInput"))
-        el("customSearchUrlInput").value = customUrl;
+        el("customSearchUrlInput").value = "";
 
       const themeColor = localStorage.getItem("dj_theme_color") || "#eab308";
       const themeAdj = localStorage.getItem("dj_theme_adjustment") || "none";
@@ -44,7 +43,7 @@ const settings = {
       if (el("engineFlickr"))
         el("engineFlickr").checked = imgEngine === "flickr";
 
-      this.toggleCustomSearchUrl();
+      this.renderSearchEngineList();
       if (window.renderWeatherLocationList) renderWeatherLocationList();
 
       const aiProvider = localStorage.getItem("dj_ai_provider") || "none";
@@ -101,15 +100,154 @@ const settings = {
   updateSearchNewTab(checked) {
     localStorage.setItem("dj_search_new_tab", checked);
   },
+
+  renderSearchEngineList() {
+    const popupEl = document.getElementById("search-engine-popup");
+    const triggerFavicon = document.getElementById("trigger-favicon");
+    const triggerName = document.getElementById("trigger-name");
+    if (!popupEl) return;
+    popupEl.innerHTML = "";
+
+    const currentEngine = localStorage.getItem("dj_search_engine") || "google";
+    const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
+    
+    const defaultEngines = [
+      { id: "google", name: "Google", domain: "google.com", isDefault: true },
+      { id: "naver", name: "Naver", domain: "naver.com", isDefault: true },
+      { id: "chatgpt", name: "ChatGPT", domain: "openai.com", isDefault: true }
+    ];
+
+    const allEngines = [...defaultEngines, ...customEngines];
+
+    allEngines.forEach(engine => {
+      const item = document.createElement("div");
+      item.className = `engine-item ${engine.id === currentEngine ? "active" : ""}`;
+      
+      let faviconUrl = "";
+      if (engine.isDefault) {
+        faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}`;
+      } else {
+        try {
+          const domain = new URL(engine.url).hostname;
+          faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+        } catch(e) { faviconUrl = ""; }
+      }
+
+      // Update Trigger UI
+      if (engine.id === currentEngine) {
+        if (triggerFavicon) triggerFavicon.innerHTML = faviconUrl ? `<img src="${faviconUrl}" alt="icon">` : '<i class="fas fa-search"></i>';
+        if (triggerName) triggerName.innerText = engine.name;
+      }
+
+      item.onclick = (e) => {
+          e.stopPropagation();
+          this.updateSearchEngine(engine.id);
+          this.closeSearchEnginePopup();
+      };
+
+      item.innerHTML = `
+        <div class="engine-favicon">
+          ${faviconUrl ? `<img src="${faviconUrl}" alt="icon">` : '<i class="fas fa-search"></i>'}
+        </div>
+        <div class="engine-name">${engine.name}</div>
+        <div class="engine-status">
+          ${engine.id === currentEngine ? '<i class="fas fa-check-circle engine-active-icon"></i>' : (engine.isDefault ? '<span class="engine-info-tag">기본</span>' : '')}
+        </div>
+        <div class="engine-actions">
+          ${!engine.isDefault ? `<i class="fas fa-trash-alt engine-btn-del" onclick="event.stopPropagation(); settings.deleteCustomSearchEngine('${engine.id}')"></i>` : ''}
+        </div>
+      `;
+      popupEl.appendChild(item);
+    });
+  },
+
+  toggleSearchEnginePopup(e) {
+    if (e) e.stopPropagation();
+    const popup = document.getElementById("search-engine-popup");
+    if (!popup) return;
+    
+    const isShowing = popup.classList.contains("show");
+    
+    if (!isShowing) {
+        popup.style.display = "block";
+        popup.offsetHeight; // Reflow
+        popup.classList.add("show");
+        
+        if (this._seCloseListener) window.removeEventListener("click", this._seCloseListener);
+        this._seCloseListener = (evt) => {
+            if (!popup.contains(evt.target)) this.closeSearchEnginePopup();
+        };
+        setTimeout(() => window.addEventListener("click", this._seCloseListener), 1);
+    } else {
+        this.closeSearchEnginePopup();
+    }
+  },
+
+  closeSearchEnginePopup() {
+    const popup = document.getElementById("search-engine-popup");
+    if (!popup || !popup.classList.contains("show")) return;
+    popup.classList.remove("show");
+    if (this._seCloseListener) {
+        window.removeEventListener("click", this._seCloseListener);
+        this._seCloseListener = null;
+    }
+    setTimeout(() => {
+        if (!popup.classList.contains("show")) popup.style.display = "none";
+    }, 200);
+  },
+
+  addCustomSearchEngine() {
+    const input = document.getElementById("customSearchUrlInput");
+    const url = input.value.trim();
+    if (!url) {
+        utils.showValidationTip("customSearchUrlInput", "URL을 입력해 주세요.");
+        return;
+    }
+
+    try {
+        const urlObj = new URL(url);
+        const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
+        
+        const isDuplicate = customEngines.some(e => e.url === url) || 
+                          ["https://www.google.com/search?q=", "https://search.naver.com/search.naver?query=", "https://chatgpt.com/?q="].includes(url);
+        
+        if (isDuplicate) {
+            utils.showValidationTip("customSearchUrlInput", "이미 추가된 검색 엔진입니다.");
+            return;
+        }
+
+        const newEngine = {
+            id: `custom_${Date.now()}`,
+            name: urlObj.hostname.replace("www.", ""),
+            url: url,
+            domain: urlObj.hostname,
+            isDefault: false
+        };
+
+        customEngines.push(newEngine);
+        localStorage.setItem("dj_search_engines_custom", JSON.stringify(customEngines));
+        input.value = "";
+        this.renderSearchEngineList();
+    } catch (e) {
+        utils.showValidationTip("customSearchUrlInput", "올바른 URL 형식이 아닙니다.");
+    }
+  },
+
+  deleteCustomSearchEngine(id) {
+    let customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
+    customEngines = customEngines.filter(e => e.id !== id);
+    localStorage.setItem("dj_search_engines_custom", JSON.stringify(customEngines));
+    if (localStorage.getItem("dj_search_engine") === id) this.updateSearchEngine("google");
+    else this.renderSearchEngineList();
+  },
+
   updateSearchEngine(engine) {
     localStorage.setItem("dj_search_engine", engine);
-    if (window.search) window.search.currentEngine = engine;
-    this.toggleCustomSearchUrl();
-    if (window.updateSearchEngineIcon) updateSearchEngineIcon();
-  },
-  updateCustomSearchUrl(url) {
-    localStorage.setItem("dj_custom_search_url", url.trim());
-    if (window.updateSearchEngineIcon) updateSearchEngineIcon();
+    if (window.search) {
+        search.currentEngine = engine;
+        search.updateIcon();
+    }
+    this.renderSearchEngineList();
   },
   updateShowWeather(show) {
     localStorage.setItem("dj_show_current_weather", show);

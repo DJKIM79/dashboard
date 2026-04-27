@@ -10,27 +10,38 @@ const search = {
     }
   },
 
+  getAllEngines() {
+    const defaultEngines = [
+      { id: "google", name: "Google", domain: "google.com", isDefault: true },
+      { id: "naver", name: "Naver", domain: "naver.com", isDefault: true },
+      { id: "chatgpt", name: "ChatGPT", domain: "openai.com", isDefault: true }
+    ];
+    const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
+    return [...defaultEngines, ...customEngines];
+  },
+
   updateIcon() {
-    const engine = this.currentEngine;
+    const engineId = this.currentEngine;
     const iconEl = document.getElementById("search-engine-current");
     if (!iconEl) return;
 
-    const domains = {
-      google: "google.com",
-      naver: "naver.com",
-      chatgpt: "openai.com",
-    };
+    const allEngines = this.getAllEngines();
+    const engine = allEngines.find(e => e.id === engineId) || allEngines[0];
 
-    if (engine === "custom") {
-      const customUrl = localStorage.getItem("dj_custom_search_url") || "";
-      try {
-        const domain = new URL(customUrl).hostname;
-        iconEl.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=64&domain=${domain}" alt="custom">`;
-      } catch (e) {
-        iconEl.innerHTML = `<i class="fas fa-link"></i>`;
-      }
+    let faviconUrl = "";
+    if (engine.isDefault) {
+      faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}`;
     } else {
-      iconEl.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=64&domain=${domains[engine]}" alt="${engine}">`;
+      try {
+        const domain = new URL(engine.url).hostname;
+        faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+      } catch (e) { faviconUrl = ""; }
+    }
+
+    if (faviconUrl) {
+      iconEl.innerHTML = `<img src="${faviconUrl}" alt="${engine.name}">`;
+    } else {
+      iconEl.innerHTML = `<i class="fas fa-search"></i>`;
     }
   },
 
@@ -39,19 +50,30 @@ const search = {
     if (!menu) return;
     menu.innerHTML = "";
 
-    const engines = [
-      { id: "google", domain: "google.com" },
-      { id: "naver", domain: "naver.com" },
-      { id: "chatgpt", domain: "openai.com" },
-    ];
+    const allEngines = this.getAllEngines();
 
-    engines.forEach((engine) => {
+    allEngines.forEach((engine) => {
       if (engine.id === this.currentEngine) return;
 
       const div = document.createElement("div");
       div.className = "engine-option";
       div.onclick = (e) => this.quickSelect(engine.id, e);
-      div.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}" alt="${engine.id}">`;
+      
+      let faviconUrl = "";
+      if (engine.isDefault) {
+        faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}`;
+      } else {
+        try {
+          const domain = new URL(engine.url).hostname;
+          faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+        } catch (e) { faviconUrl = ""; }
+      }
+
+      if (faviconUrl) {
+        div.innerHTML = `<img src="${faviconUrl}" alt="${engine.name}">`;
+      } else {
+        div.innerHTML = `<i class="fas fa-search" style="font-size: 0.8rem; color: #94a3b8;"></i>`;
+      }
       menu.appendChild(div);
     });
   },
@@ -63,7 +85,6 @@ const search = {
 
     if (!menu.classList.contains("active")) {
       this.renderMenu();
-      // Close other FAB menus when opening search menu
       document
         .querySelectorAll(".fab-menu")
         .forEach((m) => m.classList.remove("active"));
@@ -71,14 +92,14 @@ const search = {
     menu.classList.toggle("active");
   },
 
-  quickSelect(engine, e) {
+  quickSelect(engineId, e) {
     if (e) e.stopPropagation();
-    this.currentEngine = engine;
+    this.currentEngine = engineId;
+    localStorage.setItem("dj_search_engine", engineId);
     this.updateIcon();
     const menu = document.getElementById("search-engine-menu");
     if (menu) menu.classList.remove("active");
 
-    // Focus search input for immediate typing
     const input = document.getElementById("searchInput");
     if (input) input.focus();
   },
@@ -88,32 +109,20 @@ const search = {
     const query = input.value.trim();
     if (!query) return;
 
-    const engine = this.currentEngine;
+    const allEngines = this.getAllEngines();
+    const engine = allEngines.find(e => e.id === this.currentEngine) || allEngines[0];
+    
     let url = "";
-
-    switch (engine) {
-      case "google":
-        url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-        break;
-      case "naver":
-        url = `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
-        break;
-      case "chatgpt":
-        url = `https://chatgpt.com/?q=${encodeURIComponent(query)}`;
-        break;
-      case "custom":
-        const customBase = localStorage.getItem("dj_custom_search_url");
-        if (customBase) {
-          url = customBase + encodeURIComponent(query);
-        } else {
-          url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-        }
-        break;
-      default:
-        url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    if (engine.isDefault) {
+      if (engine.id === "google") url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+      else if (engine.id === "naver") url = `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
+      else if (engine.id === "chatgpt") url = `https://chatgpt.com/?q=${encodeURIComponent(query)}`;
+    } else {
+      url = engine.url + encodeURIComponent(query);
     }
 
-    // Reset to saved engine after search (one-time use logic)
+    if (!url) url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+
     this.currentEngine = localStorage.getItem("dj_search_engine") || "google";
     this.updateIcon();
     input.value = "";
@@ -128,7 +137,7 @@ const search = {
 };
 
 window.search = search;
-window.currentSearchEngine = search.currentEngine; // Keep in sync for other modules
+window.currentSearchEngine = search.currentEngine;
 window.toggleSearchEngineMenu = search.toggleMenu.bind(search);
 window.quickSelectEngine = search.quickSelect.bind(search);
 window.updateSearchEngineIcon = search.updateIcon.bind(search);
