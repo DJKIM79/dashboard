@@ -3,6 +3,12 @@ const ai = {
     return localStorage.getItem("dj_ai_provider") || "none";
   },
   get serverUrl() {
+    const provider = this.provider;
+    if (provider.startsWith("custom_")) {
+        const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+        const current = customAis.find(a => a.id === provider);
+        return current ? current.url : "";
+    }
     return localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
   },
   get apiKey() {
@@ -176,13 +182,13 @@ const ai = {
   },
 
   updateModelSelectUI(models) {
-    const modelSelect = document.getElementById("aiModelSelect");
-    if (!modelSelect) return;
+    const triggerName = document.getElementById("ai-model-trigger-name");
+    const trigger = document.getElementById("ai-model-trigger");
+    
     if (this.isConnected && models.length > 0) {
       const oldModel = this.settingsModel;
       if (!models.includes(oldModel)) {
         localStorage.setItem("dj_ai_model", models[0]);
-        // 모델이 바뀌었으므로 히스토리를 다시 로드해야 함 (중요: 동기화 버그 해결책)
         if (oldModel !== "") {
           setTimeout(() => {
             this.renderHistory();
@@ -190,18 +196,19 @@ const ai = {
           }, 50);
         }
       }
-      modelSelect.innerHTML = models
-        .map(
-          (m) =>
-            `<option value="${m}" ${m === this.settingsModel ? "selected" : ""}>${m}</option>`,
-        )
-        .join("");
-      modelSelect.disabled = false;
+      
       localStorage.setItem("dj_ai_models_cache", JSON.stringify(models));
+      if (triggerName) {
+        triggerName.innerText = this.settingsModel;
+      }
+      if (trigger) trigger.classList.remove("disabled");
       this.updateModelDisplay();
     } else {
-      modelSelect.innerHTML = `<option value="">${window.i18n ? window.i18n.get("aiNoServer") : "서버 연결 안됨"}</option>`;
-      modelSelect.disabled = true;
+      localStorage.setItem("dj_ai_models_cache", JSON.stringify([]));
+      if (triggerName) {
+        triggerName.innerText = window.i18n ? window.i18n.get("aiNoServer") : "접속 안됨";
+      }
+      if (trigger) trigger.classList.add("disabled");
     }
   },
 
@@ -237,38 +244,33 @@ const ai = {
   },
 
   async checkConnection(isSilent = false) {
-    const providerEl = document.getElementById("aiProviderSelect");
-    const provider = providerEl ? providerEl.value : this.provider;
-    const url =
-      document.getElementById("aiServerUrlInput")?.value || this.serverUrl;
-    const apiKey =
-      document.getElementById("aiApiKeyInput")?.value.trim() || this.apiKey;
-    const tempMsgSpan = document.getElementById("ai-temp-msg");
-    const refreshIcon = document.querySelector(".ai-refresh-icon");
+    const provider = localStorage.getItem("dj_ai_provider") || "none";
+    const url = document.getElementById("aiServerUrlInput")?.value || this.serverUrl;
+    const apiKey = document.getElementById("aiApiKeyInput")?.value.trim() || this.apiKey;
+    const checkBtn = document.getElementById("ai-check-btn");
+    const tooltip = document.getElementById("ai-check-tooltip");
+
+    const showTooltip = (msg, isSuccess) => {
+      if (tooltip) {
+        tooltip.innerText = msg;
+        tooltip.style.background = isSuccess ? "#22c55e" : "#ef4444";
+        tooltip.classList.add("show");
+        setTimeout(() => tooltip.classList.remove("show"), 3000);
+      }
+    };
 
     const finalize = (isConnected, models = []) => {
       if (isConnected) {
         this.updateChatbotAvailability(true);
         this.updateModelSelectUI(models);
-      } else if (!isSilent) {
+      } else {
         this.updateChatbotAvailability(false);
         this.updateModelSelectUI([]);
       }
+      
       if (!isSilent) {
-        const pName =
-          provider === "local"
-            ? "로컬 AI"
-            : provider.charAt(0).toUpperCase() + provider.slice(1);
-        if (tempMsgSpan) {
-          tempMsgSpan.innerText = isConnected
-            ? `${pName} 연결 성공!`
-            : `${pName} 연결 실패!`;
-          tempMsgSpan.style.color = isConnected ? "#22c55e" : "#ef4444";
-          tempMsgSpan.style.display = "inline-block";
-          setTimeout(() => (tempMsgSpan.style.display = "none"), 4000);
-        }
-        if (refreshIcon)
-          refreshIcon.style.color = isConnected ? "#22c55e" : "#ef4444";
+        const pName = this.getProviderName(provider);
+        showTooltip(isConnected ? `${pName} 연결 성공!` : `${pName} 연결 실패!`, isConnected);
       }
     };
 
@@ -276,69 +278,51 @@ const ai = {
       finalize(false);
       return;
     }
+
     try {
       if (provider === "openai") {
-        if (!apiKey) {
-          finalize(false);
-          return;
-        }
+        if (!apiKey) { finalize(false); return; }
         const res = await fetch("https://api.openai.com/v1/models", {
           headers: { Authorization: `Bearer ${apiKey}` },
         });
         if (res.ok) {
           const data = await res.json();
-          finalize(
-            true,
-            data.data
-              .filter((m) => m.id.startsWith("gpt-"))
-              .map((m) => m.id)
-              .sort(),
-          );
+          finalize(true, data.data.filter((m) => m.id.startsWith("gpt-")).map((m) => m.id).sort());
         } else finalize(false);
       } else if (provider === "gemini") {
-        if (!apiKey) {
-          finalize(false);
-          return;
-        }
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
-        );
+        if (!apiKey) { finalize(false); return; }
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
         if (res.ok) {
           const data = await res.json();
-          finalize(
-            true,
-            data.models
-              .filter((m) =>
-                m.supportedGenerationMethods.includes("generateContent"),
-              )
-              .map((m) => m.name.replace("models/", "")),
-          );
+          finalize(true, data.models.filter((m) => m.supportedGenerationMethods.includes("generateContent")).map((m) => m.name.replace("models/", "")));
         } else finalize(false);
-      } else if (provider === "local") {
-        if (!url) {
-          finalize(false);
-          return;
-        }
-        let fetchUrl = url.includes("localhost")
-          ? url.replace("localhost", "127.0.0.1")
-          : url;
+      } else {
+        // Local or Custom AI (Ollama style)
+        if (!url) { finalize(false); return; }
+        let fetchUrl = url.includes("localhost") ? url.replace("localhost", "127.0.0.1") : url;
+        if (fetchUrl.endsWith("/")) fetchUrl = fetchUrl.slice(0, -1);
+        
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
-        const res = await fetch(`${fetchUrl}/api/tags`, {
-          signal: controller.signal,
-        });
+        const res = await fetch(`${fetchUrl}/api/tags`, { signal: controller.signal });
         clearTimeout(timeoutId);
+        
         if (res.ok) {
           const data = await res.json();
-          finalize(
-            true,
-            (data.models || []).map((m) => m.name),
-          );
+          finalize(true, (data.models || []).map((m) => m.name));
         } else finalize(false);
       }
     } catch (e) {
       finalize(false);
     }
+  },
+
+  getProviderName(provider) {
+    const defaultNames = { none: "사용 안 함", local: "로컬 AI", openai: "OpenAI", gemini: "Gemini" };
+    if (defaultNames[provider]) return defaultNames[provider];
+    const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+    const current = customAis.find(a => a.id === provider);
+    return current ? current.name : "AI";
   },
 
   async sendMessage() {

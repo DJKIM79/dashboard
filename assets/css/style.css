@@ -237,28 +237,19 @@ body::before {
   position: relative;
   margin-bottom: 20px;
 }
-.city-results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  background: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 10px;
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 100;
-  display: none;
-  animation: fadeIn 0.2s ease-out;
-}
+
 .city-result-item {
   padding: 10px;
   cursor: pointer;
   font-size: 0.85rem;
-  border-bottom: 1px solid #1e293b;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .city-result-item:hover {
-  background: #1e293b;
+  background: rgba(255, 255, 255, 0.05);
   color: var(--accent-color);
 }
 .location-list {
@@ -282,6 +273,12 @@ body::before {
   transition: all 0.2s;
   color: #fff;
 }
+.weather-custom-select.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.02) !important;
+}
 .setting-row .weather-custom-select {
   padding: 6px 8px;
   border-radius: 8px;
@@ -296,12 +293,7 @@ body::before {
   background: rgba(255, 255, 255, 0.05);
   border-color: var(--accent-color);
 }
-.weather-popup {
-  top: 45px !important;
-  left: 0 !important;
-  width: 100%;
-  min-width: unset !important;
-  box-sizing: border-box;
+
   max-height: 200px;
   overflow-y: auto;
   z-index: 1001;
@@ -1646,28 +1638,194 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   }
 }
 
+/* AI Settings Styles */
+.ai-check-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  transform: translateY(10px);
+  background: #1e293b;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.ai-check-tooltip.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.ai-check-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 11px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #1e293b transparent transparent transparent;
+}
+.engine-btn-del {
+  padding: 6px;
+  opacity: 0.5;
+  transition: 0.2s;
+}
+.engine-btn-del:hover {
+  opacity: 1;
+  color: #ef4444;
+}
+
+.ai-search-icon {
+  transition: color 0.3s ease;
+}
+.ai-search-icon.error {
+  color: #ef4444 !important;
+}
+
+/* --- 팝업 시스템 복구 및 분리 --- */
+
+/* 1. 공통 팝업 베이스 (가장 안정적인 설정) */
 .engine-popup {
   position: absolute;
-  top: 45px;
-  left: 0;
-  width: 100%;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  max-height: 250px;
-  overflow-y: auto;
-  z-index: 100;
+  z-index: 1000;
   display: none;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   padding: 8px;
   box-sizing: border-box;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
 }
+
 .engine-popup.show {
-  display: flex;
+  display: flex !important;
   flex-direction: column;
-  gap: 4px;
   animation: fadeIn 0.2s ease;
+}
+
+/* 2. AI 및 검색엔진 설정 (위로 열림) */
+#search-engine-popup,
+#ai-provider-popup,
+#ai-model-select-popup,
+#ai-custom-add-container {
+  bottom: 45px;
+  left: 0;
+}
+
+#ai-provider-popup,
+#ai-model-select-popup {
+  min-width: 280px;
+  width: auto;
+  max-width: 400px;
+  max-height: 450px;
+}
+
+#search-engine-popup,
+#ai-custom-add-container {
+  width: 100%;
+}
+
+
+/* 3. 도시 및 날씨 설정 (아래로 열림 - 요청 사항) */
+.weather-popup,
+.city-results {
+  position: absolute;
+  top: 100% !important;
+  bottom: auto !important;
+  left: 0 !important;
+  width: 100%;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-top: 5px;
+  max-height: 250px;
+  z-index: 1000;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  padding: 6px;
+}
+
+/* 크기 선택 전용 드롭다운 (소, 중, 대) */
+#quote-size-popup,
+#widget-size-popup {
+  min-width: unset !important;
+  width: 100%;
+  left: 0 !important;
+  transform: none !important;
+}
+
+#quote-size-popup .ai-model-item,
+#widget-size-popup .ai-model-item,
+#quote-size-popup .ai-model-item span,
+#widget-size-popup .ai-model-item span {
+  justify-content: center !important;
+  text-align: center !important;
+  flex: 1;
+}
+
+/* 4. 스크롤 제어 */
+/* 일반적인 팝업은 자체 스크롤 */
+#search-engine-popup,
+#ai-model-select-popup,
+#citySearchResults,
+.weather-popup {
+  overflow-y: auto;
+}
+
+/* AI 제공자 목록처럼 내부에 고정 영역이 있는 경우 */
+.popup-list-area {
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* 스크롤바 스타일 통일 (AI 모델 목록 스타일 적용) */
+.engine-popup::-webkit-scrollbar,
+.popup-list-area::-webkit-scrollbar,
+.city-results::-webkit-scrollbar,
+.weather-popup::-webkit-scrollbar,
+.location-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.engine-popup::-webkit-scrollbar-track,
+.popup-list-area::-webkit-scrollbar-track,
+.city-results::-webkit-scrollbar-track,
+.weather-popup::-webkit-scrollbar-track,
+.location-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.engine-popup::-webkit-scrollbar-thumb,
+.popup-list-area::-webkit-scrollbar-thumb,
+.city-results::-webkit-scrollbar-thumb,
+.weather-popup::-webkit-scrollbar-thumb,
+.location-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.engine-popup::-webkit-scrollbar-thumb:hover,
+.popup-list-area::-webkit-scrollbar-thumb:hover,
+.city-results::-webkit-scrollbar-thumb:hover,
+.weather-popup::-webkit-scrollbar-thumb:hover,
+.location-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.engine-name {
+  flex: 1;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 .engine-item {
   display: flex;
@@ -1711,6 +1869,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 .engine-status {
   width: 32px;
@@ -1886,6 +2045,12 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   cursor: pointer;
   transition: opacity 0.2s;
   position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+  display: inline-block;
+  vertical-align: middle;
 }
 .history-title:hover {
   opacity: 0.8;
@@ -1893,17 +2058,18 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .ai-model-popup {
   position: absolute;
-  top: 45px;
+  bottom: 45px;
   left: 10px;
-  background: rgba(15, 23, 42, 0.95);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 8px;
   z-index: 1000;
   min-width: 180px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   display: none;
+  max-height: 250px;
+  overflow-y: auto;
 }
 .ai-model-popup.show {
   display: block;
@@ -1918,8 +2084,15 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   color: #fff;
   white-space: nowrap;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  gap: 10px;
+}
+.ai-model-item span {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .ai-model-item:hover {
   background: rgba(255, 255, 255, 0.1);
