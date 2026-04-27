@@ -5,6 +5,8 @@ const weather = {
   searchTimeout: null,
 
   init() {
+    this.showCurrent = localStorage.getItem("dj_show_current_weather") !== "false";
+    this.locations = JSON.parse(localStorage.getItem("dj_weather_locations")) || [];
     this.fetch();
     this.renderLocationList();
   },

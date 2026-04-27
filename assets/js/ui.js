@@ -76,7 +76,15 @@ const ui = {
 
       targets.forEach((id) => {
         const el = document.getElementById(id);
-        if (el) el.classList.toggle("widget-hidden", isHidden);
+        if (el) {
+          if (type === "fileMgmt") {
+             // File Management visibility logic
+             const hideFile = localStorage.getItem("dj_hide_fileMgmt") === "true";
+             el.classList.toggle("widget-hidden", hideFile);
+          } else {
+             el.classList.toggle("widget-hidden", isHidden);
+          }
+        }
       });
 
       const sideIcon = document.getElementById(`side-${type}`);

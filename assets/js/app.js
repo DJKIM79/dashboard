@@ -22,6 +22,8 @@ const app = {
       localStorage.setItem("dj_search_new_tab", "true");
     if (localStorage.getItem("dj_show_current_weather") === null)
       localStorage.setItem("dj_show_current_weather", "true");
+    if (localStorage.getItem("dj_hide_fileMgmt") === null)
+      localStorage.setItem("dj_hide_fileMgmt", "false");
 
     // 1. Initialize i18n first
     await i18n.init();
@@ -29,6 +31,7 @@ const app = {
     // 2. Initialize Utils & UI
     utils.initTimePicker();
     ui.init();
+    ui.applyVisibility(); // Apply saved widget visibility states
 
     // 3. Initialize Settings (Theme, etc.)
     const savedTheme = localStorage.getItem("dj_theme_color");
@@ -138,12 +141,22 @@ const app = {
       noti.delete(id);
     } else if (type === "weather") {
       if (id === "current") {
-        localStorage.setItem("dj_show_current_weather", "false");
-        weather.showCurrent = false;
+        if (window.settings && typeof settings.updateShowWeather === "function") {
+          settings.updateShowWeather(false);
+          // UI sync if modal is open
+          const check = document.getElementById("showCurrentWeather");
+          if (check) check.checked = false;
+        } else {
+          localStorage.setItem("dj_show_current_weather", "false");
+          if (window.weather) {
+            weather.showCurrent = false;
+            weather.fetch();
+          }
+        }
       } else {
         weather.removeLocation(id);
+        weather.fetch();
       }
-      weather.fetch();
     }
     utils.saveData();
   },
