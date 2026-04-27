@@ -253,7 +253,8 @@ const ai = {
     const showTooltip = (msg, isSuccess) => {
       if (tooltip) {
         tooltip.innerText = msg;
-        tooltip.style.background = isSuccess ? "#22c55e" : "#ef4444";
+        const color = isSuccess ? "#22c55e" : "#ef4444";
+        tooltip.style.setProperty("--tip-bg", color);
         tooltip.classList.add("show");
         setTimeout(() => tooltip.classList.remove("show"), 3000);
       }

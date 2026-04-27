@@ -14,15 +14,19 @@ const weather = {
   async fetch() {
     const container = document.getElementById("top-right-widgets");
     if (!container) return;
-    container.innerHTML = "";
-
+    
+    // Clear only current weather items to avoid flickering if possible, 
+    // but for simplicity and reliability, we ensure the current state is reflected.
     const myCallId = ++this.callId;
-    const customLocations = this.locations.filter(
-      (loc) => loc.type !== "current",
-    );
+    
+    // If we're not showing current and have no locations, just clear and return
+    const customLocations = this.locations.filter(loc => loc.id !== 'current');
+    if (!this.showCurrent && customLocations.length === 0) {
+      container.innerHTML = "";
+      return;
+    }
 
-    if (!this.showCurrent && customLocations.length === 0) return;
-
+    container.innerHTML = "";
     let pendingRequests = (this.showCurrent ? 1 : 0) + customLocations.length;
     let loadingEl = document.createElement("div");
     loadingEl.className = "weather-item";
