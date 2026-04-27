@@ -366,21 +366,68 @@ body::before {
 #shortcut-container {
   display: grid;
   gap: 15px;
-  width: calc(100% - 40px);
-  max-width: 915px; /* (140 * 6) + (15 * 5) = 840 + 75 = 915 */
+  width: calc(100% - 100px);
+  max-width: 915px;
   margin: 0 auto;
   transform: scale(var(--widget-scale));
   transform-origin: center;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 10;
+  padding: 0 50px;
 }
-.grid-layout {
+
+@media (max-width: 1100px) {
+  #shortcut-container {
+    width: calc(100% - 300px);
+    padding: 0 150px;
+  }
+}
+
+@media (max-width: 800px) {
+  #shortcut-container {
+    width: calc(100% - 60px);
+    padding: 0 30px;
+  }
+}
+
+.grid-layout,
+.shortcut-list-view {
   grid-template-columns: repeat(auto-fill, 140px);
   justify-content: center;
   display: grid;
   max-width: 930px;
   margin: 0 auto;
+}
+
+.shortcut-list-view .shortcut-item {
+  flex-direction: row !important;
+  padding: 8px 12px !important;
+  border-radius: 12px !important;
+  gap: 12px !important;
+  text-align: left !important;
+  width: 140px !important;
+  min-width: 140px !important;
+  height: 40px !important;
+  justify-content: flex-start !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+
+.shortcut-list-view .shortcut-item .shortcut-icon-wrapper,
+.shortcut-list-view .shortcut-item img,
+.shortcut-list-view .shortcut-item .shortcut-default-icon {
+  width: 24px !important;
+  height: 24px !important;
+  margin-bottom: 0 !important;
+  font-size: 0.9rem !important;
+  border-radius: 6px !important;
+}
+
+.shortcut-list-view .shortcut-item span {
+  font-size: 0.8rem !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .shortcut-item {
@@ -393,7 +440,7 @@ body::before {
   text-align: center;
   text-decoration: none;
   color: #fff;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Only keep hover/active transform */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   cursor: pointer;
   -webkit-user-select: none;
@@ -406,14 +453,14 @@ body::before {
   box-sizing: border-box;
   height: 105px;
 }
-.shortcut-list-view .shortcut-item {
-  transition: none !important;
+.shortcut-item:hover {
+  border-color: var(--accent-color) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 0 12px var(--accent-color);
+  transform: translateY(-2px);
 }
-.shortcut-item img,
-.shortcut-icon-wrapper,
-.shortcut-default-icon,
-.shortcut-item span {
-  transition: none !important;
+.shortcut-item:active {
+  transform: scale(0.95);
 }
 .shortcut-item span {
   width: 100%;
@@ -423,13 +470,6 @@ body::before {
   text-overflow: ellipsis;
   padding: 0 5px;
   box-sizing: border-box;
-}
-.shortcut-item:active {
-  transform: scale(0.95);
-}
-#shortcut-container:not(.sorting-active) .shortcut-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: var(--accent-color);
 }
 .shortcut-icon-wrapper {
   width: 40px;
@@ -1203,7 +1243,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #search-section {
   width: calc(100% - 60px);
   max-width: 600px;
-  margin: 0 auto 50px auto;
+  margin: 0 auto 80px auto;
   position: relative;
   z-index: 5;
   transform-origin: center top;
@@ -2209,55 +2249,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
     transform: rotate(300deg) translateX(-18px) rotate(-300deg) scale(1);
     z-index: 3;
   }
-}
-
-.shortcut-icon-wrapper {
-  width: 44px;
-  height: 44px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-.shortcut-img {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  z-index: 2;
-}
-.shortcut-default-icon {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--accent-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-  z-index: 1;
-}
-.shortcut-item:hover .shortcut-default-icon {
-  background: var(--accent-color);
-  color: #0f172a;
-}
-.shortcut-item {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.shortcut-ghost {
-  opacity: 0 !important;
-}
-.shortcut-chosen {
-  opacity: 0.5 !important;
-}
-.shortcut-drag {
-  opacity: 0.9 !important;
-  transform: scale(1.1);
 }
 
 .ai-search-icon:hover {

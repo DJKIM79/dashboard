@@ -7,12 +7,66 @@ const shortcutMod = {
     this.render();
   },
 
+  // Atomic layout decision without DOM flickering
+  checkLayout() {
+    const c = document.getElementById("shortcut-container");
+    if (!c) return;
+
+    const itemCount = this.items.length;
+    if (itemCount === 0) {
+      c.classList.remove("shortcut-list-view");
+      return;
+    }
+
+    // 1. Get container position and available width
+    const rect = c.getBoundingClientRect();
+    const containerTop = rect.top > 0 ? rect.top : 450; // Fallback to 450 if not yet rendered
+    
+    // Get actual padding to calculate usable width for items
+    const style = window.getComputedStyle(c);
+    const paddingLeft = parseFloat(style.paddingLeft) || 50;
+    const paddingRight = parseFloat(style.paddingRight) || 50;
+    const containerWidth = (c.offsetWidth || window.innerWidth - 100);
+    const availableWidth = containerWidth - paddingLeft - paddingRight;
+    
+    const itemWidth = 140;
+    const gap = 15;
+    
+    // 2. Calculate how many rows are needed in "Square (Grid)" mode
+    const itemsPerRow = Math.max(1, Math.floor((availableWidth + gap) / (itemWidth + gap)));
+    const rowCount = Math.ceil(itemCount / itemsPerRow);
+    
+    // 3. Estimate absolute bottom position of the square grid
+    // item height 105px, gap 15px
+    const squareGridHeight = rowCount * 105 + (rowCount - 1) * gap;
+    const absoluteBottom = containerTop + squareGridHeight;
+    
+    // 4. Threshold: avoid fixed widgets (allow them to get closer)
+    const threshold = window.innerHeight - 120;
+    
+    // 5. Decision: use list-view if it overflows the threshold OR window is very short
+    const needsListView = absoluteBottom > threshold || window.innerHeight < 500;
+
+    // 6. Apply class only if state changed
+    const isCurrentlyList = c.classList.contains("shortcut-list-view");
+    if (needsListView !== isCurrentlyList) {
+      if (needsListView) c.classList.add("shortcut-list-view");
+      else c.classList.remove("shortcut-list-view");
+    }
+  },
+
   render() {
     const c = document.getElementById("shortcut-container");
     if (!c) return;
-    c.innerHTML = "";
-    c.className = "grid-layout";
+    
+    c.classList.add("grid-layout");
+    
+    // Decide layout state FIRST before updating DOM content
+    this.checkLayout();
 
+    // Now update the content - if state didn't change, no layout jump occurs
+    c.innerHTML = "";
+    
     this.items.forEach((s, i) => {
       const url = s.url.startsWith("http") ? s.url : `http://${s.url}`,
         div = document.createElement("a");
@@ -36,6 +90,10 @@ const shortcutMod = {
     });
 
     if (!this.resizeListenerAdded) {
+      window.addEventListener("resize", () => {
+        if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
+        this.resizeTimeout = setTimeout(() => this.render(), 100);
+      });
       this.resizeListenerAdded = true;
     }
 
@@ -57,6 +115,7 @@ const shortcutMod = {
           const item = this.items.splice(evt.oldIndex, 1)[0];
           this.items.splice(evt.newIndex, 0, item);
           utils.saveData();
+          this.render(); // Re-render to update order and check layout
         }
       },
     });
