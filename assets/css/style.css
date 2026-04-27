@@ -1321,7 +1321,8 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .setting-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 30px;
+  column-gap: 30px;
+  row-gap: 15px;
   margin-bottom: 5px;
   min-height: 0;
 }
