@@ -63,10 +63,12 @@ const settings = {
       this.renderSearchEngineList();
       if (window.renderWeatherLocationList) renderWeatherLocationList();
 
-      const aiProvider = localStorage.getItem("dj_ai_provider") || "none";
-      if (el("aiProviderSelect")) {
-        el("aiProviderSelect").value = aiProvider;
-        this.toggleAiSettings(aiProvider === "none");
+      this.updateAIProviderTriggerUI();
+      this.toggleAiSettings(localStorage.getItem("dj_ai_provider") === "none");
+      
+      const modelTriggerName = el("ai-model-trigger-name");
+      if (modelTriggerName) {
+          modelTriggerName.innerText = localStorage.getItem("dj_ai_model") || (window.i18n ? i18n.get("aiNoServer") : "접속 안됨");
       }
 
       if (el("aiOutputAtOnceCheck"))
@@ -342,62 +344,340 @@ const settings = {
     const isDisabled = provider === "none";
     localStorage.setItem("dj_ai_disabled", isDisabled);
     this.toggleAiSettings(isDisabled);
+    this.updateAIProviderTriggerUI();
+    this.updateAiModel("");
     this.onAIProviderChange();
+    
+    // AI 변경 시 즉시 상태 업데이트
+    if (window.ai) {
+        ai.isConnected = false;
+        ai.updateModelSelectUI([]);
+        ai.updateChatbotAvailability(false);
+        const icon = document.querySelector(".ai-search-icon");
+        if (icon) {
+            icon.classList.remove("active");
+            icon.style.color = "#94a3b8";
+        }
+    }
+    
+    const checkBtn = document.getElementById("ai-check-btn");
+    if (checkBtn) {
+        // Style reset removed as requested
+    }
   },
 
   onAIProviderChange() {
     const provider = localStorage.getItem("dj_ai_provider") || "none";
-    const modelSelect = document.getElementById("aiModelSelect");
     const urlInput = document.getElementById("aiServerUrlInput");
     const keyInput = document.getElementById("aiApiKeyInput");
     const keyLabel = document.getElementById("aiKeyLabel");
+    const customAddArea = document.getElementById("ai-custom-add-container");
 
     if (urlInput && keyInput) {
-      if (provider === "local") {
+      if (provider === "local" || provider.startsWith("custom_")) {
         urlInput.style.display = "block";
         keyInput.style.display = "none";
         if (keyLabel) keyLabel.innerText = "URL";
+        
+        if (provider.startsWith("custom_")) {
+            const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+            const current = customAis.find(a => a.id === provider);
+            if (current) urlInput.value = current.url;
+        } else {
+            urlInput.value = localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
+        }
       } else {
         urlInput.style.display = "none";
         keyInput.style.display = "block";
         if (keyLabel) keyLabel.innerText = "Key";
+        keyInput.value = localStorage.getItem("dj_ai_api_key") || "";
       }
     }
-
-    if (!modelSelect) return;
-
-    modelSelect.innerHTML = "";
-    let models = [];
-    if (provider === "ollama") {
-      models = ["llama3", "mistral", "gemma"];
-    } else if (provider === "openai") {
-      models = ["gpt-3.5-turbo", "gpt-4"];
-    } else if (provider === "gemini") {
-      models = ["gemini-pro"];
-    }
-
-    if (models.length > 0) {
-        models.forEach((m) => {
-            const opt = document.createElement("option");
-            opt.value = m;
-            opt.innerText = m;
-            modelSelect.appendChild(opt);
-        });
-        const savedModel = localStorage.getItem("dj_ai_model");
-        if (savedModel && models.includes(savedModel)) {
-            modelSelect.value = savedModel;
-        } else {
-            localStorage.setItem("dj_ai_model", models[0]);
-        }
-        modelSelect.disabled = false;
-    } else {
-        const opt = document.createElement("option");
-        opt.value = "";
-        opt.innerText = "접속 안됨";
-        modelSelect.appendChild(opt);
-        modelSelect.disabled = true;
+    
+    if (customAddArea) {
+        customAddArea.classList.remove("show"); // Hide by default
     }
   },
+
+  toggleAIPopup(e) {
+    if (e) e.stopPropagation();
+    const popup = document.getElementById("ai-provider-popup");
+    if (!popup) return;
+
+    // Close other popups
+    document.querySelectorAll(".ai-model-popup, .engine-popup").forEach((p) => {
+      if (p.id !== "ai-provider-popup") p.classList.remove("show");
+    });
+
+    const isShowing = popup.classList.contains("show");
+    popup.classList.toggle("show", !isShowing);
+
+    if (!isShowing) {
+        this.renderAIList();
+        if (this._aiCloseListener) window.removeEventListener("click", this._aiCloseListener);
+        this._aiCloseListener = (evt) => {
+            if (!popup.contains(evt.target)) this.closeAIPopup();
+        };
+        setTimeout(() => window.addEventListener("click", this._aiCloseListener), 1);
+    }
+  },
+
+  closeAIPopup() {
+    const popup = document.getElementById("ai-provider-popup");
+    if (!popup) return;
+    popup.classList.remove("show");
+    if (this._aiCloseListener) {
+        window.removeEventListener("click", this._aiCloseListener);
+        this._aiCloseListener = null;
+    }
+  },
+
+  renderAIList() {
+    const popupEl = document.getElementById("ai-provider-popup");
+    if (!popupEl) return;
+    popupEl.innerHTML = "";
+    popupEl.style.overflowY = "hidden";
+    popupEl.style.maxHeight = "none";
+    
+    // Create list container and footer
+    const listContainer = document.createElement("div");
+    listContainer.className = "popup-list-area";
+    listContainer.style.overflowY = "auto";
+    listContainer.style.flex = "1";
+    
+    const footer = document.createElement("div");
+    footer.className = "popup-footer-area";
+    footer.style.borderTop = "1px solid rgba(255,255,255,0.1)";
+    footer.style.paddingTop = "5px";
+    footer.style.marginTop = "5px";
+
+    const currentProvider = localStorage.getItem("dj_ai_provider") || "none";
+    const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+
+    const defaultAis = [
+        { id: "none", name: "사용 안 함", icon: "fas fa-ban" },
+        { id: "local", name: "로컬 AI", icon: "fas fa-server" },
+        { id: "openai", name: "OpenAI", icon: "fas fa-snowflake" },
+        { id: "gemini", name: "Gemini", icon: "fas fa-wand-magic-sparkles" }
+    ];
+
+    const allAis = [...defaultAis, ...customAis];
+
+    allAis.forEach(aiItem => {
+      const item = document.createElement("div");
+      item.className = `engine-item ${aiItem.id === currentProvider ? "active" : ""}`;
+      
+      item.onclick = (e) => {
+          e.stopPropagation();
+          this.updateAiProvider(aiItem.id);
+          this.closeAIPopup();
+      };
+
+      item.innerHTML = `
+        <div class="engine-favicon">
+          <i class="${aiItem.icon || 'fas fa-robot'}"></i>
+        </div>
+        <div class="engine-name">${aiItem.name}</div>
+        <div class="engine-status">
+          ${aiItem.id === currentProvider ? '<i class="fas fa-check-circle engine-active-icon"></i>' : ''}
+        </div>
+        <div class="engine-actions">
+          ${aiItem.id === 'none' || aiItem.id === 'local' || aiItem.id === 'openai' || aiItem.id === 'gemini' 
+            ? '<span class="engine-info-tag">기본</span>' 
+            : `<i class="fas fa-trash-alt engine-btn-del" onclick="event.stopPropagation(); settings.deleteCustomAI('${aiItem.id}')"></i>`}
+        </div>
+      `;
+      listContainer.appendChild(item);
+    });
+
+    // Add "+" button to footer
+    const addBtn = document.createElement("div");
+    addBtn.className = "engine-item";
+    addBtn.style.justifyContent = "center";
+    addBtn.innerHTML = '<i class="fas fa-square-plus" style="margin-right: 8px; color: var(--accent-color);"></i> 사용자 AI 추가';
+    addBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.toggleCustomAIPopup(e);
+        this.closeAIPopup();
+    };
+    footer.appendChild(addBtn);
+    
+    popupEl.appendChild(listContainer);
+    popupEl.appendChild(footer);
+  },
+
+  toggleModelSelectPopup(e) {
+    if (e) e.stopPropagation();
+    const popup = document.getElementById("ai-model-select-popup");
+    if (!popup) return;
+    
+    // 연결 안된 상태면 안뜸
+    if (!window.ai || !ai.isConnected) return;
+
+    // Close other popups
+    document.querySelectorAll(".ai-model-popup, .engine-popup").forEach((p) => {
+      if (p.id !== "ai-model-select-popup") p.classList.remove("show");
+    });
+
+    const isShowing = popup.classList.contains("show");
+    popup.classList.toggle("show", !isShowing);
+
+    if (!isShowing) {
+        this.renderModelList();
+        if (this._modelCloseListener) window.removeEventListener("click", this._modelCloseListener);
+        this._modelCloseListener = (evt) => {
+            if (!popup.contains(evt.target)) this.closeModelPopup();
+        };
+        setTimeout(() => window.addEventListener("click", this._modelCloseListener), 1);
+    }
+  },
+
+  closeModelPopup() {
+    const popup = document.getElementById("ai-model-select-popup");
+    if (!popup) return;
+    popup.classList.remove("show");
+    if (this._modelCloseListener) {
+        window.removeEventListener("click", this._modelCloseListener);
+        this._modelCloseListener = null;
+    }
+  },
+
+  renderModelList() {
+    const popupEl = document.getElementById("ai-model-select-popup");
+    if (!popupEl) return;
+    popupEl.innerHTML = "";
+
+    const currentModel = localStorage.getItem("dj_ai_model") || "";
+    const models = JSON.parse(localStorage.getItem("dj_ai_models_cache") || "[]");
+
+    if (models.length === 0) {
+        popupEl.innerHTML = '<div class="engine-item" style="justify-content: center; opacity: 0.5;">모델 없음</div>';
+        return;
+    }
+
+    models.forEach(modelName => {
+      const item = document.createElement("div");
+      item.className = `engine-item ${modelName === currentModel ? "active" : ""}`;
+      
+      item.onclick = (e) => {
+          e.stopPropagation();
+          this.updateAiModel(modelName);
+          this.closeModelPopup();
+      };
+
+      item.innerHTML = `
+        <div class="engine-name" style="padding-left: 5px;">${modelName}</div>
+        <div class="engine-status">
+          ${modelName === currentModel ? '<i class="fas fa-check-circle engine-active-icon"></i>' : ''}
+        </div>
+      `;
+      popupEl.appendChild(item);
+    });
+  },
+
+  updateAiModel(value) {
+    localStorage.setItem("dj_ai_model", value);
+    const triggerName = document.getElementById("ai-model-trigger-name");
+    const trigger = document.getElementById("ai-model-trigger");
+    if (triggerName) {
+        triggerName.innerText = value || (window.i18n ? i18n.get("aiNoServer") : "접속 안됨");
+    }
+    if (trigger) {
+        if (!value) trigger.classList.add("disabled");
+        else trigger.classList.remove("disabled");
+    }
+    if (window.ai && typeof ai.updateModelDisplay === "function") ai.updateModelDisplay();
+  },
+
+  toggleCustomAIPopup(e) {
+    if (e) e.stopPropagation();
+    const container = document.getElementById("ai-custom-add-container");
+    if (!container) return;
+    
+    const isShowing = container.classList.contains("show");
+    
+    // Close other popups if any
+    if (!isShowing) {
+        container.classList.add("show");
+        
+        // AI 이름 입력창에 포커스
+        const nameInput = document.getElementById("customAiNameInput");
+        if (nameInput) setTimeout(() => nameInput.focus(), 100);
+
+        if (this._customAiCloseListener) window.removeEventListener("click", this._customAiCloseListener);
+        this._customAiCloseListener = (evt) => {
+            if (!container.contains(evt.target)) {
+                container.classList.remove("show");
+                window.removeEventListener("click", this._customAiCloseListener);
+            }
+        };
+        setTimeout(() => window.addEventListener("click", this._customAiCloseListener), 1);
+    } else {
+        container.classList.remove("show");
+    }
+  },
+
+  updateAIProviderTriggerUI() {
+    const triggerName = document.getElementById("ai-trigger-name");
+    const currentProvider = localStorage.getItem("dj_ai_provider") || "none";
+    
+    const defaultNames = {
+        none: "사용 안 함",
+        local: "로컬 AI",
+        openai: "OpenAI",
+        gemini: "Gemini"
+    };
+
+    if (defaultNames[currentProvider]) {
+        triggerName.innerText = defaultNames[currentProvider];
+    } else {
+        const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+        const current = customAis.find(a => a.id === currentProvider);
+        triggerName.innerText = current ? current.name : "사용 안 함";
+    }
+  },
+
+  addCustomAI() {
+    const nameInput = document.getElementById("customAiNameInput");
+    const urlInput = document.getElementById("customAiUrlInput");
+    const name = nameInput.value.trim();
+    const url = urlInput.value.trim();
+
+    if (!name || !url) {
+        utils.showValidationTip(name ? "customAiUrlInput" : "customAiNameInput", "이름과 주소를 모두 입력해 주세요.");
+        return;
+    }
+
+    const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+    const newAi = {
+        id: `custom_${Date.now()}`,
+        name: name,
+        url: url,
+        icon: "fas fa-desktop",
+        isDefault: false
+    };
+
+    customAis.push(newAi);
+    localStorage.setItem("dj_ai_custom_providers", JSON.stringify(customAis));
+    
+    nameInput.value = "";
+    urlInput.value = "";
+    document.getElementById("ai-custom-add-container").classList.remove("show");
+    
+    this.updateAiProvider(newAi.id);
+  },
+
+  deleteCustomAI(id) {
+    let customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+    customAis = customAis.filter(a => a.id !== id);
+    localStorage.setItem("dj_ai_custom_providers", JSON.stringify(customAis));
+    
+    if (localStorage.getItem("dj_ai_provider") === id) {
+        this.updateAiProvider("none");
+    }
+    this.renderAIList();
+  },
+
 
   updateAiServerUrl(value) {
     localStorage.setItem("dj_ai_server_url", value.trim());
@@ -452,8 +732,8 @@ const settings = {
   toggleAiSettings(isDisabled) {
     const panel = document.getElementById("aiSettingsPanel");
     if (panel) {
-      panel.style.display = isDisabled ? "none" : "flex";
-      panel.style.opacity = isDisabled ? "0.4" : "1";
+      panel.style.visibility = isDisabled ? "hidden" : "visible";
+      panel.style.opacity = isDisabled ? "0" : "1";
       panel.style.pointerEvents = isDisabled ? "none" : "auto";
     }
   },
@@ -501,15 +781,24 @@ const settings = {
     if (!popup) return;
 
     // Close other popups
-    document.querySelectorAll(".ai-model-popup").forEach((p) => {
+    document.querySelectorAll(".ai-model-popup, .engine-popup").forEach((p) => {
       if (p.id !== popupId) p.classList.remove("show");
     });
 
-    if (popup.classList.contains("show")) {
-      popup.classList.remove("show");
-    } else {
-      this.renderCustomSelectOptions(popupId);
-      popup.classList.add("show");
+    const isShowing = popup.classList.contains("show");
+    popup.classList.toggle("show", !isShowing);
+
+    if (!isShowing) {
+        this.renderCustomSelectOptions(popupId);
+        if (this._csCloseListener) window.removeEventListener("click", this._csCloseListener);
+        this._csCloseListener = (evt) => {
+            if (!popup.contains(evt.target)) {
+                popup.classList.remove("show");
+                window.removeEventListener("click", this._csCloseListener);
+                this._csCloseListener = null;
+            }
+        };
+        setTimeout(() => window.addEventListener("click", this._csCloseListener), 1);
     }
   },
 
