@@ -99,11 +99,9 @@ const shortcutMod = {
 
     if (window.shortcutSortable) window.shortcutSortable.destroy();
     window.shortcutSortable = new Sortable(c, {
-      animation: 250,
+      animation: 150,
       ghostClass: "shortcut-ghost",
-      chosenClass: "shortcut-chosen",
-      dragClass: "shortcut-drag",
-      forceFallback: true,
+      forceFallback: false, // 브라우저 기본 드래그 사용 (붕 뜨는 현상 방지)
       onStart: () => {
         this.isDragging = true;
         c.classList.add("sorting-active");
@@ -115,7 +113,9 @@ const shortcutMod = {
           const item = this.items.splice(evt.oldIndex, 1)[0];
           this.items.splice(evt.newIndex, 0, item);
           utils.saveData();
-          this.render(); // Re-render to update order and check layout
+          // 정렬 완료 후 레이아웃 재확인 (불필요한 전환 방지)
+          this.checkLayout();
+          this.render(); 
         }
       },
     });

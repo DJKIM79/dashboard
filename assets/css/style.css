@@ -506,45 +506,12 @@ body::before {
   color: #0f172a;
   transform: translateY(-2px);
 }
-/* Drag and Drop - 사각형 가이드 확실히 복구 */
+/* Drag and Drop - 최적화: 붕 뜨는 효과 삭제 */
+#shortcut-container.sorting-active .shortcut-item {
+  transition: none !important;
+}
 .shortcut-ghost {
-  opacity: 0.4 !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 2px dashed var(--accent-color) !important;
-  border-radius: 15px;
-  visibility: visible !important;
-}
-.shortcut-chosen {
-  opacity: 1 !important;
-}
-.shortcut-ghost * {
-  visibility: hidden; /* 가이드 사각형 내부의 글자/이미지는 숨김 */
-}
-.shortcut-drag {
-  opacity: 0.9 !important;
-  transform: scale(1.1);
-  z-index: 1000;
-}
-.shortcut-fallback {
-  opacity: 0.98 !important;
-  z-index: 100 !important;
-  background: rgba(30, 41, 59, 0.98) !important;
-  border: 2px solid var(--accent-color) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
-  pointer-events: none;
-}
-/* 애니메이션을 내부 요소에 걸어서 충돌 방지 */
-.shortcut-fallback img,
-.shortcut-fallback span {
-  animation: fallback-float 0.8s ease-in-out infinite alternate;
-}
-@keyframes fallback-float {
-  0% {
-    transform: translateY(0) rotate(2deg);
-  }
-  100% {
-    transform: translateY(-10px) rotate(-2deg);
-  }
+  opacity: 0.2 !important;
 }
 .context-menu {
   display: none;
