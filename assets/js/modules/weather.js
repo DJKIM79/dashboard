@@ -5,7 +5,7 @@ const weather = {
   searchTimeout: null,
 
   init() {
-    this.showCurrent = localStorage.getItem("dj_show_current_weather") !== "false";
+    this.showCurrent = localStorage.getItem("dj_show_current_weather") === "true";
     this.locations = JSON.parse(localStorage.getItem("dj_weather_locations")) || [];
     this.fetch();
     this.renderLocationList();
@@ -279,9 +279,10 @@ const weather = {
     // Show success feedback tip
     setTimeout(() => {
         if (window.utils) {
-            utils.showValidationTip("citySearchInput", `${loc.name}가 추가되었습니다.`);
+            utils.showValidationTip("weather-location-trigger", `${loc.name}가 추가되었습니다.`);
         }
     }, 100);
+
   },
 
   removeLocation(id) {
