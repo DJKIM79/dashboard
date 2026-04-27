@@ -7,26 +7,6 @@ const shortcutMod = {
     this.render();
   },
 
-  checkLayout() {
-    const c = document.getElementById("shortcut-container");
-    if (!c) return;
-
-    // Reset first to measure original height
-    c.classList.remove("shortcut-list-view");
-
-    const items = c.querySelectorAll(".shortcut-item");
-    if (items.length === 0) return;
-
-    // Check if the bottom of the last item exceeds 85% of window height
-    const lastItem = items[items.length - 1];
-    const rect = lastItem.getBoundingClientRect();
-    const threshold = window.innerHeight * 0.85;
-
-    if (rect.bottom > threshold) {
-      c.classList.add("shortcut-list-view");
-    }
-  },
-
   render() {
     const c = document.getElementById("shortcut-container");
     if (!c) return;
@@ -55,13 +35,7 @@ const shortcutMod = {
       c.appendChild(div);
     });
 
-    requestAnimationFrame(() => this.checkLayout());
-
     if (!this.resizeListenerAdded) {
-      window.addEventListener("resize", () => {
-        if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
-        this.resizeTimeout = setTimeout(() => this.checkLayout(), 200);
-      });
       this.resizeListenerAdded = true;
     }
 
@@ -83,7 +57,6 @@ const shortcutMod = {
           const item = this.items.splice(evt.oldIndex, 1)[0];
           this.items.splice(evt.newIndex, 0, item);
           utils.saveData();
-          this.checkLayout();
         }
       },
     });
