@@ -510,8 +510,21 @@ body::before {
 #shortcut-container.sorting-active .shortcut-item {
   transition: none !important;
 }
+#shortcut-container.sorting-active .shortcut-item:hover {
+  border-color: var(--glass-border) !important;
+  box-shadow: none !important;
+}
+.sortable-chosen {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 12px var(--accent-color) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  opacity: 1 !important;
+  z-index: 100;
+}
 .shortcut-ghost {
   opacity: 0.2 !important;
+  border-color: var(--glass-border) !important;
+  box-shadow: none !important;
 }
 .context-menu {
   display: none;

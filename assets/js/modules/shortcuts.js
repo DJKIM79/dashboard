@@ -114,6 +114,7 @@ const shortcutMod = {
     window.shortcutSortable = new Sortable(c, {
       animation: 150,
       ghostClass: "shortcut-ghost",
+      chosenClass: "sortable-chosen",
       forceFallback: false,
       onStart: () => {
         this.isDragging = true;
