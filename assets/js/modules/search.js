@@ -94,7 +94,6 @@ const search = {
   quickSelect(engineId, e) {
     if (e) e.stopPropagation();
     this.currentEngine = engineId;
-    localStorage.setItem("dj_search_engine", engineId);
     this.updateIcon();
     const menu = document.getElementById("search-engine-menu");
     if (menu) menu.classList.remove("active");
@@ -122,7 +121,7 @@ const search = {
 
     if (!url) url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
 
-    this.currentEngine = localStorage.getItem("dj_search_engine") || "google";
+    // Do not reset currentEngine here, let it persist until refresh as per user request
     this.updateIcon();
     input.value = "";
 
