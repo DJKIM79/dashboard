@@ -15,8 +15,10 @@ const settings = {
       const widgetSize = localStorage.getItem("dj_widget_size") || "medium";
       const searchNewTab =
         localStorage.getItem("dj_search_new_tab") !== "false";
+      const showFileMgmt =
+        localStorage.getItem("dj_hide_fileMgmt") !== "true";
       const showWeather =
-        localStorage.getItem("dj_show_current_weather") !== "false";
+        localStorage.getItem("dj_show_current_weather") === "true";
       const engine = localStorage.getItem("dj_search_engine") || "google";
       const customUrl = localStorage.getItem("dj_custom_search_url") || "";
 
@@ -27,6 +29,7 @@ const settings = {
         el("quoteFontSizeSelect").value = quoteFontSize;
       if (el("widgetSizeSelect")) el("widgetSizeSelect").value = widgetSize;
       if (el("searchNewTab")) el("searchNewTab").checked = searchNewTab;
+      if (el("showFileMgmtCheckbox")) el("showFileMgmtCheckbox").checked = showFileMgmt;
       if (el("showCurrentWeather"))
         el("showCurrentWeather").checked = showWeather;
       if (el("customSearchUrlInput"))
@@ -249,12 +252,17 @@ const settings = {
     }
     this.renderSearchEngineList();
   },
-  updateShowWeather(show) {
-    localStorage.setItem("dj_show_current_weather", show);
+  updateShowWeather(checked) {
+    localStorage.setItem("dj_show_current_weather", checked ? "true" : "false");
     if (window.weather) {
-      window.weather.showCurrent = show;
+      window.weather.showCurrent = checked;
       window.weather.fetch();
     }
+  },
+
+  toggleFileMgmt(checked) {
+    localStorage.setItem("dj_hide_fileMgmt", checked ? "false" : "true");
+    if (window.ui) ui.applyVisibility();
   },
 
   updateAiOutputAtOnce(checked) {
@@ -392,8 +400,8 @@ const settings = {
     if (window.shortcutMod) shortcutMod.checkLayout();
   },
 
-  setTheme(color, keepAdj = false) {
-    if (!keepAdj) localStorage.setItem("dj_theme_adjustment", "none");
+  setTheme(color, keepAdj = true) {
+    if (keepAdj === false) localStorage.setItem("dj_theme_adjustment", "none");
     const adj = localStorage.getItem("dj_theme_adjustment") || "none";
     let finalColor = color;
     if (adj !== "none") {
@@ -444,6 +452,7 @@ window.updateSearchNewTab = settings.updateSearchNewTab.bind(settings);
 window.updateSearchEngine = settings.updateSearchEngine.bind(settings);
 window.updateCustomSearchUrl = settings.updateCustomSearchUrl.bind(settings);
 window.updateShowWeather = settings.updateShowWeather.bind(settings);
+window.toggleFileMgmt = settings.toggleFileMgmt.bind(settings);
 window.updateAiOutputAtOnce = settings.updateAiOutputAtOnce.bind(settings);
 window.updateAiProvider = settings.updateAiProvider.bind(settings);
 window.updateAiServerUrl = settings.updateAiServerUrl.bind(settings);

@@ -1,6 +1,6 @@
 const weather = {
   locations: JSON.parse(localStorage.getItem("dj_weather_locations")) || [],
-  showCurrent: localStorage.getItem("dj_show_current_weather") !== "false",
+  showCurrent: localStorage.getItem("dj_show_current_weather") === "true",
   callId: 0,
   searchTimeout: null,
 
