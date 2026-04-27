@@ -242,6 +242,7 @@ const settings = {
       authorEl.style.lineHeight = "1.5";
     }
     localStorage.setItem("dj_quote_font_size", size);
+    if (window.shortcutMod) shortcutMod.checkLayout();
   },
 
   setWidgetSize(size) {
@@ -250,6 +251,7 @@ const settings = {
       `var(--widget-scale-${size})`,
     );
     localStorage.setItem("dj_widget_size", size);
+    if (window.shortcutMod) shortcutMod.checkLayout();
   },
 
   setTheme(color, keepAdj = false) {

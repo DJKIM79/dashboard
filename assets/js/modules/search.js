@@ -2,6 +2,7 @@ const search = {
   currentEngine: localStorage.getItem("dj_search_engine") || "google",
 
   init() {
+    this.currentEngine = localStorage.getItem("dj_search_engine") || "google";
     this.updateIcon();
     const input = document.getElementById("searchInput");
     if (input) {

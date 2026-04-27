@@ -40,6 +40,7 @@ const quote = {
           const size = localStorage.getItem("dj_quote_font_size") || "medium";
           settings.setQuoteFontSize(size);
         }
+        if (window.shortcutMod) shortcutMod.checkLayout();
       }
     };
 

@@ -12,47 +12,56 @@ const shortcutMod = {
     const c = document.getElementById("shortcut-container");
     if (!c) return;
 
-    const itemCount = this.items.length;
-    if (itemCount === 0) {
-      c.classList.remove("shortcut-list-view");
-      return;
-    }
+    // Use requestAnimationFrame to wait for DOM stability, 
+    // then a small timeout to account for CSS transitions.
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const itemCount = this.items.length;
+        if (itemCount === 0) {
+          c.classList.remove("shortcut-list-view");
+          return;
+        }
 
-    // 1. Get container position and available width
-    const rect = c.getBoundingClientRect();
-    const containerTop = rect.top > 0 ? rect.top : 450; // Fallback to 450 if not yet rendered
-    
-    // Get actual padding to calculate usable width for items
-    const style = window.getComputedStyle(c);
-    const paddingLeft = parseFloat(style.paddingLeft) || 50;
-    const paddingRight = parseFloat(style.paddingRight) || 50;
-    const containerWidth = (c.offsetWidth || window.innerWidth - 100);
-    const availableWidth = containerWidth - paddingLeft - paddingRight;
-    
-    const itemWidth = 140;
-    const gap = 15;
-    
-    // 2. Calculate how many rows are needed in "Square (Grid)" mode
-    const itemsPerRow = Math.max(1, Math.floor((availableWidth + gap) / (itemWidth + gap)));
-    const rowCount = Math.ceil(itemCount / itemsPerRow);
-    
-    // 3. Estimate absolute bottom position of the square grid
-    // item height 105px, gap 15px
-    const squareGridHeight = rowCount * 105 + (rowCount - 1) * gap;
-    const absoluteBottom = containerTop + squareGridHeight;
-    
-    // 4. Threshold: avoid fixed widgets (allow them to get closer)
-    const threshold = window.innerHeight - 120;
-    
-    // 5. Decision: use list-view if it overflows the threshold OR window is very short
-    const needsListView = absoluteBottom > threshold || window.innerHeight < 500;
+        // 1. Get container's absolute position from the top of the document
+        // offsetTop is more reliable than getBoundingClientRect for absolute document positioning
+        const containerTop = c.offsetTop || 400; 
+        
+        // 2. Calculate usable width
+        const containerWidth = c.offsetWidth || (window.innerWidth - 100);
+        const style = window.getComputedStyle(c);
+        const paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) || 100;
+        const availableWidth = containerWidth - paddingX;
+        
+        const itemWidth = 140;
+        const gap = 15;
+        
+        // 3. Calculate rows and estimated height in Square mode
+        const itemsPerRow = Math.max(1, Math.floor((availableWidth + gap) / (itemWidth + gap)));
+        const rowCount = Math.ceil(itemCount / itemsPerRow);
+        
+        // Get the current scale factor from CSS variable
+        const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--widget-scale')) || 1;
+        
+        // Estimated height considering the transform scale (Square item height is 105px)
+        const squareGridHeight = (rowCount * 105 + (rowCount - 1) * gap) * scale;
+        
+        // 4. Decision: Does the grid exceed the visible viewport?
+        // Subtract window.scrollY to get position relative to current view
+        const absoluteBottom = containerTop + squareGridHeight - window.scrollY;
+        
+        // Threshold: allow shortcuts to get closer to the bottom (100px buffer)
+        const threshold = window.innerHeight - 100;
+        
+        const needsListView = absoluteBottom > threshold || window.innerHeight < 450;
 
-    // 6. Apply class only if state changed
-    const isCurrentlyList = c.classList.contains("shortcut-list-view");
-    if (needsListView !== isCurrentlyList) {
-      if (needsListView) c.classList.add("shortcut-list-view");
-      else c.classList.remove("shortcut-list-view");
-    }
+        // 5. Apply class only if state changed
+        const isCurrentlyList = c.classList.contains("shortcut-list-view");
+        if (needsListView !== isCurrentlyList) {
+          if (needsListView) c.classList.add("shortcut-list-view");
+          else c.classList.remove("shortcut-list-view");
+        }
+      }, 100);
+    });
   },
 
   render() {
@@ -61,10 +70,9 @@ const shortcutMod = {
     
     c.classList.add("grid-layout");
     
-    // Decide layout state FIRST before updating DOM content
+    // Pre-calculate layout state before clearing DOM
     this.checkLayout();
 
-    // Now update the content - if state didn't change, no layout jump occurs
     c.innerHTML = "";
     
     this.items.forEach((s, i) => {
@@ -92,7 +100,12 @@ const shortcutMod = {
     if (!this.resizeListenerAdded) {
       window.addEventListener("resize", () => {
         if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
-        this.resizeTimeout = setTimeout(() => this.render(), 100);
+        this.resizeTimeout = setTimeout(() => this.checkLayout(), 150);
+      });
+      // Add scroll listener to update layout as user scrolls
+      window.addEventListener("scroll", () => {
+        if (this.scrollTimeout) clearTimeout(this.scrollTimeout);
+        this.scrollTimeout = setTimeout(() => this.checkLayout(), 100);
       });
       this.resizeListenerAdded = true;
     }
@@ -101,7 +114,7 @@ const shortcutMod = {
     window.shortcutSortable = new Sortable(c, {
       animation: 150,
       ghostClass: "shortcut-ghost",
-      forceFallback: false, // 브라우저 기본 드래그 사용 (붕 뜨는 현상 방지)
+      forceFallback: false,
       onStart: () => {
         this.isDragging = true;
         c.classList.add("sorting-active");
@@ -113,9 +126,8 @@ const shortcutMod = {
           const item = this.items.splice(evt.oldIndex, 1)[0];
           this.items.splice(evt.newIndex, 0, item);
           utils.saveData();
-          // 정렬 완료 후 레이아웃 재확인 (불필요한 전환 방지)
+          // After reordering, check layout again to see if it still fits
           this.checkLayout();
-          this.render(); 
         }
       },
     });

@@ -33,7 +33,7 @@ body::-webkit-scrollbar {
   display: none;
 }
 body {
-  padding: 150px 20px 180px;
+  padding: 120px 20px 150px;
   min-height: 100vh;
   background-color: #020617;
   background-size: cover;
@@ -370,7 +370,7 @@ body::before {
   max-width: 915px;
   margin: 0 auto;
   transform: scale(var(--widget-scale));
-  transform-origin: center;
+  transform-origin: center top;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 10;
@@ -731,7 +731,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
     max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     padding 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: center;
-  max-height: 1000px;
 }
 @keyframes widgetFadeIn {
   from {
@@ -1210,7 +1209,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #search-section {
   width: calc(100% - 60px);
   max-width: 600px;
-  margin: 0 auto 80px auto;
+  margin: 0 auto 60px auto;
   position: relative;
   z-index: 5;
   transform-origin: center top;
