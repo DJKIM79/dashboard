@@ -277,7 +277,7 @@
           id="searchInput"
           data-i18n-ph="searchPh"
           placeholder="검색어를 입력하세요"
-          onkeydown="if(event.key === 'Enter') { event.preventDefault(); performSearch(event); return false; }"
+          onkeydown="if(event.key === 'Enter') performSearch();"
           />
 
         <div class="search-engine-icon" onclick="toggleSearchEngineMenu(event)">
@@ -660,10 +660,10 @@
               </div>
               <div
                 class="setting-row"
-                style="gap: 15px; align-items: center; margin-bottom: 20px"
+                style="gap: 15px; align-items: center; margin-bottom: 20px; justify-content: space-between;"
               >
                 <div
-                  style="flex: 1; display: flex; align-items: center; gap: 8px"
+                  style="display: flex; align-items: center; gap: 8px"
                 >
                   <span
                     style="
@@ -677,32 +677,16 @@
                     data-i18n="lblQuoteSize"
                     >명언 크기</span
                   >
-                  <select
-                    id="quoteFontSizeSelect"
-                    onchange="setQuoteFontSize(this.value)"
-                    style="
-                      flex: 1;
-                      background: #0f172a;
-                      border: 1px solid #334155;
-                      border-radius: 8px;
-                      color: #fff;
-                      height: 32px;
-                      text-align: center;
-                      text-align-last: center;
-                      cursor: pointer;
-                      padding: 0;
-                      margin: 0;
-                      outline: none;
-                      box-sizing: border-box;
-                    "
-                  >
-                    <option value="large" data-i18n="optLarge">대</option>
-                    <option value="medium" data-i18n="optMedium">중</option>
-                    <option value="small" data-i18n="optSmall">소</option>
-                  </select>
+                  <div id="quote-size-wrap" style="position: relative; width: 65px;">
+                    <div id="quote-size-trigger" class="weather-custom-select" onclick="settings.toggleCustomSelect('quote-size-popup', event)">
+                      <span id="quote-size-text" data-i18n="optMedium">중</span>
+                      <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
+                    </div>
+                    <div id="quote-size-popup" class="ai-model-popup weather-popup"></div>
+                  </div>
                 </div>
                 <div
-                  style="flex: 1; display: flex; align-items: center; gap: 8px"
+                  style="display: flex; align-items: center; gap: 8px;"
                 >
                   <span
                     style="
@@ -716,29 +700,13 @@
                     data-i18n="lblWidgetSize"
                     >위젯 크기</span
                   >
-                  <select
-                    id="widgetSizeSelect"
-                    onchange="setWidgetSize(this.value)"
-                    style="
-                      flex: 1;
-                      background: #0f172a;
-                      border: 1px solid #334155;
-                      border-radius: 8px;
-                      color: #fff;
-                      height: 32px;
-                      text-align: center;
-                      text-align-last: center;
-                      cursor: pointer;
-                      padding: 0;
-                      margin: 0;
-                      outline: none;
-                      box-sizing: border-box;
-                    "
-                  >
-                    <option value="large" data-i18n="optLarge">대</option>
-                    <option value="medium" data-i18n="optMedium">중</option>
-                    <option value="small" data-i18n="optSmall">소</option>
-                  </select>
+                  <div id="widget-size-wrap" style="position: relative; width: 65px;">
+                    <div id="widget-size-trigger" class="weather-custom-select" onclick="settings.toggleCustomSelect('widget-size-popup', event)">
+                      <span id="widget-size-text" data-i18n="optMedium">중</span>
+                      <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
+                    </div>
+                    <div id="widget-size-popup" class="ai-model-popup weather-popup"></div>
+                  </div>
                 </div>
               </div>
 
@@ -876,7 +844,7 @@
               <div id="search-select-wrap" style="position: relative; margin-bottom: 15px; width: 98%; margin-left: 1%;">
                 <div id="search-engine-trigger" class="weather-custom-select" onclick="settings.toggleSearchEnginePopup(event)">
                   <div style="display: flex; align-items: center; gap: 10px;">
-                    <div id="trigger-favicon" class="engine-favicon" style="background: transparent; width: 18px; height: 18px;"></div>
+                    <div id="trigger-favicon" class="engine-favicon"></div>
                     <span id="trigger-name">Google</span>
                   </div>
                   <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>

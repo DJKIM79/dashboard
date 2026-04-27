@@ -282,6 +282,16 @@ body::before {
   transition: all 0.2s;
   color: #fff;
 }
+.setting-row .weather-custom-select {
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #0f172a;
+  justify-content: center;
+  gap: 4px;
+}
+.setting-row .weather-custom-select span {
+  flex: none;
+}
 .weather-custom-select:hover {
   background: rgba(255, 255, 255, 0.05);
   border-color: var(--accent-color);
@@ -290,9 +300,11 @@ body::before {
   top: 45px !important;
   left: 0 !important;
   width: 100%;
+  min-width: unset !important;
   box-sizing: border-box;
   max-height: 200px;
   overflow-y: auto;
+  z-index: 1001;
 }
 .location-list::-webkit-scrollbar {
   display: none;
@@ -1299,7 +1311,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   opacity: 1;
 }
 #settingModal .modal-content {
-  width: 650px;
+  width: 585px;
   height: auto;
   min-height: 500px;
   max-height: 90vh;
@@ -1707,6 +1719,13 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   align-items: center;
   flex-shrink: 0;
 }
+.engine-actions {
+  width: 40px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-shrink: 0;
+}
 .engine-info-tag {
   font-size: 0.65rem;
   padding: 2px 5px;
@@ -1899,7 +1918,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   color: #fff;
   white-space: nowrap;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
 }
 .ai-model-item:hover {

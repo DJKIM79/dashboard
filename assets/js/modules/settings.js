@@ -14,18 +14,33 @@ const settings = {
         localStorage.getItem("dj_quote_font_size") || "medium";
       const widgetSize = localStorage.getItem("dj_widget_size") || "medium";
       const searchNewTab =
-        localStorage.getItem("dj_search_new_tab") !== "false";
+        localStorage.getItem("dj_search_new_tab") === "true";
       const showFileMgmt =
         localStorage.getItem("dj_hide_fileMgmt") !== "true";
       const showWeather =
         localStorage.getItem("dj_show_current_weather") === "true";
+      const aiOutputAtOnce =
+        localStorage.getItem("dj_ai_output_at_once") === "true";
 
       const el = (id) => document.getElementById(id);
 
       if (el("bgKeywordInput")) el("bgKeywordInput").value = bgKeyword;
-      if (el("quoteFontSizeSelect"))
-        el("quoteFontSizeSelect").value = quoteFontSize;
-      if (el("widgetSizeSelect")) el("widgetSizeSelect").value = widgetSize;
+      
+      // Update custom selects initial text
+      const quoteSizeText = el("quote-size-text");
+      if (quoteSizeText) {
+        const sizeMap = { small: "optSmall", medium: "optMedium", large: "optLarge" };
+        quoteSizeText.setAttribute("data-i18n", sizeMap[quoteFontSize]);
+        if (window.i18n) quoteSizeText.innerText = i18n.get(sizeMap[quoteFontSize]);
+      }
+      
+      const widgetSizeText = el("widget-size-text");
+      if (widgetSizeText) {
+        const sizeMap = { small: "optSmall", medium: "optMedium", large: "optLarge" };
+        widgetSizeText.setAttribute("data-i18n", sizeMap[widgetSize]);
+        if (window.i18n) widgetSizeText.innerText = i18n.get(sizeMap[widgetSize]);
+      }
+
       if (el("searchNewTab")) el("searchNewTab").checked = searchNewTab;
       if (el("showFileMgmtCheckbox")) el("showFileMgmtCheckbox").checked = showFileMgmt;
       if (el("showCurrentWeather"))
@@ -44,6 +59,7 @@ const settings = {
       if (el("engineFlickr"))
         el("engineFlickr").checked = imgEngine === "flickr";
 
+      this.updateSearchEngineTriggerUI();
       this.renderSearchEngineList();
       if (window.renderWeatherLocationList) renderWeatherLocationList();
 
@@ -53,8 +69,6 @@ const settings = {
         this.toggleAiSettings(aiProvider === "none");
       }
 
-      const aiOutputAtOnce =
-        localStorage.getItem("dj_ai_output_at_once") !== "false";
       if (el("aiOutputAtOnceCheck"))
         el("aiOutputAtOnceCheck").checked = aiOutputAtOnce;
 
@@ -99,13 +113,43 @@ const settings = {
   },
 
   updateSearchNewTab(checked) {
-    localStorage.setItem("dj_search_new_tab", checked);
+    localStorage.setItem("dj_search_new_tab", checked ? "true" : "false");
+  },
+
+  updateSearchEngineTriggerUI() {
+    const triggerFavicon = document.getElementById("trigger-favicon");
+    const triggerName = document.getElementById("trigger-name");
+    if (!triggerFavicon && !triggerName) return;
+
+    const currentEngineId = localStorage.getItem("dj_search_engine") || "google";
+    const defaultEngines = [
+      { id: "google", name: "Google", domain: "google.com", isDefault: true },
+      { id: "naver", name: "Naver", domain: "naver.com", isDefault: true }
+    ];
+    const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
+    const allEngines = [...defaultEngines, ...customEngines];
+    const engine = allEngines.find(e => e.id === currentEngineId) || defaultEngines[0];
+
+    let faviconUrl = "";
+    if (engine.isDefault) {
+      faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}`;
+    } else {
+      try {
+        const domain = new URL(engine.url).hostname;
+        faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+      } catch (e) { faviconUrl = ""; }
+    }
+
+    if (triggerFavicon) {
+      triggerFavicon.innerHTML = faviconUrl ? `<img src="${faviconUrl}" alt="icon">` : '<i class="fas fa-search"></i>';
+    }
+    if (triggerName) {
+      triggerName.innerText = engine.name;
+    }
   },
 
   renderSearchEngineList() {
     const popupEl = document.getElementById("search-engine-popup");
-    const triggerFavicon = document.getElementById("trigger-favicon");
-    const triggerName = document.getElementById("trigger-name");
     if (!popupEl) return;
     popupEl.innerHTML = "";
 
@@ -133,12 +177,6 @@ const settings = {
         } catch(e) { faviconUrl = ""; }
       }
 
-      // Update Trigger UI
-      if (engine.id === currentEngine) {
-        if (triggerFavicon) triggerFavicon.innerHTML = faviconUrl ? `<img src="${faviconUrl}" alt="icon">` : '<i class="fas fa-search"></i>';
-        if (triggerName) triggerName.innerText = engine.name;
-      }
-
       item.onclick = (e) => {
           e.stopPropagation();
           this.updateSearchEngine(engine.id);
@@ -151,10 +189,10 @@ const settings = {
         </div>
         <div class="engine-name">${engine.name}</div>
         <div class="engine-status">
-          ${engine.id === currentEngine ? '<i class="fas fa-check-circle engine-active-icon"></i>' : (engine.isDefault ? '<span class="engine-info-tag">기본</span>' : '')}
+          ${engine.id === currentEngine ? '<i class="fas fa-check-circle engine-active-icon"></i>' : ''}
         </div>
         <div class="engine-actions">
-          ${!engine.isDefault ? `<i class="fas fa-trash-alt engine-btn-del" onclick="event.stopPropagation(); settings.deleteCustomSearchEngine('${engine.id}')"></i>` : ''}
+          ${engine.isDefault ? '<span class="engine-info-tag">기본</span>' : `<i class="fas fa-trash-alt engine-btn-del" onclick="event.stopPropagation(); settings.deleteCustomSearchEngine('${engine.id}')"></i>`}
         </div>
       `;
       popupEl.appendChild(item);
@@ -166,34 +204,32 @@ const settings = {
     const popup = document.getElementById("search-engine-popup");
     if (!popup) return;
     
+    // Close other popups
+    document.querySelectorAll(".ai-model-popup, .engine-popup").forEach((p) => {
+      if (p.id !== "search-engine-popup") p.classList.remove("show");
+    });
+
     const isShowing = popup.classList.contains("show");
+    popup.classList.toggle("show", !isShowing);
     
     if (!isShowing) {
-        popup.style.display = "block";
-        popup.offsetHeight; // Reflow
-        popup.classList.add("show");
-        
+        this.renderSearchEngineList();
         if (this._seCloseListener) window.removeEventListener("click", this._seCloseListener);
         this._seCloseListener = (evt) => {
             if (!popup.contains(evt.target)) this.closeSearchEnginePopup();
         };
         setTimeout(() => window.addEventListener("click", this._seCloseListener), 1);
-    } else {
-        this.closeSearchEnginePopup();
     }
   },
 
   closeSearchEnginePopup() {
     const popup = document.getElementById("search-engine-popup");
-    if (!popup || !popup.classList.contains("show")) return;
+    if (!popup) return;
     popup.classList.remove("show");
     if (this._seCloseListener) {
         window.removeEventListener("click", this._seCloseListener);
         this._seCloseListener = null;
     }
-    setTimeout(() => {
-        if (!popup.classList.contains("show")) popup.style.display = "none";
-    }, 200);
   },
 
   addCustomSearchEngine() {
@@ -275,6 +311,7 @@ const settings = {
         search.currentEngine = engine;
         search.updateIcon();
     }
+    this.updateSearchEngineTriggerUI();
     this.renderSearchEngineList();
   },
 
@@ -431,6 +468,14 @@ const settings = {
       `var(--quote-author-size-${size})`,
     );
     localStorage.setItem("dj_quote_font_size", size);
+    
+    // Update trigger text
+    const textEl = document.getElementById("quote-size-text");
+    if (textEl) {
+        const sizeMap = { small: "optSmall", medium: "optMedium", large: "optLarge" };
+        textEl.setAttribute("data-i18n", sizeMap[size]);
+        if (window.i18n) textEl.innerText = i18n.get(sizeMap[size]);
+    }
   },
 
   setWidgetSize(size) {
@@ -440,6 +485,67 @@ const settings = {
     );
     localStorage.setItem("dj_widget_size", size);
     if (window.shortcutMod) shortcutMod.checkLayout();
+    
+    // Update trigger text
+    const textEl = document.getElementById("widget-size-text");
+    if (textEl) {
+        const sizeMap = { small: "optSmall", medium: "optMedium", large: "optLarge" };
+        textEl.setAttribute("data-i18n", sizeMap[size]);
+        if (window.i18n) textEl.innerText = i18n.get(sizeMap[size]);
+    }
+  },
+
+  toggleCustomSelect(popupId, event) {
+    if (event) event.stopPropagation();
+    const popup = document.getElementById(popupId);
+    if (!popup) return;
+
+    // Close other popups
+    document.querySelectorAll(".ai-model-popup").forEach((p) => {
+      if (p.id !== popupId) p.classList.remove("show");
+    });
+
+    if (popup.classList.contains("show")) {
+      popup.classList.remove("show");
+    } else {
+      this.renderCustomSelectOptions(popupId);
+      popup.classList.add("show");
+    }
+  },
+
+  renderCustomSelectOptions(popupId) {
+    const popup = document.getElementById(popupId);
+    if (!popup) return;
+
+    const type = popupId.includes("quote") ? "quote" : "widget";
+    const currentValue = localStorage.getItem(type === "quote" ? "dj_quote_font_size" : "dj_widget_size") || "medium";
+    
+    const options = [
+      { value: "small", label: "optSmall" },
+      { value: "medium", label: "optMedium" },
+      { value: "large", label: "optLarge" }
+    ];
+
+    popup.innerHTML = "";
+    options.forEach((opt) => {
+      const item = document.createElement("div");
+      item.className = `ai-model-item ${opt.value === currentValue ? "active" : ""}`;
+      item.innerHTML = `<span data-i18n="${opt.label}">${window.i18n ? i18n.get(opt.label) : opt.value}</span>`;
+      item.onclick = (e) => {
+        e.stopPropagation();
+        this.selectCustomOption(type, opt.value);
+        popup.classList.remove("show");
+      };
+      popup.appendChild(item);
+    });
+  },
+
+  selectCustomOption(type, value) {
+    if (type === "quote") {
+      this.setQuoteFontSize(value);
+    } else {
+      this.setWidgetSize(value);
+    }
   },
 
   setTheme(color, keepAdj = true) {
