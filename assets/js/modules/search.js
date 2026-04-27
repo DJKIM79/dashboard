@@ -125,9 +125,20 @@ const search = {
     this.updateIcon();
     input.value = "";
 
-    const openInNewTab = localStorage.getItem("dj_search_new_tab") === "true";
+    const val = localStorage.getItem("dj_search_new_tab");
+    const openInNewTab = val === "true" || val === true || val === null; 
+    
+    // DEBUG ALERT - To be removed after testing
+    // alert(`URL: ${url}\nVal: ${val}\nOpenInNewTab: ${openInNewTab}`);
+
     if (openInNewTab) {
-      window.open(url, "_blank");
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     } else {
       window.location.href = url;
     }
@@ -139,4 +150,11 @@ window.currentSearchEngine = search.currentEngine;
 window.toggleSearchEngineMenu = search.toggleMenu.bind(search);
 window.quickSelectEngine = search.quickSelect.bind(search);
 window.updateSearchEngineIcon = search.updateIcon.bind(search);
-window.performSearch = search.perform.bind(search);
+window.performSearch = function(e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+  search.perform(e);
+  return false;
+};

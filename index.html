@@ -277,8 +277,9 @@
           id="searchInput"
           data-i18n-ph="searchPh"
           placeholder="검색어를 입력하세요"
-          onkeypress="event.key === 'Enter' && performSearch()"
-        />
+          onkeydown="if(event.key === 'Enter') { event.preventDefault(); performSearch(event); return false; }"
+          />
+
         <div class="search-engine-icon" onclick="toggleSearchEngineMenu(event)">
           <div id="search-engine-current"></div>
           <i

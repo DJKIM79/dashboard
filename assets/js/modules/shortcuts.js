@@ -89,7 +89,7 @@ const shortcutMod = {
       div.onclick = (e) =>
         this.isDragging
           ? (e.preventDefault(), (this.isDragging = false))
-          : (window.location.href = finalUrl);
+          : window.open(finalUrl, "_blank");
       div.oncontextmenu = (e) => showContextMenu(e, "shortcut", i);
 
       div.innerHTML = `
