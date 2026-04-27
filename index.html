@@ -836,7 +836,13 @@
                   >
                 </label>
               </div>
-              <div id="weatherLocationList" class="location-list"></div>
+              <div id="weather-select-wrap" style="position: relative; margin-bottom: 15px; width: 98%; margin-left: 1%;">
+                <div id="weather-location-trigger" class="weather-custom-select" onclick="weather.toggleLocationPopup(event)">
+                  <span id="weather-trigger-text">도시 목록</span>
+                  <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
+                </div>
+                <div id="weather-location-popup" class="ai-model-popup weather-popup"></div>
+              </div>
               <div class="city-search-container">
                 <input
                   type="text"

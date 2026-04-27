@@ -6,6 +6,7 @@ const weather = {
 
   init() {
     this.fetch();
+    this.renderLocationList();
   },
 
   async fetch() {
@@ -286,46 +287,44 @@ const weather = {
       "dj_weather_locations",
       JSON.stringify(this.locations),
     );
+    window.weatherLocations = this.locations;
   },
 
   renderLocationList() {
-    const list = document.getElementById("weatherLocationList");
-    if (!list) return;
+    const popupEl = document.getElementById("weather-location-popup");
+    const wrapEl = document.getElementById("weather-select-wrap");
+    const triggerText = document.getElementById("weather-trigger-text");
+    if (!popupEl || !wrapEl) return;
 
     const customLocations = this.locations.filter(
       (loc) => loc.type !== "current",
     );
 
     if (customLocations.length === 0) {
-      list.innerHTML = `<div style="font-size: 0.8rem; opacity: 0.5; padding: 10px; text-align: center;">도시가 없습니다.</div>`;
+      wrapEl.style.display = "none";
       return;
     }
 
-    list.innerHTML = `
-      <div class="weather-custom-select" onclick="weather.toggleLocationPopup(event)">
-        <span>도시 목록</span>
-        <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
-        <div id="weather-location-popup" class="ai-model-popup weather-popup">
-          ${customLocations
-            .map(
-              (loc) => `
-            <div class="ai-model-item" style="cursor: default;">
-              <span>${loc.name}</span>
-              <i class="fas fa-trash-alt" style="cursor: pointer; color: #ef4444; font-size: 0.8rem;" 
-                 onclick="event.stopPropagation(); removeWeatherLocation(${loc.id})"></i>
-            </div>
-          `,
-            )
-            .join("")}
-        </div>
+    wrapEl.style.display = "block";
+    if (triggerText) triggerText.innerText = `도시 목록 (${customLocations.length})`;
+    
+    popupEl.innerHTML = customLocations
+      .map(
+        (loc) => `
+      <div class="ai-model-item" style="cursor: default;">
+        <span style="flex: 1;">${loc.name}</span>
+        <i class="fas fa-trash-alt engine-btn-del" style="font-size: 0.8rem;" 
+           onclick="event.stopPropagation(); removeWeatherLocation(${loc.id})"></i>
       </div>
-    `;
+    `,
+      )
+      .join("");
 
     if (!this.clickListenerAdded) {
       document.addEventListener("click", (e) => {
         const popup = document.getElementById("weather-location-popup");
-        if (popup && !e.target.closest(".weather-custom-select")) {
-          popup.classList.remove("show");
+        if (popup && popup.classList.contains("show") && !e.target.closest("#weather-select-wrap")) {
+          this.closeLocationPopup();
         }
       });
       this.clickListenerAdded = true;
@@ -333,11 +332,27 @@ const weather = {
   },
 
   toggleLocationPopup(e) {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     const popup = document.getElementById("weather-location-popup");
-    if (popup) {
-      popup.classList.toggle("show");
+    if (!popup) return;
+    
+    const isShowing = popup.classList.contains("show");
+    if (!isShowing) {
+        popup.style.display = "block";
+        popup.offsetHeight; // Reflow
+        popup.classList.add("show");
+    } else {
+        this.closeLocationPopup();
     }
+  },
+
+  closeLocationPopup() {
+    const popup = document.getElementById("weather-location-popup");
+    if (!popup) return;
+    popup.classList.remove("show");
+    setTimeout(() => {
+        if (!popup.classList.contains("show")) popup.style.display = "none";
+    }, 200);
   },
 };
 
