@@ -47,6 +47,7 @@ const ui = {
       "noti",
       "calendar",
       "clock",
+      "fileMgmt",
     ];
     const widgetMap = {
       weather: "top-right-widgets",
@@ -58,6 +59,7 @@ const ui = {
       noti: "noti-folder",
       calendar: "calendar-container",
       clock: "clock-container",
+      fileMgmt: "top-left-widgets",
     };
     types.forEach((type) => {
       let isHidden = localStorage.getItem(`dj_hide_${type}`) === "true";

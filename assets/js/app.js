@@ -10,6 +10,8 @@ const app = {
     // 0. Set default values if not exists
     if (localStorage.getItem("dj_theme_color") === null)
       localStorage.setItem("dj_theme_color", "#eab308");
+    if (localStorage.getItem("dj_theme_adjustment") === null)
+      localStorage.setItem("dj_theme_adjustment", "none");
     if (localStorage.getItem("dj_image_engine") === null)
       localStorage.setItem("dj_image_engine", "flickr");
     if (localStorage.getItem("dj_ai_output_at_once") === null)
@@ -18,6 +20,8 @@ const app = {
       localStorage.setItem("dj_bg_keyword", "");
     if (localStorage.getItem("dj_search_new_tab") === null)
       localStorage.setItem("dj_search_new_tab", "true");
+    if (localStorage.getItem("dj_show_current_weather") === null)
+      localStorage.setItem("dj_show_current_weather", "true");
 
     // 1. Initialize i18n first
     await i18n.init();
@@ -28,7 +32,7 @@ const app = {
 
     // 3. Initialize Settings (Theme, etc.)
     const savedTheme = localStorage.getItem("dj_theme_color");
-    if (savedTheme) settings.setTheme(savedTheme);
+    if (savedTheme) settings.setTheme(savedTheme, true);
 
     const savedFontSize =
       localStorage.getItem("dj_quote_font_size") || "medium";
@@ -134,8 +138,7 @@ const app = {
       noti.delete(id);
     } else if (type === "weather") {
       if (id === "current") {
-        window.showCurrentWeather = false;
-        localStorage.setItem("dj_show_current_weather", false);
+        localStorage.setItem("dj_show_current_weather", "false");
         weather.showCurrent = false;
       } else {
         weather.removeLocation(id);

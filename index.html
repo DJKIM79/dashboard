@@ -568,47 +568,47 @@
                 <div
                   class="color-swatch"
                   style="background: #ef4444"
-                  onclick="setTheme('#ef4444')"
+                  onclick="setTheme('#ef4444', false)"
                 ></div>
                 <div
                   class="color-swatch"
                   style="background: #f97316"
-                  onclick="setTheme('#f97316')"
+                  onclick="setTheme('#f97316', false)"
                 ></div>
                 <div
                   class="color-swatch"
                   style="background: #eab308"
-                  onclick="setTheme('#eab308')"
+                  onclick="setTheme('#eab308', false)"
                 ></div>
                 <div
                   class="color-swatch"
                   style="background: #22c55e"
-                  onclick="setTheme('#22c55e')"
+                  onclick="setTheme('#22c55e', false)"
                 ></div>
                 <div
                   class="color-swatch"
                   style="background: #3b82f6"
-                  onclick="setTheme('#3b82f6')"
+                  onclick="setTheme('#3b82f6', false)"
                 ></div>
                 <div
                   class="color-swatch"
                   style="background: #6366f1"
-                  onclick="setTheme('#6366f1')"
+                  onclick="setTheme('#6366f1', false)"
                 ></div>
                 <div
                   class="color-swatch"
                   style="background: #a855f7"
-                  onclick="setTheme('#a855f7')"
+                  onclick="setTheme('#a855f7', false)"
                 ></div>
                 <div
                   class="color-swatch"
                   style="background: #ec4899"
-                  onclick="setTheme('#ec4899')"
+                  onclick="setTheme('#ec4899', false)"
                 ></div>
                 <div
                   class="color-swatch"
                   style="background: #fff"
-                  onclick="setTheme('#fff')"
+                  onclick="setTheme('#fff', false)"
                 ></div>
                 <div
                   class="color-swatch"
@@ -616,7 +616,7 @@
                     background: #000;
                     border: 1px solid rgba(255, 255, 255, 0.3);
                   "
-                  onclick="setTheme('#000')"
+                  onclick="setTheme('#000', false)"
                 ></div>
               </div>
 
@@ -735,7 +735,41 @@
             </div>
 
             <div class="setting-column">
-              <div class="setting-group-title" data-i18n="lblLayout">크기</div>
+              <div
+                class="setting-group-title"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span data-i18n="lblLayout">레이아웃</span>
+                <label
+                  class="compact-checkbox-label"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-weight: normal;
+                    cursor: pointer;
+                  "
+                >
+                  <input
+                    type="checkbox"
+                    id="showFileMgmtCheckbox"
+                    onchange="toggleFileMgmt(this.checked)"
+                    style="
+                      width: 14px;
+                      height: 14px;
+                      margin: 0;
+                      cursor: pointer;
+                    "
+                  />
+                  <span class="setting-label-text" data-i18n="lblShowFileMgmt"
+                    >파일 관리 보기</span
+                  >
+                </label>
+              </div>
               <div
                 class="setting-row"
                 style="gap: 15px; align-items: center; margin-bottom: 20px"
@@ -1234,15 +1268,15 @@
     <script src="assets/js/modules/clock.js"></script>
     <script src="assets/js/modules/calendar.js"></script>
     <script src="assets/js/modules/search.js"></script>
-    <script src="assets/js/modules/weather.js"></script>
+    <script src="assets/js/modules/weather.js?v=1.0.1"></script>
     <script src="assets/js/modules/shortcuts.js"></script>
     <script src="assets/js/modules/memo.js"></script>
     <script src="assets/js/modules/noti.js?v=1.0.1"></script>
     <script src="assets/js/modules/quote.js"></script>
-    <script src="assets/js/modules/settings.js?v=1.0.2"></script>
+    <script src="assets/js/modules/settings.js?v=1.0.3"></script>
     <script src="assets/js/modules/ai.js?v=1.0.7"></script>
     <script src="assets/js/modules/files.js"></script>
     <script src="assets/js/modules/tutorial.js"></script>
-    <script src="assets/js/app.js"></script>
+    <script src="assets/js/app.js?v=1.0.1"></script>
   </body>
 </html>
