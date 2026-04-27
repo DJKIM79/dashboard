@@ -13,8 +13,7 @@ const search = {
   getAllEngines() {
     const defaultEngines = [
       { id: "google", name: "Google", domain: "google.com", isDefault: true },
-      { id: "naver", name: "Naver", domain: "naver.com", isDefault: true },
-      { id: "chatgpt", name: "ChatGPT", domain: "openai.com", isDefault: true }
+      { id: "naver", name: "Naver", domain: "naver.com", isDefault: true }
     ];
     const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
     return [...defaultEngines, ...customEngines];
@@ -114,9 +113,9 @@ const search = {
     
     let url = "";
     if (engine.isDefault) {
-      if (engine.id === "google") url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-      else if (engine.id === "naver") url = `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
-      else if (engine.id === "chatgpt") url = `https://chatgpt.com/?q=${encodeURIComponent(query)}`;
+      const q = encodeURIComponent(query);
+      if (engine.id === "google") url = `https://www.google.com/search?q=${q}`;
+      else if (engine.id === "naver") url = `https://search.naver.com/search.naver?query=${q}`;
     } else {
       url = engine.url + encodeURIComponent(query);
     }

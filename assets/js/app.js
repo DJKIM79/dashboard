@@ -25,6 +25,16 @@ const app = {
     if (localStorage.getItem("dj_hide_fileMgmt") === null)
       localStorage.setItem("dj_hide_fileMgmt", "false");
 
+    // 0.1 Initialize default custom search engines on first run
+    if (localStorage.getItem("dj_search_engines_custom") === null) {
+      const initialCustomEngines = [
+        { id: "custom_chatgpt", name: "ChatGPT", url: "https://chatgpt.com/?q=", domain: "chatgpt.com", isDefault: false },
+        { id: "custom_youtube", name: "YouTube", url: "https://www.youtube.com/results?search_query=", domain: "youtube.com", isDefault: false },
+        { id: "custom_bing", name: "Bing", url: "https://www.bing.com/search?q=", domain: "bing.com", isDefault: false }
+      ];
+      localStorage.setItem("dj_search_engines_custom", JSON.stringify(initialCustomEngines));
+    }
+
     // 1. Initialize i18n first
     await i18n.init();
 
