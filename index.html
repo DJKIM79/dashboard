@@ -514,227 +514,7 @@
         <div style="flex: 1; display: flex; flex-direction: column">
           <div class="setting-grid">
             <div class="setting-column">
-              <div
-                class="setting-group-title"
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                "
-              >
-                <span data-i18n="lblTheme">테마 색상</span>
-                <div style="display: flex; gap: 10px">
-                  <label
-                    class="compact-checkbox-label"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 4px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="checkbox"
-                      id="themeLighter"
-                      onchange="updateThemeAdjustment('lighter')"
-                      style="width: 12px; height: 12px; margin: 0"
-                    />
-                    <span class="setting-label-text" data-i18n="lblLighter"
-                      >더 밝게</span
-                    >
-                  </label>
-                  <label
-                    class="compact-checkbox-label"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 4px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="checkbox"
-                      id="themeDarker"
-                      onchange="updateThemeAdjustment('darker')"
-                      style="width: 12px; height: 12px; margin: 0"
-                    />
-                    <span class="setting-label-text" data-i18n="lblDarker"
-                      >더 어둡게</span
-                    >
-                  </label>
-                </div>
-              </div>
-              <div class="theme-colors" style="margin-bottom: 20px">
-                <div
-                  class="color-swatch"
-                  style="background: #ef4444"
-                  onclick="setTheme('#ef4444', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #f97316"
-                  onclick="setTheme('#f97316', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #eab308"
-                  onclick="setTheme('#eab308', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #22c55e"
-                  onclick="setTheme('#22c55e', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #3b82f6"
-                  onclick="setTheme('#3b82f6', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #6366f1"
-                  onclick="setTheme('#6366f1', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #a855f7"
-                  onclick="setTheme('#a855f7', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #ec4899"
-                  onclick="setTheme('#ec4899', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #fff"
-                  onclick="setTheme('#fff', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="
-                    background: #000;
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                  "
-                  onclick="setTheme('#000', false)"
-                ></div>
-              </div>
-
-              <div
-                class="setting-group-title"
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                "
-              >
-                <span data-i18n="lblBgKeyword">배경 키워드</span>
-                <div style="display: flex; gap: 10px">
-                  <label
-                    class="compact-checkbox-label"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 4px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="checkbox"
-                      id="engineUnsplash"
-                      onchange="updateImageEngine('unsplash')"
-                      style="width: 12px; height: 12px; margin: 0"
-                    />
-                    <span class="setting-label-text">Unsplash</span>
-                  </label>
-                  <label
-                    class="compact-checkbox-label"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 4px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="checkbox"
-                      id="engineFlickr"
-                      onchange="updateImageEngine('flickr')"
-                      style="width: 12px; height: 12px; margin: 0"
-                    />
-                    <span class="setting-label-text">Flickr</span>
-                  </label>
-                </div>
-              </div>
-              <input
-                type="text"
-                id="bgKeywordInput"
-                data-i18n-ph="bgKeywordPh"
-                placeholder="예: nature, space, city, dark"
-                oninput="updateBgKeyword(this.value)"
-                style="width: 98%; margin-left: 1%"
-              />
-
-              <div
-                class="setting-group-title"
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                "
-              >
-                <span data-i18n="lblSearchEngine">검색 엔진</span>
-                <label
-                  class="compact-checkbox-label"
-                  style="
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    font-weight: normal;
-                    cursor: pointer;
-                  "
-                >
-                  <input
-                    type="checkbox"
-                    id="searchNewTab"
-                    onchange="updateSearchNewTab(this.checked)"
-                    style="
-                      width: 14px;
-                      height: 14px;
-                      margin: 0;
-                      cursor: pointer;
-                    "
-                  />
-                  <span class="setting-label-text" data-i18n="lblSearchNewTab"
-                    >새 창으로 검색</span
-                  >
-                </label>
-              </div>
-              <div id="search-select-wrap" style="position: relative; margin-bottom: 15px; width: 98%; margin-left: 1%;">
-                <div id="search-engine-trigger" class="weather-custom-select" onclick="settings.toggleSearchEnginePopup(event)">
-                  <div style="display: flex; align-items: center; gap: 10px;">
-                    <div id="trigger-favicon" class="engine-favicon" style="background: transparent; width: 18px; height: 18px;"></div>
-                    <span id="trigger-name">Google</span>
-                  </div>
-                  <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
-                </div>
-                <div id="search-engine-popup" class="engine-popup"></div>
-              </div>
-              
-              <div class="engine-add-container">
-                <input
-                  type="text"
-                  id="customSearchUrlInput"
-                  placeholder="https://example.com/search?q="
-                  style="margin-bottom: 0; flex: 1;"
-                />
-                <button class="btn-save" onclick="settings.addCustomSearchEngine()" style="padding: 0; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                  <i class="fas fa-plus"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="setting-column">
+              <!-- 레이아웃 -->
               <div
                 class="setting-group-title"
                 style="
@@ -854,6 +634,172 @@
                 </div>
               </div>
 
+              <!-- 테마 색상 -->
+              <div
+                class="setting-group-title"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span data-i18n="lblTheme">테마 색상</span>
+                <div style="display: flex; gap: 10px">
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="themeLighter"
+                      onchange="updateThemeAdjustment('lighter')"
+                      style="width: 12px; height: 12px; margin: 0"
+                    />
+                    <span class="setting-label-text" data-i18n="lblLighter"
+                      >더 밝게</span
+                    >
+                  </label>
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="themeDarker"
+                      onchange="updateThemeAdjustment('darker')"
+                      style="width: 12px; height: 12px; margin: 0"
+                    />
+                    <span class="setting-label-text" data-i18n="lblDarker"
+                      >더 어둡게</span
+                    >
+                  </label>
+                </div>
+              </div>
+              <div class="theme-colors" style="margin-bottom: 20px">
+                <div
+                  class="color-swatch"
+                  style="background: #ef4444"
+                  onclick="setTheme('#ef4444', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #f97316"
+                  onclick="setTheme('#f97316', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #eab308"
+                  onclick="setTheme('#eab308', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #22c55e"
+                  onclick="setTheme('#22c55e', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #3b82f6"
+                  onclick="setTheme('#3b82f6', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #6366f1"
+                  onclick="setTheme('#6366f1', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #a855f7"
+                  onclick="setTheme('#a855f7', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #ec4899"
+                  onclick="setTheme('#ec4899', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #fff"
+                  onclick="setTheme('#fff', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="
+                    background: #000;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                  "
+                  onclick="setTheme('#000', false)"
+                ></div>
+              </div>
+
+              <!-- 배경 키워드 -->
+              <div
+                class="setting-group-title"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span data-i18n="lblBgKeyword">배경 키워드</span>
+                <div style="display: flex; gap: 10px">
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="engineUnsplash"
+                      onchange="updateImageEngine('unsplash')"
+                      style="width: 12px; height: 12px; margin: 0"
+                    />
+                    <span class="setting-label-text">Unsplash</span>
+                  </label>
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="engineFlickr"
+                      onchange="updateImageEngine('flickr')"
+                      style="width: 12px; height: 12px; margin: 0"
+                    />
+                    <span class="setting-label-text">Flickr</span>
+                  </label>
+                </div>
+              </div>
+              <input
+                type="text"
+                id="bgKeywordInput"
+                data-i18n-ph="bgKeywordPh"
+                placeholder="예: nature, space, city, dark"
+                oninput="updateBgKeyword(this.value)"
+                style="width: 98%; margin-left: 1%"
+              />
+            </div>
+
+            <div class="setting-column">
+              <!-- 날씨 -->
               <div
                 class="setting-group-title"
                 style="display: flex; justify-content: space-between"
@@ -877,7 +823,7 @@
                 </div>
                 <div id="weather-location-popup" class="ai-model-popup weather-popup"></div>
               </div>
-              <div class="city-search-container">
+              <div class="city-search-container" style="margin-bottom: 20px;">
                 <input
                   type="text"
                   id="citySearchInput"
@@ -888,6 +834,65 @@
                   style="width: 98%; margin-left: 1%"
                 />
                 <div id="citySearchResults" class="city-results"></div>
+              </div>
+
+              <!-- 검색 엔진 -->
+              <div
+                class="setting-group-title"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span data-i18n="lblSearchEngine">검색 엔진</span>
+                <label
+                  class="compact-checkbox-label"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-weight: normal;
+                    cursor: pointer;
+                  "
+                >
+                  <input
+                    type="checkbox"
+                    id="searchNewTab"
+                    onchange="updateSearchNewTab(this.checked)"
+                    style="
+                      width: 14px;
+                      height: 14px;
+                      margin: 0;
+                      cursor: pointer;
+                    "
+                  />
+                  <span class="setting-label-text" data-i18n="lblSearchNewTab"
+                    >새 창으로 검색</span
+                  >
+                </label>
+              </div>
+              <div id="search-select-wrap" style="position: relative; margin-bottom: 15px; width: 98%; margin-left: 1%;">
+                <div id="search-engine-trigger" class="weather-custom-select" onclick="settings.toggleSearchEnginePopup(event)">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <div id="trigger-favicon" class="engine-favicon" style="background: transparent; width: 18px; height: 18px;"></div>
+                    <span id="trigger-name">Google</span>
+                  </div>
+                  <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
+                </div>
+                <div id="search-engine-popup" class="engine-popup"></div>
+              </div>
+              
+              <div class="engine-add-container">
+                <input
+                  type="text"
+                  id="customSearchUrlInput"
+                  placeholder="https://example.com/search?q="
+                  style="margin-bottom: 0; flex: 1;"
+                />
+                <button class="btn-save" onclick="settings.addCustomSearchEngine()" style="padding: 0; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <i class="fas fa-plus"></i>
+                </button>
               </div>
             </div>
 
