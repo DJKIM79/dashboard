@@ -1721,13 +1721,13 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 
 #ai-provider-popup,
-#ai-model-select-popup {
+#ai-model-select-popup,
+#ai-custom-add-container {
   width: 280px;
   max-height: 450px;
 }
 
-#search-engine-popup,
-#ai-custom-add-container {
+#search-engine-popup {
   width: 100%;
 }
 

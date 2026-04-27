@@ -968,6 +968,28 @@
                     <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5; flex-shrink: 0;"></i>
                   </div>
                   <div id="ai-provider-popup" class="engine-popup"></div>
+                  <div id="ai-custom-add-container" class="engine-popup" style="padding: 15px; z-index: 120; display: none;">
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                      <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
+                        <span>사용자 AI 추가</span>
+                      </div>
+                      <input
+                        type="text"
+                        id="customAiNameInput"
+                        placeholder="AI 이름"
+                        style="margin-bottom: 0; width: 100%;"
+                      />
+                      <input
+                        type="text"
+                        id="customAiUrlInput"
+                        placeholder="https://example.com/api"
+                        style="margin-bottom: 0; width: 100%;"
+                      />
+                      <button class="btn-save" onclick="settings.addCustomAI()" style="width: 100%; height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span>추가</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div
                   id="aiSettingsPanel"
@@ -1042,28 +1064,6 @@
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-              <div id="ai-custom-add-container" class="engine-popup" style="padding: 15px; z-index: 120; display: none;">
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                  <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
-                    <span>사용자 AI 추가</span>
-                  </div>
-                  <input
-                    type="text"
-                    id="customAiNameInput"
-                    placeholder="AI 이름"
-                    style="margin-bottom: 0; width: 100%;"
-                  />
-                  <input
-                    type="text"
-                    id="customAiUrlInput"
-                    placeholder="https://example.com/api"
-                    style="margin-bottom: 0; width: 100%;"
-                  />
-                  <button class="btn-save" onclick="settings.addCustomAI()" style="width: 100%; height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <span>추가</span>
-                  </button>
                 </div>
               </div>
               <!-- 초기화 버튼 추가 -->
