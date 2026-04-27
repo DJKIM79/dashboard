@@ -25,6 +25,9 @@ const app = {
     if (localStorage.getItem("dj_hide_fileMgmt") === null)
       localStorage.setItem("dj_hide_fileMgmt", "false");
 
+    // Force AI chatbot to be closed on startup
+    localStorage.setItem("dj_hide_ai", "true");
+
     // 0.1 Initialize default custom search engines on first run
     if (localStorage.getItem("dj_search_engines_custom") === null) {
       const initialCustomEngines = [

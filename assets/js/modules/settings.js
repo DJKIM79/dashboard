@@ -206,10 +206,36 @@ const settings = {
 
     try {
         const urlObj = new URL(url);
+        
+        // Normalize URL for comparison (remove www. and query value if present)
+        const normalize = (u) => {
+            try {
+                const urlObj = new URL(u);
+                const hostname = urlObj.hostname.replace(/^www\./, '');
+                let result = `${urlObj.protocol}//${hostname}${urlObj.pathname}${urlObj.search}`;
+                
+                const parts = result.split(/[?&]/);
+                if (parts.length > 1) {
+                    const lastPart = parts[parts.length - 1];
+                    if (lastPart.includes('=')) {
+                        result = result.substring(0, result.lastIndexOf('=') + 1);
+                    }
+                }
+                // Remove trailing slash if no query
+                if (!urlObj.search && result.endsWith('/')) {
+                    result = result.slice(0, -1);
+                }
+                return result;
+            } catch(e) { return u; }
+        };
+
+        const normalizedUrl = normalize(url);
         const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
         
-        const isDuplicate = customEngines.some(e => e.url === url) || 
-                          ["https://www.google.com/search?q=", "https://search.naver.com/search.naver?query=", "https://chatgpt.com/?q="].includes(url);
+        const builtInEngines = ["https://www.google.com/search?q=", "https://search.naver.com/search.naver?query=", "https://chatgpt.com/?q="];
+        
+        const isDuplicate = customEngines.some(e => normalize(e.url) === normalizedUrl) || 
+                          builtInEngines.some(e => normalize(e) === normalizedUrl);
         
         if (isDuplicate) {
             utils.showValidationTip("customSearchUrlInput", "이미 추가된 검색 엔진입니다.");
@@ -219,7 +245,7 @@ const settings = {
         const newEngine = {
             id: `custom_${Date.now()}`,
             name: urlObj.hostname.replace("www.", ""),
-            url: url,
+            url: normalizedUrl, // Store the normalized version for better consistency
             domain: urlObj.hostname,
             isDefault: false
         };

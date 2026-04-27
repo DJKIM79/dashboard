@@ -514,6 +514,113 @@
         <div style="flex: 1; display: flex; flex-direction: column">
           <div class="setting-grid">
             <div class="setting-column">
+              <!-- 테마 색상 -->
+              <div
+                class="setting-group-title"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span data-i18n="lblTheme">테마 색상</span>
+                <div style="display: flex; gap: 10px">
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="themeLighter"
+                      onchange="updateThemeAdjustment('lighter')"
+                      style="width: 12px; height: 12px; margin: 0"
+                    />
+                    <span class="setting-label-text" data-i18n="lblLighter"
+                      >더 밝게</span
+                    >
+                  </label>
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="themeDarker"
+                      onchange="updateThemeAdjustment('darker')"
+                      style="width: 12px; height: 12px; margin: 0"
+                    />
+                    <span class="setting-label-text" data-i18n="lblDarker"
+                      >더 어둡게</span
+                    >
+                  </label>
+                </div>
+              </div>
+              <div class="theme-colors" style="margin-bottom: 20px">
+                <div
+                  class="color-swatch"
+                  style="background: #ef4444"
+                  onclick="setTheme('#ef4444', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #f97316"
+                  onclick="setTheme('#f97316', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #eab308"
+                  onclick="setTheme('#eab308', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #22c55e"
+                  onclick="setTheme('#22c55e', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #3b82f6"
+                  onclick="setTheme('#3b82f6', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #6366f1"
+                  onclick="setTheme('#6366f1', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #a855f7"
+                  onclick="setTheme('#a855f7', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #ec4899"
+                  onclick="setTheme('#ec4899', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="background: #fff"
+                  onclick="setTheme('#fff', false)"
+                ></div>
+                <div
+                  class="color-swatch"
+                  style="
+                    background: #000;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                  "
+                  onclick="setTheme('#000', false)"
+                ></div>
+              </div>
+
               <!-- 레이아웃 -->
               <div
                 class="setting-group-title"
@@ -632,113 +739,6 @@
                     <option value="small" data-i18n="optSmall">소</option>
                   </select>
                 </div>
-              </div>
-
-              <!-- 테마 색상 -->
-              <div
-                class="setting-group-title"
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                "
-              >
-                <span data-i18n="lblTheme">테마 색상</span>
-                <div style="display: flex; gap: 10px">
-                  <label
-                    class="compact-checkbox-label"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 4px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="checkbox"
-                      id="themeLighter"
-                      onchange="updateThemeAdjustment('lighter')"
-                      style="width: 12px; height: 12px; margin: 0"
-                    />
-                    <span class="setting-label-text" data-i18n="lblLighter"
-                      >더 밝게</span
-                    >
-                  </label>
-                  <label
-                    class="compact-checkbox-label"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 4px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="checkbox"
-                      id="themeDarker"
-                      onchange="updateThemeAdjustment('darker')"
-                      style="width: 12px; height: 12px; margin: 0"
-                    />
-                    <span class="setting-label-text" data-i18n="lblDarker"
-                      >더 어둡게</span
-                    >
-                  </label>
-                </div>
-              </div>
-              <div class="theme-colors" style="margin-bottom: 20px">
-                <div
-                  class="color-swatch"
-                  style="background: #ef4444"
-                  onclick="setTheme('#ef4444', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #f97316"
-                  onclick="setTheme('#f97316', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #eab308"
-                  onclick="setTheme('#eab308', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #22c55e"
-                  onclick="setTheme('#22c55e', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #3b82f6"
-                  onclick="setTheme('#3b82f6', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #6366f1"
-                  onclick="setTheme('#6366f1', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #a855f7"
-                  onclick="setTheme('#a855f7', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #ec4899"
-                  onclick="setTheme('#ec4899', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background: #fff"
-                  onclick="setTheme('#fff', false)"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="
-                    background: #000;
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                  "
-                  onclick="setTheme('#000', false)"
-                ></div>
               </div>
 
               <!-- 배경 키워드 -->

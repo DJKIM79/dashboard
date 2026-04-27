@@ -416,15 +416,15 @@ body::before {
 .shortcut-list-view .shortcut-item .shortcut-icon-wrapper,
 .shortcut-list-view .shortcut-item img,
 .shortcut-list-view .shortcut-item .shortcut-default-icon {
-  width: 24px !important;
-  height: 24px !important;
+  width: 16px !important;
+  height: 16px !important;
   margin-bottom: 0 !important;
-  font-size: 0.9rem !important;
-  border-radius: 6px !important;
+  font-size: 0.75rem !important;
+  border-radius: 4px !important;
 }
 
 .shortcut-list-view .shortcut-item span {
-  font-size: 0.8rem !important;
+  font-size: 0.75rem !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -451,7 +451,7 @@ body::before {
   align-items: center;
   width: 100%;
   box-sizing: border-box;
-  height: 105px;
+  height: 84px;
 }
 .shortcut-item:hover {
   border-color: var(--accent-color) !important;
@@ -470,10 +470,12 @@ body::before {
   text-overflow: ellipsis;
   padding: 0 5px;
   box-sizing: border-box;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 .shortcut-icon-wrapper {
-  width: 40px;
-  height: 40px;
+  width: 24px;
+  height: 24px;
   margin-bottom: 8px;
   display: flex;
   align-items: center;
@@ -481,24 +483,21 @@ body::before {
   position: relative;
 }
 .shortcut-item img {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   pointer-events: none;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .shortcut-default-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
+  width: 24px;
+  height: 24px;
   color: var(--accent-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  font-size: 0.9rem;
+  background: transparent;
   transition: all 0.3s ease;
 }
 .shortcut-item:hover .shortcut-default-icon {

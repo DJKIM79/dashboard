@@ -42,8 +42,8 @@ const shortcutMod = {
         // Get the current scale factor from CSS variable
         const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--widget-scale')) || 1;
         
-        // Estimated height considering the transform scale (Square item height is 105px)
-        const squareGridHeight = (rowCount * 105 + (rowCount - 1) * gap) * scale;
+        // Estimated height considering the transform scale (Square item height is 84px)
+        const squareGridHeight = (rowCount * 84 + (rowCount - 1) * gap) * scale;
         
         // 4. Decision: Does the grid exceed the visible viewport?
         // Subtract window.scrollY to get position relative to current view
@@ -76,20 +76,27 @@ const shortcutMod = {
     c.innerHTML = "";
     
     this.items.forEach((s, i) => {
-      const url = s.url.startsWith("http") ? s.url : `http://${s.url}`,
-        div = document.createElement("a");
+      let hostname = "";
+      const finalUrl = s.url.startsWith("http") ? s.url : `http://${s.url}`;
+      try {
+        hostname = new URL(finalUrl).hostname;
+      } catch (e) {
+        hostname = s.url;
+      }
+
+      const div = document.createElement("a");
       div.className = "shortcut-item";
       div.onclick = (e) =>
         this.isDragging
           ? (e.preventDefault(), (this.isDragging = false))
-          : (window.location.href = url);
+          : (window.location.href = finalUrl);
       div.oncontextmenu = (e) => showContextMenu(e, "shortcut", i);
 
       div.innerHTML = `
         <div class="shortcut-icon-wrapper">
-          <img src="https://www.google.com/s2/favicons?sz=128&domain=${new URL(url).hostname}" 
+          <img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" 
                class="shortcut-img"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.parentElement.classList.add('no-favicon')">
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
           <div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>
         </div>
         <span>${s.name}</span>
