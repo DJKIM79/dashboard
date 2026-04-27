@@ -273,6 +273,13 @@ const weather = {
     document.getElementById("citySearchInput").value = "";
     document.getElementById("citySearchResults").style.display = "none";
     this.renderLocationList();
+
+    // Show success feedback tip
+    setTimeout(() => {
+        if (window.utils) {
+            utils.showValidationTip("citySearchInput", `${loc.name}가 추가되었습니다.`);
+        }
+    }, 100);
   },
 
   removeLocation(id) {
