@@ -403,6 +403,15 @@ const settings = {
   setTheme(color, keepAdj = true) {
     if (keepAdj === false) localStorage.setItem("dj_theme_adjustment", "none");
     const adj = localStorage.getItem("dj_theme_adjustment") || "none";
+    
+    // Helper to expand short hex #fff -> #ffffff
+    const expandHex = (hex) => {
+      if (hex.length === 4) {
+        return "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+      }
+      return hex;
+    };
+
     let finalColor = color;
     if (adj !== "none") {
       const isWhite = color === "#fff" || color === "#ffffff",
@@ -413,23 +422,34 @@ const settings = {
     }
     document.documentElement.style.setProperty("--accent-color", finalColor);
     localStorage.setItem("dj_theme_color", color);
-    const contrast =
-      finalColor === "#000" ||
-      finalColor === "#000000" ||
-      finalColor === "#fff" ||
-      finalColor === "#ffffff"
-        ? finalColor.startsWith("#f")
-          ? "#0f172a"
-          : "#fff"
-        : "#0f172a";
+    
+    // Calculate contrast color based on brightness
+    const getContrast = (hex) => {
+      const expanded = expandHex(hex);
+      const r = parseInt(expanded.slice(1, 3), 16);
+      const g = parseInt(expanded.slice(3, 5), 16);
+      const b = parseInt(expanded.slice(5, 7), 16);
+      // Brightness formula (YIQ)
+      const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+      return yiq >= 128 ? "#0f172a" : "#ffffff";
+    };
+
+    const contrast = getContrast(finalColor);
     document.documentElement.style.setProperty("--accent-contrast", contrast);
     this.updateThemeAdjustmentUI(color, adj);
   },
 
   adjustColor(hex, percent) {
-    let r = parseInt(hex.slice(1, 3), 16),
-      g = parseInt(hex.slice(3, 5), 16),
-      b = parseInt(hex.slice(5, 7), 16);
+    const expandHex = (h) => {
+      if (h.length === 4) {
+        return "#" + h[1] + h[1] + h[2] + h[2] + h[3] + h[3];
+      }
+      return h;
+    };
+    const expanded = expandHex(hex);
+    let r = parseInt(expanded.slice(1, 3), 16),
+      g = parseInt(expanded.slice(3, 5), 16),
+      b = parseInt(expanded.slice(5, 7), 16);
     r = Math.min(255, Math.max(0, r + (r * percent) / 100));
     g = Math.min(255, Math.max(0, g + (g * percent) / 100));
     b = Math.min(255, Math.max(0, b + (b * percent) / 100));
