@@ -324,8 +324,9 @@ const settings = {
   updateShowWeather(checked) {
     localStorage.setItem("dj_show_current_weather", checked ? "true" : "false");
     if (window.weather) {
-      window.weather.showCurrent = checked;
-      window.weather.fetch();
+      weather.showCurrent = checked;
+      // Use setTimeout to ensure localStorage is settled before fetch
+      setTimeout(() => weather.fetch(), 50);
     }
   },
 
@@ -456,8 +457,8 @@ const settings = {
 
     const defaultAis = [
         { id: "none", name: "사용 안 함", icon: "fas fa-ban" },
-        { id: "local", name: "로컬 AI", icon: "fas fa-server" },
-        { id: "openai", name: "OpenAI", icon: "fas fa-snowflake" },
+        { id: "local", name: "로컬 AI", icon: "fas fa-desktop" },
+        { id: "openai", name: "OpenAI", icon: "fas fa-circle-nodes" },
         { id: "gemini", name: "Gemini", icon: "fas fa-wand-magic-sparkles" }
     ];
 
@@ -475,7 +476,7 @@ const settings = {
 
       item.innerHTML = `
         <div class="engine-favicon">
-          <i class="${aiItem.icon || 'fas fa-robot'}"></i>
+          <i class="${aiItem.icon || 'fas fa-network-wired'}"></i>
         </div>
         <div class="engine-name">${aiItem.name}</div>
         <div class="engine-status">
@@ -619,21 +620,24 @@ const settings = {
 
   updateAIProviderTriggerUI() {
     const triggerName = document.getElementById("ai-trigger-name");
+    const triggerIcon = document.getElementById("ai-trigger-icon");
     const currentProvider = localStorage.getItem("dj_ai_provider") || "none";
     
-    const defaultNames = {
-        none: "사용 안 함",
-        local: "로컬 AI",
-        openai: "OpenAI",
-        gemini: "Gemini"
+    const defaults = {
+        none: { name: "사용 안 함", icon: "fas fa-ban" },
+        local: { name: "로컬 AI", icon: "fas fa-desktop" },
+        openai: { name: "OpenAI", icon: "fas fa-circle-nodes" },
+        gemini: { name: "Gemini", icon: "fas fa-wand-magic-sparkles" }
     };
 
-    if (defaultNames[currentProvider]) {
-        triggerName.innerText = defaultNames[currentProvider];
+    if (defaults[currentProvider]) {
+        if (triggerName) triggerName.innerText = defaults[currentProvider].name;
+        if (triggerIcon) triggerIcon.className = defaults[currentProvider].icon;
     } else {
         const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
         const current = customAis.find(a => a.id === currentProvider);
-        triggerName.innerText = current ? current.name : "사용 안 함";
+        if (triggerName) triggerName.innerText = current ? current.name : "사용 안 함";
+        if (triggerIcon) triggerIcon.className = current ? (current.icon || "fas fa-network-wired") : "fas fa-ban";
     }
   },
 
@@ -653,7 +657,7 @@ const settings = {
         id: `custom_${Date.now()}`,
         name: name,
         url: url,
-        icon: "fas fa-desktop",
+        icon: "fas fa-network-wired",
         isDefault: false
     };
 

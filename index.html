@@ -946,7 +946,7 @@
                   width: 98%;
                   margin-left: 1%;
                   margin-bottom: 5px;
-                  height: 40px;
+                  min-height: 40px;
                 "
               >
                 <div
@@ -962,7 +962,7 @@
                   >
                   <div id="ai-provider-trigger" class="weather-custom-select" style="flex: 1; margin-bottom: 0; min-width: 0;" onclick="settings.toggleAIPopup(event)">
                     <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; overflow: hidden;">
-                      <i class="fas fa-robot" style="font-size: 0.9rem; opacity: 0.7; flex-shrink: 0;"></i>
+                      <i id="ai-trigger-icon" class="fas fa-robot" style="font-size: 0.9rem; opacity: 0.7; flex-shrink: 0;"></i>
                       <span id="ai-trigger-name" class="engine-name">사용 안 함</span>
                     </div>
                     <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5; flex-shrink: 0;"></i>
@@ -1029,7 +1029,7 @@
                         style="margin-bottom: 0; width: 100%; display: none;"
                         oninput="updateAiApiKey(this.value)"
                       />
-                      <div class="ai-check-btn-wrapper" style="position: relative;">
+                      <div class="ai-check-btn-wrapper" style="position: relative; z-index: 10;">
                         <button 
                           id="ai-check-btn" 
                           onclick="ai.checkConnection()" 
