@@ -77,8 +77,6 @@ const settings = {
       if (el("aiServerUrlInput"))
         el("aiServerUrlInput").value =
           localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
-      if (el("aiApiKeyInput"))
-        el("aiApiKeyInput").value = localStorage.getItem("dj_ai_api_key") || "";
       this.onAIProviderChange();
 
       if (window.ai && typeof ai.updateStatusUI === "function")
@@ -375,23 +373,21 @@ const settings = {
     const customAddArea = document.getElementById("ai-custom-add-container");
 
     if (urlInput && keyInput) {
-      if (provider === "local" || provider.startsWith("custom_")) {
+      if (provider === "local") {
         urlInput.style.display = "block";
         keyInput.style.display = "none";
         if (keyLabel) keyLabel.innerText = "URL";
-        
-        if (provider.startsWith("custom_")) {
-            const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
-            const current = customAis.find(a => a.id === provider);
-            if (current) urlInput.value = current.url;
-        } else {
-            urlInput.value = localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
-        }
+        urlInput.value = localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
+      } else if (provider.startsWith("custom_")) {
+        urlInput.style.display = "none";
+        keyInput.style.display = "block";
+        if (keyLabel) keyLabel.innerText = "Key";
+        keyInput.value = localStorage.getItem(`dj_ai_api_key_${provider}`) || "";
       } else {
         urlInput.style.display = "none";
         keyInput.style.display = "block";
         if (keyLabel) keyLabel.innerText = "Key";
-        keyInput.value = localStorage.getItem("dj_ai_api_key") || "";
+        keyInput.value = localStorage.getItem(`dj_ai_api_key_${provider}`) || localStorage.getItem("dj_ai_api_key") || "";
       }
     }
     
@@ -688,7 +684,10 @@ const settings = {
   },
 
   updateAiApiKey(value) {
-    localStorage.setItem("dj_ai_api_key", value.trim());
+    const provider = localStorage.getItem("dj_ai_provider") || "none";
+    if (provider !== "none" && provider !== "local") {
+        localStorage.setItem(`dj_ai_api_key_${provider}`, value.trim());
+    }
   },
 
   updateAiModel(value) {

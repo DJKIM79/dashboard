@@ -1,7 +1,4 @@
 const ui = {
-  currentContextType: null,
-  currentContextId: null,
-
   toggleFolder(id, event) {
     if (event) event.stopPropagation();
     document
@@ -129,14 +126,13 @@ const ui = {
   showContextMenu(e, type, id) {
     e.preventDefault();
     e.stopPropagation();
-    this.currentContextType = type;
-    this.currentContextId = id;
-    // Sync with global for other modules if needed
-    window.currentContextType = type;
-    window.currentContextId = id;
 
     const menu = document.getElementById("globalContextMenu");
     if (!menu) return;
+
+    // Store context in dataset instead of global variables
+    menu.dataset.type = type || "";
+    menu.dataset.id = id !== undefined ? id : "";
 
     const addItem = document.getElementById("ctx-add");
     const editItem = document.getElementById("ctx-edit");
@@ -182,11 +178,13 @@ const ui = {
 
   hideCurrentWidget() {
     const menu = document.getElementById("globalContextMenu");
-    if (menu) menu.style.display = "none";
-    if (["shortcut", "memo", "noti"].includes(this.currentContextType)) {
-      this.toggleWidget(this.currentContextType);
-    } else {
-      this.toggleWidget(this.currentContextType);
+    if (!menu) return;
+
+    const type = menu.dataset.type;
+    menu.style.display = "none";
+
+    if (type) {
+      this.toggleWidget(type);
     }
   },
 

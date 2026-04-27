@@ -12,7 +12,9 @@ const ai = {
     return localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
   },
   get apiKey() {
-    return localStorage.getItem("dj_ai_api_key") || "";
+    const provider = this.provider;
+    if (provider === "none" || provider === "local") return "";
+    return localStorage.getItem(`dj_ai_api_key_${provider}`) || localStorage.getItem("dj_ai_api_key") || "";
   },
   get settingsModel() {
     return localStorage.getItem("dj_ai_model") || "";
@@ -305,7 +307,16 @@ const ai = {
         
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
-        const res = await fetch(`${fetchUrl}/api/tags`, { signal: controller.signal });
+        
+        const headers = {};
+        if (apiKey) {
+            headers["Authorization"] = `Bearer ${apiKey}`;
+        }
+
+        const res = await fetch(`${fetchUrl}/api/tags`, { 
+            headers: headers,
+            signal: controller.signal 
+        });
         clearTimeout(timeoutId);
         
         if (res.ok) {
@@ -368,11 +379,12 @@ const ai = {
     );
 
     try {
-      if (this.provider === "local")
+      const provider = this.provider;
+      if (provider === "local" || provider.startsWith("custom_"))
         await this.callLocalAI(text, botMsgDiv, chat, activeModel);
-      else if (this.provider === "openai")
+      else if (provider === "openai")
         await this.callOpenAI(text, botMsgDiv, chat, activeModel);
-      else if (this.provider === "gemini")
+      else if (provider === "gemini")
         await this.callGemini(text, botMsgDiv, chat, activeModel);
       this.updateStatusUI();
     } catch (e) {
@@ -385,9 +397,14 @@ const ai = {
 
   async callLocalAI(prompt, msgDiv, chat, model) {
     const isStream = !this.outputAtOnce;
+    const headers = { "Content-Type": "application/json" };
+    if (this.apiKey) {
+        headers["Authorization"] = `Bearer ${this.apiKey}`;
+    }
+
     const response = await fetch(`${this.serverUrl}/api/chat`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: headers,
       body: JSON.stringify({
         model: model,
         messages: chat.messages

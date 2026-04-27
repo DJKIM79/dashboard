@@ -2,8 +2,6 @@
 window.currentEditNotiId = null;
 window.currentEditMemoId = null;
 window.currentShortcutIndex = null;
-window.currentContextType = null;
-window.currentContextId = null;
 
 const app = {
   async init() {
@@ -101,8 +99,21 @@ const app = {
     }
   },
 
-  showDeleteConfirm() {
+  showDeleteConfirm(type, id) {
     const menu = document.getElementById("globalContextMenu");
+    const confirmModal = document.getElementById("deleteConfirmModal");
+
+    // Inherit from context menu if not provided
+    if (!type && menu) {
+      type = menu.dataset.type;
+      id = menu.dataset.id;
+    }
+
+    if (confirmModal) {
+      confirmModal.dataset.type = type || "";
+      confirmModal.dataset.id = id || "";
+    }
+
     if (menu) menu.style.display = "none";
     // Close existing modals to prevent overlap
     utils.closeModal("memoModal");
@@ -113,8 +124,10 @@ const app = {
 
   addCurrentItem() {
     const menu = document.getElementById("globalContextMenu");
+    const type = menu ? menu.dataset.type : null;
     if (menu) menu.style.display = "none";
-    if (window.currentContextType === "weather") {
+
+    if (type === "weather") {
       settings.openModal();
       setTimeout(() => {
         const input = document.getElementById("citySearchInput");
@@ -125,9 +138,10 @@ const app = {
 
   editCurrentItem() {
     const menu = document.getElementById("globalContextMenu");
-    if (menu) menu.style.display = "none";
-    const type = window.currentContextType;
-    const id = window.currentContextId;
+    if (!menu) return;
+    const type = menu.dataset.type;
+    const id = menu.dataset.id;
+    menu.style.display = "none";
 
     if (type === "shortcut") shortcutMod.openModal(id);
     else if (type === "memo") memo.openModal(id);
@@ -143,8 +157,10 @@ const app = {
 
   deleteCurrentItem() {
     utils.closeModal("deleteConfirmModal");
-    const type = window.currentContextType;
-    const id = window.currentContextId;
+    const confirmModal = document.getElementById("deleteConfirmModal");
+    if (!confirmModal) return;
+    const type = confirmModal.dataset.type;
+    const id = confirmModal.dataset.id;
 
     if (type === "shortcut") {
       shortcutMod.delete(id);
@@ -171,6 +187,11 @@ const app = {
         weather.fetch();
       }
     }
+    
+    // Clear dataset after action
+    confirmModal.dataset.type = "";
+    confirmModal.dataset.id = "";
+    
     utils.saveData();
   },
 

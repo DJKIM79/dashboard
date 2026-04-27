@@ -254,7 +254,7 @@
       id="top-right-widgets"
       oncontextmenu="showContextMenu(event, 'weather')"
     ></div>
-    <div id="quote-section">
+    <div id="quote-section" oncontextmenu="showContextMenu(event, 'quote')">
       <div class="quote-container" onclick="fetchQuote()">
         <span id="quote-text">...</span>
         <span id="quote-author-wrap">
@@ -262,7 +262,7 @@
         </span>
       </div>
     </div>
-    <div id="search-section">
+    <div id="search-section" oncontextmenu="showContextMenu(event, 'search')">
       <div class="search-box">
         <div class="ai-icon-wrapper" onclick="ui.toggleWidget('ai')">
           <i class="fas fa-robot ai-search-icon" data-i18n-title="sideAI"></i>
@@ -1212,7 +1212,7 @@
             class="btn-save"
             id="notiDelBtn"
             style="display: none; background: #ef4444; color: #fff; flex: 0.4"
-            onclick="showDeleteConfirm()"
+            onclick="showDeleteConfirm('noti', window.currentEditNotiId)"
             data-i18n="btnDelete"
           >
             삭제
@@ -1252,7 +1252,7 @@
             class="btn-save"
             id="memoDelBtn"
             style="display: none; background: #ef4444; color: #fff; flex: 0.4"
-            onclick="showDeleteConfirm()"
+            onclick="showDeleteConfirm('memo', window.currentEditMemoId)"
             data-i18n="btnDelete"
           >
             삭제
@@ -1280,3 +1280,4 @@
     <script src="assets/js/app.js?v=1.0.1"></script>
   </body>
 </html>
+
