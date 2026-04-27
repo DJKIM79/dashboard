@@ -503,7 +503,7 @@ body::before {
 }
 .shortcut-item:hover .shortcut-default-icon {
   background: var(--accent-color);
-  color: #0f172a;
+  color: var(--accent-contrast);
   transform: translateY(-2px);
 }
 /* Drag and Drop - 최적화: 붕 뜨는 효과 삭제 */
@@ -1107,7 +1107,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .calendar-day.today {
   background: var(--accent-color);
-  color: var(--accent-contrast, #0f172a);
+  color: var(--accent-contrast);
   font-weight: 700;
 }
 .calendar-day.other-month {
@@ -1150,7 +1150,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .month-item:hover {
   background: var(--accent-color);
-  color: var(--accent-contrast, #0f172a);
+  color: var(--accent-contrast);
 }
 .month-item.current {
   color: var(--accent-color);
@@ -1580,7 +1580,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .day-check input:checked + span {
   background: var(--accent-color);
-  color: var(--accent-contrast, #0f172a);
+  color: var(--accent-contrast);
   font-weight: 700;
 }
 .btn-save {
@@ -1588,7 +1588,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   border: none;
   border-radius: 10px;
   background: var(--accent-color);
-  color: var(--accent-contrast, #0f172a);
+  color: var(--accent-contrast);
   font-weight: 700;
   cursor: pointer;
   transition: 0.2s;
@@ -1909,7 +1909,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .ai-model-item.active {
   background: var(--accent-color);
-  color: #0f172a;
+  color: var(--accent-contrast);
 }
 .ai-model-tip {
   font-size: 0.75rem;
@@ -1971,7 +1971,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 #ai-btn-new-chat:hover {
   background: var(--accent-color);
-  color: #0f172a;
+  color: var(--accent-contrast);
   border-color: var(--accent-color);
 }
 .ai-history-item {
@@ -2100,7 +2100,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .ai-message.user {
   align-self: flex-end;
   background: var(--accent-color);
-  color: var(--accent-contrast, #0f172a);
+  color: var(--accent-contrast);
   border-bottom-right-radius: 4px;
 }
 .ai-message.bot {
@@ -2294,7 +2294,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 #ai-send-btn {
   background: var(--accent-color);
-  color: var(--accent-contrast, #0f172a);
+  color: var(--accent-contrast);
 }
 .ai-icon-btn i {
   pointer-events: none; /* 아이콘이 마우스 이벤트를 방해하지 않게 함 */
