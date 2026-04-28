@@ -52,6 +52,7 @@ const settings = {
       const themeAdj = localStorage.getItem("dj_theme_adjustment") || "none";
 
       this.updateThemeAdjustmentUI(themeColor, themeAdj);
+      this.updateLangUI();
 
       const imgEngine = localStorage.getItem("dj_image_engine") || "flickr";
       if (el("engineUnsplash"))
@@ -160,6 +161,7 @@ const settings = {
       else if (p.id === "ai-provider-popup") this.closeAIPopup();
       else if (p.id === "ai-custom-add-container") this.closeCustomAIPopup();
       else if (p.id === "ai-model-select-popup") this.closeModelPopup();
+      else if (p.id === "lang-popup") p.classList.remove("show");
       else if (p.id === "weather-location-popup") {
         if (window.weather) weather.closeLocationPopup();
       } else if (p.id === "city-add-popup") {
@@ -1062,6 +1064,123 @@ const settings = {
     b = Math.min(255, Math.max(0, b + (b * percent) / 100));
     return `#${Math.round(r).toString(16).padStart(2, "0")}${Math.round(g).toString(16).padStart(2, "0")}${Math.round(b).toString(16).padStart(2, "0")}`;
   },
+
+  toggleLangPopup(e) {
+    if (e) e.stopPropagation();
+    const popup = document.getElementById("lang-popup");
+    const trigger = document.getElementById("lang-trigger");
+    if (!popup || !trigger) return;
+
+    const isShowing = popup.classList.contains("show");
+    if (!isShowing) {
+        this.closeAllPopups("lang-popup");
+        this.renderLangList();
+        
+        // Positioning Logic
+        popup.style.display = "block";
+        popup.style.visibility = "hidden";
+        
+        const rect = trigger.getBoundingClientRect();
+        const modalContent = trigger.closest('.modal-content');
+        const modalHeader = modalContent.querySelector('h3').getBoundingClientRect();
+        
+        // Set initial state
+        popup.classList.add("show");
+        
+        // Wait for render
+        setTimeout(() => {
+            const popupRect = popup.getBoundingClientRect();
+            const itemHeight = 35; // approximate
+            const maxDownItems = 3;
+            const spaceBelow = window.innerHeight - rect.bottom - 20;
+            const preferredDownHeight = itemHeight * maxDownItems;
+            
+            // Should we go up or down?
+            if (spaceBelow >= preferredDownHeight) {
+                // Down
+                popup.style.top = "100%";
+                popup.style.bottom = "auto";
+                popup.style.marginTop = "5px";
+                popup.style.marginBottom = "0";
+            } else {
+                // Up
+                popup.style.top = "auto";
+                popup.style.bottom = "100%";
+                popup.style.marginTop = "0";
+                popup.style.marginBottom = "5px";
+            }
+            
+            // Limit top to not overlap header
+            const currentPopupRect = popup.getBoundingClientRect();
+            if (currentPopupRect.top < modalHeader.bottom + 10) {
+                const overlap = modalHeader.bottom + 10 - currentPopupRect.top;
+                popup.style.maxHeight = (currentPopupRect.height - overlap) + "px";
+            } else {
+                popup.style.maxHeight = "280px";
+            }
+            
+            popup.style.visibility = "visible";
+
+            // Scroll active item into view
+            const activeItem = popup.querySelector(".active");
+            if (activeItem) {
+                activeItem.scrollIntoView({ block: "center", behavior: "smooth" });
+            }
+        }, 10);
+    } else {
+        popup.classList.remove("show");
+    }
+  },
+
+  renderLangList() {
+    const popupEl = document.getElementById("lang-popup");
+    if (!popupEl) return;
+    popupEl.innerHTML = "";
+
+    const currentLang = localStorage.getItem("dj_user_lang") || "auto";
+    
+    // Top 3 mandatory items
+    const mandatory = [
+        { id: "auto", label: "optAuto" },
+        { id: "ko", label: "optKo" },
+        { id: "en", label: "optEn" }
+    ];
+
+    mandatory.forEach(lang => {
+      const item = this.createLangItem(lang, currentLang);
+      popupEl.appendChild(item);
+    });
+  },
+
+  createLangItem(lang, currentLang) {
+    const item = document.createElement("div");
+    item.className = `ai-model-item ${lang.id === currentLang ? "active" : ""}`;
+    
+    item.onclick = (e) => {
+        e.stopPropagation();
+        if (window.i18n) i18n.setLanguage(lang.id);
+    };
+
+    const label = window.i18n ? i18n.get(lang.label) : lang.id;
+    item.innerHTML = `
+      <div class="engine-name" style="padding-left: 5px;">${label}</div>
+      <div class="engine-status">
+        ${lang.id === currentLang ? '<i class="fas fa-check-circle engine-active-icon"></i>' : ''}
+      </div>
+    `;
+    return item;
+  },
+
+  updateLangUI() {
+    const triggerText = document.getElementById("lang-trigger-text");
+    if (triggerText) {
+        const currentLang = localStorage.getItem("dj_user_lang") || "auto";
+        const langMap = { auto: "optAuto", ko: "optKo", en: "optEn" };
+        const labelKey = langMap[currentLang] || "optAuto";
+        triggerText.setAttribute("data-i18n", labelKey);
+        if (window.i18n) triggerText.innerText = i18n.get(labelKey);
+    }
+  },
 };
 
 // Global click listener to close all settings popups when clicking outside
@@ -1102,3 +1221,4 @@ window.updateAiProvider = settings.updateAiProvider.bind(settings);
 window.updateAiServerUrl = settings.updateAiServerUrl.bind(settings);
 window.updateAiApiKey = settings.updateAiApiKey.bind(settings);
 window.updateAiModel = settings.updateAiModel.bind(settings);
+window.updateLangUI = settings.updateLangUI.bind(settings);

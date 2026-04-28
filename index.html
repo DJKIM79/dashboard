@@ -683,6 +683,32 @@
                 oninput="updateBgKeyword(this.value)"
                 style="width: 98%; margin-left: 1%"
               />
+
+              <!-- 언어 -->
+              <div
+                class="setting-row"
+                style="margin-top: 15px; width: 98%; margin-left: 1%; justify-content: space-between;"
+              >
+                <span
+                  style="
+                    font-size: 0.85rem;
+                    color: #94a3b8;
+                    white-space: nowrap;
+                    margin: 0;
+                    display: flex;
+                    align-items: center;
+                  "
+                  data-i18n="lblLanguage"
+                  >언어</span
+                >
+                <div id="lang-select-wrap" style="position: relative; width: 100px;">
+                  <div id="lang-trigger" class="weather-custom-select" onclick="settings.toggleLangPopup(event)">
+                    <span id="lang-trigger-text" style="font-size: 0.85rem;">자동</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
+                  </div>
+                  <div id="lang-popup" class="ai-model-popup"></div>
+                </div>
+              </div>
             </div>
 
             <div class="setting-column">

@@ -1,15 +1,16 @@
 const i18n = {
-  userLang: navigator.language.startsWith("ko") ? "ko" : "en",
+  userLang: localStorage.getItem("dj_user_lang") || (navigator.language.startsWith("ko") ? "ko" : "en"),
   langData: {},
 
   async init() {
     try {
-      const res = await fetch(`assets/lang/${this.userLang}.json`);
+      const langToLoad = this.userLang === "auto" ? (navigator.language.startsWith("ko") ? "ko" : "en") : this.userLang;
+      const res = await fetch(`assets/lang/${langToLoad}.json`);
       this.langData = await res.json();
     } catch (e) {
       console.error("Failed to load language data", e);
-      // Fallback to English if Korean fails, or vice versa
-      const fallback = this.userLang === "ko" ? "en" : "ko";
+      // Fallback
+      const fallback = navigator.language.startsWith("ko") ? "ko" : "en";
       const res = await fetch(`assets/lang/${fallback}.json`);
       this.langData = await res.json();
     }
@@ -21,13 +22,16 @@ const i18n = {
     if (!T) return;
 
     document.querySelectorAll("[data-i18n]").forEach((el) => {
-      el.innerHTML = T[el.dataset.i18n];
+      const key = el.dataset.i18n;
+      if (T[key]) el.innerHTML = T[key];
     });
     document.querySelectorAll("[data-i18n-ph]").forEach((el) => {
-      el.placeholder = T[el.dataset.i18nPh];
+      const key = el.dataset.i18nPh;
+      if (T[key]) el.placeholder = T[key];
     });
     document.querySelectorAll("[data-i18n-title]").forEach((el) => {
-      el.title = T[el.dataset.i18nTitle];
+      const key = el.dataset.i18nTitle;
+      if (T[key]) el.title = T[key];
     });
 
     const dayMapping = [1, 2, 3, 4, 5, 6, 0];
@@ -44,6 +48,11 @@ const i18n = {
   get(key) {
     return this.langData[key] || key;
   },
+
+  setLanguage(lang) {
+    localStorage.setItem("dj_user_lang", lang);
+    location.reload();
+  }
 };
 
 window.i18n = i18n;
