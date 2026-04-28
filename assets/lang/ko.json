@@ -23,6 +23,7 @@
   "lblAIHistory": "채팅 목록",
   "lblAISetting": "AI 설정",
   "aiNeedConnect": "서버 연결 안됨",
+  "aiNeedConnectHover": "AI를 설정해 주세요",
   "aiConnecting": "AI 연결됨",
   "aiInputPh": "메시지를 입력하세요...",
   "aiNoServer": "접속 안됨",
@@ -113,5 +114,8 @@
   "tutFileDesc": "모든 데이터를 안전하게 백업하거나 복원하세요.",
   "tutNext": "다음 &rarr;",
   "tutPrev": "&larr; 이전",
-  "tutDone": "시작하기"
+  "tutDone": "시작하기",
+  "tutFinishTitle": "준비 완료!",
+  "tutFinishDesc": "이제 OnTo를 자유롭게 사용해 보세요.",
+  "btnStart": "시작하기"
 }

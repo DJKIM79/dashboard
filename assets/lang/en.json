@@ -22,6 +22,7 @@
   "lblAIHistory": "Chat History",
   "lblAISetting": "AI Settings",
   "aiNeedConnect": "Server Connection Required",
+  "aiNeedConnectHover": "Please set up AI",
   "aiConnecting": "Connected",
   "aiInputPh": "Type a message...",
   "aiNoServer": "Disconnected",
@@ -111,5 +112,8 @@
   "tutFileDesc": "Securely backup or restore all your data.",
   "tutNext": "Next &rarr;",
   "tutPrev": "&larr; Prev",
-  "tutDone": "Start"
+  "tutDone": "Start",
+  "tutFinishTitle": "All Set!",
+  "tutFinishDesc": "You're ready to enjoy OnTo.",
+  "btnStart": "Start Now"
 }

@@ -15,6 +15,7 @@
       href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"
     />
     <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <link
       rel="stylesheet"
       as="style"
@@ -264,7 +265,7 @@
     </div>
     <div id="search-section" oncontextmenu="showContextMenu(event, 'search')">
       <div class="search-box">
-        <div class="ai-icon-wrapper" onclick="ui.toggleWidget('ai')">
+        <div class="ai-icon-wrapper" onclick="ui.toggleWidget('ai')" onmouseenter="if(window.ai && !window.ai.isConnected && window.utils) utils.showValidationTip(this, window.i18n ? window.i18n.get('aiNeedConnectHover') : 'AI를 설정해 주세요', 'error', {duration: 2000, noAutoHide: true})" onmouseleave="if(window.utils) utils.hideValidationTip()">
           <i class="fas fa-robot ai-search-icon" data-i18n-title="sideAI"></i>
           <div class="ai-orbit">
             <div class="ai-orbit-dot dot-1"></div>
@@ -511,7 +512,12 @@
       onclick="event.target == this && closeModal('settingModal')"
     >
       <div class="modal-content">
-        <h3 data-i18n="modalSetting">환경 설정</h3>
+        <div style="position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 30px; min-height: 30px;">
+          <h3 data-i18n="modalSetting" style="margin: 0; text-align: center; width: 100%;">환경 설정</h3>
+          <div style="position: absolute; right: 0; display: flex; gap: 15px; align-items: center;">
+            <i class="fas fa-circle-info" onclick="tutorial.showIntro()" style="cursor: pointer; font-size: 1.1rem; color: #94a3b8; transition: color 0.2s;" title="OnTo 정보"></i>
+          </div>
+        </div>
         <div style="flex: 1; display: flex; flex-direction: column">
           <div class="setting-grid">
             <div class="setting-column">
@@ -1341,6 +1347,43 @@
     </div>
 
     <!-- Scripts -->
+    <!-- Intro Screen -->
+    <div id="introScreen" class="intro-overlay" style="display: none;">
+      <div class="intro-card">
+        <div class="intro-header">
+          <div class="intro-logo">
+            <i class="fas fa-rocket"></i>
+          </div>
+          <h1>OnTo에 오신 것을 환영합니다</h1>
+          <p class="intro-subtitle">올인원 개인용 대시보드 & AI 어시스턴트</p>
+        </div>
+        
+        <div class="intro-body">
+          <p>OnTo는 시계, 날씨, 일정, 메모, 빠른 바로가기와 AI 챗봇을 한데 모은 개인용 대시보드입니다. 일상을 더 스마트하게 관리해 보세요.</p>
+          
+          <div class="intro-info-box">
+            <div class="info-item">
+              <i class="fas fa-shield-alt"></i>
+              <span>사용자 개인정보를 서버로 전송하지 않습니다.</span>
+            </div>
+            <div class="info-item">
+              <a href="https://github.com/DJKIM79/dashboard" target="_blank" style="display: flex; align-items: center; gap: 8px;">
+                <i class="fab fa-github"></i>
+                <span>GitHub: github.com/DJKIM79/dashboard</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="intro-footer">
+          <button class="intro-btn skip" onclick="tutorial.hideIntro()">닫기</button>
+          <button class="intro-btn start" onclick="tutorial.startFromIntro()">
+            튜토리얼 시작 <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/i18n.js"></script>
     <script src="assets/js/ui.js?v=1.0.2"></script>
