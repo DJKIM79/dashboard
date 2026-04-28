@@ -7,7 +7,7 @@ const app = {
   async init() {
     // 0. Set default values if not exists
     if (localStorage.getItem("dj_theme_color") === null)
-      localStorage.setItem("dj_theme_color", "#eab308");
+      localStorage.setItem("dj_theme_color", "#ffffff");
     if (localStorage.getItem("dj_theme_adjustment") === null)
       localStorage.setItem("dj_theme_adjustment", "none");
     if (localStorage.getItem("dj_image_engine") === null)
@@ -22,6 +22,14 @@ const app = {
       localStorage.setItem("dj_show_current_weather", "true");
     if (localStorage.getItem("dj_hide_fileMgmt") === null)
       localStorage.setItem("dj_hide_fileMgmt", "false");
+    if (localStorage.getItem("dj_quote_font_size") === null)
+      localStorage.setItem("dj_quote_font_size", "medium");
+    if (localStorage.getItem("dj_widget_size") === null)
+      localStorage.setItem("dj_widget_size", "medium");
+    if (localStorage.getItem("dj_ai_provider") === null) {
+      localStorage.setItem("dj_ai_provider", "none");
+      localStorage.setItem("dj_ai_disabled", "true");
+    }
 
     // Force AI chatbot to be closed on startup
     localStorage.setItem("dj_hide_ai", "true");
@@ -66,6 +74,33 @@ const app = {
     shortcutMod.init();
     noti.init();
     memo.init();
+
+    // 튜토리얼 임시 데이터 클리어
+    if (window.shortcutMod && window.shortcutMod.items) {
+      const beforeCount = window.shortcutMod.items.length;
+      window.shortcutMod.items = window.shortcutMod.items.filter(s => !s._isTutorial);
+      if (window.shortcutMod.items.length !== beforeCount) {
+        window.shortcuts = window.shortcutMod.items;
+        if (window.utils && utils.saveData) utils.saveData();
+      }
+    }
+    if (window.memo && window.memo.items) {
+      const beforeCount = window.memo.items.length;
+      window.memo.items = window.memo.items.filter(m => !String(m.id).startsWith("tut_memo_"));
+      if (window.memo.items.length !== beforeCount) {
+        window.memos = window.memo.items;
+        if (window.utils && utils.saveData) utils.saveData();
+      }
+    }
+    if (window.noti && window.noti.items) {
+      const beforeCount = window.noti.items.length;
+      window.noti.items = window.noti.items.filter(n => !String(n.id).startsWith("tut_noti_"));
+      if (window.noti.items.length !== beforeCount) {
+        window.notifications = window.noti.items;
+        if (window.utils && utils.saveData) utils.saveData();
+      }
+    }
+
     calendar.render();
     ui.applyVisibility();
     search.init();
@@ -87,8 +122,7 @@ const app = {
     // 6. Tutorial Check
     if (!localStorage.getItem("dj_tutorial_done")) {
       setTimeout(() => {
-        tutorial.show();
-        localStorage.setItem("dj_tutorial_done", "true");
+        tutorial.showIntro();
       }, 800);
     } else {
       // If tutorial is not showing, focus search input again to be sure

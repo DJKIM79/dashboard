@@ -224,6 +224,12 @@ const ai = {
       aiIcon.classList.toggle("active", isConnected);
       aiIcon.classList.toggle("can-chat", isConnected);
       aiIcon.style.color = isConnected ? "" : "#94a3b8";
+      
+      const tooltipKey = isConnected ? "sideAI" : "aiNeedConnectHover";
+      aiIcon.dataset.i18nTitle = tooltipKey;
+      if (window.i18n) {
+        aiIcon.setAttribute("title", window.i18n.get(tooltipKey) || "");
+      }
     }
     this.updateStatusUI();
   },
