@@ -1191,29 +1191,65 @@
             />
           </div>
         </div>
-        <div id="day-selector-wrap" style="display: none">
-          <div class="day-selector">
-            <label class="day-check"
-              ><input type="checkbox" value="1" /><span>월</span></label
-            >
-            <label class="day-check"
-              ><input type="checkbox" value="2" /><span>화</span></label
-            >
-            <label class="day-check"
-              ><input type="checkbox" value="3" /><span>수</span></label
-            >
-            <label class="day-check"
-              ><input type="checkbox" value="4" /><span>목</span></label
-            >
-            <label class="day-check"
-              ><input type="checkbox" value="5" /><span>금</span></label
-            >
-            <label class="day-check"
-              ><input type="checkbox" value="6" /><span>토</span></label
-            >
-            <label class="day-check"
-              ><input type="checkbox" value="0" /><span>일</span></label
-            >
+        <div id="day-selector-wrap" style="display: none; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); flex-direction: column; gap: 15px;">
+          <style>
+            #day-selector-wrap .day-check { flex: 1; display: flex; }
+            #day-selector-wrap .day-check span { width: 100%; }
+          </style>
+          <!-- 1. 년도 선택 -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between;">
+              <span>반복 년도</span>
+              <div style="display: flex; gap: 10px;">
+                <i class="fas fa-chevron-left" style="cursor: pointer; opacity: 0.7;" onclick="noti.shiftRepeatYears(-1)" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"></i>
+                <span id="repeat-year-range" style="font-size: 0.75rem;">...</span>
+                <i class="fas fa-chevron-right" style="cursor: pointer; opacity: 0.7;" onclick="noti.shiftRepeatYears(1)" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"></i>
+              </div>
+            </div>
+            <div class="day-selector" id="repeat-years-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 0;">
+            </div>
+          </div>
+          <!-- 2. 월 선택 -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 0.8rem; color: #94a3b8;">반복 월</div>
+            <div class="day-selector" id="repeat-months-container" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-bottom: 0;">
+            </div>
+          </div>
+          <!-- 3. 주/간격 선택 -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between;">
+               <span>반복 주</span>
+               <div style="display: flex; gap: 10px; font-size: 0.75rem;">
+                 <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="weekMode" value="interval" checked onchange="noti.toggleWeekMode()" style="margin:0;"/> 간격 설정</label>
+                 <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="weekMode" value="specific" onchange="noti.toggleWeekMode()" style="margin:0;"/> 주차 지정</label>
+               </div>
+            </div>
+            <div class="day-selector" id="repeat-week-interval-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 0;">
+              <label class="day-check"><input type="radio" name="weekInterval" value="1" checked/><span>매주</span></label>
+              <label class="day-check"><input type="radio" name="weekInterval" value="2" /><span>격주</span></label>
+              <label class="day-check"><input type="radio" name="weekInterval" value="3" /><span>3주</span></label>
+              <label class="day-check"><input type="radio" name="weekInterval" value="4" /><span>4주</span></label>
+            </div>
+            <div class="day-selector" id="repeat-week-specific-container" style="display: none; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 0;">
+              <label class="day-check"><input type="checkbox" name="weekSpecific" value="1"/><span>1주</span></label>
+              <label class="day-check"><input type="checkbox" name="weekSpecific" value="2"/><span>2주</span></label>
+              <label class="day-check"><input type="checkbox" name="weekSpecific" value="3"/><span>3주</span></label>
+              <label class="day-check"><input type="checkbox" name="weekSpecific" value="4"/><span>4주</span></label>
+              <label class="day-check"><input type="checkbox" name="weekSpecific" value="5"/><span>5주</span></label>
+            </div>
+          </div>
+          <!-- 4. 요일 선택 -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 0.8rem; color: #94a3b8;">반복 요일</div>
+            <div class="day-selector" style="margin-bottom: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;">
+              <label class="day-check"><input type="checkbox" name="repeatDay" value="1" /><span>월</span></label>
+              <label class="day-check"><input type="checkbox" name="repeatDay" value="2" /><span>화</span></label>
+              <label class="day-check"><input type="checkbox" name="repeatDay" value="3" /><span>수</span></label>
+              <label class="day-check"><input type="checkbox" name="repeatDay" value="4" /><span>목</span></label>
+              <label class="day-check"><input type="checkbox" name="repeatDay" value="5" /><span>금</span></label>
+              <label class="day-check" style="color: #3b82f6;"><input type="checkbox" name="repeatDay" value="6" /><span>토</span></label>
+              <label class="day-check" style="color: #ef4444;"><input type="checkbox" name="repeatDay" value="0" /><span>일</span></label>
+            </div>
           </div>
         </div>
         <div style="display: flex; gap: 10px">
