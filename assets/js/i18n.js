@@ -31,8 +31,13 @@ const i18n = {
     });
 
     const dayMapping = [1, 2, 3, 4, 5, 6, 0];
-    document.querySelectorAll(".day-check span").forEach((span, i) => {
-      if (T.days) span.innerText = T.days[dayMapping[i]];
+    document.querySelectorAll('input[name="repeatDay"] + span').forEach((span, i) => {
+      if (T.days && dayMapping[i] !== undefined) span.innerText = T.days[dayMapping[i]];
+    });
+
+    const weekMapping = [0, 1, 2, 3, 4, 5]; // 1주~5주, 말일
+    document.querySelectorAll('input[name="weekSpecific"] + span').forEach((span, i) => {
+      if (T.weeks && weekMapping[i] !== undefined) span.innerText = T.weeks[weekMapping[i]];
     });
   },
 

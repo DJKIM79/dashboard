@@ -1,36 +1,56 @@
 const noti = {
   items: JSON.parse(localStorage.getItem("dj_notifications")) || [],
   calendarDate: new Date(),
+  currentCalendarTarget: "notiDate", // "notiDate" or "repeatEndDate"
 
   init() {
     this.render();
-    
+
     // Click outside listener for custom calendar
     window.addEventListener('click', (e) => {
       const popup = document.getElementById("noti-calendar-popup");
-      const trigger = document.getElementById("notiDate");
-      if (popup && popup.classList.contains("show") && !popup.contains(e.target) && e.target !== trigger) {
+      const trigger1 = document.getElementById("notiDate");
+      const trigger2 = document.getElementById("repeatEndDate");
+      if (popup && popup.classList.contains("show") && !popup.contains(e.target) && e.target !== trigger1 && e.target !== trigger2) {
         popup.classList.remove("show");
       }
     });
   },
 
-  toggleCalendar(e) {
+  toggleCalendar(e, targetId = "notiDate") {
     if (e) e.stopPropagation();
     const popup = document.getElementById("noti-calendar-popup");
     if (!popup) return;
+
     const isShowing = popup.classList.contains("show");
-    popup.classList.toggle("show", !isShowing);
-    if (!isShowing) {
-      const currentVal = document.getElementById("notiDate").value;
-      if (currentVal) {
-        const [y, m, d] = currentVal.split("-");
-        this.calendarDate = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
-      } else {
-        this.calendarDate = new Date();
-      }
-      this.renderCalendar();
+
+    // If clicking same target, toggle. If clicking different target while open, keep open but move.
+    if (isShowing && this.currentCalendarTarget === targetId) {
+        popup.classList.remove("show");
+        return;
     }
+
+    this.currentCalendarTarget = targetId;
+    const targetEl = document.getElementById(targetId);
+
+    // Position the popup relative to the target
+    const parent = targetEl.parentElement;
+    if (parent && parent.contains(popup)) {
+        // Already in correct parent
+    } else {
+        parent.appendChild(popup);
+    }
+
+    popup.classList.add("show");
+
+    let currentVal = targetEl.value;
+    if (currentVal && currentVal.includes("-")) {
+      const [y, m, d] = currentVal.split("-");
+      this.calendarDate = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+    } else {
+      this.calendarDate = new Date();
+    }
+    this.renderCalendar();
   },
 
   changeCalendarMonth(val) {
@@ -45,10 +65,10 @@ const noti = {
 
   selectCalendarDate(y, m, d) {
     const dateStr = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    document.getElementById("notiDate").value = dateStr;
+    const targetEl = document.getElementById(this.currentCalendarTarget);
+    if (targetEl) targetEl.value = dateStr;
     document.getElementById("noti-calendar-popup").classList.remove("show");
   },
-
   renderCalendar() {
     const year = this.calendarDate.getFullYear(),
       month = this.calendarDate.getMonth(),
@@ -192,12 +212,6 @@ const noti = {
   repeatYearOffset: 0,
   selectedRepeatYears: [],
 
-  toggleWeekMode() {
-    const mode = document.querySelector('input[name="weekMode"]:checked').value;
-    document.getElementById("repeat-week-interval-container").style.display = mode === "interval" ? "grid" : "none";
-    document.getElementById("repeat-week-specific-container").style.display = mode === "specific" ? "grid" : "none";
-  },
-
   updateSelectedRepeatYears() {
     document.querySelectorAll('input[name="repeatYear"]').forEach(el => {
       const y = parseInt(el.value);
@@ -210,9 +224,18 @@ const noti = {
   },
 
   shiftRepeatYears(val) {
+    if (this.repeatYearOffset + val < 0) return; // Prevent going to past years
     this.updateSelectedRepeatYears();
     this.repeatYearOffset += val;
     this.renderRepeatYears(this.selectedRepeatYears, val);
+  },
+
+  toggleAll(name) {
+    const inputs = document.querySelectorAll(`input[name="${name}"]`);
+    if (inputs.length === 0) return;
+    const allChecked = Array.from(inputs).every(el => el.checked);
+    inputs.forEach(el => el.checked = !allChecked);
+    if (name === 'repeatYear') this.updateSelectedRepeatYears();
   },
 
   renderRepeatYears(selectedYears = [], slideDir = 0) {
@@ -227,6 +250,20 @@ const noti = {
 
     container.innerHTML = "";
     const baseYear = new Date().getFullYear() + (this.repeatYearOffset * 5);
+
+    // Update left chevron state
+    const leftChevron = document.getElementById("repeat-year-left");
+    if (leftChevron) {
+      if (this.repeatYearOffset <= 0) {
+        leftChevron.style.opacity = "0.2";
+        leftChevron.style.cursor = "default";
+        leftChevron.style.pointerEvents = "none";
+      } else {
+        leftChevron.style.opacity = "0.7";
+        leftChevron.style.cursor = "pointer";
+        leftChevron.style.pointerEvents = "auto";
+      }
+    }
 
     for (let i = 0; i < 5; i++) {
         const y = baseYear + i;
@@ -288,10 +325,9 @@ const noti = {
     const rule = n && n.repeatRule ? n.repeatRule : {
         years: [now.getFullYear()],
         months: [now.getMonth() + 1],
-        weekMode: "interval",
-        weekInterval: 1,
         weekSpecific: [],
-        days: n && n.days ? n.days.map(Number) : []
+        days: n && n.days ? n.days.map(Number) : [],
+        endDate: ""
     };
 
     this.repeatYearOffset = 0;
@@ -299,12 +335,9 @@ const noti = {
     this.renderRepeatYears(this.selectedRepeatYears);
     this.renderRepeatMonths(rule.months);
 
-    document.querySelector(`input[name="weekMode"][value="${rule.weekMode}"]`).checked = true;
-    this.toggleWeekMode();
-
-    document.querySelectorAll('input[name="weekInterval"]').forEach(el => el.checked = (parseInt(el.value) === rule.weekInterval));
     document.querySelectorAll('input[name="weekSpecific"]').forEach(el => el.checked = rule.weekSpecific.includes(parseInt(el.value)));
     document.querySelectorAll('input[name="repeatDay"]').forEach(el => el.checked = rule.days.includes(parseInt(el.value)));
+    document.getElementById("repeatEndDate").value = rule.endDate || "(종료일 없음)";
 
     document.getElementById("notiModalTitle").innerText = id
       ? T.modalNotiEdit
@@ -326,13 +359,13 @@ const noti = {
       r = document.getElementById("isRepeat").checked,
       dt = document.getElementById("notiDate").value;
 
+    const rawEndDate = document.getElementById("repeatEndDate").value;
     const repeatRule = {
         years: this.selectedRepeatYears,
         months: Array.from(document.querySelectorAll('input[name="repeatMonth"]:checked')).map(el => parseInt(el.value)),
-        weekMode: document.querySelector('input[name="weekMode"]:checked').value,
-        weekInterval: parseInt(document.querySelector('input[name="weekInterval"]:checked')?.value || 1),
         weekSpecific: Array.from(document.querySelectorAll('input[name="weekSpecific"]:checked')).map(el => parseInt(el.value)),
-        days: Array.from(document.querySelectorAll('input[name="repeatDay"]:checked')).map(el => parseInt(el.value))
+        days: Array.from(document.querySelectorAll('input[name="repeatDay"]:checked')).map(el => parseInt(el.value)),
+        endDate: rawEndDate === "(종료일 없음)" ? "" : rawEndDate
     };
 
     // For backwards compatibility with older functions checking `n.days`
@@ -383,22 +416,24 @@ const noti = {
     if (rule.months.length > 0 && !rule.months.includes(targetDate.getMonth() + 1)) return false;
     if (rule.days.length > 0 && !rule.days.includes(targetDate.getDay())) return false;
 
-    if (rule.weekMode === "specific") {
-      if (rule.weekSpecific.length > 0) {
-        // week 1 is 1st-7th, week 2 is 8th-14th
-        const weekOfMonth = Math.floor((targetDate.getDate() - 1) / 7) + 1;
-        if (!rule.weekSpecific.includes(weekOfMonth)) return false;
-      }
-    } else if (rule.weekMode === "interval" && rule.weekInterval > 1) {
-      const created = new Date(n.createdDate || n.date || Date.now());
-      const startSunday = new Date(created.getFullYear(), created.getMonth(), created.getDate() - created.getDay());
-      const targetSunday = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() - targetDate.getDay());
+    if (rule.weekSpecific && rule.weekSpecific.length > 0) {
+      // week 1 is 1st-7th, week 2 is 8th-14th
+      const weekOfMonth = Math.floor((targetDate.getDate() - 1) / 7) + 1;
+      const lastDateOfMonth = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0).getDate();
+      const isLastWeek = (targetDate.getDate() + 7 > lastDateOfMonth);
       
-      startSunday.setHours(0, 0, 0, 0);
-      targetSunday.setHours(0, 0, 0, 0);
-      
-      const diffWeeks = Math.round((targetSunday - startSunday) / (24 * 60 * 60 * 1000 * 7));
-      if (diffWeeks < 0 || diffWeeks % rule.weekInterval !== 0) return false;
+      const match = rule.weekSpecific.includes(weekOfMonth) || (rule.weekSpecific.includes(9) && isLastWeek);
+      if (!match) return false;
+    }
+
+    if (rule.excludeDates && rule.excludeDates.length > 0) {
+        const dateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, "0")}-${String(targetDate.getDate()).padStart(2, "0")}`;
+        if (rule.excludeDates.includes(dateStr)) return false;
+    }
+
+    if (rule.endDate) {
+        const targetStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, "0")}-${String(targetDate.getDate()).padStart(2, "0")}`;
+        if (targetStr > rule.endDate) return false;
     }
     
     return true;

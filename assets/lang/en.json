@@ -80,6 +80,7 @@
   "repeatSet": "Repeat",
   "today": "Today",
   "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  "weeks": ["1st", "2nd", "3rd", "4th", "5th", "Last"],
   "btnAddNoti": "Add Alert",
   "btnEditNoti": "Update Alert",
   "btnDelete": "Delete",

@@ -1156,7 +1156,7 @@
             onclick="noti.toggleCalendar(event)"
             style="margin-bottom: 0; flex: 1; padding: 10px; font-size: 0.9rem; cursor: pointer; background: rgba(255,255,255,0.05);"
           />
-          <div id="noti-calendar-popup" class="engine-popup" style="width: 250px; padding: 10px; top: 100%; left: 0; margin-top: 5px; z-index: 1000; display: none;">
+          <div id="noti-calendar-popup" class="engine-popup" style="width: 250px; padding: 10px; bottom: 100%; left: 0; margin-bottom: 5px; z-index: 1000; display: none;">
             <div class="calendar-header" style="margin-bottom: 10px; font-size: 0.9rem;">
               <i class="fas fa-caret-left cal-nav" onclick="noti.changeCalendarMonth(-1); event.stopPropagation();" style="cursor: pointer; padding: 5px;"></i>
               <div class="calendar-header-center" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px;">
@@ -1174,7 +1174,7 @@
           </div>
           <div style="display: flex; align-items: center; gap: 6px">
             <label for="isRepeat" style="cursor: pointer" data-i18n="repeatSet"
-              >반복 설정</label
+              >고급 반복 설정</label
             >
             <input
               type="checkbox"
@@ -1201,7 +1201,12 @@
           
           <!-- 1. 요일 선택 -->
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="font-size: 0.8rem; color: #94a3b8;">요일</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-size: 0.8rem; color: #94a3b8;">요일</div>
+              <div style="display: flex; gap: 10px;">
+                <span style="font-size: 0.7rem; color: #3b82f6; cursor: pointer;" onclick="noti.toggleAll('repeatDay')">모두</span>
+              </div>
+            </div>
             <div class="day-selector" style="margin-bottom: 0; display: flex; gap: 5px;">
               <label class="day-check"><input type="checkbox" name="repeatDay" value="1" /><span>월</span></label>
               <label class="day-check"><input type="checkbox" name="repeatDay" value="2" /><span>화</span></label>
@@ -1213,46 +1218,56 @@
             </div>
           </div>
 
-          <!-- 2. 주/간격 선택 -->
+          <!-- 2. 주 선택 -->
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between;">
-               <span>주</span>
-               <div style="display: flex; gap: 10px; font-size: 0.75rem;">
-                 <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="weekMode" value="interval" checked onchange="noti.toggleWeekMode()" style="margin:0;"/> 간격 설정</label>
-                 <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;"><input type="radio" name="weekMode" value="specific" onchange="noti.toggleWeekMode()" style="margin:0;"/> 주차 지정</label>
-               </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-size: 0.8rem; color: #94a3b8;">주</div>
+              <div style="display: flex; gap: 10px;">
+                <span style="font-size: 0.7rem; color: #3b82f6; cursor: pointer;" onclick="noti.toggleAll('weekSpecific')">모두</span>
+              </div>
             </div>
-            <div class="day-selector" id="repeat-week-interval-container" style="display: flex; gap: 5px; margin-bottom: 0;">
-              <label class="day-check"><input type="radio" name="weekInterval" value="1" checked/><span>매주</span></label>
-              <label class="day-check"><input type="radio" name="weekInterval" value="2" /><span>격주</span></label>
-              <label class="day-check"><input type="radio" name="weekInterval" value="3" /><span>3주</span></label>
-              <label class="day-check"><input type="radio" name="weekInterval" value="4" /><span>4주</span></label>
-            </div>
-            <div class="day-selector" id="repeat-week-specific-container" style="display: none; gap: 5px; margin-bottom: 0;">
+            <div class="day-selector" id="repeat-week-specific-container" style="display: flex; gap: 5px; margin-bottom: 0;">
               <label class="day-check"><input type="checkbox" name="weekSpecific" value="1"/><span>1주</span></label>
               <label class="day-check"><input type="checkbox" name="weekSpecific" value="2"/><span>2주</span></label>
               <label class="day-check"><input type="checkbox" name="weekSpecific" value="3"/><span>3주</span></label>
               <label class="day-check"><input type="checkbox" name="weekSpecific" value="4"/><span>4주</span></label>
               <label class="day-check"><input type="checkbox" name="weekSpecific" value="5"/><span>5주</span></label>
+              <label class="day-check"><input type="checkbox" name="weekSpecific" value="9"/><span>말일</span></label>
             </div>
           </div>
 
           <!-- 3. 월 선택 -->
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="font-size: 0.8rem; color: #94a3b8;">월</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-size: 0.8rem; color: #94a3b8;">월</div>
+              <div style="display: flex; gap: 10px;">
+                <span style="font-size: 0.7rem; color: #3b82f6; cursor: pointer;" onclick="noti.toggleAll('repeatMonth')">모두</span>
+              </div>
+            </div>
             <div class="day-selector" id="repeat-months-container" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-bottom: 0;">
             </div>
           </div>
 
           <!-- 4. 년도 선택 -->
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="font-size: 0.8rem; color: #94a3b8;">년도</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-size: 0.8rem; color: #94a3b8;">년도</div>
+              <div style="display: flex; gap: 10px;">
+                <span style="font-size: 0.7rem; color: #3b82f6; cursor: pointer;" onclick="noti.toggleAll('repeatYear')">모두</span>
+              </div>
+            </div>
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; overflow: hidden; padding: 2px;">
-              <i class="fas fa-chevron-left" style="cursor: pointer; opacity: 0.7; padding: 5px;" onclick="noti.shiftRepeatYears(-1)" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"></i>
+              <i id="repeat-year-left" class="fas fa-chevron-left" style="cursor: pointer; opacity: 0.7; padding: 5px;" onclick="noti.shiftRepeatYears(-1)" onmouseover="if(this.style.cursor!=='not-allowed')this.style.opacity='1'" onmouseout="if(this.style.cursor!=='not-allowed')this.style.opacity='0.7'"></i>
               <div class="day-selector" id="repeat-years-container" style="flex: 1; display: flex; gap: 5px; margin-bottom: 0;">
               </div>
               <i class="fas fa-chevron-right" style="cursor: pointer; opacity: 0.7; padding: 5px;" onclick="noti.shiftRepeatYears(1)" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'"></i>
             </div>
+          </div>
+
+          <!-- 5. 종료일 -->
+          <div style="display: flex; flex-direction: column; gap: 8px; position: relative;">
+            <div style="font-size: 0.8rem; color: #94a3b8;">종료일 (미지정 시 계속 반복)</div>
+            <input type="text" id="repeatEndDate" value="(종료일 없음)" readonly onclick="noti.toggleCalendar(event, 'repeatEndDate')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 10px; border-radius: 8px; font-size: 0.9rem; outline: none; width: 100%; box-sizing: border-box; cursor: pointer;" />
           </div>
         </div>
         <div style="display: flex; gap: 10px">
