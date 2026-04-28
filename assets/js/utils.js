@@ -58,7 +58,8 @@ const utils = {
     if (!container) return;
     container.innerHTML = "";
     
-    const suffix = i18n.userLang === "ko" ? (type === "hour" ? "시" : "분") : (type === "hour" ? "h" : "m");
+    const activeLang = i18n.userLang === "auto" ? (navigator.language.startsWith("ko") ? "ko" : "en") : i18n.userLang;
+    const suffix = activeLang === "ko" ? (type === "hour" ? "시" : "분") : (type === "hour" ? "h" : "m");
 
     for (let i = 0; i < count; i++) {
       const val = String(i).padStart(2, "0");
@@ -108,7 +109,8 @@ const utils = {
     const input = document.getElementById(inputId);
     const popup = document.getElementById(popupId);
 
-    const suffix = i18n.userLang === "ko" ? (type === "hour" ? "시" : "분") : (type === "hour" ? "h" : "m");
+    const activeLang = i18n.userLang === "auto" ? (navigator.language.startsWith("ko") ? "ko" : "en") : i18n.userLang;
+    const suffix = activeLang === "ko" ? (type === "hour" ? "시" : "분") : (type === "hour" ? "h" : "m");
 
     if (display) display.innerText = `${val}${suffix}`;
     if (input) {

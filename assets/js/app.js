@@ -217,8 +217,10 @@ const app = {
           }
         }
       } else {
-        weather.removeLocation(id);
-        weather.fetch();
+        if (window.weather) {
+          weather.removeLocation(id);
+          // removeLocation internally calls fetch and renderLocationList
+        }
       }
     }
     

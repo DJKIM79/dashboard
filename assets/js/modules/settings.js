@@ -78,6 +78,7 @@ const settings = {
       if (el("aiServerUrlInput"))
         el("aiServerUrlInput").value =
           localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
+
       this.onAIProviderChange();
 
       if (window.ai && typeof ai.updateStatusUI === "function")
@@ -155,6 +156,12 @@ const settings = {
     );
     popups.forEach((p) => {
       if (p.id && p.id === exceptId) return;
+      
+      // If exceptId is provided, don't close its ancestors
+      if (exceptId) {
+          const exceptEl = document.getElementById(exceptId);
+          if (exceptEl && p.contains(exceptEl)) return;
+      }
 
       if (p.id === "search-engine-popup") this.closeSearchEnginePopup();
       else if (p.id === "engine-add-popup") this.closeEngineAddPopup();
@@ -162,13 +169,17 @@ const settings = {
       else if (p.id === "ai-custom-add-container") this.closeCustomAIPopup();
       else if (p.id === "ai-model-select-popup") this.closeModelPopup();
       else if (p.id === "lang-popup") this.closeLangPopup();
+      else if (p.id === "protocol-popup") {
+        p.classList.remove("show");
+        setTimeout(() => { if (!p.classList.contains("show")) p.style.display = "none"; }, 200);
+      }
       else if (p.id === "weather-location-popup") {
         if (window.weather) weather.closeLocationPopup();
       } else if (p.id === "city-add-popup") {
         if (window.weather) weather.closeCityAddPopup();
       } else {
         p.classList.remove("show");
-        if (p.classList.contains("engine-popup")) {
+        if (p.classList.contains("engine-popup") || p.classList.contains("ai-model-popup") || p.classList.contains("weather-popup")) {
            setTimeout(() => {
               if (!p.classList.contains("show")) p.style.display = "none";
            }, 200);
@@ -300,7 +311,12 @@ const settings = {
 
   closeSearchEnginePopup() {
     const popup = document.getElementById("search-engine-popup");
-    if (popup) popup.classList.remove("show");
+    if (popup) {
+        popup.classList.remove("show");
+        setTimeout(() => {
+            if (!popup.classList.contains("show")) popup.style.display = "none";
+        }, 200);
+    }
   },
 
   addCustomSearchEngine() {
@@ -485,6 +501,7 @@ const settings = {
     if (customAddArea) {
         customAddArea.classList.remove("show"); // Hide by default
     }
+    this.updateAIProviderTriggerUI();
   },
 
   toggleAIPopup(e) {
@@ -515,7 +532,12 @@ const settings = {
 
   closeAIPopup() {
     const popup = document.getElementById("ai-provider-popup");
-    if (popup) popup.classList.remove("show");
+    if (popup) {
+        popup.classList.remove("show");
+        setTimeout(() => {
+            if (!popup.classList.contains("show")) popup.style.display = "none";
+        }, 200);
+    }
   },
 
   renderAIList() {
@@ -618,7 +640,12 @@ const settings = {
 
   closeModelPopup() {
     const popup = document.getElementById("ai-model-select-popup");
-    if (popup) popup.classList.remove("show");
+    if (popup) {
+        popup.classList.remove("show");
+        setTimeout(() => {
+            if (!popup.classList.contains("show")) popup.style.display = "none";
+        }, 200);
+    }
   },
 
   renderModelList() {
@@ -722,12 +749,62 @@ const settings = {
     }
   },
 
+  toggleProtocolPopup(e) {
+    if (e) e.stopPropagation();
+    const popup = document.getElementById("protocol-popup");
+    if (!popup) return;
+    
+    const isShowing = popup.classList.contains("show");
+    if (!isShowing) {
+        this.closeAllPopups("protocol-popup");
+        this.renderProtocolList();
+        popup.style.display = "block";
+        popup.classList.add("show");
+    } else {
+        popup.classList.remove("show");
+        setTimeout(() => {
+            if (!popup.classList.contains("show")) popup.style.display = "none";
+        }, 200);
+    }
+  },
+
+  renderProtocolList() {
+    const popup = document.getElementById("protocol-popup");
+    if (!popup) return;
+    
+    const protocols = [
+        { id: "openai", name: "OpenAI 호환" },
+        { id: "ollama", name: "Ollama" },
+        { id: "anthropic", name: "Anthropic" },
+        { id: "gemini", name: "Google Gemini" }
+    ];
+    
+    const current = document.getElementById("customAiProtocol").value;
+    popup.innerHTML = "";
+    
+    protocols.forEach(p => {
+        const item = document.createElement("div");
+        item.className = `ai-model-item ${p.id === current ? "active" : ""}`;
+        item.innerHTML = `<span>${p.name}</span>`;
+        item.onclick = (e) => {
+            e.stopPropagation();
+            document.getElementById("customAiProtocol").value = p.id;
+            document.getElementById("protocol-trigger-text").innerText = p.name;
+            popup.classList.remove("show");
+            setTimeout(() => popup.style.display = "none", 200);
+        };
+        popup.appendChild(item);
+    });
+  },
+
   async addCustomAI() {
     const nameInput = document.getElementById("customAiNameInput");
     const urlInput = document.getElementById("customAiUrlInput");
+    const protocolHidden = document.getElementById("customAiProtocol");
     const addBtn = document.querySelector("#ai-custom-add-container .btn-save");
     const name = nameInput.value.trim();
     const url = urlInput.value.trim();
+    const protocol = protocolHidden ? protocolHidden.value : "openai";
 
     if (!name || !url) {
         utils.showValidationTip(name ? "customAiUrlInput" : "customAiNameInput", "이름과 주소를 모두 입력해 주세요.");
@@ -758,8 +835,6 @@ const settings = {
     }
 
     try {
-        // 임시로 해당 URL로 접속 테스트 (ai.js의 checkConnection 로직 활용)
-        // 직접 fetch하여 /v1/models (OpenAI 호환) 또는 /api/tags (Ollama 호환) 확인
         let isReachable = false;
         let fetchUrl = url.endsWith("/") ? url.slice(0, -1) : url;
         
@@ -767,46 +842,27 @@ const settings = {
         const timeoutId = setTimeout(() => controller.abort(), 3500);
         
         try {
-            // 1. OpenAI 호환성 체크 (/v1/models)
-            const resOpenAI = await fetch(`${fetchUrl}/v1/models`, { 
-                headers: { "Accept": "application/json" },
-                signal: controller.signal 
-            });
-            if (resOpenAI.ok) {
-                const contentType = resOpenAI.headers.get("content-type");
-                if (contentType && contentType.includes("application/json")) {
-                    const data = await resOpenAI.json();
-                    if (data && (Array.isArray(data.data) || Array.isArray(data.models))) {
-                        isReachable = true;
-                    }
-                }
-            }
-        } catch (e) {
-            // 에러 발생 시 다음 단계 시도
-        }
-
-        if (!isReachable) {
-            try {
-                // 2. Ollama 호환성 체크 (/api/tags)
-                const resOllama = await fetch(`${fetchUrl}/api/tags`, { 
+            if (protocol === "openai") {
+                const resOpenAI = await fetch(`${fetchUrl}/v1/models`, { 
                     headers: { "Accept": "application/json" },
                     signal: controller.signal 
                 });
-                if (resOllama.ok) {
-                    const contentType = resOllama.headers.get("content-type");
-                    if (contentType && contentType.includes("application/json")) {
-                        const data = await resOllama.json();
-                        if (data && Array.isArray(data.models)) {
-                            isReachable = true;
-                        }
-                    }
-                }
-            } catch (e2) {}
-        }
+                if (resOpenAI.ok) isReachable = true;
+            } else if (protocol === "ollama") {
+                const resOllama = await fetch(`${fetchUrl}/api/tags`, { 
+                    signal: controller.signal 
+                });
+                if (resOllama.ok) isReachable = true;
+            } else if (protocol === "anthropic") {
+                isReachable = true; 
+            } else if (protocol === "gemini") {
+                isReachable = true;
+            }
+        } catch (e) { }
         clearTimeout(timeoutId);
 
         if (!isReachable) {
-            utils.showValidationTip("customAiUrlInput", "AI 서버에 접속할 수 없습니다. 주소를 확인해 주세요.", "error");
+            utils.showValidationTip("customAiUrlInput", "AI 서버에 접속할 수 없습니다. 주소와 프로토콜을 확인해 주세요.", "error");
             if (addBtn) {
                 addBtn.classList.remove("loading");
                 addBtn.innerHTML = '<span>추가</span>';
@@ -817,7 +873,8 @@ const settings = {
         const newAi = {
             id: `custom_${Date.now()}`,
             name: name,
-            url: url,
+            url: fetchUrl,
+            protocol: protocol,
             icon: "fas fa-network-wired",
             isDefault: false
         };
@@ -968,9 +1025,13 @@ const settings = {
     if (!isShowing) {
         this.closeAllPopups(popupId);
         this.renderCustomSelectOptions(popupId);
+        popup.style.display = "block";
         popup.classList.add("show");
     } else {
         popup.classList.remove("show");
+        setTimeout(() => {
+            if (!popup.classList.contains("show")) popup.style.display = "none";
+        }, 200);
     }
   },
 
@@ -1079,7 +1140,6 @@ const settings = {
         // Positioning Logic
         popup.style.display = "block";
         popup.style.visibility = "hidden";
-        popup.style.width = trigger.offsetWidth + "px";
         
         // Ensure parent wrap has high z-index while popup is open
         const wrap = document.getElementById("lang-select-wrap");
@@ -1140,7 +1200,12 @@ const settings = {
   closeLangPopup() {
     const popup = document.getElementById("lang-popup");
     const wrap = document.getElementById("lang-select-wrap");
-    if (popup) popup.classList.remove("show");
+    if (popup) {
+        popup.classList.remove("show");
+        setTimeout(() => {
+            if (!popup.classList.contains("show")) popup.style.display = "none";
+        }, 200);
+    }
     if (wrap) wrap.style.zIndex = "";
   },
 
@@ -1153,9 +1218,9 @@ const settings = {
     
     // Top 3 mandatory items
     const mandatory = [
-        { id: "auto", label: "optAuto", icon: "fas fa-language" },
-        { id: "ko", label: "optKo", icon: "fas fa-font" },
-        { id: "en", label: "optEn", icon: "fas fa-italic" }
+        { id: "auto", label: "optAuto" },
+        { id: "ko", label: "optKo" },
+        { id: "en", label: "optEn" }
     ];
 
     mandatory.forEach(lang => {
@@ -1175,10 +1240,7 @@ const settings = {
 
     const label = window.i18n ? i18n.get(lang.label) : lang.id;
     item.innerHTML = `
-      <div class="engine-favicon">
-        <i class="${lang.icon}"></i>
-      </div>
-      <div class="engine-name">${label}</div>
+      <div class="engine-name" style="padding-left: 5px;">${label}</div>
       <div class="engine-status">
         ${lang.id === currentLang ? '<i class="fas fa-check-circle engine-active-icon"></i>' : ''}
       </div>
@@ -1204,6 +1266,10 @@ document.addEventListener("click", (e) => {
     // it means it's an "outside" click.
     const activePopups = document.querySelectorAll(".ai-model-popup.show, .engine-popup.show, .weather-popup.show");
     if (activePopups.length > 0) {
+        // If the click is on a trigger that should be ignored, don't close all popups here
+        // (the trigger itself will handle toggling)
+        if (e.target.closest('[data-outside-ignore]')) return;
+
         let clickedInsidePopup = false;
         activePopups.forEach(p => {
             if (p.contains(e.target)) clickedInsidePopup = true;

@@ -398,37 +398,43 @@ const ai = {
           finalize(false);
         }
       } else {
-        // Custom Provider (General OpenAI compatible health check)
+        // Custom Provider
         if (!url) { finalize(false); return; }
         let fetchUrl = url.endsWith("/") ? url.slice(0, -1) : url;
+        
+        // Find custom provider protocol
+        const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+        const currentCustom = customAis.find(a => a.id === provider);
+        const protocol = currentCustom ? currentCustom.protocol : "openai";
         
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
         
-        const headers = { "Content-Type": "application/json" };
-        if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
-
         try {
-          // Try /v1/models as a standard health check for OpenAI-compatible APIs
-          const res = await fetch(`${fetchUrl}/v1/models`, { 
-              headers: headers,
-              signal: controller.signal 
-          });
-          clearTimeout(timeoutId);
-          
-          if (res.ok) {
-            const contentType = res.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-              const data = await res.json();
-              if (data && Array.isArray(data.data)) {
-                finalize(true, data.data.map((m) => m.id).sort());
-              } else {
-                finalize(false); 
-              }
-            } else {
-              finalize(false);
-            }
-          } else finalize(false);
+          if (protocol === "ollama") {
+            const res = await fetch(`${fetchUrl}/api/tags`, { 
+                signal: controller.signal 
+            });
+            clearTimeout(timeoutId);
+            if (res.ok) {
+                const data = await res.json();
+                finalize(true, data.models ? data.models.map(m => m.name) : []);
+            } else finalize(false);
+          } else {
+            // OpenAI default health check
+            const headers = { "Content-Type": "application/json" };
+            if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+            // For connection check, we use /v1/models
+            const res = await fetch(`${fetchUrl}/v1/models`, { 
+                headers: headers,
+                signal: controller.signal 
+            });
+            clearTimeout(timeoutId);
+            if (res.ok) {
+                const data = await res.json();
+                finalize(true, data.data ? data.data.map(m => m.id).sort() : []);
+            } else finalize(false);
+          }
         } catch (err) {
           clearTimeout(timeoutId);
           finalize(false);
@@ -536,22 +542,88 @@ const ai = {
   },
   async callLocalAI(prompt, msgDiv, chat, model) {
     const isStream = !this.outputAtOnce;
+    const provider = this.provider;
+    
+    // Determine protocol
+    let protocol = "ollama"; // default for local
+    if (provider.startsWith("custom_")) {
+        const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+        const currentCustom = customAis.find(a => a.id === provider);
+        protocol = currentCustom ? currentCustom.protocol : "openai";
+    }
+
     const headers = { "Content-Type": "application/json" };
     if (this.apiKey) {
         headers["Authorization"] = `Bearer ${this.apiKey}`;
     }
 
-    const response = await fetch(`${this.serverUrl}/api/chat`, {
+    let url = "";
+    let body = {};
+
+    if (protocol === "ollama") {
+        url = `${this.serverUrl}/api/chat`;
+        body = {
+            model: model,
+            messages: chat.messages
+              .map((m) => ({ role: m.role, content: m.content }))
+              .concat([{ role: "user", content: prompt }]),
+            stream: isStream,
+        };
+    } else if (protocol === "anthropic") {
+        url = `${this.serverUrl}/v1/messages`;
+        body = {
+            model: model,
+            messages: chat.messages
+              .filter(m => m.role !== "system")
+              .map((m) => ({ role: m.role === "bot" ? "assistant" : "user", content: m.content }))
+              .concat([{ role: "user", content: prompt }]),
+            max_tokens: 4096,
+            stream: isStream,
+        };
+        const systemMsg = chat.messages.find(m => m.role === "system");
+        if (systemMsg) body.system = systemMsg.content;
+    } else if (protocol === "gemini") {
+        url = `${this.serverUrl}/v1beta/models/${model}:generateContent`;
+        body = {
+            contents: chat.messages
+              .filter(m => m.role !== "system")
+              .map(m => ({
+                  role: m.role === "bot" ? "model" : "user",
+                  parts: [{ text: m.content }]
+              }))
+              .concat([{ role: "user", parts: [{ text: prompt }] }])
+        };
+    } else {
+        // OpenAI protocol
+        url = `${this.serverUrl}/v1/chat/completions`;
+        body = {
+            model: model,
+            messages: chat.messages
+              .map((m) => ({ role: m.role, content: m.content }))
+              .concat([{ role: "user", content: prompt }]),
+            stream: isStream,
+        };
+    }
+
+    const fetchOptions = {
       method: "POST",
       headers: headers,
-      body: JSON.stringify({
-        model: model,
-        messages: chat.messages
-          .map((m) => ({ role: m.role, content: m.content }))
-          .concat([{ role: "user", content: prompt }]),
-        stream: isStream,
-      }),
-    });
+      body: JSON.stringify(body),
+    };
+    
+    // Anthropic special header
+    if (protocol === "anthropic" && this.apiKey) {
+        headers["x-api-key"] = this.apiKey;
+        headers["anthropic-version"] = "2023-06-01";
+        delete headers["Authorization"];
+    }
+    
+    // Gemini special handling
+    if (protocol === "gemini" && this.apiKey) {
+        url += `?key=${this.apiKey}`;
+    }
+
+    const response = await fetch(url, fetchOptions);
 
     if (!response.ok) {
         msgDiv.remove();
@@ -559,12 +631,11 @@ const ai = {
         throw new Error("Model permission error");
     }
     
-    // If successful, update last success model
     this.lastSuccessfulModel = model;
     localStorage.setItem("dj_ai_last_success_model", model);
 
     let fullText = "";
-    if (isStream) {
+    if (isStream && protocol !== "gemini") { // Gemini native custom usually doesn't stream well with this simple reader
       const reader = response.body.getReader(),
         decoder = new TextDecoder();
       while (true) {
@@ -572,22 +643,57 @@ const ai = {
         if (done) break;
         const chunk = decoder.decode(value, { stream: true });
         for (const line of chunk.split("\n")) {
-          if (!line.trim()) continue;
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          
           try {
-            const json = JSON.parse(line);
-            if (json.message?.content) {
-              if (fullText === "") msgDiv.innerHTML = "";
-              fullText += json.message.content;
-              msgDiv.innerText = fullText;
-              document.getElementById("ai-messages").scrollTop =
-                document.getElementById("ai-messages").scrollHeight;
+            if (protocol === "ollama") {
+              const json = JSON.parse(trimmed);
+              if (json.message?.content) {
+                if (fullText === "") msgDiv.innerHTML = "";
+                fullText += json.message.content;
+                msgDiv.innerText = fullText;
+              }
+            } else if (protocol === "anthropic") {
+                if (trimmed.startsWith("data: ")) {
+                    const json = JSON.parse(trimmed.slice(6));
+                    const content = json.delta?.text || "";
+                    if (content) {
+                        if (fullText === "") msgDiv.innerHTML = "";
+                        fullText += content;
+                        msgDiv.innerText = fullText;
+                    }
+                }
+            } else {
+              // OpenAI stream format is 'data: {...}'
+              if (trimmed.startsWith("data: ")) {
+                const dataStr = trimmed.slice(6);
+                if (dataStr === "[DONE]") continue;
+                const json = JSON.parse(dataStr);
+                const content = json.choices[0]?.delta?.content || "";
+                if (content) {
+                  if (fullText === "") msgDiv.innerHTML = "";
+                  fullText += content;
+                  msgDiv.innerText = fullText;
+                }
+              }
             }
+            document.getElementById("ai-messages").scrollTop =
+                document.getElementById("ai-messages").scrollHeight;
           } catch (e) {}
         }
       }
     } else {
       const json = await response.json();
-      fullText = json.message?.content || "";
+      if (protocol === "ollama") {
+        fullText = json.message?.content || "";
+      } else if (protocol === "anthropic") {
+        fullText = json.content[0]?.text || "";
+      } else if (protocol === "gemini") {
+        fullText = json.candidates[0]?.content?.parts[0]?.text || "";
+      } else {
+        fullText = json.choices[0]?.message?.content || "";
+      }
       msgDiv.innerHTML = "";
       msgDiv.innerText = fullText;
     }
