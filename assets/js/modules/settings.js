@@ -339,12 +339,24 @@ const settings = {
   },
 
   updateAiProvider(provider) {
+    const oldProvider = localStorage.getItem("dj_ai_provider");
+    const oldModel = localStorage.getItem("dj_ai_model");
+    
+    // Save current model for the old provider before switching
+    if (oldProvider && oldProvider !== "none" && oldModel) {
+        localStorage.setItem(`dj_ai_last_model_${oldProvider}`, oldModel);
+    }
+
     localStorage.setItem("dj_ai_provider", provider);
     const isDisabled = provider === "none";
     localStorage.setItem("dj_ai_disabled", isDisabled);
     this.toggleAiSettings(isDisabled);
     this.updateAIProviderTriggerUI();
-    this.updateAiModel("");
+    
+    // Restore the last used model for the new provider, or clear if none
+    const restoredModel = localStorage.getItem(`dj_ai_last_model_${provider}`) || "";
+    this.updateAiModel(restoredModel);
+    
     this.onAIProviderChange();
     
     // AI 변경 시 즉시 상태 업데이트
@@ -352,19 +364,18 @@ const settings = {
         ai.isConnected = false;
         ai.updateModelSelectUI([]);
         ai.updateChatbotAvailability(false);
+        ai.init(); // 대화 목록 및 상태 재초기화
         const icon = document.querySelector(".ai-search-icon");
         if (icon) {
             icon.classList.remove("active");
             icon.style.color = "#94a3b8";
         }
+        // 공급자 변경 시 즉시 서버 연결 체크
+        if (provider !== "none") {
+            ai.checkConnection();
+        }
     }
-    
-    const checkBtn = document.getElementById("ai-check-btn");
-    if (checkBtn) {
-        // Style reset removed as requested
-    }
-  },
-
+    },
   onAIProviderChange() {
     const provider = localStorage.getItem("dj_ai_provider") || "none";
     const urlInput = document.getElementById("aiServerUrlInput");
@@ -592,6 +603,7 @@ const settings = {
   },
 
   updateAiModel(value) {
+    const oldModel = localStorage.getItem("dj_ai_model");
     localStorage.setItem("dj_ai_model", value);
     const triggerName = document.getElementById("ai-model-trigger-name");
     const trigger = document.getElementById("ai-model-trigger");
@@ -602,7 +614,13 @@ const settings = {
         if (!value) trigger.classList.add("disabled");
         else trigger.classList.remove("disabled");
     }
-    if (window.ai && typeof ai.updateModelDisplay === "function") ai.updateModelDisplay();
+    
+    if (window.ai && oldModel !== value) {
+        // 전역 설정 모델이 바뀌면, 현재 열린 대화창의 모델도 즉시 변경하고 시스템 메시지 표시
+        ai.selectTemporaryModel(value);
+    } else if (window.ai && typeof ai.updateModelDisplay === "function") {
+        ai.updateModelDisplay();
+    }
   },
 
   toggleCustomAIPopup(e) {
@@ -668,6 +686,17 @@ const settings = {
     }
 
     const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+    
+    // 중복 체크
+    if (customAis.some(a => a.name === name)) {
+        utils.showValidationTip("customAiNameInput", "이미 존재하는 이름입니다.");
+        return;
+    }
+    if (customAis.some(a => a.url === url)) {
+        utils.showValidationTip("customAiUrlInput", "이미 등록된 주소입니다.");
+        return;
+    }
+
     const newAi = {
         id: `custom_${Date.now()}`,
         name: name,
@@ -700,6 +729,10 @@ const settings = {
 
   updateAiServerUrl(value) {
     localStorage.setItem("dj_ai_server_url", value.trim());
+    if (this._aiCheckTimeout) clearTimeout(this._aiCheckTimeout);
+    this._aiCheckTimeout = setTimeout(() => {
+        if (window.ai) ai.checkConnection();
+    }, 1000);
   },
 
   updateAiApiKey(value) {
@@ -707,10 +740,10 @@ const settings = {
     if (provider !== "none" && provider !== "local") {
         localStorage.setItem(`dj_ai_api_key_${provider}`, value.trim());
     }
-  },
-
-  updateAiModel(value) {
-    localStorage.setItem("dj_ai_model", value);
+    if (this._aiCheckTimeout) clearTimeout(this._aiCheckTimeout);
+    this._aiCheckTimeout = setTimeout(() => {
+        if (window.ai) ai.checkConnection();
+    }, 1000);
   },
 
   updateThemeAdjustment(type) {

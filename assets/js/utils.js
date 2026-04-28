@@ -104,8 +104,8 @@ const utils = {
       );
   },
 
-  showValidationTip(elementId, message) {
-    const btn = document.getElementById(elementId);
+  showValidationTip(elementId, message, type = "error", options = {}) {
+    const btn = typeof elementId === "string" ? document.getElementById(elementId) : elementId;
     if (!btn) return;
 
     // 기존 팁 제거
@@ -113,23 +113,35 @@ const utils = {
     if (existing) existing.remove();
 
     const tip = document.createElement("div");
-    tip.className = "validation-tip";
-    tip.innerText = message;
+    tip.className = `validation-tip ${type}`;
+    if (options.isHtml) tip.innerHTML = message;
+    else tip.innerText = message;
     document.body.appendChild(tip);
 
     const rect = btn.getBoundingClientRect();
-    tip.style.left = `${rect.left + rect.width / 2}px`;
-    tip.style.top = `${rect.top - 10}px`;
+    const pos = options.position || "top";
+
+    if (pos === "top") {
+      tip.style.left = `${rect.left + rect.width / 2}px`;
+      tip.style.top = `${rect.top - 10}px`;
+    } else if (pos === "right") {
+      tip.classList.add("pos-right");
+      tip.style.left = `${rect.right + 25}px`;
+      tip.style.top = `${rect.top + rect.height / 2}px`;
+    }
 
     setTimeout(() => {
       tip.classList.add("show");
-      setTimeout(() => {
-        if (tip.parentNode) {
-          tip.classList.remove("show");
-          setTimeout(() => tip.remove(), 300);
-        }
-      }, 2000);
+      if (!options.noAutoHide) {
+        setTimeout(() => {
+          if (tip.parentNode) {
+            tip.classList.remove("show");
+            setTimeout(() => tip.remove(), 300);
+          }
+        }, options.duration || 2000);
+      }
     }, 10);
+    return tip;
   },
 
   hideValidationTip() {

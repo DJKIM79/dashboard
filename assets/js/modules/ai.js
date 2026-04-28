@@ -31,8 +31,10 @@ const ai = {
   historyCollapsed: false,
   currentChatId: null,
 
+  lastSuccessfulModel: localStorage.getItem("dj_ai_last_success_model") || null,
+
   getStorageKey() {
-    return `dj_ai_chats_${this.provider}_${this.settingsModel.replace(/[:/]/g, "_")}`;
+    return `dj_ai_chats_${this.provider}`;
   },
 
   get chats() {
@@ -86,6 +88,11 @@ const ai = {
         ) {
           document.getElementById("ai-model-popup")?.classList.remove("show");
         }
+        
+        // Hide delete confirmation tip when clicking outside
+        if (!e.target.closest(".validation-tip")) {
+            utils.hideValidationTip();
+        }
       });
       this.clickListenerAdded = true;
     }
@@ -109,8 +116,18 @@ const ai = {
     const historyTitleEl = document.getElementById("ai-history-model-name");
     const chat = this.getCurrentChat();
     if (titleInput) titleInput.value = chat ? chat.title : "새 대화";
-    if (historyTitleEl)
+    if (historyTitleEl) {
+      // Prioritize the model used in the specific chat
       historyTitleEl.innerText = chat?.model || this.settingsModel || "AI Chat";
+    }
+
+    const actionsEl = document.querySelector(".ai-actions");
+    if (actionsEl) {
+      const hasRealMessages = chat && chat.messages.some(m => m.role === "user" || m.role === "bot");
+      actionsEl.innerHTML = (chat && hasRealMessages) 
+        ? `<i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>` 
+        : "";
+    }
   },
 
   updateChatTitle(newTitle) {
@@ -126,27 +143,30 @@ const ai = {
 
   toggleModelPopup(e) {
     e.stopPropagation();
-    if (!this.isConnected) return;
+    // Do not check for connection here, rely on cache if available
     const popup = document.getElementById("ai-model-popup");
     if (!popup) return;
+    
     if (popup.classList.contains("show")) {
       popup.classList.remove("show");
       return;
     }
 
     const models = JSON.parse(
-      localStorage.getItem("dj_ai_models_cache") || "[]",
+      localStorage.getItem("dj_ai_models_cache") || "[]"
     );
+    
     popup.innerHTML = "";
     const chat = this.getCurrentChat();
     const activeModel = chat?.model || this.settingsModel;
 
-    if (models.length > 1) {
+    if (models.length > 0) {
       models.forEach((m) => {
         const div = document.createElement("div");
         div.className = `ai-model-item ${m === activeModel ? "active" : ""}`;
         div.innerHTML = `<span>${m}</span>${m === activeModel ? '<i class="fas fa-check" style="font-size:0.7rem;"></i>' : ""}`;
-        div.onclick = () => {
+        div.onclick = (evt) => {
+          evt.stopPropagation();
           this.selectTemporaryModel(m);
           popup.classList.remove("show");
         };
@@ -155,8 +175,12 @@ const ai = {
     } else {
       const tip = document.createElement("div");
       tip.className = "ai-model-tip";
-      tip.innerText =
-        "다른 모델을 사용하려면\n서버에 모델을 추가 설치해주세요.";
+      tip.style.padding = "10px";
+      tip.style.fontSize = "0.8rem";
+      tip.style.color = "#94a3b8";
+      tip.innerText = this.isConnected ? 
+        "다른 모델을 사용하려면\n서버에 모델을 추가 설치해주세요." :
+        "서버에 연결되면\n모델 목록이 표시됩니다.";
       popup.appendChild(tip);
     }
     popup.classList.add("show");
@@ -166,9 +190,23 @@ const ai = {
     const chats = this.chats;
     const chat = chats.find((c) => c.id === this.currentChatId);
     if (chat) {
-      chat.model = m;
-      this.chats = chats;
-      this.updateModelDisplay();
+      const oldModel = chat.model || this.settingsModel;
+      if (oldModel !== m) {
+        // Record the last successful model BEFORE changing (for rollback)
+        if (!chat._lastModel) chat._lastModel = oldModel;
+        
+        chat.model = m;
+        const msg = `<i class="fas fa-exclamation-triangle" style="color: #eab308; margin-right: 6px;"></i>모델이 ${m}(으)로 변경되었습니다.`;
+        // Add a system message about model change
+        chat.messages.push({ 
+          role: "system", 
+          content: msg,
+          timestamp: Date.now()
+        });
+        this.chats = chats;
+        this.updateModelDisplay();
+        this.appendMessage("system", msg, true, true);
+      }
     }
   },
 
@@ -188,16 +226,18 @@ const ai = {
     const trigger = document.getElementById("ai-model-trigger");
     
     if (this.isConnected && models.length > 0) {
-      const oldModel = this.settingsModel;
-      if (!models.includes(oldModel)) {
+      const savedModel = localStorage.getItem("dj_ai_model");
+      
+      // If we have a saved model but it's not in the new list, pick the first one
+      if (savedModel && !models.includes(savedModel)) {
         localStorage.setItem("dj_ai_model", models[0]);
-        if (oldModel !== "") {
-          setTimeout(() => {
-            this.renderHistory();
-            this.loadChat();
-          }, 50);
-        }
+        // No need to reload history, just select the new available model
+        this.selectTemporaryModel(models[0]);
+      } else if (!savedModel) {
+        // If no model was selected at all, pick the first one
+        localStorage.setItem("dj_ai_model", models[0]);
       }
+      // If savedModel is IN the list, we do nothing and keep it.
       
       localStorage.setItem("dj_ai_models_cache", JSON.stringify(models));
       if (triggerName) {
@@ -214,34 +254,53 @@ const ai = {
     }
   },
 
-  updateStatusUI() {
+  updateStatusUI(state = "normal") {
     const statusSpan = document.getElementById("ai-connection-status");
     const dot = statusSpan?.querySelector(".status-dot");
     const text = statusSpan?.querySelector(".status-text");
     const historyDot = document.getElementById("ai-history-status-dot");
+
+    if (this._statusInterval) {
+        clearInterval(this._statusInterval);
+        this._statusInterval = null;
+    }
+
+    if (state === "checking") {
+      const gray = "#94a3b8";
+      if (dot) dot.style.background = gray;
+      if (historyDot) historyDot.style.background = gray;
+      
+      let count = 0;
+      const updateText = () => {
+        count = (count % 3) + 1;
+        const dots = ".".repeat(count);
+        if (text) text.innerText = `서버 확인 중${dots}`;
+      };
+      updateText();
+      this._statusInterval = setInterval(updateText, 500);
+      if (statusSpan) statusSpan.style.color = gray;
+      return;
+    }
+
     if (this.isConnected) {
       const green = "#22c55e";
       if (dot) dot.style.background = green;
       if (historyDot) historyDot.style.background = green;
       if (text) {
-        let pName =
-          this.provider === "local"
-            ? "로컬 AI"
-            : this.provider.charAt(0).toUpperCase() + this.provider.slice(1);
+        let pName = this.getProviderName(this.provider);
         text.innerText = `${pName} 연결됨`;
       }
       if (statusSpan) statusSpan.style.color = green;
     } else {
       const gray = "#94a3b8",
         red = "#ef4444";
-      if (dot) dot.style.background = gray;
-      if (historyDot)
-        historyDot.style.background = this.provider !== "none" ? red : gray;
-      if (text)
-        text.innerText =
-          (window.i18n ? window.i18n.get("aiNeedConnect") : "서버 연결 안됨") ||
-          "서버 연결 안됨";
-      if (statusSpan) statusSpan.style.color = gray;
+      const hasProvider = this.provider !== "none";
+      if (dot) dot.style.background = hasProvider ? red : gray;
+      if (historyDot) historyDot.style.background = hasProvider ? red : gray;
+      if (text) {
+        text.innerText = hasProvider ? "서버 연결 실패" : (window.i18n ? window.i18n.get("aiNeedConnect") : "서버 연결 안됨");
+      }
+      if (statusSpan) statusSpan.style.color = hasProvider ? red : gray;
     }
   },
 
@@ -249,38 +308,24 @@ const ai = {
     const provider = localStorage.getItem("dj_ai_provider") || "none";
     const url = document.getElementById("aiServerUrlInput")?.value || this.serverUrl;
     const apiKey = document.getElementById("aiApiKeyInput")?.value.trim() || this.apiKey;
-    const checkBtn = document.getElementById("ai-check-btn");
-    const tooltip = document.getElementById("ai-check-tooltip");
 
-    const showTooltip = (msg, isSuccess) => {
-      if (tooltip) {
-        tooltip.innerText = msg;
-        const color = isSuccess ? "#22c55e" : "#ef4444";
-        tooltip.style.setProperty("--tip-bg", color);
-        tooltip.classList.add("show");
-        setTimeout(() => tooltip.classList.remove("show"), 3000);
-      }
-    };
-
-    const finalize = (isConnected, models = []) => {
-      if (isConnected) {
-        this.updateChatbotAvailability(true);
-        this.updateModelSelectUI(models);
-      } else {
+    if (provider === "none") {
         this.updateChatbotAvailability(false);
         this.updateModelSelectUI([]);
-      }
+        return;
+    }
+
+    this.updateStatusUI("checking");
+
+    const finalize = (isConnected, models = []) => {
+      this.updateChatbotAvailability(isConnected);
+      this.updateModelSelectUI(models);
       
       if (!isSilent) {
         const pName = this.getProviderName(provider);
-        showTooltip(isConnected ? `${pName} 연결 성공!` : `${pName} 연결 실패!`, isConnected);
+        utils.showValidationTip("ai-provider-trigger", isConnected ? `${pName} 연결 성공!` : `${pName} 연결 실패!`, isConnected ? "success" : "error");
       }
     };
-
-    if (provider === "none") {
-      finalize(false);
-      return;
-    }
 
     try {
       if (provider === "openai") {
@@ -354,19 +399,17 @@ const ai = {
       chats = this.chats;
       chat = chats[0];
     }
-    const activeModel = chat.model || this.settingsModel;
 
-    if (
-      chat.messages.length === 0 &&
-      (chat.title === "새 대화" || chat.title === "새로운 대화")
-    ) {
-      const firstLine = text.split("\n")[0];
-      chat.title =
-        firstLine.length > 20 ? firstLine.substring(0, 20) + "..." : firstLine;
-      this.chats = chats;
-      this.updateModelDisplay();
-      this.renderHistory();
+    // Immediately update title if this is the first real message
+    if (!chat.messages.some(m => m.role === "user") && (chat.title === "새 대화" || chat.title === "새로운 대화")) {
+        const firstLine = text.split("\n")[0];
+        chat.title = firstLine.length > 20 ? firstLine.substring(0, 20) + "..." : firstLine;
+        this.chats = chats;
+        this.updateModelDisplay();
+        this.renderHistory();
     }
+
+    const activeModel = chat.model || this.settingsModel;
 
     this.appendMessage("user", text);
     input.value = "";
@@ -386,15 +429,46 @@ const ai = {
         await this.callOpenAI(text, botMsgDiv, chat, activeModel);
       else if (provider === "gemini")
         await this.callGemini(text, botMsgDiv, chat, activeModel);
+      
       this.updateStatusUI();
+      // Only after success, ensure history and title are updated
+      this.renderHistory();
     } catch (e) {
-      botMsgDiv.innerText = "오류: 서버와 통신할 수 없습니다.";
-      this.updateChatbotAvailability(false);
+      if (e.message === "Model permission error") {
+        // handleModelError has already been called inside callXXXAI
+        // Do not update chatbot availability to false because server is actually connected
+      } else {
+        botMsgDiv.innerText = "오류: 서버와 통신할 수 없습니다.";
+        this.updateChatbotAvailability(false);
+      }
     } finally {
       this.isGenerating = false;
     }
   },
 
+  handleModelError(model) {
+    const chats = this.chats;
+    const chat = chats.find((c) => c.id === this.currentChatId);
+
+    if (chat && chat._lastModel && chat._lastModel !== model) {
+        const rollbackModel = chat._lastModel;
+        const msg = `<i class="fas fa-exclamation-circle" style="color: #ef4444; margin-right: 6px;"></i>모델이 지원되지 않아 원래 모델(${rollbackModel})로 복귀합니다.`;
+        
+        // Switch model silently and show the red error message
+        chat.model = rollbackModel;
+        chat.messages.push({ 
+          role: "system", 
+          content: msg,
+          timestamp: Date.now()
+        });
+        this.chats = chats;
+        this.updateModelDisplay();
+        this.appendMessage("system-error", msg, true, true);
+    } else {
+        const msg = `<i class="fas fa-exclamation-circle" style="color: #ef4444; margin-right: 6px;"></i>모델(${model}) 사용 권한이 없거나 지원되지 않습니다.`;
+        this.appendMessage("system-error", msg, true, true);
+    }
+  },
   async callLocalAI(prompt, msgDiv, chat, model) {
     const isStream = !this.outputAtOnce;
     const headers = { "Content-Type": "application/json" };
@@ -413,7 +487,17 @@ const ai = {
         stream: isStream,
       }),
     });
-    if (!response.ok) throw new Error();
+
+    if (!response.ok) {
+        msgDiv.remove();
+        this.handleModelError(model);
+        throw new Error("Model permission error");
+    }
+    
+    // If successful, update last success model
+    this.lastSuccessfulModel = model;
+    localStorage.setItem("dj_ai_last_success_model", model);
+
     let fullText = "";
     if (isStream) {
       const reader = response.body.getReader(),
@@ -459,7 +543,16 @@ const ai = {
           .concat([{ role: "user", content: prompt }]),
       }),
     });
-    if (!res.ok) throw new Error();
+    
+    if (!res.ok) {
+        msgDiv.remove();
+        this.handleModelError(model);
+        throw new Error("Model permission error");
+    }
+
+    this.lastSuccessfulModel = model;
+    localStorage.setItem("dj_ai_last_success_model", model);
+
     const json = await res.json(),
       text = json.choices[0].message.content;
     msgDiv.innerHTML = "";
@@ -476,7 +569,16 @@ const ai = {
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
       },
     );
-    if (!res.ok) throw new Error();
+    
+    if (!res.ok) {
+        msgDiv.remove();
+        this.handleModelError(model);
+        throw new Error("Model permission error");
+    }
+
+    this.lastSuccessfulModel = model;
+    localStorage.setItem("dj_ai_last_success_model", model);
+
     const json = await res.json(),
       text = json.candidates[0].content.parts[0].text;
     msgDiv.innerHTML = "";
@@ -490,8 +592,11 @@ const ai = {
     if (c) {
       c.messages.push({ role: "user", content: userPrompt });
       c.messages.push({ role: "bot", content: botResponse });
+      // Store current model as the last known GOOD model for this chat
+      c._lastModel = c.model || this.settingsModel;
       this.chats = chats;
       this.renderHistory();
+      this.updateModelDisplay();
     }
   },
 
@@ -511,7 +616,10 @@ const ai = {
       const div = document.createElement("div");
       div.className = `ai-history-item ${chat.id === this.currentChatId ? "active" : ""}`;
       div.onclick = () => this.loadChat(chat.id);
-      div.innerHTML = `<span>${chat.title}</span><i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>`;
+      
+      // Fix Bug 4: Hide delete icon for brand new empty chats (ignore system messages)
+      const hasRealMessages = chat.messages.some(m => m.role === "user" || m.role === "bot");
+      div.innerHTML = `<span>${chat.title}</span>${hasRealMessages ? `<i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>` : ""}`;
       list.appendChild(div);
     });
   },
@@ -534,7 +642,7 @@ const ai = {
       msgContainer.innerHTML = "";
       if (chat)
         chat.messages.forEach((m) =>
-          this.appendMessage(m.role, m.content, false),
+          this.appendMessage(m.role, m.content, false, m.role.startsWith("system")),
         );
     }
     this.updateModelDisplay();
@@ -543,7 +651,7 @@ const ai = {
     const chats = this.chats;
     const emptyChat = chats.find(
       (c) =>
-        c.messages.length === 0 &&
+        !c.messages.some(m => m.role === "user" || m.role === "bot") &&
         (c.title === "새 대화" || c.title === "새로운 대화"),
     );
     if (emptyChat) {
@@ -564,7 +672,25 @@ const ai = {
     this.loadChat(this.currentChatId);
   },
   deleteChat(id, e) {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
+    const target = e ? e.target : null;
+    if (!target) return;
+
+    const html = `
+      <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+        <span style="font-size: 0.8rem; white-space: nowrap;">삭제하시겠습니까?</span>
+        <button class="btn-del-confirm" onclick="ai.performDeleteChat(${id})" style="width: 100%;">삭제</button>
+      </div>
+    `;
+
+    utils.showValidationTip(target, html, "ai-delete-confirm", {
+      position: "right",
+      isHtml: true,
+      noAutoHide: true
+    });
+  },
+  performDeleteChat(id) {
+    utils.hideValidationTip();
     const chats = this.chats.filter((c) => c.id !== id);
     this.chats = chats;
     if (chats.length === 0) this.createNewChat();
@@ -600,6 +726,25 @@ const ai = {
     if (!container) return null;
     const div = document.createElement("div");
     div.className = `ai-message ${role}`;
+    
+    if (role === "system" || role === "system-error") {
+      div.style.width = "auto";
+      div.style.maxWidth = "90%";
+      div.style.textAlign = "center";
+      div.style.fontSize = "0.75rem";
+      div.style.color = role === "system-error" ? "#ef4444" : "#94a3b8";
+      div.style.margin = "15px auto";
+      div.style.padding = "6px 20px";
+      div.style.background = "rgba(255,255,255,0.03)";
+      div.style.border = role === "system-error" ? "1px solid rgba(239, 68, 68, 0.2)" : "1px solid rgba(255,255,255,0.03)";
+      div.style.borderRadius = "20px";
+      div.style.alignSelf = "center";
+      div.style.boxSizing = "border-box";
+      div.style.display = "flex";
+      div.style.alignItems = "center";
+      div.style.justifyContent = "center";
+    }
+
     if (isHtml) div.innerHTML = text;
     else div.innerText = text;
     container.appendChild(div);

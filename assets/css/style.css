@@ -1786,35 +1786,51 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 
 /* 스크롤바 스타일 통일 (AI 모델 목록 스타일 적용) */
 .engine-popup::-webkit-scrollbar,
+.ai-model-popup::-webkit-scrollbar,
 .popup-list-area::-webkit-scrollbar,
 .city-results::-webkit-scrollbar,
 .weather-popup::-webkit-scrollbar,
-.location-list::-webkit-scrollbar {
+.location-list::-webkit-scrollbar,
+.ai-chat-messages::-webkit-scrollbar,
+.ai-history-list::-webkit-scrollbar,
+#ai-user-input::-webkit-scrollbar {
   width: 5px;
 }
 
 .engine-popup::-webkit-scrollbar-track,
+.ai-model-popup::-webkit-scrollbar-track,
 .popup-list-area::-webkit-scrollbar-track,
 .city-results::-webkit-scrollbar-track,
 .weather-popup::-webkit-scrollbar-track,
-.location-list::-webkit-scrollbar-track {
+.location-list::-webkit-scrollbar-track,
+.ai-chat-messages::-webkit-scrollbar-track,
+.ai-history-list::-webkit-scrollbar-track,
+#ai-user-input::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .engine-popup::-webkit-scrollbar-thumb,
+.ai-model-popup::-webkit-scrollbar-thumb,
 .popup-list-area::-webkit-scrollbar-thumb,
 .city-results::-webkit-scrollbar-thumb,
 .weather-popup::-webkit-scrollbar-thumb,
-.location-list::-webkit-scrollbar-thumb {
+.location-list::-webkit-scrollbar-thumb,
+.ai-chat-messages::-webkit-scrollbar-thumb,
+.ai-history-list::-webkit-scrollbar-thumb,
+#ai-user-input::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
 }
 
 .engine-popup::-webkit-scrollbar-thumb:hover,
+.ai-model-popup::-webkit-scrollbar-thumb:hover,
 .popup-list-area::-webkit-scrollbar-thumb:hover,
 .city-results::-webkit-scrollbar-thumb:hover,
 .weather-popup::-webkit-scrollbar-thumb:hover,
-.location-list::-webkit-scrollbar-thumb:hover {
+.location-list::-webkit-scrollbar-thumb:hover,
+.ai-chat-messages::-webkit-scrollbar-thumb:hover,
+.ai-history-list::-webkit-scrollbar-thumb:hover,
+#ai-user-input::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 .engine-name {
@@ -1968,7 +1984,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   pointer-events: none;
 }
 .ai-history-panel {
-  width: 260px;
+  width: 220px;
   border-right: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
@@ -2056,8 +2072,10 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .ai-model-popup {
   position: absolute;
-  bottom: 45px;
-  left: 10px;
+  top: 100%;
+  bottom: auto;
+  left: 0;
+  margin-top: 5px;
   background: #1e293b;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -2336,7 +2354,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   background: rgba(0, 0, 0, 0.2);
   display: flex;
   gap: 12px;
-  align-items: flex-end;
+  align-items: stretch;
 }
 /* Tutorial (Driver.js) Custom Styling */
 .driver-popover {
@@ -2458,6 +2476,9 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   outline: none;
   transition: border-color 0.2s;
   box-sizing: border-box;
+  cursor: text;
+  position: relative;
+  z-index: 1;
 }
 #ai-user-input:focus {
   border-color: var(--accent-color);
@@ -2514,7 +2535,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .validation-tip {
   position: fixed;
-  background: #ef4444; /* 경고는 빨간색 */
+  background: var(--tip-bg, #ef4444);
   color: #fff;
   padding: 6px 12px;
   border-radius: 8px;
@@ -2527,6 +2548,34 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   white-space: nowrap;
+  --tip-bg: #ef4444; /* 기본값: 빨간색 */
+}
+.validation-tip.success {
+  --tip-bg: #22c55e; /* 성공: 초록색 */
+}
+.ai-delete-confirm {
+  --tip-bg: #334155;
+  background: var(--tip-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+.ai-delete-confirm .btn-del-confirm {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.ai-delete-confirm .btn-del-confirm:hover {
+  background: #dc2626;
+  transform: scale(1.05);
 }
 .validation-tip.show {
   opacity: 1;
@@ -2539,7 +2588,21 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: #ef4444;
+  border-top-color: var(--tip-bg);
+}
+.validation-tip.pos-right {
+  transform: translateY(-50%);
+}
+.validation-tip.pos-right.show {
+  transform: translate(0, -50%);
+}
+.validation-tip.pos-right::after {
+  top: 50%;
+  left: auto;
+  right: 100%;
+  transform: translateY(-50%);
+  border-top-color: transparent;
+  border-right-color: var(--tip-bg);
 }
 #ai-send-btn:hover {
   transform: scale(1.05);
