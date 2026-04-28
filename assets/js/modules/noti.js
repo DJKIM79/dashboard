@@ -1,8 +1,158 @@
 const noti = {
   items: JSON.parse(localStorage.getItem("dj_notifications")) || [],
+  calendarDate: new Date(),
 
   init() {
     this.render();
+    
+    // Click outside listener for custom calendar
+    window.addEventListener('click', (e) => {
+      const popup = document.getElementById("noti-calendar-popup");
+      const trigger = document.getElementById("notiDate");
+      if (popup && popup.classList.contains("show") && !popup.contains(e.target) && e.target !== trigger) {
+        popup.classList.remove("show");
+      }
+    });
+  },
+
+  toggleCalendar(e) {
+    if (e) e.stopPropagation();
+    const popup = document.getElementById("noti-calendar-popup");
+    if (!popup) return;
+    const isShowing = popup.classList.contains("show");
+    popup.classList.toggle("show", !isShowing);
+    if (!isShowing) {
+      const currentVal = document.getElementById("notiDate").value;
+      if (currentVal) {
+        const [y, m, d] = currentVal.split("-");
+        this.calendarDate = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+      } else {
+        this.calendarDate = new Date();
+      }
+      this.renderCalendar();
+    }
+  },
+
+  changeCalendarMonth(val) {
+    this.calendarDate.setMonth(this.calendarDate.getMonth() + val);
+    this.renderCalendar();
+  },
+
+  resetCalendarToToday() {
+    this.calendarDate = new Date();
+    this.renderCalendar();
+  },
+
+  selectCalendarDate(y, m, d) {
+    const dateStr = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    document.getElementById("notiDate").value = dateStr;
+    document.getElementById("noti-calendar-popup").classList.remove("show");
+  },
+
+  renderCalendar() {
+    const year = this.calendarDate.getFullYear(),
+      month = this.calendarDate.getMonth(),
+      todayDate = new Date(),
+      isCurrentMonth =
+        todayDate.getFullYear() === year && todayDate.getMonth() === month,
+      today = todayDate.getDate();
+
+    const monthsEn = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
+
+    const monthYearEl = document.getElementById("noti-cal-month-year");
+    if (monthYearEl) {
+      monthYearEl.innerText =
+        window.i18n && i18n.userLang === "ko"
+          ? `${year}.${String(month + 1).padStart(2, "0")}`
+          : `${monthsEn[month]} ${year}`;
+    }
+
+    const daysHeader = document.getElementById("noti-cal-days-header");
+    if (daysHeader) {
+      daysHeader.innerHTML = "";
+      (window.i18n && i18n.userLang === "ko"
+        ? ["일", "월", "화", "수", "목", "금", "토"]
+        : ["S", "M", "T", "W", "T", "F", "S"]
+      ).forEach((label, i) => {
+        const div = document.createElement("div");
+        div.innerText = label;
+        if (i === 0) div.style.color = "#ef4444";
+        if (i === 6) div.style.color = "#3b82f6";
+        daysHeader.appendChild(div);
+      });
+    }
+
+    const grid = document.getElementById("noti-calendar-grid");
+    if (!grid) return;
+    grid.innerHTML = "";
+
+    const firstDay = new Date(year, month, 1).getDay(),
+      lastDate = new Date(year, month + 1, 0).getDate(),
+      prevLastDate = new Date(year, month, 0).getDate();
+
+    const createDay = (d, isOtherMonth, isToday) => {
+        const div = document.createElement("div");
+        div.innerText = d;
+        div.style.padding = "5px";
+        div.style.borderRadius = "6px";
+        div.style.cursor = "pointer";
+        div.style.transition = "0.2s";
+        div.style.fontSize = "0.8rem";
+        div.style.textAlign = "center";
+        
+        if (isOtherMonth) {
+            div.style.opacity = "0.3";
+        } else {
+            if (isToday) {
+                div.style.background = "var(--accent-color)";
+                div.style.color = "var(--accent-contrast)";
+                div.style.fontWeight = "bold";
+            }
+            div.onmouseover = () => { if (!isToday) div.style.background = "rgba(255,255,255,0.1)"; };
+            div.onmouseout = () => { if (!isToday) div.style.background = "transparent"; };
+        }
+        return div;
+    };
+
+    // Prev month
+    for (let i = firstDay; i > 0; i--) {
+      const d = prevLastDate - i + 1;
+      const div = createDay(d, true, false);
+      const prevMonthDate = new Date(year, month - 1, d);
+      div.onclick = (e) => {
+          e.stopPropagation();
+          this.selectCalendarDate(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), prevMonthDate.getDate());
+      };
+      grid.appendChild(div);
+    }
+    // Current month
+    for (let i = 1; i <= lastDate; i++) {
+      const isToday = isCurrentMonth && i === today;
+      const div = createDay(i, false, isToday);
+      const dIndex = new Date(year, month, i).getDay();
+      if (dIndex === 0 && !isToday) div.style.color = "#ef4444";
+      if (dIndex === 6 && !isToday) div.style.color = "#3b82f6";
+      div.onclick = (e) => {
+          e.stopPropagation();
+          this.selectCalendarDate(year, month, i);
+      };
+      grid.appendChild(div);
+    }
+    // Next month
+    const totalCells = firstDay + lastDate;
+    const nextDays = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+    for (let i = 1; i <= nextDays; i++) {
+      const div = createDay(i, true, false);
+      const nextMonthDate = new Date(year, month + 1, i);
+      div.onclick = (e) => {
+          e.stopPropagation();
+          this.selectCalendarDate(nextMonthDate.getFullYear(), nextMonthDate.getMonth(), nextMonthDate.getDate());
+      };
+      grid.appendChild(div);
+    }
   },
 
   render() {
