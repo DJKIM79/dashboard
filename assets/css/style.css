@@ -782,6 +782,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   transform: scale(0.9) translateY(20px) !important;
   pointer-events: none !important;
   max-height: 0 !important;
+  min-height: 0 !important;
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   padding-top: 0 !important;
@@ -982,7 +983,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   font-size: 0.8rem;
   overflow: hidden;
   position: relative;
-  min-height: 220px;
+  min-height: auto;
   display: flex;
   flex-direction: column;
 }
@@ -990,7 +991,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   display: flex;
   justify-content: center; /* 중앙 정렬 */
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   font-weight: 700;
   color: var(--accent-color);
   font-family: "JetBrains Mono";
@@ -1125,9 +1126,8 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   height: 100%;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(15px);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(4, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 5px;
   padding: 10px;
   box-sizing: border-box;
@@ -1141,6 +1141,32 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   opacity: 1;
   visibility: visible;
   transform: scale(1);
+}
+.month-selector-year-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  color: var(--accent-color);
+  font-weight: 700;
+  font-family: "JetBrains Mono";
+}
+.month-selector-year-header i {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: 0.2s;
+  padding: 5px;
+}
+.month-selector-year-header i:hover {
+  opacity: 1;
+  color: #fff;
+}
+.month-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 5px;
+  flex: 1;
 }
 .month-item {
   display: flex;
