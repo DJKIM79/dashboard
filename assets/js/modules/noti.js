@@ -190,6 +190,7 @@ const noti = {
   },
 
   repeatYearOffset: 0,
+  selectedRepeatYears: [],
 
   toggleWeekMode() {
     const mode = document.querySelector('input[name="weekMode"]:checked').value;
@@ -197,23 +198,42 @@ const noti = {
     document.getElementById("repeat-week-specific-container").style.display = mode === "specific" ? "grid" : "none";
   },
 
-  shiftRepeatYears(val) {
-    this.repeatYearOffset += val;
-    this.renderRepeatYears();
+  updateSelectedRepeatYears() {
+    document.querySelectorAll('input[name="repeatYear"]').forEach(el => {
+      const y = parseInt(el.value);
+      if (el.checked && !this.selectedRepeatYears.includes(y)) {
+        this.selectedRepeatYears.push(y);
+      } else if (!el.checked && this.selectedRepeatYears.includes(y)) {
+        this.selectedRepeatYears = this.selectedRepeatYears.filter(year => year !== y);
+      }
+    });
   },
 
-  renderRepeatYears(selectedYears = []) {
+  shiftRepeatYears(val) {
+    this.updateSelectedRepeatYears();
+    this.repeatYearOffset += val;
+    this.renderRepeatYears(this.selectedRepeatYears, val);
+  },
+
+  renderRepeatYears(selectedYears = [], slideDir = 0) {
     const container = document.getElementById("repeat-years-container");
     if (!container) return;
+    
+    if (slideDir !== 0) {
+        container.classList.remove("year-slide-left", "year-slide-right");
+        void container.offsetWidth; // Trigger reflow
+        container.classList.add(slideDir > 0 ? "year-slide-left" : "year-slide-right");
+    }
+
     container.innerHTML = "";
     const baseYear = new Date().getFullYear() + (this.repeatYearOffset * 5);
-    document.getElementById("repeat-year-range").innerText = `${baseYear} - ${baseYear + 4}`;
 
     for (let i = 0; i < 5; i++) {
         const y = baseYear + i;
         const label = document.createElement("label");
         label.className = "day-check";
         label.innerHTML = `<input type="checkbox" name="repeatYear" value="${y}" ${selectedYears.includes(y) ? "checked" : ""}/><span>${y}</span>`;
+        label.querySelector('input').addEventListener('change', () => this.updateSelectedRepeatYears());
         container.appendChild(label);
     }
   },
@@ -275,7 +295,8 @@ const noti = {
     };
 
     this.repeatYearOffset = 0;
-    this.renderRepeatYears(rule.years);
+    this.selectedRepeatYears = [...rule.years];
+    this.renderRepeatYears(this.selectedRepeatYears);
     this.renderRepeatMonths(rule.months);
 
     document.querySelector(`input[name="weekMode"][value="${rule.weekMode}"]`).checked = true;
@@ -298,6 +319,7 @@ const noti = {
   },
 
   add() {
+    this.updateSelectedRepeatYears();
     const t = document.getElementById("notiTitle").value,
       h = document.getElementById("notiHour").value,
       m = document.getElementById("notiMin").value,
@@ -305,7 +327,7 @@ const noti = {
       dt = document.getElementById("notiDate").value;
 
     const repeatRule = {
-        years: Array.from(document.querySelectorAll('input[name="repeatYear"]:checked')).map(el => parseInt(el.value)),
+        years: this.selectedRepeatYears,
         months: Array.from(document.querySelectorAll('input[name="repeatMonth"]:checked')).map(el => parseInt(el.value)),
         weekMode: document.querySelector('input[name="weekMode"]:checked').value,
         weekInterval: parseInt(document.querySelector('input[name="weekInterval"]:checked')?.value || 1),
