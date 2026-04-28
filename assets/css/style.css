@@ -1656,6 +1656,50 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   font-weight: bold;
   transform: scale(1.1);
 }
+#day-selector-wrap {
+  display: flex;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid transparent;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0 15px;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 0;
+  pointer-events: none;
+}
+
+#day-selector-wrap.show {
+  max-height: 1000px;
+  opacity: 1;
+  padding: 15px;
+  margin-top: 15px;
+  border-color: rgba(255, 255, 255, 0.05);
+  pointer-events: auto;
+}
+
+#day-selector-wrap .day-check {
+  flex: 1;
+  display: flex;
+  margin: 0;
+}
+
+#day-selector-wrap .day-check span {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.year-slide-left {
+  animation: slideLeft 0.3s ease-out;
+}
+
+.year-slide-right {
+  animation: slideRight 0.3s ease-out;
+}
+
 .repeat-row {
   display: flex;
   align-items: center;
