@@ -1192,21 +1192,22 @@
             onclick="noti.toggleCalendar(event)"
             style="margin-bottom: 0; flex: 1; padding: 10px; font-size: 0.9rem; cursor: pointer; background: rgba(255,255,255,0.05);"
           />
-          <div id="noti-calendar-popup" class="engine-popup" style="width: 250px; padding: 10px; bottom: 100%; left: 0; margin-bottom: 5px; z-index: 1000; display: none;">
-            <div class="calendar-header" style="margin-bottom: 10px; font-size: 0.9rem;">
-              <i class="fas fa-caret-left cal-nav" onclick="noti.changeCalendarMonth(-1); event.stopPropagation();" style="cursor: pointer; padding: 5px;"></i>
-              <div class="calendar-header-center" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px;">
+          <div id="noti-calendar-popup" class="calendar-widget engine-popup" style="width: 200px;" onclick="noti.handleCalendarClick(event)">
+            <div class="calendar-header">
+              <i class="fas fa-caret-left cal-nav" onclick="noti.changeCalendarMonth(-1); event.stopPropagation();"></i>
+              <div class="calendar-header-center">
                 <span id="noti-cal-month-year">...</span>
-                <i class="fas fa-undo today-icon" onclick="noti.resetCalendarToToday(); event.stopPropagation();" style="cursor: pointer; font-size: 0.8rem; opacity: 0.7;"></i>
+                <i class="fas fa-undo today-icon" onclick="noti.resetCalendarToToday(); event.stopPropagation();" data-i18n-title="tipToday"></i>
               </div>
-              <i class="fas fa-caret-right cal-nav" onclick="noti.changeCalendarMonth(1); event.stopPropagation();" style="cursor: pointer; padding: 5px;"></i>
+              <i class="fas fa-caret-right cal-nav" onclick="noti.changeCalendarMonth(1); event.stopPropagation();"></i>
             </div>
-            <div class="calendar-body-container">
-              <div class="calendar-days-header" id="noti-cal-days-header" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; margin-bottom: 5px; color: #94a3b8;"></div>
+            <div class="calendar-body-container" id="noti-calendar-body">
+              <div class="calendar-days-header" id="noti-cal-days-header"></div>
               <div class="calendar-grid-wrapper">
-                <div class="calendar-grid" id="noti-calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;"></div>
+                <div class="calendar-grid" id="noti-calendar-grid"></div>
               </div>
             </div>
+            <div class="month-selector" id="noti-month-selector"></div>
           </div>
           <div style="display: flex; align-items: center; gap: 6px">
             <label for="isRepeat" style="cursor: pointer" data-i18n="repeatSet"

@@ -86,6 +86,10 @@ const utils = {
       if (p.id !== popupId) p.classList.remove('show');
     });
 
+    // Close calendar popup
+    const calPopup = document.getElementById("noti-calendar-popup");
+    if (calPopup) calPopup.classList.remove("show");
+
     if (!isShowing) {
       popup.classList.add("show");
       const currentVal = document.getElementById(type === "hour" ? "notiHour" : "notiMin").value;

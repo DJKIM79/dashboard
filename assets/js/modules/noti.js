@@ -2,6 +2,7 @@ const noti = {
   items: JSON.parse(localStorage.getItem("dj_notifications")) || [],
   calendarDate: new Date(),
   currentCalendarTarget: "notiDate", // "notiDate" or "repeatEndDate"
+  isMonthSelectorOpen: false,
 
   init() {
     this.render();
@@ -12,6 +13,9 @@ const noti = {
       const trigger1 = document.getElementById("notiDate");
       const trigger2 = document.getElementById("repeatEndDate");
       if (popup && popup.classList.contains("show") && !popup.contains(e.target) && e.target !== trigger1 && e.target !== trigger2) {
+        if (this.isMonthSelectorOpen) {
+          this.isMonthSelectorOpen = false;
+        }
         popup.classList.remove("show");
       }
     });
@@ -22,10 +26,14 @@ const noti = {
     const popup = document.getElementById("noti-calendar-popup");
     if (!popup) return;
 
+    // Close all time popups
+    document.querySelectorAll('.time-popup').forEach(p => p.classList.remove('show'));
+
     const isShowing = popup.classList.contains("show");
 
     // If clicking same target, toggle. If clicking different target while open, keep open but move.
     if (isShowing && this.currentCalendarTarget === targetId) {
+        this.isMonthSelectorOpen = false;
         popup.classList.remove("show");
         return;
     }
@@ -41,6 +49,13 @@ const noti = {
         parent.appendChild(popup);
     }
 
+    // Set position to upwards for both notiDate and repeatEndDate
+    popup.style.bottom = "100%";
+    popup.style.top = "auto";
+    popup.style.marginTop = "0";
+    popup.style.marginBottom = "5px";
+
+    this.isMonthSelectorOpen = false;
     popup.classList.add("show");
 
     let currentVal = targetEl.value;
@@ -54,12 +69,48 @@ const noti = {
   },
 
   changeCalendarMonth(val) {
+    const grid = document.getElementById("noti-calendar-grid");
+    if (grid) {
+      grid.classList.remove("slide-left", "slide-right", "pop-in");
+      void grid.offsetWidth;
+      grid.classList.add(val > 0 ? "slide-left" : "slide-right");
+    }
     this.calendarDate.setMonth(this.calendarDate.getMonth() + val);
     this.renderCalendar();
   },
 
+  changeCalendarYear(val) {
+    this.calendarDate.setFullYear(this.calendarDate.getFullYear() + val);
+    this.renderCalendar();
+  },
+
   resetCalendarToToday() {
+    const grid = document.getElementById("noti-calendar-grid");
+    if (grid) {
+      grid.classList.remove("slide-left", "slide-right", "pop-in");
+      void grid.offsetWidth;
+      grid.classList.add("pop-in");
+    }
     this.calendarDate = new Date();
+    this.isMonthSelectorOpen = false;
+    this.renderCalendar();
+  },
+
+  handleCalendarClick(e) {
+    if (this.isMonthSelectorOpen) {
+      this.isMonthSelectorOpen = false;
+      this.renderCalendar();
+      return;
+    }
+    if (e.target.id === "noti-cal-month-year" || e.target.classList.contains('calendar-header-center')) {
+      this.isMonthSelectorOpen = true;
+      this.renderCalendar();
+    }
+  },
+
+  selectCalendarMonth(monthIndex) {
+    this.calendarDate.setMonth(monthIndex);
+    this.isMonthSelectorOpen = false;
     this.renderCalendar();
   },
 
@@ -69,10 +120,12 @@ const noti = {
     if (targetEl) targetEl.value = dateStr;
     document.getElementById("noti-calendar-popup").classList.remove("show");
   },
+
   renderCalendar() {
     const year = this.calendarDate.getFullYear(),
       month = this.calendarDate.getMonth(),
       todayDate = new Date(),
+      todayStart = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate()),
       isCurrentMonth =
         todayDate.getFullYear() === year && todayDate.getMonth() === month,
       today = todayDate.getDate();
@@ -90,6 +143,20 @@ const noti = {
           : `${monthsEn[month]} ${year}`;
     }
 
+    // Month Selector
+    const monthSelector = document.getElementById("noti-month-selector");
+    const calendarBody = document.getElementById("noti-calendar-body");
+    if (this.isMonthSelectorOpen) {
+      monthSelector.classList.add("active");
+      calendarBody.style.opacity = "0";
+      calendarBody.style.pointerEvents = "none";
+      this.renderMonthSelector();
+    } else {
+      monthSelector.classList.remove("active");
+      calendarBody.style.opacity = "1";
+      calendarBody.style.pointerEvents = "auto";
+    }
+
     const daysHeader = document.getElementById("noti-cal-days-header");
     if (daysHeader) {
       daysHeader.innerHTML = "";
@@ -99,8 +166,8 @@ const noti = {
       ).forEach((label, i) => {
         const div = document.createElement("div");
         div.innerText = label;
-        if (i === 0) div.style.color = "#ef4444";
-        if (i === 6) div.style.color = "#3b82f6";
+        if (i === 0) div.classList.add("sun");
+        if (i === 6) div.classList.add("sat");
         daysHeader.appendChild(div);
       });
     }
@@ -113,26 +180,30 @@ const noti = {
       lastDate = new Date(year, month + 1, 0).getDate(),
       prevLastDate = new Date(year, month, 0).getDate();
 
-    const createDay = (d, isOtherMonth, isToday) => {
+    const createDay = (d, mOffset, isToday) => {
         const div = document.createElement("div");
+        div.className = "calendar-day";
         div.innerText = d;
-        div.style.padding = "5px";
-        div.style.borderRadius = "6px";
-        div.style.cursor = "pointer";
-        div.style.transition = "0.2s";
-        div.style.fontSize = "0.8rem";
-        div.style.textAlign = "center";
         
-        if (isOtherMonth) {
-            div.style.opacity = "0.3";
+        const targetDate = new Date(year, month + mOffset, d);
+        const isPast = targetDate < todayStart;
+
+        if (mOffset !== 0) div.classList.add("other-month");
+        if (isToday) div.classList.add("today");
+        
+        const dIndex = targetDate.getDay();
+        if (dIndex === 0) div.classList.add("sun");
+        if (dIndex === 6) div.classList.add("sat");
+
+        if (isPast) {
+          div.style.opacity = "0.15";
+          div.style.cursor = "default";
+          div.style.pointerEvents = "none";
         } else {
-            if (isToday) {
-                div.style.background = "var(--accent-color)";
-                div.style.color = "var(--accent-contrast)";
-                div.style.fontWeight = "bold";
-            }
-            div.onmouseover = () => { if (!isToday) div.style.background = "rgba(255,255,255,0.1)"; };
-            div.onmouseout = () => { if (!isToday) div.style.background = "transparent"; };
+          div.onclick = (e) => {
+            e.stopPropagation();
+            this.selectCalendarDate(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+          };
         }
         return div;
     };
@@ -140,39 +211,85 @@ const noti = {
     // Prev month
     for (let i = firstDay; i > 0; i--) {
       const d = prevLastDate - i + 1;
-      const div = createDay(d, true, false);
-      const prevMonthDate = new Date(year, month - 1, d);
-      div.onclick = (e) => {
-          e.stopPropagation();
-          this.selectCalendarDate(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), prevMonthDate.getDate());
-      };
-      grid.appendChild(div);
+      grid.appendChild(createDay(d, -1, false));
     }
     // Current month
     for (let i = 1; i <= lastDate; i++) {
       const isToday = isCurrentMonth && i === today;
-      const div = createDay(i, false, isToday);
-      const dIndex = new Date(year, month, i).getDay();
-      if (dIndex === 0 && !isToday) div.style.color = "#ef4444";
-      if (dIndex === 6 && !isToday) div.style.color = "#3b82f6";
-      div.onclick = (e) => {
-          e.stopPropagation();
-          this.selectCalendarDate(year, month, i);
-      };
-      grid.appendChild(div);
+      grid.appendChild(createDay(i, 0, isToday));
     }
     // Next month
-    const totalCells = firstDay + lastDate;
-    const nextDays = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
-    for (let i = 1; i <= nextDays; i++) {
-      const div = createDay(i, true, false);
-      const nextMonthDate = new Date(year, month + 1, i);
-      div.onclick = (e) => {
-          e.stopPropagation();
-          this.selectCalendarDate(nextMonthDate.getFullYear(), nextMonthDate.getMonth(), nextMonthDate.getDate());
-      };
-      grid.appendChild(div);
+    for (let i = 1; grid.children.length < 42; i++) {
+      grid.appendChild(createDay(i, 1, false));
     }
+  },
+
+  renderMonthSelector() {
+    const selector = document.getElementById("noti-month-selector");
+    if (!selector) return;
+    selector.innerHTML = "";
+
+    const year = this.calendarDate.getFullYear();
+    const currentMonth = this.calendarDate.getMonth();
+    const today = new Date();
+    const todayYear = today.getFullYear();
+    const todayMonth = today.getMonth();
+
+    // Year Header
+    const yearHeader = document.createElement("div");
+    yearHeader.className = "month-selector-year-header";
+    
+    const isPastYear = year <= todayYear;
+    const leftIcon = document.createElement("i");
+    leftIcon.className = "fas fa-caret-left";
+    if (isPastYear) {
+      leftIcon.style.opacity = "0.1";
+      leftIcon.style.cursor = "default";
+    } else {
+      leftIcon.onclick = (e) => { e.stopPropagation(); this.changeCalendarYear(-1); };
+    }
+
+    const yearSpan = document.createElement("span");
+    yearSpan.innerText = year;
+
+    const rightIcon = document.createElement("i");
+    rightIcon.className = "fas fa-caret-right";
+    rightIcon.onclick = (e) => { e.stopPropagation(); this.changeCalendarYear(1); };
+
+    yearHeader.appendChild(leftIcon);
+    yearHeader.appendChild(yearSpan);
+    yearHeader.appendChild(rightIcon);
+    selector.appendChild(yearHeader);
+
+    // Month Grid
+    const monthGrid = document.createElement("div");
+    monthGrid.className = "month-selector-grid";
+
+    const monthsKo = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
+    const monthsEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const months = i18n.userLang === "ko" ? monthsKo : monthsEn;
+
+    months.forEach((m, i) => {
+      const div = document.createElement("div");
+      div.className = "month-item";
+      if (i === currentMonth) div.classList.add("current");
+      div.innerText = m;
+
+      const isPastMonth = year === todayYear && i < todayMonth;
+      if (isPastMonth) {
+        div.style.opacity = "0.15";
+        div.style.cursor = "default";
+        div.style.pointerEvents = "none";
+      } else {
+        div.onclick = (e) => {
+          e.stopPropagation();
+          this.selectCalendarMonth(i);
+        };
+      }
+      monthGrid.appendChild(div);
+    });
+
+    selector.appendChild(monthGrid);
   },
 
   render() {
