@@ -37,6 +37,8 @@ const memo = {
     document.getElementById("memoModalTitle").innerText = id
       ? T.modalMemoEdit
       : T.modalMemoAdd;
+    const sBtn = document.getElementById("memoSaveBtn");
+    if (sBtn) sBtn.innerText = id ? T.btnEdit : T.btnSaveMemo;
     if (d) d.style.display = id ? "block" : "none";
     utils.closeModal("settingModal");
     utils.openModal("memoModal");

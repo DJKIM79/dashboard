@@ -343,7 +343,6 @@ const noti = {
       ? T.modalNotiEdit
       : T.modalNotiAdd;
     sBtn.innerText = id ? T.btnEditNoti : T.btnAddNoti;
-    sBtn.dataset.i18n = id ? "btnEditNoti" : "btnAddNoti";
     if (dBtn) dBtn.style.display = id ? "block" : "none";
 
     utils.closeModal("settingModal");

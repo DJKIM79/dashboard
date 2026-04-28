@@ -157,6 +157,8 @@ const shortcutMod = {
     document.getElementById("linkSaveBtn").innerText = isEdit
       ? T.btnEdit
       : T.btnSave;
+    const dBtn = document.getElementById("linkDelBtn");
+    if (dBtn) dBtn.style.display = isEdit ? "block" : "none";
     utils.closeModal("settingModal");
     utils.openModal("linkModal");
     setTimeout(() => document.getElementById("siteName").focus(), 50);

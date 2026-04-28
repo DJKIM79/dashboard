@@ -672,7 +672,7 @@ const ai = {
       this.sendMessage();
     }
   },
-  renderHistory(searchTerm = "") {
+  renderHistory(searchTerm = "", addedChatId = null) {
     const list = document.getElementById("ai-history-list");
     if (!list) return;
     list.innerHTML = "";
@@ -681,6 +681,10 @@ const ai = {
       if (searchTerm && !chat.title.toLowerCase().includes(lowerSearch)) return;
       const div = document.createElement("div");
       div.className = `ai-history-item ${chat.id === this.currentChatId ? "active" : ""}`;
+      if (chat.id === addedChatId) {
+        div.classList.add("chat-adding");
+      }
+      div.dataset.id = chat.id;
       div.onclick = () => this.loadChat(chat.id);
       
       // 제목이 변경되었거나 메시지가 있는 경우 휴지통 표시
@@ -695,7 +699,7 @@ const ai = {
   filterHistory(val) {
     this.renderHistory(val);
   },
-  loadChat(id = null) {
+  loadChat(id = null, addedChatId = null) {
     const chats = this.chats;
     if (!id) {
       if (chats.length > 0) this.currentChatId = chats[0].id;
@@ -704,7 +708,7 @@ const ai = {
         return;
       }
     } else this.currentChatId = id;
-    this.renderHistory();
+    this.renderHistory("", addedChatId);
     const chat = this.getCurrentChat();
     const msgContainer = document.getElementById("ai-messages");
     if (msgContainer) {
@@ -728,10 +732,11 @@ const ai = {
       this.loadChat(emptyChat.id);
       return;
     }
-    this.currentChatId = Date.now();
+    const newId = Date.now();
+    this.currentChatId = newId;
     const newChats = [
       {
-        id: this.currentChatId,
+        id: newId,
         title: "새 대화",
         messages: [],
         model: this.settingsModel,
@@ -739,7 +744,7 @@ const ai = {
       ...chats,
     ];
     this.chats = newChats;
-    this.loadChat(this.currentChatId);
+    this.loadChat(newId, newId);
   },
   deleteChat(id, e) {
     if (e) e.stopPropagation();
@@ -761,11 +766,25 @@ const ai = {
   },
   performDeleteChat(id) {
     utils.hideValidationTip();
-    const chats = this.chats.filter((c) => c.id !== id);
-    this.chats = chats;
-    if (chats.length === 0) this.createNewChat();
-    else if (this.currentChatId === id) this.loadChat(this.chats[0].id);
-    else this.renderHistory();
+    
+    const list = document.getElementById("ai-history-list");
+    const item = list?.querySelector(`.ai-history-item[data-id="${id}"]`);
+    
+    const executeDelete = () => {
+        const chats = this.chats.filter((c) => c.id !== id);
+        this.chats = chats;
+        if (chats.length === 0) this.createNewChat();
+        else if (this.currentChatId === id) this.loadChat(this.chats[0].id);
+        else this.renderHistory();
+    };
+
+    if (item) {
+        item.classList.add("chat-deleting");
+        // CSS 애니메이션 시간(0.4s)에 맞춰 대기 후 실제 삭제 로직 수행
+        setTimeout(executeDelete, 400);
+    } else {
+        executeDelete();
+    }
   },
   toggleHistory() {
     this.historyCollapsed = !this.historyCollapsed;

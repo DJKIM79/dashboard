@@ -260,7 +260,7 @@ const tutorial = {
             align: "center",
           },
           onHighlightStarted: () => {
-            syncDummyData('shortcut');
+            syncDummyData('none'); // Clear others
             const blFab = document.getElementById('bl-fab');
             if (blFab) blFab.classList.add('active');
           }
@@ -276,7 +276,7 @@ const tutorial = {
           onHighlightStarted: (element) => {
             syncDummyData('shortcut');
             const blFab = document.getElementById('bl-fab');
-            if (blFab) blFab.classList.add('active'); // Keep menu open
+            if (blFab) blFab.classList.remove('active'); // Close menu to see center
             if (element) {
               element.style.transition = "none";
               const clockContainer = document.getElementById("clock-container");
@@ -306,7 +306,7 @@ const tutorial = {
             align: "center",
           },
           onHighlightStarted: () => {
-            syncDummyData('memo');
+            syncDummyData('none'); // Clear others
             const blFab = document.getElementById('bl-fab');
             if (blFab) blFab.classList.add('active');
           }
@@ -322,7 +322,7 @@ const tutorial = {
           onHighlightStarted: () => {
             syncDummyData('memo');
             const blFab = document.getElementById('bl-fab');
-            if (blFab) blFab.classList.add('active');
+            if (blFab) blFab.classList.remove('active'); // Close menu
             const folder = document.getElementById('memo-folder');
             if (folder) folder.classList.add('open');
           },
@@ -340,7 +340,7 @@ const tutorial = {
             align: "center",
           },
           onHighlightStarted: () => {
-            syncDummyData('noti');
+            syncDummyData('none'); // Clear others
             const blFab = document.getElementById('bl-fab');
             if (blFab) blFab.classList.add('active');
           }
@@ -356,7 +356,7 @@ const tutorial = {
           onHighlightStarted: () => {
             syncDummyData('noti');
             const blFab = document.getElementById('bl-fab');
-            if (blFab) blFab.classList.add('active');
+            if (blFab) blFab.classList.remove('active'); // Close menu
             const folder = document.getElementById('noti-folder');
             if (folder) folder.classList.add('open');
           },
