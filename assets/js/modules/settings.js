@@ -161,7 +161,7 @@ const settings = {
       else if (p.id === "ai-provider-popup") this.closeAIPopup();
       else if (p.id === "ai-custom-add-container") this.closeCustomAIPopup();
       else if (p.id === "ai-model-select-popup") this.closeModelPopup();
-      else if (p.id === "lang-popup") p.classList.remove("show");
+      else if (p.id === "lang-popup") this.closeLangPopup();
       else if (p.id === "weather-location-popup") {
         if (window.weather) weather.closeLocationPopup();
       } else if (p.id === "city-add-popup") {
@@ -1081,6 +1081,10 @@ const settings = {
         popup.style.visibility = "hidden";
         popup.style.width = trigger.offsetWidth + "px";
         
+        // Ensure parent wrap has high z-index while popup is open
+        const wrap = document.getElementById("lang-select-wrap");
+        if (wrap) wrap.style.zIndex = "100";
+        
         const rect = trigger.getBoundingClientRect();
         const modalContent = trigger.closest('.modal-content');
         const modalHeader = modalContent.querySelector('h3').getBoundingClientRect();
@@ -1091,13 +1095,13 @@ const settings = {
         // Wait for render
         setTimeout(() => {
             const popupRect = popup.getBoundingClientRect();
-            const itemHeight = 35; // approximate
-            const maxDownItems = 3;
+            const itemHeight = 40; // average item height with padding
+            const minDownHeight = itemHeight * 3; // space for 3 items
             const spaceBelow = window.innerHeight - rect.bottom - 20;
-            const preferredDownHeight = itemHeight * maxDownItems;
             
             // Should we go up or down?
-            if (spaceBelow >= preferredDownHeight) {
+            // If space below is enough for 3 items, go down. Otherwise go up.
+            if (spaceBelow >= minDownHeight) {
                 // Down
                 popup.style.top = "100%";
                 popup.style.bottom = "auto";
@@ -1111,11 +1115,11 @@ const settings = {
                 popup.style.marginBottom = "5px";
             }
             
-            // Limit top to not overlap header
+            // Limit top to not overlap header when opening upward
             const currentPopupRect = popup.getBoundingClientRect();
             if (currentPopupRect.top < modalHeader.bottom + 10) {
                 const overlap = modalHeader.bottom + 10 - currentPopupRect.top;
-                popup.style.maxHeight = (currentPopupRect.height - overlap) + "px";
+                popup.style.maxHeight = Math.max(100, currentPopupRect.height - overlap) + "px";
             } else {
                 popup.style.maxHeight = "280px";
             }
@@ -1129,8 +1133,15 @@ const settings = {
             }
         }, 10);
     } else {
-        popup.classList.remove("show");
+        this.closeLangPopup();
     }
+  },
+
+  closeLangPopup() {
+    const popup = document.getElementById("lang-popup");
+    const wrap = document.getElementById("lang-select-wrap");
+    if (popup) popup.classList.remove("show");
+    if (wrap) wrap.style.zIndex = "";
   },
 
   renderLangList() {
