@@ -150,16 +150,6 @@ const tutorial = {
             d.getState().isDestroying = true;
             document.body.classList.add("tutorial-closing");
 
-            // 마지막 작별 폭죽
-            if (typeof window.confetti === 'function') {
-              window.confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 },
-                zIndex: 10005
-              });
-            }
-
             setTimeout(() => {
                 d.destroy();
                 document.body.classList.remove("tutorial-closing");

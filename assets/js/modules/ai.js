@@ -38,7 +38,7 @@ const ai = {
   },
 
   get chats() {
-    if (this.provider === "none" || !this.settingsModel) return [];
+    if (this.provider === "none") return [];
     const data = localStorage.getItem(this.getStorageKey());
     return data ? JSON.parse(data) : [];
   },
@@ -726,7 +726,7 @@ const ai = {
     const emptyChat = chats.find(
       (c) =>
         (c.title === "새 대화" || c.title === "새로운 대화") &&
-        !c.messages.some(m => m.role === "user" || m.role === "bot"),
+        (!c.messages || c.messages.length === 0 || !c.messages.some(m => m.role === "user" || m.role === "bot")),
     );
     if (emptyChat) {
       this.loadChat(emptyChat.id);
@@ -734,15 +734,13 @@ const ai = {
     }
     const newId = Date.now();
     this.currentChatId = newId;
-    const newChats = [
-      {
-        id: newId,
-        title: "새 대화",
-        messages: [],
-        model: this.settingsModel,
-      },
-      ...chats,
-    ];
+    const newChat = {
+      id: newId,
+      title: "새 대화",
+      messages: [],
+      model: this.settingsModel,
+    };
+    const newChats = [newChat, ...chats];
     this.chats = newChats;
     this.loadChat(newId, newId);
   },
