@@ -702,7 +702,7 @@
                   >언어</span
                 >
                 <div id="lang-select-wrap" style="position: relative; width: 180px;">
-                  <div id="lang-trigger" class="weather-custom-select" onclick="settings.toggleLangPopup(event)">
+                  <div id="lang-trigger" class="weather-custom-select" data-outside-ignore onclick="settings.toggleLangPopup(event)">
                     <span id="lang-trigger-text" style="font-size: 0.85rem;">자동</span>
                     <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
                   </div>
@@ -879,7 +879,7 @@
                 </label>
               </div>
               <div id="search-select-wrap" style="position: relative; margin-bottom: 5px; width: 98%; margin-left: 1%;">
-                <div id="search-engine-trigger" class="weather-custom-select" onclick="settings.toggleSearchEnginePopup(event)">
+                <div id="search-engine-trigger" class="weather-custom-select" data-outside-ignore onclick="settings.toggleSearchEnginePopup(event)">
                   <div style="display: flex; align-items: center; gap: 10px;">
                     <div id="trigger-favicon" class="engine-favicon"></div>
                     <span id="trigger-name">Google</span>
@@ -1009,7 +1009,7 @@
                     "
                     >AI</span
                   >
-                  <div id="ai-provider-trigger" class="weather-custom-select" style="flex: 1; margin-bottom: 0; min-width: 0;" onclick="settings.toggleAIPopup(event)">
+                  <div id="ai-provider-trigger" class="weather-custom-select" data-outside-ignore style="flex: 1; margin-bottom: 0; min-width: 0;" onclick="settings.toggleAIPopup(event)">
                     <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; overflow: hidden;">
                       <i id="ai-trigger-icon" class="fas fa-robot" style="font-size: 0.9rem; opacity: 0.7; flex-shrink: 0;"></i>
                       <span id="ai-trigger-name" class="engine-name">사용 안 함</span>
@@ -1034,6 +1034,14 @@
                         placeholder="https://example.com/api"
                         style="margin-bottom: 0; width: 100%;"
                       />
+                      <div id="protocol-select-wrap" style="position: relative; width: 100%;">
+                        <div id="protocol-trigger" class="weather-custom-select" data-outside-ignore onclick="settings.toggleProtocolPopup(event)">
+                          <span id="protocol-trigger-text">OpenAI (v1)</span>
+                          <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
+                        </div>
+                        <input type="hidden" id="customAiProtocol" value="openai">
+                        <div id="protocol-popup" class="engine-popup" style="bottom: 100%; top: auto; margin-bottom: 5px; margin-top: 0;"></div>
+                      </div>
                       <button class="btn-save" onclick="settings.addCustomAI()" style="width: 100%; height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                         <span>추가</span>
                       </button>
@@ -1100,10 +1108,9 @@
                         style="margin-bottom: 0; width: 100%; display: none;"
                         oninput="updateAiApiKey(this.value)"
                       />
-                      </div>
-                      </div>
-                      </div>
-
+                    </div>
+                  </div>
+                </div>
               </div>
               <!-- 초기화 버튼 추가 -->
               <div
@@ -1237,7 +1244,7 @@
           </div>
           <div style="display: flex; align-items: center; gap: 6px">
             <label for="isRepeat" style="cursor: pointer" data-i18n="repeatSet"
-              >고급 반복 설정</label
+              >반복 설정</label
             >
             <input
               type="checkbox"
@@ -1323,7 +1330,7 @@
           <!-- 5. 종료일 -->
           <div style="display: flex; flex-direction: column; gap: 8px; position: relative;">
             <div style="font-size: 0.8rem; color: #94a3b8;">종료일 (미지정 시 계속 반복)</div>
-            <input type="text" id="repeatEndDate" value="(종료일 없음)" readonly onclick="noti.toggleCalendar(event, 'repeatEndDate')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 10px; border-radius: 8px; font-size: 0.9rem; outline: none; width: 100%; box-sizing: border-box; cursor: pointer;" />
+            <input type="text" id="repeatEndDate" value="미지정" readonly onclick="noti.toggleCalendar(event, 'repeatEndDate')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 10px; border-radius: 8px; font-size: 0.9rem; outline: none; width: 100%; box-sizing: border-box; cursor: pointer;" />
           </div>
         </div>
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">

@@ -212,7 +212,7 @@ const tutorial = {
           element: "#calendar-container",
           popover: {
             title: "📅 캘린더",
-            description: "일정을 확인하고 월별로 쉽게 이동할 수 있습니다.<br>원하는 날짜를 클릭해 <b>고급 반복 설정</b>이 가능한 알람을 바로 추가해 보세요.",
+            description: "일정을 확인하고 월별로 쉽게 이동할 수 있습니다.<br>원하는 날짜를 클릭해 <b>반복 설정</b>이 가능한 알람을 바로 추가해 보세요.",
             side: "left",
             align: "end",
           },

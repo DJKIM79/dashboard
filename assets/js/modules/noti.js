@@ -117,7 +117,12 @@ const noti = {
   selectCalendarDate(y, m, d) {
     const dateStr = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     const targetEl = document.getElementById(this.currentCalendarTarget);
-    if (targetEl) targetEl.value = dateStr;
+    if (targetEl) {
+        targetEl.value = dateStr;
+        if (this.currentCalendarTarget === "repeatEndDate") {
+            targetEl.style.color = "#fff";
+        }
+    }
     document.getElementById("noti-calendar-popup").classList.remove("show");
   },
 
@@ -446,8 +451,9 @@ const noti = {
     document.getElementById("notiMin").value = m;
     
     // Update custom display values
-    const hSuffix = i18n.userLang === "ko" ? "시" : "h";
-    const mSuffix = i18n.userLang === "ko" ? "분" : "m";
+    const activeLang = i18n.userLang === "auto" ? (navigator.language.startsWith("ko") ? "ko" : "en") : i18n.userLang;
+    const hSuffix = activeLang === "ko" ? "시" : "h";
+    const mSuffix = activeLang === "ko" ? "분" : "m";
     const hDisplay = document.getElementById("notiHourDisplay");
     const mDisplay = document.getElementById("notiMinDisplay");
     if (hDisplay) hDisplay.innerText = `${h}${hSuffix}`;
@@ -483,7 +489,11 @@ const noti = {
     this.updateToggleAllLabel('repeatDay');
     this.updateToggleAllLabel('weekSpecific');
     
-    document.getElementById("repeatEndDate").value = rule.endDate || "(종료일 없음)";
+    const repeatEndDateEl = document.getElementById("repeatEndDate");
+    if (repeatEndDateEl) {
+        repeatEndDateEl.value = rule.endDate || "미지정";
+        repeatEndDateEl.style.color = rule.endDate ? "#fff" : "#94a3b8";
+    }
 
     document.getElementById("notiModalTitle").innerText = id
       ? T.modalNotiEdit
@@ -510,7 +520,7 @@ const noti = {
         months: Array.from(document.querySelectorAll('input[name="repeatMonth"]:checked')).map(el => parseInt(el.value)),
         weekSpecific: Array.from(document.querySelectorAll('input[name="weekSpecific"]:checked')).map(el => parseInt(el.value)),
         days: Array.from(document.querySelectorAll('input[name="repeatDay"]:checked')).map(el => parseInt(el.value)),
-        endDate: rawEndDate === "(종료일 없음)" ? "" : rawEndDate
+        endDate: rawEndDate === "미지정" ? "" : rawEndDate
     };
 
     // For backwards compatibility with older functions checking `n.days`

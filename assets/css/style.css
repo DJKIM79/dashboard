@@ -1870,18 +1870,30 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #search-engine-popup,
 #ai-provider-popup,
 #ai-model-select-popup,
-#ai-custom-add-container,
-#lang-popup {
+#ai-custom-add-container {
   bottom: 45px;
   left: 0;
 }
 
 #ai-provider-popup,
 #ai-model-select-popup,
-#ai-custom-add-container,
-#lang-popup {
+#ai-custom-add-container {
   width: 280px;
   max-height: 280px;
+}
+
+#lang-popup,
+#protocol-popup {
+  width: 100% !important;
+  max-height: 280px;
+  min-width: 0 !important;
+  left: 0 !important;
+  box-sizing: border-box !important;
+}
+
+#lang-popup *,
+#protocol-popup * {
+  box-sizing: border-box;
 }
 
 #search-engine-popup {

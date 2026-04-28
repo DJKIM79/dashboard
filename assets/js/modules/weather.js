@@ -291,7 +291,8 @@ const weather = {
   },
 
   removeLocation(id) {
-    this.locations = this.locations.filter((l) => l.id !== id);
+    const idStr = String(id);
+    this.locations = this.locations.filter((l) => String(l.id) !== idStr);
     this.saveLocations();
     this.fetch();
     this.renderLocationList();
