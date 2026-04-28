@@ -720,9 +720,10 @@ const settings = {
     }
   },
 
-  addCustomAI() {
+  async addCustomAI() {
     const nameInput = document.getElementById("customAiNameInput");
     const urlInput = document.getElementById("customAiUrlInput");
+    const addBtn = document.querySelector("#ai-custom-add-container .btn-save");
     const name = nameInput.value.trim();
     const url = urlInput.value.trim();
 
@@ -738,27 +739,107 @@ const settings = {
         utils.showValidationTip("customAiNameInput", "이미 존재하는 이름입니다.");
         return;
     }
-    if (customAis.some(a => a.url === url)) {
-        utils.showValidationTip("customAiUrlInput", "이미 등록된 주소입니다.");
+    
+    // URL 형식 간단 확인
+    try {
+        new URL(url);
+    } catch (e) {
+        utils.showValidationTip("customAiUrlInput", "올바른 URL 형식이 아닙니다.");
         return;
     }
 
-    const newAi = {
-        id: `custom_${Date.now()}`,
-        name: name,
-        url: url,
-        icon: "fas fa-network-wired",
-        isDefault: false
-    };
+    // 접속 테스트 시도
+    if (addBtn) {
+        addBtn.classList.add("loading");
+        const originalText = addBtn.innerHTML;
+        addBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>확인 중...</span>';
+    }
 
-    customAis.push(newAi);
-    localStorage.setItem("dj_ai_custom_providers", JSON.stringify(customAis));
-    
-    nameInput.value = "";
-    urlInput.value = "";
-    document.getElementById("ai-custom-add-container").classList.remove("show");
-    
-    this.updateAiProvider(newAi.id);
+    try {
+        // 임시로 해당 URL로 접속 테스트 (ai.js의 checkConnection 로직 활용)
+        // 직접 fetch하여 /v1/models (OpenAI 호환) 또는 /api/tags (Ollama 호환) 확인
+        let isReachable = false;
+        let fetchUrl = url.endsWith("/") ? url.slice(0, -1) : url;
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
+        
+        try {
+            // 1. OpenAI 호환성 체크 (/v1/models)
+            const resOpenAI = await fetch(`${fetchUrl}/v1/models`, { 
+                headers: { "Accept": "application/json" },
+                signal: controller.signal 
+            });
+            if (resOpenAI.ok) {
+                const contentType = resOpenAI.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await resOpenAI.json();
+                    if (data && (Array.isArray(data.data) || Array.isArray(data.models))) {
+                        isReachable = true;
+                    }
+                }
+            }
+        } catch (e) {
+            // 에러 발생 시 다음 단계 시도
+        }
+
+        if (!isReachable) {
+            try {
+                // 2. Ollama 호환성 체크 (/api/tags)
+                const resOllama = await fetch(`${fetchUrl}/api/tags`, { 
+                    headers: { "Accept": "application/json" },
+                    signal: controller.signal 
+                });
+                if (resOllama.ok) {
+                    const contentType = resOllama.headers.get("content-type");
+                    if (contentType && contentType.includes("application/json")) {
+                        const data = await resOllama.json();
+                        if (data && Array.isArray(data.models)) {
+                            isReachable = true;
+                        }
+                    }
+                }
+            } catch (e2) {}
+        }
+        clearTimeout(timeoutId);
+
+        if (!isReachable) {
+            utils.showValidationTip("customAiUrlInput", "AI 서버에 접속할 수 없습니다. 주소를 확인해 주세요.", "error");
+            if (addBtn) {
+                addBtn.classList.remove("loading");
+                addBtn.innerHTML = '<span>추가</span>';
+            }
+            return;
+        }
+
+        const newAi = {
+            id: `custom_${Date.now()}`,
+            name: name,
+            url: url,
+            icon: "fas fa-network-wired",
+            isDefault: false
+        };
+
+        customAis.push(newAi);
+        localStorage.setItem("dj_ai_custom_providers", JSON.stringify(customAis));
+        
+        nameInput.value = "";
+        urlInput.value = "";
+        document.getElementById("ai-custom-add-container").classList.remove("show");
+        
+        this.updateAiProvider(newAi.id);
+        
+        if (addBtn) {
+            addBtn.classList.remove("loading");
+            addBtn.innerHTML = '<span>추가</span>';
+        }
+    } catch (err) {
+        utils.showValidationTip("customAiUrlInput", "접속 확인 중 오류가 발생했습니다.");
+        if (addBtn) {
+            addBtn.classList.remove("loading");
+            addBtn.innerHTML = '<span>추가</span>';
+        }
+    }
   },
 
   deleteCustomAI(id) {

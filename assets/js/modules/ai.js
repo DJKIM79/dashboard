@@ -306,8 +306,16 @@ const ai = {
 
   async checkConnection(isSilent = false) {
     const provider = localStorage.getItem("dj_ai_provider") || "none";
-    const url = document.getElementById("aiServerUrlInput")?.value || this.serverUrl;
     const apiKey = document.getElementById("aiApiKeyInput")?.value.trim() || this.apiKey;
+    
+    // URL 결정 로직 수정: 
+    // 로컬 AI일 때만 입력창의 값을 우선시하고, 커스텀 AI일 때는 반드시 등록된 URL 사용
+    let url = "";
+    if (provider === "local") {
+        url = document.getElementById("aiServerUrlInput")?.value || this.serverUrl;
+    } else {
+        url = this.serverUrl; // Custom AI는 this.serverUrl에서 등록된 URL을 가져옴
+    }
 
     if (provider === "none") {
         this.updateChatbotAvailability(false);
@@ -344,8 +352,8 @@ const ai = {
           const data = await res.json();
           finalize(true, data.models.filter((m) => m.supportedGenerationMethods.includes("generateContent")).map((m) => m.name.replace("models/", "")));
         } else finalize(false);
-      } else {
-        // Local or Custom AI (Ollama style)
+      } else if (provider === "local") {
+        // Local AI (Ollama style)
         if (!url) { finalize(false); return; }
         let fetchUrl = url.includes("localhost") ? url.replace("localhost", "127.0.0.1") : url;
         if (fetchUrl.endsWith("/")) fetchUrl = fetchUrl.slice(0, -1);
@@ -353,21 +361,65 @@ const ai = {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
         
-        const headers = {};
-        if (apiKey) {
-            headers["Authorization"] = `Bearer ${apiKey}`;
+        try {
+          const res = await fetch(`${fetchUrl}/api/tags`, { 
+              signal: controller.signal 
+          });
+          clearTimeout(timeoutId);
+          
+          if (res.ok) {
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+              const data = await res.json();
+              if (data && Array.isArray(data.models)) {
+                finalize(true, data.models.map((m) => m.name));
+              } else {
+                finalize(false);
+              }
+            } else {
+              finalize(false);
+            }
+          } else finalize(false);
+        } catch (err) {
+          clearTimeout(timeoutId);
+          finalize(false);
         }
-
-        const res = await fetch(`${fetchUrl}/api/tags`, { 
-            headers: headers,
-            signal: controller.signal 
-        });
-        clearTimeout(timeoutId);
+      } else {
+        // Custom Provider (General OpenAI compatible health check)
+        if (!url) { finalize(false); return; }
+        let fetchUrl = url.endsWith("/") ? url.slice(0, -1) : url;
         
-        if (res.ok) {
-          const data = await res.json();
-          finalize(true, (data.models || []).map((m) => m.name));
-        } else finalize(false);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        
+        const headers = { "Content-Type": "application/json" };
+        if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+
+        try {
+          // Try /v1/models as a standard health check for OpenAI-compatible APIs
+          const res = await fetch(`${fetchUrl}/v1/models`, { 
+              headers: headers,
+              signal: controller.signal 
+          });
+          clearTimeout(timeoutId);
+          
+          if (res.ok) {
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+              const data = await res.json();
+              if (data && Array.isArray(data.data)) {
+                finalize(true, data.data.map((m) => m.id).sort());
+              } else {
+                finalize(false); 
+              }
+            } else {
+              finalize(false);
+            }
+          } else finalize(false);
+        } catch (err) {
+          clearTimeout(timeoutId);
+          finalize(false);
+        }
       }
     } catch (e) {
       finalize(false);
