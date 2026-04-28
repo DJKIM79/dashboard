@@ -139,6 +139,7 @@ const tutorial = {
       nextBtnText: "다음 →",
       prevBtnText: "← 이전",
       doneBtnText: "완료",
+      showButtons: ["next", "previous"],
       allowClose: true,
       animate: true,
       smoothScroll: true,

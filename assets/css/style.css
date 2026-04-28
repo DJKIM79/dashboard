@@ -2610,6 +2610,10 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
+.driver-popover-close-btn {
+  display: none !important;
+}
+
 /* 둥근 스포트라이트 효과 강제 적용 */
 .driver-stage {
   border-radius: 20px !important; /* 약간 둥근 모서리 */
