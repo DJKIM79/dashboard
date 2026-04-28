@@ -42,30 +42,105 @@ const utils = {
   },
 
   initTimePicker() {
-    const h = document.getElementById("notiHour"),
-      m = document.getElementById("notiMin");
-    if (!h || !m) return;
+    this.renderTimeList("notiHourList", 24, "hour");
+    this.renderTimeList("notiMinList", 60, "min");
 
-    const hSuffix = i18n.userLang === "ko" ? "시" : "h",
-      mSuffix = i18n.userLang === "ko" ? "분" : "m";
+    // Click outside listener for time popups
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.custom-time-picker')) {
+        document.querySelectorAll('.time-popup').forEach(p => p.classList.remove('show'));
+      }
+    });
+  },
 
-    h.innerHTML = "";
-    m.innerHTML = "";
+  renderTimeList(containerId, count, type) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = "";
+    
+    const suffix = i18n.userLang === "ko" ? (type === "hour" ? "시" : "분") : (type === "hour" ? "h" : "m");
 
-    for (let i = 0; i < 24; i++)
-      h.options.add(
-        new Option(
-          `${String(i).padStart(2, "0")}${hSuffix}`,
-          String(i).padStart(2, "0"),
-        ),
-      );
-    for (let i = 0; i < 60; i++)
-      m.options.add(
-        new Option(
-          `${String(i).padStart(2, "0")}${mSuffix}`,
-          String(i).padStart(2, "0"),
-        ),
-      );
+    for (let i = 0; i < count; i++) {
+      const val = String(i).padStart(2, "0");
+      const div = document.createElement("div");
+      div.className = "time-item";
+      div.dataset.value = val;
+      div.innerText = `${val}${suffix}`;
+      div.onclick = (e) => {
+        e.stopPropagation();
+        this.selectTime(type, val);
+      };
+      container.appendChild(div);
+    }
+  },
+
+  toggleTimePopup(type, e) {
+    if (e) e.stopPropagation();
+    const popupId = type === "hour" ? "notiHourPopup" : "notiMinPopup";
+    const popup = document.getElementById(popupId);
+    if (!popup) return;
+
+    const isShowing = popup.classList.contains("show");
+    // Close other popups
+    document.querySelectorAll('.time-popup').forEach(p => {
+      if (p.id !== popupId) p.classList.remove('show');
+    });
+
+    if (!isShowing) {
+      popup.classList.add("show");
+      const currentVal = document.getElementById(type === "hour" ? "notiHour" : "notiMin").value;
+      this.scrollToSelected(type, currentVal);
+    } else {
+      popup.classList.remove("show");
+    }
+  },
+
+  selectTime(type, val) {
+    const displayId = type === "hour" ? "notiHourDisplay" : "notiMinDisplay";
+    const inputId = type === "hour" ? "notiHour" : "notiMin";
+    const popupId = type === "hour" ? "notiHourPopup" : "notiMinPopup";
+    
+    const display = document.getElementById(displayId);
+    const input = document.getElementById(inputId);
+    const popup = document.getElementById(popupId);
+
+    const suffix = i18n.userLang === "ko" ? (type === "hour" ? "시" : "분") : (type === "hour" ? "h" : "m");
+
+    if (display) display.innerText = `${val}${suffix}`;
+    if (input) {
+      input.value = val;
+      // Trigger change if needed
+      input.dispatchEvent(new Event('change'));
+    }
+    
+    if (popup) popup.classList.remove("show");
+    this.updateTimeSelectionUI(type, val);
+  },
+
+  updateTimeSelectionUI(type, val) {
+    const listId = type === "hour" ? "notiHourList" : "notiMinList";
+    const list = document.getElementById(listId);
+    if (!list) return;
+
+    list.querySelectorAll('.time-item').forEach(item => {
+      item.classList.toggle('selected', item.dataset.value === val);
+    });
+  },
+
+  scrollToSelected(type, val) {
+    const listId = type === "hour" ? "notiHourList" : "notiMinList";
+    const list = document.getElementById(listId);
+    if (!list) return;
+
+    const selectedItem = list.querySelector(`.time-item[data-value="${val}"]`);
+    if (selectedItem) {
+      this.updateTimeSelectionUI(type, val);
+      // 중앙에 오도록 스크롤 계산
+      const listHeight = list.clientHeight;
+      const itemTop = selectedItem.offsetTop;
+      const itemHeight = selectedItem.clientHeight;
+      list.scrollTop = itemTop - listHeight / 2 + itemHeight / 2;
+    }
   },
 
   toggleDaySelector(s) {
