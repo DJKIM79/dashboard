@@ -10,10 +10,10 @@ Features
 6. Time
 7. Memo
 8. Alarm
+9. AI chatbot
 
 Upcoming features.
 
-1. AI Chatbot (Using AI API)
-2. and what else I want?
+1. Chrome Extension.
 
 <img width="1638" height="1298" alt="image" src="https://github.com/user-attachments/assets/f4aca1d4-871d-4f20-80ee-f57c2ff838f3" />
