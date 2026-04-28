@@ -189,6 +189,47 @@ const noti = {
       });
   },
 
+  repeatYearOffset: 0,
+
+  toggleWeekMode() {
+    const mode = document.querySelector('input[name="weekMode"]:checked').value;
+    document.getElementById("repeat-week-interval-container").style.display = mode === "interval" ? "grid" : "none";
+    document.getElementById("repeat-week-specific-container").style.display = mode === "specific" ? "grid" : "none";
+  },
+
+  shiftRepeatYears(val) {
+    this.repeatYearOffset += val;
+    this.renderRepeatYears();
+  },
+
+  renderRepeatYears(selectedYears = []) {
+    const container = document.getElementById("repeat-years-container");
+    if (!container) return;
+    container.innerHTML = "";
+    const baseYear = new Date().getFullYear() + (this.repeatYearOffset * 5);
+    document.getElementById("repeat-year-range").innerText = `${baseYear} - ${baseYear + 4}`;
+
+    for (let i = 0; i < 5; i++) {
+        const y = baseYear + i;
+        const label = document.createElement("label");
+        label.className = "day-check";
+        label.innerHTML = `<input type="checkbox" name="repeatYear" value="${y}" ${selectedYears.includes(y) ? "checked" : ""}/><span>${y}</span>`;
+        container.appendChild(label);
+    }
+  },
+
+  renderRepeatMonths(selectedMonths = []) {
+    const container = document.getElementById("repeat-months-container");
+    if (!container) return;
+    container.innerHTML = "";
+    for (let i = 1; i <= 12; i++) {
+        const label = document.createElement("label");
+        label.className = "day-check";
+        label.innerHTML = `<input type="checkbox" name="repeatMonth" value="${i}" ${selectedMonths.includes(i) ? "checked" : ""}/><span>${i}월</span>`;
+        container.appendChild(label);
+    }
+  },
+
   openModal(id = null, specificDate = null) {
     window.currentEditNotiId = id;
     window.currentContextType = "noti";
@@ -212,20 +253,37 @@ const noti = {
 
     document.getElementById("notiHour").value = h;
     document.getElementById("notiMin").value = m;
-    
+
     // Set date: priority is (existing noti date) > (specifically passed date) > (today)
     let defaultDate = today;
     if (n && n.date) defaultDate = n.date;
     else if (specificDate) defaultDate = specificDate;
-    
+
     document.getElementById("notiDate").value = defaultDate;
     document.getElementById("isRepeat").checked = n ? n.isRepeat : false;
 
     if (window.toggleDaySelector) toggleDaySelector(n ? n.isRepeat : false);
 
-    document.querySelectorAll(".day-check input").forEach((chk) => {
-      chk.checked = n ? n.days.includes(chk.value) : false;
-    });
+    // Advanced Repeat Logic
+    const rule = n && n.repeatRule ? n.repeatRule : {
+        years: [now.getFullYear()],
+        months: [now.getMonth() + 1],
+        weekMode: "interval",
+        weekInterval: 1,
+        weekSpecific: [],
+        days: n && n.days ? n.days.map(Number) : []
+    };
+
+    this.repeatYearOffset = 0;
+    this.renderRepeatYears(rule.years);
+    this.renderRepeatMonths(rule.months);
+
+    document.querySelector(`input[name="weekMode"][value="${rule.weekMode}"]`).checked = true;
+    this.toggleWeekMode();
+
+    document.querySelectorAll('input[name="weekInterval"]').forEach(el => el.checked = (parseInt(el.value) === rule.weekInterval));
+    document.querySelectorAll('input[name="weekSpecific"]').forEach(el => el.checked = rule.weekSpecific.includes(parseInt(el.value)));
+    document.querySelectorAll('input[name="repeatDay"]').forEach(el => el.checked = rule.days.includes(parseInt(el.value)));
 
     document.getElementById("notiModalTitle").innerText = id
       ? T.modalNotiEdit
@@ -244,10 +302,19 @@ const noti = {
       h = document.getElementById("notiHour").value,
       m = document.getElementById("notiMin").value,
       r = document.getElementById("isRepeat").checked,
-      dt = document.getElementById("notiDate").value,
-      days = Array.from(
-        document.querySelectorAll(".day-check input:checked"),
-      ).map((x) => x.value);
+      dt = document.getElementById("notiDate").value;
+
+    const repeatRule = {
+        years: Array.from(document.querySelectorAll('input[name="repeatYear"]:checked')).map(el => parseInt(el.value)),
+        months: Array.from(document.querySelectorAll('input[name="repeatMonth"]:checked')).map(el => parseInt(el.value)),
+        weekMode: document.querySelector('input[name="weekMode"]:checked').value,
+        weekInterval: parseInt(document.querySelector('input[name="weekInterval"]:checked')?.value || 1),
+        weekSpecific: Array.from(document.querySelectorAll('input[name="weekSpecific"]:checked')).map(el => parseInt(el.value)),
+        days: Array.from(document.querySelectorAll('input[name="repeatDay"]:checked')).map(el => parseInt(el.value))
+    };
+
+    // For backwards compatibility with older functions checking `n.days`
+    const days = repeatRule.days.map(String);
 
     if (t) {
       const data = {
@@ -256,8 +323,10 @@ const noti = {
         desc: document.getElementById("notiDesc").value,
         time: `${h}:${m}`,
         isRepeat: r,
-        days,
+        repeatRule: repeatRule,
+        days: days,
         date: dt,
+        createdDate: window.currentEditNotiId ? (this.items.find(x => x.id === window.currentEditNotiId)?.createdDate || dt) : dt
       };
       if (window.currentEditNotiId) {
         const idx = this.items.findIndex(
@@ -275,7 +344,6 @@ const noti = {
       utils.showValidationTip("notiSaveBtn", "제목을 입력해 주세요.");
     }
   },
-
   delete(id = null) {
     const targetId = id || window.currentEditNotiId;
     this.items = this.items.filter((x) => x.id != targetId);
@@ -285,14 +353,74 @@ const noti = {
     utils.closeModal("notiModal");
   },
 
+  isMatch(n, targetDate) {
+    const rule = n.repeatRule;
+    if (!rule) return n.days.includes(String(targetDate.getDay()));
+    
+    if (rule.years.length > 0 && !rule.years.includes(targetDate.getFullYear())) return false;
+    if (rule.months.length > 0 && !rule.months.includes(targetDate.getMonth() + 1)) return false;
+    if (rule.days.length > 0 && !rule.days.includes(targetDate.getDay())) return false;
+
+    if (rule.weekMode === "specific") {
+      if (rule.weekSpecific.length > 0) {
+        // week 1 is 1st-7th, week 2 is 8th-14th
+        const weekOfMonth = Math.floor((targetDate.getDate() - 1) / 7) + 1;
+        if (!rule.weekSpecific.includes(weekOfMonth)) return false;
+      }
+    } else if (rule.weekMode === "interval" && rule.weekInterval > 1) {
+      const created = new Date(n.createdDate || n.date || Date.now());
+      const startSunday = new Date(created.getFullYear(), created.getMonth(), created.getDate() - created.getDay());
+      const targetSunday = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() - targetDate.getDay());
+      
+      startSunday.setHours(0, 0, 0, 0);
+      targetSunday.setHours(0, 0, 0, 0);
+      
+      const diffWeeks = Math.round((targetSunday - startSunday) / (24 * 60 * 60 * 1000 * 7));
+      if (diffWeeks < 0 || diffWeeks % rule.weekInterval !== 0) return false;
+    }
+    
+    return true;
+  },
+
+  getNextValidDate(n, now) {
+    const [th, tm] = n.time.split(":").map(Number);
+    let target = new Date(now);
+    target.setHours(th, tm, 0, 0);
+
+    if (target <= now) {
+      target.setDate(target.getDate() + 1);
+    }
+    
+    if (!n.isRepeat) {
+      if (n.date) {
+        const [y, m, d] = n.date.split("-");
+        const fixedTarget = new Date(y, m - 1, d, th, tm, 0, 0);
+        if (fixedTarget <= now) return null;
+        return fixedTarget;
+      }
+      return target;
+    }
+    
+    // Check up to 5 years (approx 1825 days) ahead
+    for (let i = 0; i <= 1825; i++) {
+      if (this.isMatch(n, target)) {
+        return target;
+      }
+      target.setDate(target.getDate() + 1);
+    }
+    return null;
+  },
+
   check(timeStr, todayStr, now) {
     this.items.forEach((n, idx) => {
-      if (
-        (n.isRepeat
-          ? n.days.includes(String(now.getDay()))
-          : n.date === todayStr) &&
-        n.time === timeStr
-      ) {
+      let match = false;
+      if (!n.isRepeat) {
+          match = (n.date === todayStr);
+      } else {
+          match = this.isMatch(n, now);
+      }
+
+      if (match && n.time === timeStr) {
         if (Notification.permission === "granted")
           new Notification(n.title, { body: n.desc });
         utils.playBeep();
@@ -306,53 +434,49 @@ const noti = {
   },
 
   updateRemaining(now) {
+    let itemsChanged = false;
     document
       .querySelectorAll(".noti-item, .item-card[data-id]")
       .forEach((el) => {
         const n = this.items.find((x) => x.id == el.dataset.id);
         if (n) {
-          const [th, tm] = n.time.split(":").map(Number);
-          let target = new Date(now);
-          target.setHours(th, tm, 0, 0);
-          if (!n.isRepeat && n.date) {
-            const [y, m, d] = n.date.split("-");
-            target.setFullYear(y, m - 1, d);
-          } else if (target <= now) target.setDate(target.getDate() + 1);
-
-          const diff = target - now,
-            rem = el.querySelector(".remaining");
+          const target = this.getNextValidDate(n, now);
+          const rem = el.querySelector(".remaining");
           if (rem) {
-            if (diff > 0) {
+            if (target) {
+              const diff = target - now;
               const hTotal = Math.floor(diff / 3600000);
-              const mm = String(Math.floor((diff % 3600000) / 60000)).padStart(
-                  2,
-                  "0",
-                ),
-                ss = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
-              rem.innerText = `${String(hTotal).padStart(2, "0")}:${mm}:${ss}`;
+              const mm = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
+              const ss = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
 
-              // --- 4단계 동적 색상 로직 ---
-              if (diff >= 604800000)
-                rem.style.color = "#22c55e"; // 1주일 이상: 녹색
-              else if (diff >= 86400000)
-                rem.style.color = "#38bdf8"; // 1일~1주일: 하늘색
-              else if (diff >= 3600000)
-                rem.style.color = "#eab308"; // 1시간~1일: 노란색
-              else rem.style.color = "#ec4899"; // 1시간 미만: 핑크색
+              if (hTotal >= 24) {
+                 const dTotal = Math.floor(hTotal / 24);
+                 rem.innerText = `${dTotal}일 ${String(hTotal % 24).padStart(2, "0")}:${mm}:${ss}`;
+              } else {
+                 rem.innerText = `${String(hTotal).padStart(2, "0")}:${mm}:${ss}`;
+              }
+
+              if (diff >= 604800000) rem.style.color = "#22c55e"; // 1주일 이상
+              else if (diff >= 86400000) rem.style.color = "#38bdf8"; // 1일~1주일
+              else if (diff >= 3600000) rem.style.color = "#eab308"; // 1시간~1일
+              else rem.style.color = "#ec4899"; // 1시간 미만
             } else {
-              // 만료된 경우: 반복 알림이 아니면 자동 삭제
               if (!n.isRepeat) {
                 this.items = this.items.filter((x) => x.id != n.id);
-                this.render();
-                utils.saveData();
+                itemsChanged = true;
               } else {
-                rem.innerText = "00:00:00";
+                rem.innerText = "조건 없음";
                 rem.style.color = "#94a3b8";
               }
             }
           }
         }
       });
+      
+      if (itemsChanged) {
+          this.render();
+          utils.saveData();
+      }
   },
 };
 

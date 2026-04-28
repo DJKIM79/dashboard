@@ -71,8 +71,13 @@ const utils = {
   toggleDaySelector(s) {
     const wrap = document.getElementById("day-selector-wrap");
     const dateInput = document.getElementById("notiDate");
-    if (wrap) wrap.style.display = s ? "block" : "none";
-    if (dateInput) dateInput.disabled = s;
+    if (wrap) {
+      wrap.style.display = s ? "flex" : "none";
+    }
+    if (dateInput) {
+      dateInput.style.opacity = s ? "0.3" : "1";
+      dateInput.style.pointerEvents = s ? "none" : "auto";
+    }
   },
 
   openModal(id) {
