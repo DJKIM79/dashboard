@@ -622,6 +622,64 @@
                 ></div>
               </div>
 
+              <!-- 배경 키워드 -->
+              <div
+                class="setting-group-title"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span data-i18n="lblBgKeyword">배경 키워드</span>
+                <div style="display: flex; gap: 10px">
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="engineUnsplash"
+                      onchange="updateImageEngine('unsplash')"
+                      style="width: 12px; height: 12px; margin: 0"
+                    />
+                    <span class="setting-label-text">Unsplash</span>
+                  </label>
+                  <label
+                    class="compact-checkbox-label"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      cursor: pointer;
+                    "
+                  >
+                    <input
+                      type="checkbox"
+                      id="engineFlickr"
+                      onchange="updateImageEngine('flickr')"
+                      style="width: 12px; height: 12px; margin: 0"
+                    />
+                    <span class="setting-label-text">Flickr</span>
+                  </label>
+                </div>
+              </div>
+              <input
+                type="text"
+                id="bgKeywordInput"
+                data-i18n-ph="bgKeywordPh"
+                placeholder="예: nature, space, city, dark"
+                oninput="updateBgKeyword(this.value)"
+                style="width: 98%; margin-left: 1%"
+              />
+            </div>
+
+            <div class="setting-column">
               <!-- 레이아웃 -->
               <div
                 class="setting-group-title"
@@ -710,64 +768,6 @@
                 </div>
               </div>
 
-              <!-- 배경 키워드 -->
-              <div
-                class="setting-group-title"
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                "
-              >
-                <span data-i18n="lblBgKeyword">배경 키워드</span>
-                <div style="display: flex; gap: 10px">
-                  <label
-                    class="compact-checkbox-label"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 4px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="checkbox"
-                      id="engineUnsplash"
-                      onchange="updateImageEngine('unsplash')"
-                      style="width: 12px; height: 12px; margin: 0"
-                    />
-                    <span class="setting-label-text">Unsplash</span>
-                  </label>
-                  <label
-                    class="compact-checkbox-label"
-                    style="
-                      display: flex;
-                      align-items: center;
-                      gap: 4px;
-                      cursor: pointer;
-                    "
-                  >
-                    <input
-                      type="checkbox"
-                      id="engineFlickr"
-                      onchange="updateImageEngine('flickr')"
-                      style="width: 12px; height: 12px; margin: 0"
-                    />
-                    <span class="setting-label-text">Flickr</span>
-                  </label>
-                </div>
-              </div>
-              <input
-                type="text"
-                id="bgKeywordInput"
-                data-i18n-ph="bgKeywordPh"
-                placeholder="예: nature, space, city, dark"
-                oninput="updateBgKeyword(this.value)"
-                style="width: 98%; margin-left: 1%"
-              />
-            </div>
-
-            <div class="setting-column">
               <!-- 날씨 -->
               <div
                 class="setting-group-title"
@@ -785,7 +785,7 @@
                   >
                 </label>
               </div>
-              <div id="weather-select-wrap" style="position: relative; margin-bottom: 15px; width: 98%; margin-left: 1%;">
+              <div id="weather-select-wrap" style="position: relative; margin-bottom: 20px; width: 98%; margin-left: 1%;">
                 <div id="weather-location-trigger" class="weather-custom-select" onclick="weather.toggleLocationPopup(event)">
                   <span id="weather-trigger-text">도시 목록</span>
                   <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
@@ -805,7 +805,7 @@
                       oninput="searchCities(this.value)"
                       style="width: 100%; margin: 0;"
                     />
-                    <div id="citySearchResults" class="city-results" style="position: static; width: 100%; max-height: 150px; margin-top: 0;"></div>
+                    <div id="citySearchResults" class="city-results" style="position: static !important; width: 100%; max-height: 150px; margin-top: 5px; display: none; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; box-shadow: none;"></div>
                   </div>
                 </div>
               </div>
@@ -984,8 +984,8 @@
                     </div>
                     <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5; flex-shrink: 0;"></i>
                   </div>
-                  <div id="ai-provider-popup" class="engine-popup"></div>
-                  <div id="ai-custom-add-container" class="engine-popup" style="padding: 15px; z-index: 120; display: none;">
+                  <div id="ai-provider-popup" class="engine-popup" style="bottom: 100%; top: auto; margin-bottom: 5px; margin-top: 0;"></div>
+                  <div id="ai-custom-add-container" class="engine-popup" style="padding: 15px; z-index: 120; display: none; bottom: 100%; top: auto; margin-bottom: 5px; margin-top: 0;">
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                       <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
                         <span>사용자 AI 추가</span>
@@ -1033,7 +1033,7 @@
                       <span id="ai-model-trigger-name" class="engine-name" style="flex: 1;" data-i18n="aiNoServer">접속 안됨</span>
                       <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5; flex-shrink: 0;"></i>
                     </div>
-                    <div id="ai-model-select-popup" class="engine-popup"></div>
+                    <div id="ai-model-select-popup" class="engine-popup" style="bottom: 100%; top: auto; margin-bottom: 5px; margin-top: 0;"></div>
                   </div>
                   <div
                     style="

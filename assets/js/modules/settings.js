@@ -148,6 +148,33 @@ const settings = {
     }
   },
 
+  closeAllPopups(exceptId = null) {
+    const popups = document.querySelectorAll(
+      ".ai-model-popup, .engine-popup, .weather-popup",
+    );
+    popups.forEach((p) => {
+      if (p.id && p.id === exceptId) return;
+
+      if (p.id === "search-engine-popup") this.closeSearchEnginePopup();
+      else if (p.id === "engine-add-popup") this.closeEngineAddPopup();
+      else if (p.id === "ai-provider-popup") this.closeAIPopup();
+      else if (p.id === "ai-custom-add-container") this.closeCustomAIPopup();
+      else if (p.id === "ai-model-select-popup") this.closeModelPopup();
+      else if (p.id === "weather-location-popup") {
+        if (window.weather) weather.closeLocationPopup();
+      } else if (p.id === "city-add-popup") {
+        if (window.weather) weather.closeCityAddPopup();
+      } else {
+        p.classList.remove("show");
+        if (p.classList.contains("engine-popup")) {
+           setTimeout(() => {
+              if (!p.classList.contains("show")) p.style.display = "none";
+           }, 200);
+        }
+      }
+    });
+  },
+
   renderSearchEngineList() {
     const popupEl = document.getElementById("search-engine-popup");
     if (!popupEl) return;
@@ -220,20 +247,6 @@ const settings = {
     };
     footer.appendChild(addBtn);
     popupEl.appendChild(footer);
-
-    if (!this._searchCloseListenerAdded) {
-      document.addEventListener("click", (e) => {
-        const popup = document.getElementById("search-engine-popup");
-        const addPopup = document.getElementById("engine-add-popup");
-        if (popup && popup.classList.contains("show") && !e.target.closest("#search-select-wrap")) {
-          this.closeSearchEnginePopup();
-        }
-        if (addPopup && addPopup.classList.contains("show") && !e.target.closest("#search-select-wrap")) {
-          this.closeEngineAddPopup();
-        }
-      });
-      this._searchCloseListenerAdded = true;
-    }
   },
 
   toggleEngineAddPopup(e) {
@@ -243,9 +256,7 @@ const settings = {
     
     const isShowing = popup.classList.contains("show");
     if (!isShowing) {
-        document.querySelectorAll(".ai-model-popup, .engine-popup").forEach((p) => {
-            if (p.id !== "engine-add-popup") p.classList.remove("show");
-        });
+        this.closeAllPopups("engine-add-popup");
         popup.style.display = "block";
         popup.offsetHeight;
         popup.classList.add("show");
@@ -275,32 +286,19 @@ const settings = {
     const popup = document.getElementById("search-engine-popup");
     if (!popup) return;
     
-    // Close other popups
-    document.querySelectorAll(".ai-model-popup, .engine-popup").forEach((p) => {
-      if (p.id !== "search-engine-popup") p.classList.remove("show");
-    });
-
     const isShowing = popup.classList.contains("show");
-    popup.classList.toggle("show", !isShowing);
-    
     if (!isShowing) {
+        this.closeAllPopups("search-engine-popup");
         this.renderSearchEngineList();
-        if (this._seCloseListener) window.removeEventListener("click", this._seCloseListener);
-        this._seCloseListener = (evt) => {
-            if (!popup.contains(evt.target)) this.closeSearchEnginePopup();
-        };
-        setTimeout(() => window.addEventListener("click", this._seCloseListener), 1);
+        popup.classList.add("show");
+    } else {
+        this.closeSearchEnginePopup();
     }
   },
 
   closeSearchEnginePopup() {
     const popup = document.getElementById("search-engine-popup");
-    if (!popup) return;
-    popup.classList.remove("show");
-    if (this._seCloseListener) {
-        window.removeEventListener("click", this._seCloseListener);
-        this._seCloseListener = null;
-    }
+    if (popup) popup.classList.remove("show");
   },
 
   addCustomSearchEngine() {
@@ -492,15 +490,9 @@ const settings = {
     const popup = document.getElementById("ai-provider-popup");
     if (!popup) return;
 
-    // Close other popups
-    document.querySelectorAll(".ai-model-popup, .engine-popup").forEach((p) => {
-      if (p.id !== "ai-provider-popup") p.classList.remove("show");
-    });
-
     const isShowing = popup.classList.contains("show");
-    popup.classList.toggle("show", !isShowing);
-
     if (!isShowing) {
+        this.closeAllPopups("ai-provider-popup");
         this.renderAIList();
         
         // Scroll active item into view
@@ -513,23 +505,15 @@ const settings = {
              }
           }
         }, 10);
-
-        if (this._aiCloseListener) window.removeEventListener("click", this._aiCloseListener);
-        this._aiCloseListener = (evt) => {
-            if (!popup.contains(evt.target)) this.closeAIPopup();
-        };
-        setTimeout(() => window.addEventListener("click", this._aiCloseListener), 1);
+        popup.classList.add("show");
+    } else {
+        this.closeAIPopup();
     }
   },
 
   closeAIPopup() {
     const popup = document.getElementById("ai-provider-popup");
-    if (!popup) return;
-    popup.classList.remove("show");
-    if (this._aiCloseListener) {
-        window.removeEventListener("click", this._aiCloseListener);
-        this._aiCloseListener = null;
-    }
+    if (popup) popup.classList.remove("show");
   },
 
   renderAIList() {
@@ -612,15 +596,9 @@ const settings = {
     // 연결 안된 상태면 안뜸
     if (!window.ai || !ai.isConnected) return;
 
-    // Close other popups
-    document.querySelectorAll(".ai-model-popup, .engine-popup").forEach((p) => {
-      if (p.id !== "ai-model-select-popup") p.classList.remove("show");
-    });
-
     const isShowing = popup.classList.contains("show");
-    popup.classList.toggle("show", !isShowing);
-
     if (!isShowing) {
+        this.closeAllPopups("ai-model-select-popup");
         this.renderModelList();
         
         // Scroll active item into view
@@ -630,23 +608,15 @@ const settings = {
               activeItem.scrollIntoView({ block: "center", behavior: "smooth" });
           }
         }, 10);
-
-        if (this._modelCloseListener) window.removeEventListener("click", this._modelCloseListener);
-        this._modelCloseListener = (evt) => {
-            if (!popup.contains(evt.target)) this.closeModelPopup();
-        };
-        setTimeout(() => window.addEventListener("click", this._modelCloseListener), 1);
+        popup.classList.add("show");
+    } else {
+        this.closeModelPopup();
     }
   },
 
   closeModelPopup() {
     const popup = document.getElementById("ai-model-select-popup");
-    if (!popup) return;
-    popup.classList.remove("show");
-    if (this._modelCloseListener) {
-        window.removeEventListener("click", this._modelCloseListener);
-        this._modelCloseListener = null;
-    }
+    if (popup) popup.classList.remove("show");
   },
 
   renderModelList() {
@@ -710,25 +680,21 @@ const settings = {
     
     const isShowing = container.classList.contains("show");
     
-    // Close other popups if any
     if (!isShowing) {
+        this.closeAllPopups("ai-custom-add-container");
         container.classList.add("show");
         
         // AI 이름 입력창에 포커스
         const nameInput = document.getElementById("customAiNameInput");
         if (nameInput) setTimeout(() => nameInput.focus(), 100);
-
-        if (this._customAiCloseListener) window.removeEventListener("click", this._customAiCloseListener);
-        this._customAiCloseListener = (evt) => {
-            if (!container.contains(evt.target)) {
-                container.classList.remove("show");
-                window.removeEventListener("click", this._customAiCloseListener);
-            }
-        };
-        setTimeout(() => window.addEventListener("click", this._customAiCloseListener), 1);
     } else {
-        container.classList.remove("show");
+        this.closeCustomAIPopup();
     }
+  },
+
+  closeCustomAIPopup() {
+    const container = document.getElementById("ai-custom-add-container");
+    if (container) container.classList.remove("show");
   },
 
   updateAIProviderTriggerUI() {
@@ -915,25 +881,13 @@ const settings = {
     const popup = document.getElementById(popupId);
     if (!popup) return;
 
-    // Close other popups
-    document.querySelectorAll(".ai-model-popup, .engine-popup").forEach((p) => {
-      if (p.id !== popupId) p.classList.remove("show");
-    });
-
     const isShowing = popup.classList.contains("show");
-    popup.classList.toggle("show", !isShowing);
-
     if (!isShowing) {
+        this.closeAllPopups(popupId);
         this.renderCustomSelectOptions(popupId);
-        if (this._csCloseListener) window.removeEventListener("click", this._csCloseListener);
-        this._csCloseListener = (evt) => {
-            if (!popup.contains(evt.target)) {
-                popup.classList.remove("show");
-                window.removeEventListener("click", this._csCloseListener);
-                this._csCloseListener = null;
-            }
-        };
-        setTimeout(() => window.addEventListener("click", this._csCloseListener), 1);
+        popup.classList.add("show");
+    } else {
+        popup.classList.remove("show");
     }
   },
 
@@ -1028,6 +982,23 @@ const settings = {
     return `#${Math.round(r).toString(16).padStart(2, "0")}${Math.round(g).toString(16).padStart(2, "0")}${Math.round(b).toString(16).padStart(2, "0")}`;
   },
 };
+
+// Global click listener to close all settings popups when clicking outside
+document.addEventListener("click", (e) => {
+    // If click is not inside a popup and not stopped by a trigger's stopPropagation,
+    // it means it's an "outside" click.
+    const activePopups = document.querySelectorAll(".ai-model-popup.show, .engine-popup.show, .weather-popup.show");
+    if (activePopups.length > 0) {
+        let clickedInsidePopup = false;
+        activePopups.forEach(p => {
+            if (p.contains(e.target)) clickedInsidePopup = true;
+        });
+        
+        if (!clickedInsidePopup) {
+            settings.closeAllPopups();
+        }
+    }
+});
 
 window.settings = settings;
 window.openSettingModal = settings.openModal.bind(settings);
