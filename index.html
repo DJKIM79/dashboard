@@ -1168,8 +1168,20 @@
           rows="2"
         ></textarea>
         <div class="time-picker-row">
-          <select id="notiHour" class="time-select"></select
-          ><select id="notiMin" class="time-select"></select>
+          <div class="custom-time-picker">
+            <div id="notiHourDisplay" class="time-select" onclick="utils.toggleTimePopup('hour', event)">00</div>
+            <input type="hidden" id="notiHour" value="00">
+            <div id="notiHourPopup" class="time-popup">
+              <div class="time-list" id="notiHourList"></div>
+            </div>
+          </div>
+          <div class="custom-time-picker">
+            <div id="notiMinDisplay" class="time-select" onclick="utils.toggleTimePopup('min', event)">00</div>
+            <input type="hidden" id="notiMin" value="00">
+            <div id="notiMinPopup" class="time-popup">
+              <div class="time-list" id="notiMinList"></div>
+            </div>
+          </div>
         </div>
         <div class="repeat-row" style="position: relative;">
           <input

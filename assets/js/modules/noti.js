@@ -310,6 +310,14 @@ const noti = {
 
     document.getElementById("notiHour").value = h;
     document.getElementById("notiMin").value = m;
+    
+    // Update custom display values
+    const hSuffix = i18n.userLang === "ko" ? "시" : "h";
+    const mSuffix = i18n.userLang === "ko" ? "분" : "m";
+    const hDisplay = document.getElementById("notiHourDisplay");
+    const mDisplay = document.getElementById("notiMinDisplay");
+    if (hDisplay) hDisplay.innerText = `${h}${hSuffix}`;
+    if (mDisplay) mDisplay.innerText = `${m}${mSuffix}`;
 
     // Set date: priority is (existing noti date) > (specifically passed date) > (today)
     let defaultDate = today;

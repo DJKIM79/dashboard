@@ -1579,33 +1579,34 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 /* 커스텀 시간 선택기 스타일 */
 .custom-time-picker {
   position: relative;
-  width: 70px;
+  flex: 1;
 }
-.time-display-box {
+.time-select {
+  margin-bottom: 0;
+  cursor: pointer;
+  text-align: center;
+  font-family: "JetBrains Mono";
+  font-size: 0.85rem;
+  padding: 12px;
   background: #0f172a;
   border: 1px solid #334155;
-  color: #fff;
-  padding: 10px;
   border-radius: 10px;
-  text-align: center;
-  font-size: 1.5rem;
-  font-family: "JetBrains Mono";
-  cursor: pointer;
+  color: #fff;
   transition: 0.2s;
 }
-.time-display-box:hover {
+.time-select:hover {
   border-color: var(--accent-color);
   background: rgba(255, 255, 255, 0.05);
 }
 .time-popup {
   position: absolute;
   bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  width: 100%;
   background: #0f172a;
   border: 1px solid #334155;
   border-radius: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   display: none;
   z-index: 1000;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
@@ -1615,10 +1616,11 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   display: block;
 }
 .time-list {
-  max-height: 120px; /* 더 컴팩트하게 줄임 */
+  max-height: 160px;
   overflow-y: auto;
-  width: 70px;
-  padding: 5px;
+  overflow-x: hidden;
+  padding: 5px 0;
+  scroll-behavior: smooth;
 }
 /* 통일된 세련된 스크롤바 스타일 */
 .time-list::-webkit-scrollbar {
@@ -1635,13 +1637,14 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   background: rgba(255, 255, 255, 0.2);
 }
 .time-item {
-  padding: 8px;
+  padding: 10px;
   text-align: center;
   color: #94a3b8;
   cursor: pointer;
   border-radius: 6px;
   font-family: "JetBrains Mono";
   transition: 0.2s;
+  font-size: 0.85rem;
 }
 .time-item:hover {
   background: rgba(255, 255, 255, 0.05);
@@ -1651,12 +1654,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   background: var(--accent-color);
   color: var(--accent-contrast);
   font-weight: bold;
-}
-.time-select {
-  margin-bottom: 0;
-  cursor: pointer;
-  text-align: center;
-  font-family: "JetBrains Mono";
+  transform: scale(1.1);
 }
 .repeat-row {
   display: flex;
