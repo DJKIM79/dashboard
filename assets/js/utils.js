@@ -147,7 +147,8 @@ const utils = {
     const wrap = document.getElementById("day-selector-wrap");
     const dateInput = document.getElementById("notiDate");
     if (wrap) {
-      wrap.style.display = s ? "flex" : "none";
+      if (s) wrap.classList.add("show");
+      else wrap.classList.remove("show");
     }
     if (dateInput) {
       dateInput.style.opacity = s ? "0.3" : "1";
