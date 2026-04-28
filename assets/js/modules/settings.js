@@ -433,8 +433,6 @@ const settings = {
     const popupEl = document.getElementById("ai-provider-popup");
     if (!popupEl) return;
     popupEl.innerHTML = "";
-    popupEl.style.overflowY = "hidden";
-    popupEl.style.maxHeight = "none";
     
     // Create list container and footer
     const listContainer = document.createElement("div");
