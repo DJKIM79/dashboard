@@ -10,6 +10,7 @@ Features
 6. Time
 7. Memo
 8. Alarm
+9. AI chatbot
 
 Upcoming features.
 
