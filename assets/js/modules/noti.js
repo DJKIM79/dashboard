@@ -323,10 +323,10 @@ const noti = {
 
     // Advanced Repeat Logic
     const rule = n && n.repeatRule ? n.repeatRule : {
-        years: [now.getFullYear()],
-        months: [now.getMonth() + 1],
+        years: [],
+        months: [],
         weekSpecific: [],
-        days: n && n.days ? n.days.map(Number) : [],
+        days: [],
         endDate: ""
     };
 
@@ -372,14 +372,29 @@ const noti = {
     const days = repeatRule.days.map(String);
 
     if (t) {
+      if (r) {
+        if (repeatRule.days.length === 0) {
+            return utils.showValidationTip("notiSaveBtn", "반복할 요일을 선택해 주세요.");
+        }
+        if (repeatRule.weekSpecific.length === 0) {
+            return utils.showValidationTip("notiSaveBtn", "반복할 주차를 선택해 주세요.");
+        }
+        if (repeatRule.months.length === 0) {
+            return utils.showValidationTip("notiSaveBtn", "반복할 월을 선택해 주세요.");
+        }
+        if (repeatRule.years.length === 0) {
+            return utils.showValidationTip("notiSaveBtn", "반복할 년도를 선택해 주세요.");
+        }
+      }
+
       const data = {
         id: window.currentEditNotiId || Date.now(),
         title: t,
         desc: document.getElementById("notiDesc").value,
         time: `${h}:${m}`,
         isRepeat: r,
-        repeatRule: repeatRule,
-        days: days,
+        repeatRule: r ? repeatRule : null,
+        days: r ? days : [],
         date: dt,
         createdDate: window.currentEditNotiId ? (this.items.find(x => x.id === window.currentEditNotiId)?.createdDate || dt) : dt
       };
@@ -410,7 +425,10 @@ const noti = {
 
   isMatch(n, targetDate) {
     const rule = n.repeatRule;
-    if (!rule) return n.days.includes(String(targetDate.getDay()));
+    if (!rule) {
+        if (!n.days || n.days.length === 0) return false;
+        return n.days.includes(String(targetDate.getDay()));
+    }
     
     if (rule.years.length > 0 && !rule.years.includes(targetDate.getFullYear())) return false;
     if (rule.months.length > 0 && !rule.months.includes(targetDate.getMonth() + 1)) return false;
