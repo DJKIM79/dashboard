@@ -2231,17 +2231,20 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .ai-history-item i {
   opacity: 0;
   color: #ef4444;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, transform 0.2s;
   margin-left: 8px;
 }
 .ai-history-panel.collapsed .ai-history-item i {
   display: none;
 }
-.ai-history-item:hover i {
-  opacity: 0.7;
+/* 호버하거나, 활성화된 대화인 경우 아이콘 표시 */
+.ai-history-item:hover i,
+.ai-history-item.active i {
+  opacity: 0.6;
 }
 .ai-history-item i:hover {
   opacity: 1;
+  transform: scale(1.1);
 }
 .ai-main-panel {
   flex: 1;
@@ -2286,21 +2289,26 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .ai-actions {
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 1;
   transition: 0.2s;
   font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+}
+.ai-actions i {
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1.2rem;
+  color: var(--accent-color);
+  opacity: 1;
+  filter: brightness(1.2); /* 아이콘 자체를 더 밝고 쨍하게 */
 }
 .ai-actions i:hover {
-  opacity: 1;
-  color: #ef4444;
+  transform: scale(1.1);
+  filter: brightness(1.4);
 }
-.ai-chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px 25px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.ai-btn-export {
+  /* 테마색을 직접 사용하여 시인성 확보 */
 }
 .ai-message {
   max-width: 85%;

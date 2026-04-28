@@ -124,8 +124,9 @@ const ai = {
     const actionsEl = document.querySelector(".ai-actions");
     if (actionsEl) {
       const hasRealMessages = chat && chat.messages.some(m => m.role === "user" || m.role === "bot");
+      // 제목 옆에는 삭제 대신 텍스트 내보내기 버튼 표시
       actionsEl.innerHTML = (chat && hasRealMessages) 
-        ? `<i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>` 
+        ? `<i class="fas fa-file-arrow-down ai-btn-export" onclick="ai.exportChatToText(${chat.id}, event)" title="텍스트로 내보내기"></i>` 
         : "";
     }
   },
@@ -196,16 +197,22 @@ const ai = {
         if (!chat._lastModel) chat._lastModel = oldModel;
         
         chat.model = m;
-        const msg = `<i class="fas fa-exclamation-triangle" style="color: #eab308; margin-right: 6px;"></i>모델이 ${m}(으)로 변경되었습니다.`;
-        // Add a system message about model change
-        chat.messages.push({ 
-          role: "system", 
-          content: msg,
-          timestamp: Date.now()
-        });
+        
+        // 실사용 메시지(user 또는 bot)가 있는 경우에만 시스템 메시지 추가
+        const hasRealMessages = chat.messages.some(m => m.role === "user" || m.role === "bot");
+        
+        if (hasRealMessages) {
+          const msg = `<i class="fas fa-exclamation-triangle" style="color: #eab308; margin-right: 6px;"></i>모델이 ${m}(으)로 변경되었습니다.`;
+          chat.messages.push({ 
+            role: "system", 
+            content: msg,
+            timestamp: Date.now()
+          });
+          this.appendMessage("system", msg, true, true);
+        }
+
         this.chats = chats;
         this.updateModelDisplay();
-        this.appendMessage("system", msg, true, true);
       }
     }
   },
@@ -642,8 +649,9 @@ const ai = {
     const chats = this.chats;
     const c = chats.find((x) => x.id === chatId);
     if (c) {
-      c.messages.push({ role: "user", content: userPrompt });
-      c.messages.push({ role: "bot", content: botResponse });
+      const now = Date.now();
+      c.messages.push({ role: "user", content: userPrompt, timestamp: now });
+      c.messages.push({ role: "bot", content: botResponse, timestamp: now });
       // Store current model as the last known GOOD model for this chat
       c._lastModel = c.model || this.settingsModel;
       this.chats = chats;
@@ -669,9 +677,12 @@ const ai = {
       div.className = `ai-history-item ${chat.id === this.currentChatId ? "active" : ""}`;
       div.onclick = () => this.loadChat(chat.id);
       
-      // Fix Bug 4: Hide delete icon for brand new empty chats (ignore system messages)
+      // 제목이 변경되었거나 메시지가 있는 경우 휴지통 표시
+      const isDefaultTitle = chat.title === "새 대화" || chat.title === "새로운 대화";
       const hasRealMessages = chat.messages.some(m => m.role === "user" || m.role === "bot");
-      div.innerHTML = `<span>${chat.title}</span>${hasRealMessages ? `<i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>` : ""}`;
+      const isDeletable = !isDefaultTitle || hasRealMessages;
+      
+      div.innerHTML = `<span>${chat.title}</span>${isDeletable ? `<i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>` : ""}`;
       list.appendChild(div);
     });
   },
@@ -701,10 +712,11 @@ const ai = {
   },
   createNewChat() {
     const chats = this.chats;
+    // 제목이 기본값이고 메시지가 없는 진짜 '빈 대화'만 찾아서 재사용
     const emptyChat = chats.find(
       (c) =>
-        !c.messages.some(m => m.role === "user" || m.role === "bot") &&
-        (c.title === "새 대화" || c.title === "새로운 대화"),
+        (c.title === "새 대화" || c.title === "새로운 대화") &&
+        !c.messages.some(m => m.role === "user" || m.role === "bot"),
     );
     if (emptyChat) {
       this.loadChat(emptyChat.id);
@@ -772,6 +784,56 @@ const ai = {
   },
   hideAttachTip() {
     utils.hideValidationTip();
+  },
+  exportChatToText(id, e) {
+    if (e) e.stopPropagation();
+    const chat = this.chats.find(c => c.id === id);
+    if (!chat || chat.messages.length === 0) return;
+
+    let content = `[AI Chat Export]\n`;
+    content += `Title: ${chat.title}\n`;
+    content += `Model: ${chat.model || this.settingsModel}\n`;
+    content += `Date: ${new Date(chat.id).toLocaleString()}\n`;
+    content += `------------------------------------------\n\n`;
+
+    chat.messages.forEach(msg => {
+      let roleName = "AI";
+      let textContent = msg.content;
+      
+      if (msg.role === "user") roleName = "User";
+      else if (msg.role === "system" || msg.role === "system-error") {
+        roleName = "System";
+        textContent = textContent.replace(/<[^>]*>/g, '');
+      }
+      
+      let timeStr = "";
+      if (msg.timestamp) {
+        const d = new Date(msg.timestamp);
+        const hh = d.getHours().toString().padStart(2, '0');
+        const mm = d.getMinutes().toString().padStart(2, '0');
+        const ss = d.getSeconds().toString().padStart(2, '0');
+        timeStr = ` - ${hh}:${mm}:${ss}`;
+      }
+      
+      content += `[${roleName}]${timeStr}\n${textContent}\n\n`;
+    });
+
+    content += `------------------------------------------\n`;
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const fileName = `${chat.title.replace(/[/\\?%*:|"<>]/g, '-')}_${new Date().getTime()}.txt`;
+    
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
   },
   appendMessage(role, text, save = true, isHtml = false) {
     const container = document.getElementById("ai-messages");
