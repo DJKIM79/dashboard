@@ -353,6 +353,17 @@ const noti = {
     const allChecked = Array.from(inputs).every(el => el.checked);
     inputs.forEach(el => el.checked = !allChecked);
     if (name === 'repeatYear') this.updateSelectedRepeatYears();
+    this.updateToggleAllLabel(name);
+  },
+
+  updateToggleAllLabel(name) {
+    const btn = document.getElementById(`toggle-all-${name}`);
+    if (!btn) return;
+    const inputs = document.querySelectorAll(`input[name="${name}"]`);
+    if (inputs.length === 0) return;
+    const allChecked = Array.from(inputs).every(el => el.checked);
+    btn.innerText = i18n.get(allChecked ? "btnDeselectAll" : "btnSelectAll");
+    btn.style.color = allChecked ? "#f97316" : "#3b82f6";
   },
 
   renderRepeatYears(selectedYears = [], slideDir = 0) {
@@ -387,9 +398,13 @@ const noti = {
         const label = document.createElement("label");
         label.className = "day-check";
         label.innerHTML = `<input type="checkbox" name="repeatYear" value="${y}" ${selectedYears.includes(y) ? "checked" : ""}/><span>${y}</span>`;
-        label.querySelector('input').addEventListener('change', () => this.updateSelectedRepeatYears());
+        label.querySelector('input').addEventListener('change', () => {
+          this.updateSelectedRepeatYears();
+          this.updateToggleAllLabel('repeatYear');
+        });
         container.appendChild(label);
     }
+    this.updateToggleAllLabel('repeatYear');
   },
 
   renderRepeatMonths(selectedMonths = []) {
@@ -400,8 +415,10 @@ const noti = {
         const label = document.createElement("label");
         label.className = "day-check";
         label.innerHTML = `<input type="checkbox" name="repeatMonth" value="${i}" ${selectedMonths.includes(i) ? "checked" : ""}/><span>${i}월</span>`;
+        label.querySelector('input').addEventListener('change', () => this.updateToggleAllLabel('repeatMonth'));
         container.appendChild(label);
     }
+    this.updateToggleAllLabel('repeatMonth');
   },
 
   openModal(id = null, specificDate = null) {
@@ -462,6 +479,10 @@ const noti = {
 
     document.querySelectorAll('input[name="weekSpecific"]').forEach(el => el.checked = rule.weekSpecific.includes(parseInt(el.value)));
     document.querySelectorAll('input[name="repeatDay"]').forEach(el => el.checked = rule.days.includes(parseInt(el.value)));
+    
+    this.updateToggleAllLabel('repeatDay');
+    this.updateToggleAllLabel('weekSpecific');
+    
     document.getElementById("repeatEndDate").value = rule.endDate || "(종료일 없음)";
 
     document.getElementById("notiModalTitle").innerText = id
