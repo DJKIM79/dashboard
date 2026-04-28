@@ -1147,13 +1147,31 @@
           <select id="notiHour" class="time-select"></select
           ><select id="notiMin" class="time-select"></select>
         </div>
-        <div class="repeat-row">
+        <div class="repeat-row" style="position: relative;">
           <input
-            type="date"
+            type="text"
             id="notiDate"
             class="time-select"
-            style="margin-bottom: 0; flex: 1; padding: 10px; font-size: 0.9rem"
+            readonly
+            onclick="noti.toggleCalendar(event)"
+            style="margin-bottom: 0; flex: 1; padding: 10px; font-size: 0.9rem; cursor: pointer; background: rgba(255,255,255,0.05);"
           />
+          <div id="noti-calendar-popup" class="engine-popup" style="width: 250px; padding: 10px; top: 100%; left: 0; margin-top: 5px; z-index: 1000; display: none;">
+            <div class="calendar-header" style="margin-bottom: 10px; font-size: 0.9rem;">
+              <i class="fas fa-caret-left cal-nav" onclick="noti.changeCalendarMonth(-1); event.stopPropagation();" style="cursor: pointer; padding: 5px;"></i>
+              <div class="calendar-header-center" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                <span id="noti-cal-month-year">...</span>
+                <i class="fas fa-undo today-icon" onclick="noti.resetCalendarToToday(); event.stopPropagation();" style="cursor: pointer; font-size: 0.8rem; opacity: 0.7;"></i>
+              </div>
+              <i class="fas fa-caret-right cal-nav" onclick="noti.changeCalendarMonth(1); event.stopPropagation();" style="cursor: pointer; padding: 5px;"></i>
+            </div>
+            <div class="calendar-body-container">
+              <div class="calendar-days-header" id="noti-cal-days-header" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; margin-bottom: 5px; color: #94a3b8;"></div>
+              <div class="calendar-grid-wrapper">
+                <div class="calendar-grid" id="noti-calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;"></div>
+              </div>
+            </div>
+          </div>
           <div style="display: flex; align-items: center; gap: 6px">
             <label for="isRepeat" style="cursor: pointer" data-i18n="repeatSet"
               >반복 설정</label

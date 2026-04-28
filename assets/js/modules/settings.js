@@ -411,6 +411,18 @@ const settings = {
 
     if (!isShowing) {
         this.renderAIList();
+        
+        // Scroll active item into view
+        setTimeout(() => {
+          const listContainer = popup.querySelector(".popup-list-area");
+          if (listContainer) {
+             const activeItem = listContainer.querySelector(".active");
+             if (activeItem) {
+                 activeItem.scrollIntoView({ block: "center", behavior: "smooth" });
+             }
+          }
+        }, 10);
+
         if (this._aiCloseListener) window.removeEventListener("click", this._aiCloseListener);
         this._aiCloseListener = (evt) => {
             if (!popup.contains(evt.target)) this.closeAIPopup();
@@ -519,6 +531,15 @@ const settings = {
 
     if (!isShowing) {
         this.renderModelList();
+        
+        // Scroll active item into view
+        setTimeout(() => {
+          const activeItem = popup.querySelector(".active");
+          if (activeItem) {
+              activeItem.scrollIntoView({ block: "center", behavior: "smooth" });
+          }
+        }, 10);
+
         if (this._modelCloseListener) window.removeEventListener("click", this._modelCloseListener);
         this._modelCloseListener = (evt) => {
             if (!popup.contains(evt.target)) this.closeModelPopup();
