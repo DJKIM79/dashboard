@@ -152,6 +152,11 @@ const settings = {
     const popupEl = document.getElementById("search-engine-popup");
     if (!popupEl) return;
     popupEl.innerHTML = "";
+    
+    const listArea = document.createElement("div");
+    listArea.className = "popup-list-area";
+    listArea.style.maxHeight = "300px";
+    listArea.style.overflowY = "auto";
 
     const currentEngine = localStorage.getItem("dj_search_engine") || "google";
     const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
@@ -195,8 +200,74 @@ const settings = {
           ${engine.isDefault ? '<span class="engine-info-tag">기본</span>' : `<i class="fas fa-trash-alt engine-btn-del" onclick="event.stopPropagation(); settings.deleteCustomSearchEngine('${engine.id}')"></i>`}
         </div>
       `;
-      popupEl.appendChild(item);
+      listArea.appendChild(item);
     });
+    popupEl.appendChild(listArea);
+
+    const footer = document.createElement("div");
+    footer.style.borderTop = "1px solid rgba(255,255,255,0.1)";
+    footer.style.paddingTop = "5px";
+    footer.style.marginTop = "5px";
+    
+    const addBtn = document.createElement("div");
+    addBtn.className = "engine-item";
+    addBtn.style.justifyContent = "center";
+    addBtn.innerHTML = '<i class="fas fa-square-plus" style="margin-right: 8px; color: var(--accent-color);"></i> 검색 엔진 추가';
+    addBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.toggleEngineAddPopup(e);
+        this.closeSearchEnginePopup();
+    };
+    footer.appendChild(addBtn);
+    popupEl.appendChild(footer);
+
+    if (!this._searchCloseListenerAdded) {
+      document.addEventListener("click", (e) => {
+        const popup = document.getElementById("search-engine-popup");
+        const addPopup = document.getElementById("engine-add-popup");
+        if (popup && popup.classList.contains("show") && !e.target.closest("#search-select-wrap")) {
+          this.closeSearchEnginePopup();
+        }
+        if (addPopup && addPopup.classList.contains("show") && !e.target.closest("#search-select-wrap")) {
+          this.closeEngineAddPopup();
+        }
+      });
+      this._searchCloseListenerAdded = true;
+    }
+  },
+
+  toggleEngineAddPopup(e) {
+    if (e) e.stopPropagation();
+    const popup = document.getElementById("engine-add-popup");
+    if (!popup) return;
+    
+    const isShowing = popup.classList.contains("show");
+    if (!isShowing) {
+        document.querySelectorAll(".ai-model-popup, .engine-popup").forEach((p) => {
+            if (p.id !== "engine-add-popup") p.classList.remove("show");
+        });
+        popup.style.display = "block";
+        popup.offsetHeight;
+        popup.classList.add("show");
+        
+        const nameInput = document.getElementById("customSearchNameInput");
+        const urlInput = document.getElementById("customSearchUrlInput");
+        if (nameInput) nameInput.value = "";
+        if (urlInput) urlInput.value = "";
+        if (nameInput) nameInput.focus();
+    } else {
+        this.closeEngineAddPopup();
+    }
+  },
+
+  closeEngineAddPopup() {
+    const popup = document.getElementById("engine-add-popup");
+    if (popup) {
+        popup.classList.remove("show");
+        setTimeout(() => {
+            if (!popup.classList.contains("show")) popup.style.display = "none";
+        }, 300);
+    }
   },
 
   toggleSearchEnginePopup(e) {
@@ -233,8 +304,15 @@ const settings = {
   },
 
   addCustomSearchEngine() {
-    const input = document.getElementById("customSearchUrlInput");
-    const url = input.value.trim();
+    const nameInput = document.getElementById("customSearchNameInput");
+    const urlInput = document.getElementById("customSearchUrlInput");
+    const name = nameInput.value.trim();
+    const url = urlInput.value.trim();
+    
+    if (!name) {
+        utils.showValidationTip("customSearchNameInput", "이름을 입력해 주세요.");
+        return;
+    }
     if (!url) {
         utils.showValidationTip("customSearchUrlInput", "URL을 입력해 주세요.");
         return;
@@ -280,7 +358,7 @@ const settings = {
 
         const newEngine = {
             id: `custom_${Date.now()}`,
-            name: urlObj.hostname.replace("www.", ""),
+            name: name,
             url: normalizedUrl, // Store the normalized version for better consistency
             domain: urlObj.hostname,
             isDefault: false
@@ -288,7 +366,9 @@ const settings = {
 
         customEngines.push(newEngine);
         localStorage.setItem("dj_search_engines_custom", JSON.stringify(customEngines));
-        input.value = "";
+        nameInput.value = "";
+        urlInput.value = "";
+        this.closeEngineAddPopup();
         this.renderSearchEngineList();
         if (window.search && typeof search.renderMenu === "function") search.renderMenu();
     } catch (e) {

@@ -90,7 +90,7 @@ const ai = {
         }
         
         // Hide delete confirmation tip when clicking outside
-        if (!e.target.closest(".validation-tip")) {
+        if (document.querySelector(".validation-tip.ai-delete-confirm") && !e.target.closest(".validation-tip")) {
             utils.hideValidationTip();
         }
       });

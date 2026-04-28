@@ -278,6 +278,7 @@ const weather = {
     this.fetch();
     document.getElementById("citySearchInput").value = "";
     document.getElementById("citySearchResults").style.display = "none";
+    this.closeCityAddPopup();
     this.renderLocationList();
 
     // Show success feedback tip
@@ -314,34 +315,97 @@ const weather = {
       (loc) => loc.type !== "current",
     );
 
-    if (customLocations.length === 0) {
-      wrapEl.style.display = "none";
-      return;
-    }
-
     wrapEl.style.display = "block";
     if (triggerText) triggerText.innerText = `도시 목록 (${customLocations.length})`;
     
-    popupEl.innerHTML = customLocations
-      .map(
-        (loc) => `
-      <div class="ai-model-item" style="cursor: default;">
-        <span style="flex: 1;">${loc.name}</span>
-        <i class="fas fa-trash-alt engine-btn-del" style="font-size: 0.8rem;" 
-           onclick="event.stopPropagation(); removeWeatherLocation(${loc.id})"></i>
-      </div>
-    `,
-      )
-      .join("");
+    popupEl.innerHTML = "";
+    
+    const listArea = document.createElement("div");
+    listArea.className = "popup-list-area";
+    listArea.style.maxHeight = "300px";
+    listArea.style.overflowY = "auto";
+    
+    if (customLocations.length === 0) {
+        listArea.innerHTML = '<div class="ai-model-tip" style="padding: 15px; opacity: 0.5; text-align: center;">등록된 도시가 없습니다.</div>';
+    } else {
+        customLocations.forEach(loc => {
+            const item = document.createElement("div");
+            item.className = "ai-model-item";
+            item.style.cursor = "default";
+            item.innerHTML = `
+                <span style="flex: 1;">${loc.name}</span>
+                <i class="fas fa-trash-alt engine-btn-del" style="font-size: 0.8rem;" 
+                   onclick="event.stopPropagation(); removeWeatherLocation(${loc.id})"></i>
+            `;
+            listArea.appendChild(item);
+        });
+    }
+    popupEl.appendChild(listArea);
+
+    const footer = document.createElement("div");
+    footer.style.borderTop = "1px solid rgba(255,255,255,0.1)";
+    footer.style.paddingTop = "5px";
+    footer.style.marginTop = "5px";
+    
+    const addBtn = document.createElement("div");
+    addBtn.className = "engine-item";
+    addBtn.style.justifyContent = "center";
+    addBtn.innerHTML = '<i class="fas fa-square-plus" style="margin-right: 8px; color: var(--accent-color);"></i> 도시 추가';
+    addBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.toggleCityAddPopup(e);
+        this.closeLocationPopup();
+    };
+    footer.appendChild(addBtn);
+    popupEl.appendChild(footer);
 
     if (!this.clickListenerAdded) {
       document.addEventListener("click", (e) => {
         const popup = document.getElementById("weather-location-popup");
+        const addPopup = document.getElementById("city-add-popup");
         if (popup && popup.classList.contains("show") && !e.target.closest("#weather-select-wrap")) {
           this.closeLocationPopup();
         }
+        if (addPopup && addPopup.classList.contains("show") && !e.target.closest("#weather-select-wrap")) {
+            this.closeCityAddPopup();
+        }
       });
       this.clickListenerAdded = true;
+    }
+  },
+
+  toggleCityAddPopup(e) {
+    if (e) e.stopPropagation();
+    const popup = document.getElementById("city-add-popup");
+    if (!popup) return;
+    
+    const isShowing = popup.classList.contains("show");
+    if (!isShowing) {
+        // Close other popups
+        document.querySelectorAll(".ai-model-popup, .engine-popup").forEach((p) => {
+            if (p.id !== "city-add-popup") p.classList.remove("show");
+        });
+        popup.style.display = "block";
+        popup.offsetHeight;
+        popup.classList.add("show");
+        const input = document.getElementById("citySearchInput");
+        if (input) {
+            input.value = "";
+            input.focus();
+        }
+        document.getElementById("citySearchResults").innerHTML = "";
+    } else {
+        this.closeCityAddPopup();
+    }
+  },
+
+  closeCityAddPopup() {
+    const popup = document.getElementById("city-add-popup");
+    if (popup) {
+        popup.classList.remove("show");
+        setTimeout(() => {
+            if (!popup.classList.contains("show")) popup.style.display = "none";
+        }, 300);
     }
   },
 
