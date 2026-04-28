@@ -1600,6 +1600,13 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .btn-save:hover {
   opacity: 0.9;
 }
+.btn-save.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+.btn-save.loading i {
+  animation: fa-spin 1s infinite linear;
+}
 .setting-footer {
   display: flex;
   justify-content: flex-end;
@@ -1701,7 +1708,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   padding: 8px;
   box-sizing: border-box;
   width: 100%;
-  max-height: 300px;
+  max-height: 280px;
   overflow-y: auto;
 }
 
@@ -1724,7 +1731,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #ai-model-select-popup,
 #ai-custom-add-container {
   width: 280px;
-  max-height: 450px;
+  max-height: 280px;
 }
 
 #search-engine-popup {
