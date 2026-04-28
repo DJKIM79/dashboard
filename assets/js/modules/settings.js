@@ -1079,6 +1079,7 @@ const settings = {
         // Positioning Logic
         popup.style.display = "block";
         popup.style.visibility = "hidden";
+        popup.style.width = trigger.offsetWidth + "px";
         
         const rect = trigger.getBoundingClientRect();
         const modalContent = trigger.closest('.modal-content');
@@ -1141,9 +1142,9 @@ const settings = {
     
     // Top 3 mandatory items
     const mandatory = [
-        { id: "auto", label: "optAuto" },
-        { id: "ko", label: "optKo" },
-        { id: "en", label: "optEn" }
+        { id: "auto", label: "optAuto", icon: "fas fa-language" },
+        { id: "ko", label: "optKo", icon: "fas fa-font" },
+        { id: "en", label: "optEn", icon: "fas fa-italic" }
     ];
 
     mandatory.forEach(lang => {
@@ -1154,7 +1155,7 @@ const settings = {
 
   createLangItem(lang, currentLang) {
     const item = document.createElement("div");
-    item.className = `ai-model-item ${lang.id === currentLang ? "active" : ""}`;
+    item.className = `engine-item ${lang.id === currentLang ? "active" : ""}`;
     
     item.onclick = (e) => {
         e.stopPropagation();
@@ -1163,7 +1164,10 @@ const settings = {
 
     const label = window.i18n ? i18n.get(lang.label) : lang.id;
     item.innerHTML = `
-      <div class="engine-name" style="padding-left: 5px;">${label}</div>
+      <div class="engine-favicon">
+        <i class="${lang.icon}"></i>
+      </div>
+      <div class="engine-name">${label}</div>
       <div class="engine-status">
         ${lang.id === currentLang ? '<i class="fas fa-check-circle engine-active-icon"></i>' : ''}
       </div>
