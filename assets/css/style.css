@@ -1870,14 +1870,16 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #search-engine-popup,
 #ai-provider-popup,
 #ai-model-select-popup,
-#ai-custom-add-container {
+#ai-custom-add-container,
+#lang-popup {
   bottom: 45px;
   left: 0;
 }
 
 #ai-provider-popup,
 #ai-model-select-popup,
-#ai-custom-add-container {
+#ai-custom-add-container,
+#lang-popup {
   width: 280px;
   max-height: 280px;
 }
