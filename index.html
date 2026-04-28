@@ -791,18 +791,23 @@
                   <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
                 </div>
                 <div id="weather-location-popup" class="ai-model-popup weather-popup"></div>
-              </div>
-              <div class="city-search-container" style="margin-bottom: 20px;">
-                <input
-                  type="text"
-                  id="citySearchInput"
-                  data-i18n-ph="citySearchPh"
-                  placeholder="도시 검색 (예: 서울, London)"
-                  autocomplete="off"
-                  oninput="searchCities(this.value)"
-                  style="width: 98%; margin-left: 1%"
-                />
-                <div id="citySearchResults" class="city-results"></div>
+                <div id="city-add-popup" class="engine-popup" style="padding: 15px; z-index: 120; display: none;">
+                  <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
+                      <span>도시 추가</span>
+                    </div>
+                    <input
+                      type="text"
+                      id="citySearchInput"
+                      data-i18n-ph="citySearchPh"
+                      placeholder="도시 검색 (예: 서울, London)"
+                      autocomplete="off"
+                      oninput="searchCities(this.value)"
+                      style="width: 100%; margin: 0;"
+                    />
+                    <div id="citySearchResults" class="city-results" style="position: static; width: 100%; max-height: 150px; margin-top: 0;"></div>
+                  </div>
+                </div>
               </div>
 
               <!-- 검색 엔진 -->
@@ -841,7 +846,7 @@
                   >
                 </label>
               </div>
-              <div id="search-select-wrap" style="position: relative; margin-bottom: 15px; width: 98%; margin-left: 1%;">
+              <div id="search-select-wrap" style="position: relative; margin-bottom: 5px; width: 98%; margin-left: 1%;">
                 <div id="search-engine-trigger" class="weather-custom-select" onclick="settings.toggleSearchEnginePopup(event)">
                   <div style="display: flex; align-items: center; gap: 10px;">
                     <div id="trigger-favicon" class="engine-favicon"></div>
@@ -850,18 +855,30 @@
                   <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
                 </div>
                 <div id="search-engine-popup" class="engine-popup"></div>
-              </div>
-              
-              <div class="engine-add-container">
-                <input
-                  type="text"
-                  id="customSearchUrlInput"
-                  placeholder="https://example.com/search?q="
-                  style="margin-bottom: 0; flex: 1;"
-                />
-                <button class="btn-save" onclick="settings.addCustomSearchEngine()" style="padding: 0; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                  <i class="fas fa-plus"></i>
-                </button>
+                <div id="engine-add-popup" class="engine-popup" style="padding: 15px; z-index: 120; display: none;">
+                  <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
+                      <span>검색 엔진 추가</span>
+                    </div>
+                    <input
+                      type="text"
+                      id="customSearchNameInput"
+                      placeholder="엔진 이름 (예: Google)"
+                      style="margin-bottom: 0; width: 100%;"
+                    />
+                    <div style="display: flex; gap: 8px;">
+                      <input
+                        type="text"
+                        id="customSearchUrlInput"
+                        placeholder="https://example.com/search?q="
+                        style="margin-bottom: 0; flex: 1;"
+                      />
+                      <button class="btn-save" onclick="settings.addCustomSearchEngine()" style="padding: 0; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
