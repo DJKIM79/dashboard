@@ -358,20 +358,6 @@ const weather = {
     };
     footer.appendChild(addBtn);
     popupEl.appendChild(footer);
-
-    if (!this.clickListenerAdded) {
-      document.addEventListener("click", (e) => {
-        const popup = document.getElementById("weather-location-popup");
-        const addPopup = document.getElementById("city-add-popup");
-        if (popup && popup.classList.contains("show") && !e.target.closest("#weather-select-wrap")) {
-          this.closeLocationPopup();
-        }
-        if (addPopup && addPopup.classList.contains("show") && !e.target.closest("#weather-select-wrap")) {
-            this.closeCityAddPopup();
-        }
-      });
-      this.clickListenerAdded = true;
-    }
   },
 
   toggleCityAddPopup(e) {
@@ -381,10 +367,7 @@ const weather = {
     
     const isShowing = popup.classList.contains("show");
     if (!isShowing) {
-        // Close other popups
-        document.querySelectorAll(".ai-model-popup, .engine-popup").forEach((p) => {
-            if (p.id !== "city-add-popup") p.classList.remove("show");
-        });
+        if (window.settings) settings.closeAllPopups("city-add-popup");
         popup.style.display = "block";
         popup.offsetHeight;
         popup.classList.add("show");
@@ -416,6 +399,7 @@ const weather = {
     
     const isShowing = popup.classList.contains("show");
     if (!isShowing) {
+        if (window.settings) settings.closeAllPopups("weather-location-popup");
         popup.style.display = "block";
         popup.offsetHeight; // Reflow
         popup.classList.add("show");
