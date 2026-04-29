@@ -9,12 +9,15 @@ const ai = {
         const current = customAis.find(a => a.id === provider);
         return current ? current.url : "";
     }
-    return localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
+    return localStorage.getItem("dj_ai_server_url") || "";
   },
   get apiKey() {
     const provider = this.provider;
-    if (provider === "none" || provider === "local") return "";
-    return localStorage.getItem(`dj_ai_api_key_${provider}`) || localStorage.getItem("dj_ai_api_key") || "";
+    if (provider === "none") return "";
+    if (provider === "openai") return localStorage.getItem("dj_ai_api_key") || "";
+    if (provider === "gemini") return localStorage.getItem("dj_ai_api_key_gemini") || "";
+    // Custom providers
+    return localStorage.getItem(`dj_ai_api_key_${provider}`) || "";
   },
   get settingsModel() {
     return localStorage.getItem("dj_ai_model") || "";
@@ -334,14 +337,8 @@ const ai = {
     const provider = localStorage.getItem("dj_ai_provider") || "none";
     const apiKey = document.getElementById("aiApiKeyInput")?.value.trim() || this.apiKey;
     
-    // URL 결정 로직 수정: 
-    // 로컬 AI일 때만 입력창의 값을 우선시하고, 커스텀 AI일 때는 반드시 등록된 URL 사용
-    let url = "";
-    if (provider === "local") {
-        url = document.getElementById("aiServerUrlInput")?.value || this.serverUrl;
-    } else {
-        url = this.serverUrl; // Custom AI는 this.serverUrl에서 등록된 URL을 가져옴
-    }
+    // Custom AI는 this.serverUrl에서 등록된 URL을 가져옴
+    let url = this.serverUrl; 
 
     if (provider === "none") {
         this.updateChatbotAvailability(false);
@@ -378,38 +375,6 @@ const ai = {
           const data = await res.json();
           finalize(true, data.models.filter((m) => m.supportedGenerationMethods.includes("generateContent")).map((m) => m.name.replace("models/", "")));
         } else finalize(false);
-      } else if (provider === "local") {
-        // Local AI (Ollama style)
-        if (!url) { finalize(false); return; }
-        let fetchUrl = url.includes("localhost") ? url.replace("localhost", "127.0.0.1") : url;
-        if (fetchUrl.endsWith("/")) fetchUrl = fetchUrl.slice(0, -1);
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-        
-        try {
-          const res = await fetch(`${fetchUrl}/api/tags`, { 
-              signal: controller.signal 
-          });
-          clearTimeout(timeoutId);
-          
-          if (res.ok) {
-            const contentType = res.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-              const data = await res.json();
-              if (data && Array.isArray(data.models)) {
-                finalize(true, data.models.map((m) => m.name));
-              } else {
-                finalize(false);
-              }
-            } else {
-              finalize(false);
-            }
-          } else finalize(false);
-        } catch (err) {
-          clearTimeout(timeoutId);
-          finalize(false);
-        }
       } else {
         // Custom Provider
         if (!url) { finalize(false); return; }
@@ -429,27 +394,61 @@ const ai = {
                 signal: controller.signal 
             });
             clearTimeout(timeoutId);
-            if (res.ok) {
+            const contentType = res.headers.get("content-type");
+            const isJson = contentType && contentType.includes("application/json");
+
+            if (res.ok && isJson) {
                 const data = await res.json();
-                finalize(true, data.models ? data.models.map(m => m.name) : []);
+                if (data && data.models && Array.isArray(data.models)) {
+                    finalize(true, data.models.map(m => m.name));
+                } else {
+                    finalize(false); // 규격 불일치
+                }
             } else finalize(false);
           } else {
             // OpenAI default health check
             const headers = { "Content-Type": "application/json" };
+            
+            // 로컬 호스트가 아닌데 API Key가 없으면 즉시 실패 처리
+            const isLocal = fetchUrl.includes("127.0.0.1") || fetchUrl.includes("localhost");
+            if (!apiKey && !isLocal) {
+                finalize(false);
+                return;
+            }
+
             if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
             
             // OpenAI 호환 경로 정규화 (/v1 중복 방지)
-            let checkUrl = fetchUrl.endsWith("/v1") ? fetchUrl.slice(0, -3) : fetchUrl;
+            let checkUrlNormalized = fetchUrl.endsWith("/v1") ? fetchUrl.slice(0, -3) : fetchUrl;
             
-            const res = await fetch(`${checkUrl}/v1/models`, { 
+            const res = await fetch(`${checkUrlNormalized}/v1/models`, { 
                 headers: headers,
                 signal: controller.signal 
             });
             clearTimeout(timeoutId);
-            if (res.ok) {
+
+            const contentType = res.headers.get("content-type");
+            const isJson = contentType && contentType.includes("application/json");
+
+            if (res.ok && isJson) {
                 const data = await res.json();
-                finalize(true, data.data ? data.data.map(m => m.id).sort() : []);
-            } else finalize(true); // 응답만 오면 성공으로 간주 (LM Studio 대응)
+                // OpenAI 규격인지 확인 (data 배열 존재 여부)
+                if (data && data.data && Array.isArray(data.data)) {
+                    finalize(true, data.data.map(m => m.id).sort());
+                } else {
+                    finalize(false); // 주소는 맞으나 규격이 다름
+                }
+            } else {
+                // 401, 403 에러면 실패로 간주 (단, 로컬 호스트 제외)
+                if ((res.status === 401 || res.status === 403) && !isLocal) {
+                    finalize(false);
+                } else if (res.status === 404 && isJson) {
+                    // LM Studio 등은 404를 줄 수 있으나 응답은 JSON이어야 함
+                    finalize(true);
+                } else {
+                    finalize(false);
+                }
+            }
           }
         } catch (err) {
           clearTimeout(timeoutId);
@@ -462,7 +461,7 @@ const ai = {
   },
 
   getProviderName(provider) {
-    const defaultNames = { none: "사용 안 함", local: "로컬 AI (Ollama)", openai: "OpenAI", gemini: "Gemini" };
+    const defaultNames = { none: "사용 안 함", openai: "OpenAI", gemini: "Gemini" };
     if (defaultNames[provider]) return defaultNames[provider];
     const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
     const current = customAis.find(a => a.id === provider);
@@ -510,7 +509,7 @@ const ai = {
 
     try {
       const provider = this.provider;
-      if (provider === "local" || provider.startsWith("custom_"))
+      if (provider.startsWith("custom_"))
         await this.callLocalAI(text, botMsgDiv, chat, activeModel);
       else if (provider === "openai")
         await this.callOpenAI(text, botMsgDiv, chat, activeModel);
@@ -560,13 +559,10 @@ const ai = {
     const isStream = !this.outputAtOnce;
     const provider = this.provider;
     
-    // Determine protocol
-    let protocol = "ollama"; // default for local
-    if (provider.startsWith("custom_")) {
-        const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
-        const currentCustom = customAis.find(a => a.id === provider);
-        protocol = currentCustom ? currentCustom.protocol : "openai";
-    }
+    // Custom AI 프로토콜 가져오기
+    const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+    const currentCustom = customAis.find(a => a.id === provider);
+    const protocol = currentCustom ? currentCustom.protocol : "openai";
 
     const headers = { "Content-Type": "application/json" };
     if (this.apiKey) {

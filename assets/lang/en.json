@@ -30,7 +30,7 @@
   "aiCheckFail": "Check Failed",
   "aiNeedKey": "Key Required",
   "aiNone": "None",
-  "lblAIUrl": "URL",
+  "lblAIKey": "API Key",
   "lblAIOutputAtOnce": "Output Once",
   "optNone": "None",
   "msgConnSuccess": "Connected",

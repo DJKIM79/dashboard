@@ -1017,7 +1017,7 @@
                     <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5; flex-shrink: 0;"></i>
                   </div>
                   <div id="ai-provider-popup" class="engine-popup" style="bottom: 100%; top: auto; margin-bottom: 5px; margin-top: 0;"></div>
-                  <div id="ai-custom-add-container" class="engine-popup" style="padding: 15px; z-index: 120; display: none; bottom: 100%; top: auto; margin-bottom: 5px; margin-top: 0;">
+                  <div id="ai-custom-add-container" class="engine-popup" style="padding: 15px 15px 20px 15px; z-index: 120; display: none; bottom: 100%; top: auto; margin-bottom: 5px; margin-top: 0;">
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                       <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
                         <span>사용자 AI 추가</span>
@@ -1034,15 +1034,20 @@
                         placeholder="https://example.com/api"
                         style="margin-bottom: 0; width: 100%;"
                       />
-                      <div id="protocol-select-wrap" style="position: relative; width: 100%;">
-                        <div id="protocol-trigger" class="weather-custom-select" data-outside-ignore onclick="settings.toggleProtocolPopup(event)">
+                      <input
+                        type="password"
+                        id="customAiKeyInput"
+                        placeholder="API Key (선택 사항)"
+                        style="margin-bottom: 0; width: 100%;"
+                      />
+                      <div id="protocol-select-wrap" style="position: relative; width: 100%;">                        <div id="protocol-trigger" class="weather-custom-select" data-outside-ignore onclick="settings.toggleProtocolPopup(event)">
                           <span id="protocol-trigger-text">OpenAI 호환</span>
                           <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
                         </div>
                         <input type="hidden" id="customAiProtocol" value="openai">
                         <div id="protocol-popup" class="engine-popup" style="bottom: 100%; top: auto; margin-bottom: 5px; margin-top: 0;"></div>
                       </div>
-                      <button class="btn-save" onclick="settings.addCustomAI()" style="width: 100%; height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                      <button class="btn-save" data-outside-ignore onclick="settings.addCustomAI(event)" style="width: 100%; height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                         <span>추가</span>
                       </button>
                     </div>
@@ -1090,22 +1095,15 @@
                         color: #94a3b8;
                         white-space: nowrap;
                       "
-                      data-i18n="lblAIUrl"
-                      >URL</span
+                      data-i18n="lblAIKey"
+                      >Key</span
                     >
                     <div style="position: relative; flex: 1; display: flex; align-items: center; gap: 5px;">
-                      <input
-                        type="text"
-                        id="aiServerUrlInput"
-                        placeholder="서버 주소"
-                        style="margin-bottom: 0; width: 100%;"
-                        oninput="updateAiServerUrl(this.value)"
-                      />
                       <input
                         type="password"
                         id="aiApiKeyInput"
                         placeholder="API Key"
-                        style="margin-bottom: 0; width: 100%; display: none;"
+                        style="margin-bottom: 0; width: 100%;"
                         oninput="updateAiApiKey(this.value)"
                       />
                     </div>

@@ -75,12 +75,7 @@ const settings = {
       if (el("aiOutputAtOnceCheck"))
         el("aiOutputAtOnceCheck").checked = aiOutputAtOnce;
 
-      if (el("aiServerUrlInput"))
-        el("aiServerUrlInput").value =
-          localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
-
       this.onAIProviderChange();
-
       if (window.ai && typeof ai.updateStatusUI === "function")
         ai.updateStatusUI();
 
@@ -474,28 +469,13 @@ const settings = {
     },
   onAIProviderChange() {
     const provider = localStorage.getItem("dj_ai_provider") || "none";
-    const urlInput = document.getElementById("aiServerUrlInput");
     const keyInput = document.getElementById("aiApiKeyInput");
     const keyLabel = document.getElementById("aiKeyLabel");
     const customAddArea = document.getElementById("ai-custom-add-container");
 
-    if (urlInput && keyInput) {
-      if (provider === "local") {
-        urlInput.style.display = "block";
-        keyInput.style.display = "none";
-        if (keyLabel) keyLabel.innerText = "URL";
-        urlInput.value = localStorage.getItem("dj_ai_server_url") || "http://127.0.0.1:11434";
-      } else if (provider.startsWith("custom_")) {
-        urlInput.style.display = "none";
-        keyInput.style.display = "block";
-        if (keyLabel) keyLabel.innerText = "Key";
-        keyInput.value = localStorage.getItem(`dj_ai_api_key_${provider}`) || "";
-      } else {
-        urlInput.style.display = "none";
-        keyInput.style.display = "block";
-        if (keyLabel) keyLabel.innerText = "Key";
-        keyInput.value = localStorage.getItem(`dj_ai_api_key_${provider}`) || localStorage.getItem("dj_ai_api_key") || "";
-      }
+    if (keyInput) {
+      if (keyLabel) keyLabel.innerText = "Key";
+      keyInput.value = localStorage.getItem(`dj_ai_api_key_${provider}`) || localStorage.getItem("dj_ai_api_key") || "";
     }
     
     if (customAddArea) {
@@ -562,7 +542,6 @@ const settings = {
 
     const defaultAis = [
         { id: "none", name: "사용 안 함", icon: "fas fa-ban" },
-        { id: "local", name: "로컬 AI (Ollama)", icon: "fas fa-desktop" },
         { id: "openai", name: "OpenAI", icon: "fas fa-circle-nodes" },
         { id: "gemini", name: "Gemini", icon: "fas fa-wand-magic-sparkles" }
     ];
@@ -588,7 +567,7 @@ const settings = {
           ${aiItem.id === currentProvider ? '<i class="fas fa-check-circle engine-active-icon"></i>' : ''}
         </div>
         <div class="engine-actions">
-          ${aiItem.id === 'none' || aiItem.id === 'local' || aiItem.id === 'openai' || aiItem.id === 'gemini' 
+          ${aiItem.id === 'none' || aiItem.id === 'openai' || aiItem.id === 'gemini' 
             ? '<span class="engine-info-tag">기본</span>' 
             : `<i class="fas fa-trash-alt engine-btn-del" onclick="event.stopPropagation(); settings.deleteCustomAI('${aiItem.id}')"></i>`}
         </div>
@@ -733,7 +712,6 @@ const settings = {
     
     const defaults = {
         none: { name: "사용 안 함", icon: "fas fa-ban" },
-        local: { name: "로컬 AI (Ollama)", icon: "fas fa-desktop" },
         openai: { name: "OpenAI", icon: "fas fa-circle-nodes" },
         gemini: { name: "Gemini", icon: "fas fa-wand-magic-sparkles" }
     };
@@ -795,13 +773,18 @@ const settings = {
     });
   },
 
-  async addCustomAI() {
+  async addCustomAI(e) {
+    if (e) e.stopPropagation();
+    const addBtn = document.querySelector("#ai-custom-add-container .btn-save");
+    if (addBtn && addBtn.classList.contains("loading")) return;
+
     const nameInput = document.getElementById("customAiNameInput");
     const urlInput = document.getElementById("customAiUrlInput");
+    const keyInput = document.getElementById("customAiKeyInput");
     const protocolHidden = document.getElementById("customAiProtocol");
-    const addBtn = document.querySelector("#ai-custom-add-container .btn-save");
     const name = nameInput.value.trim();
     let url = urlInput.value.trim();
+    const apiKey = keyInput ? keyInput.value.trim() : "";
     const protocol = protocolHidden ? protocolHidden.value : "openai";
 
     if (!name || !url) {
@@ -810,9 +793,7 @@ const settings = {
     }
 
     // URL 프로토콜 자동 보정
-    // http://, https:// 가 아예 없거나 http:/ 처럼 오타가 있는 경우 보정
     if (!url.match(/^https?:\/\//)) {
-        // http:/127.0.0.1 처럼 슬래시가 하나만 있는 경우 등 처리
         url = url.replace(/^https?:\/?\/?/, "");
         url = "http://" + url;
         urlInput.value = url;
@@ -821,21 +802,17 @@ const settings = {
     const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
     const defaultAis = [
         { id: "none", name: "사용 안 함" },
-        { id: "local", name: "로컬 AI (Ollama)" },
         { id: "openai", name: "OpenAI" },
         { id: "gemini", name: "Gemini" }
     ];
     
-    // 중복 체크 (기본 AI 이름 포함)
     const isDuplicate = defaultAis.some(a => a.name === name) || customAis.some(a => a.name === name);
     if (isDuplicate) {
         utils.showValidationTip("customAiNameInput", "이미 존재하는 이름입니다.");
-        // 입력창에 포커스 주어 팁이 잘 보이게 함
         nameInput.focus();
         return;
     }
     
-    // URL 형식 간단 확인
     try {
         new URL(url);
     } catch (e) {
@@ -843,7 +820,6 @@ const settings = {
         return;
     }
 
-    // 접속 테스트 시도
     if (addBtn) {
         addBtn.classList.add("loading");
         addBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>확인 중...</span>';
@@ -851,70 +827,109 @@ const settings = {
 
     try {
         let isReachable = false;
-        // URL 정규화: 끝의 슬래시 제거
-        let fetchUrl = url.endsWith("/") ? url.slice(0, -1) : url;
+        let reachError = "AI 서버에 접속할 수 없습니다. 주소와 프로토콜을 확인해 주세요.";
         
-        // OpenAI 호환 프로토콜인 경우 /v1 경로 체크
-        // 만약 사용자가 이미 /v1을 붙였다면 중복되지 않게 처리
-        if (protocol === "openai" && !fetchUrl.endsWith("/v1")) {
-            // fetchUrl = fetchUrl + "/v1"; // 저장할 때 v1을 붙일지 말지 결정 (ai.js의 로직과 맞춰야 함)
-            // 여기서는 일단 베이스 URL만 저장하고 ai.js에서 똑똑하게 붙이도록 함
+        // URL 정규화: 끝의 슬래시 및 /v1 제거 (ai.js와 규격 통일)
+        let fetchUrl = url.endsWith("/") ? url.slice(0, -1) : url;
+        if (protocol === "openai" && fetchUrl.endsWith("/v1")) {
+            fetchUrl = fetchUrl.slice(0, -3);
         }
 
         const checkReachable = async (targetUrl) => {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 3500);
             try {
-                let testPath = "/v1/models"; // OpenAI 기본
-                if (protocol === "ollama") testPath = "/api/tags";
-                else if (protocol === "anthropic" || protocol === "gemini") return true;
+                let fullPath = targetUrl;
+                let testPath = "";
 
-                // 만약 targetUrl에 이미 /v1이 있다면 중복 방지
-                let fullPath = targetUrl.endsWith("/v1") ? targetUrl.replace("/v1", "") + testPath : targetUrl + testPath;
+                if (protocol === "openai") {
+                    testPath = "/v1/models";
+                    fullPath = targetUrl + testPath;
+                } else if (protocol === "ollama") {
+                    testPath = "/api/tags";
+                    fullPath = targetUrl + testPath;
+                } else if (protocol === "anthropic") {
+                    // Anthropic은 보통 /v1/messages를 사용하므로 베이스 경로가 응답하더라도 
+                    // 프로토콜 특성을 확인하기 위해 특정 헤더나 경로 체크가 필요함
+                    fullPath = targetUrl;
+                } else if (protocol === "gemini") {
+                    fullPath = targetUrl;
+                }
 
-                const res = await fetch(fullPath, { 
-                    headers: { "Accept": "application/json" },
-                    signal: controller.signal 
-                });
-                return true; 
+                const headers = { "Accept": "application/json" };
+                if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+
+                const res = await fetch(fullPath, { headers, signal: controller.signal });
+
+                // 401, 403은 서버가 살아있고 KEY만 문제인 상태
+                if (res.status === 401 || res.status === 403) {
+                    return { ok: false, error: "API Key가 올바르지 않거나 권한이 없습니다." };
+                }
+                
+                // 데이터 내용까지 확인하여 프로토콜 일치 여부 판별
+                const contentType = res.headers.get("content-type");
+                const isJson = contentType && contentType.includes("application/json");
+
+                if (protocol === "openai") {
+                    if (res.ok && isJson) {
+                        const data = await res.json();
+                        if (data && data.data && Array.isArray(data.data)) return { ok: true };
+                        return { ok: false, error: "OpenAI 규격과 일치하지 않는 서버 응답입니다." };
+                    }
+                    if (res.status === 404 && isJson) {
+                        // LM Studio 등은 404를 줄 수 있으나 응답은 JSON이어야 함
+                        return { ok: true };
+                    }
+                } else if (protocol === "ollama") {
+                    if (res.ok && isJson) {
+                        const data = await res.json();
+                        if (data && data.models && Array.isArray(data.models)) return { ok: true };
+                        return { ok: false, error: "Ollama 규격과 일치하지 않는 서버 응답입니다." };
+                    }
+                } else {
+                    // Anthropic/Gemini 등은 클라우드 서비스이므로 
+                    // 로컬 IP(127.0.0.1, localhost)가 입력되었을 경우 무조건 실패 처리 (오설정 방지)
+                    const isLocal = targetUrl.includes("127.0.0.1") || targetUrl.includes("localhost");
+                    if (isLocal) {
+                        return { ok: false, error: "로컬 주소는 OpenAI 호환 또는 Ollama 프로토콜을 사용해야 합니다." };
+                    }
+                    if (res.ok) return { ok: true };
+                }
+
+                return { ok: false, error: `API 경로를 찾을 수 없거나 프로토콜이 맞지 않습니다. (Status: ${res.status})` };
             } catch (e) {
-                console.log("AI Reachable Check Error:", e);
-                return false;
+                return { ok: false, error: "서버에 접속할 수 없습니다. 주소와 포트, CORS 설정을 확인해 주세요." };
             } finally {
                 clearTimeout(timeoutId);
             }
         };
 
-        isReachable = await checkReachable(fetchUrl);
+        const result = await checkReachable(fetchUrl);
+        isReachable = result.ok;
+        reachError = result.error || reachError;
         
-        // 만약 실패했고 사용자가 프로토콜을 직접 입력하지 않았던 경우 https로도 한번 더 시도
-        if (!isReachable && url.startsWith("http://") && !urlInput.value.includes("://")) {
+        // http 실패 시 https 재시도 (사용자가 프로토콜을 명시하지 않았을 때만)
+        if (!isReachable && url.startsWith("http://") && !urlInput.value.includes("://") && !reachError.includes("API Key")) {
             const httpsUrl = fetchUrl.replace("http://", "https://");
-            if (await checkReachable(httpsUrl)) {
+            const retryResult = await checkReachable(httpsUrl);
+            if (retryResult.ok) {
                 isReachable = true;
                 fetchUrl = httpsUrl;
-                url = httpsUrl;
             }
         }
 
-        // 로컬 호스트(127.0.0.1, localhost)의 경우 CORS 문제로 fetch가 실패할 수 있음.
-        // 이 경우 사용자에게 경고는 하되 추가는 허용함.
-        const isLocal = url.includes("127.0.0.1") || url.includes("localhost");
-        
-        if (!isReachable && !isLocal) {
-            utils.showValidationTip("customAiUrlInput", "AI 서버에 접속할 수 없습니다. 주소와 프로토콜을 확인해 주세요.", "error");
+        // 최종 체크: 연결 실패 시 절대 추가하지 않음
+        if (!isReachable) {
+            const tipId = reachError.includes("API Key") ? "customAiKeyInput" : "customAiUrlInput";
+            utils.showValidationTip(tipId, reachError, "error");
             if (addBtn) {
                 addBtn.classList.remove("loading");
                 addBtn.innerHTML = '<span>추가</span>';
             }
-            return;
+            return; // 여기서 함수 실행 종료
         }
 
-        if (!isReachable && isLocal) {
-            // 로컬인 경우 접속 확인 실패해도 진행 (CORS 대비)
-            console.warn("Local AI reachability check failed, likely due to CORS. Proceeding anyway.");
-        }
-
+        // 연결 성공 시에만 아래 로직 실행
         const newAi = {
             id: `custom_${Date.now()}`,
             name: name,
@@ -927,9 +942,22 @@ const settings = {
         customAis.push(newAi);
         localStorage.setItem("dj_ai_custom_providers", JSON.stringify(customAis));
         
+        if (apiKey) {
+            localStorage.setItem(`dj_ai_api_key_${newAi.id}`, apiKey);
+        }
+        
+        // UI 정리
         nameInput.value = "";
         urlInput.value = "";
-        document.getElementById("ai-custom-add-container").classList.remove("show");
+        if (keyInput) keyInput.value = "";
+        
+        const container = document.getElementById("ai-custom-add-container");
+        if (container) {
+            container.classList.remove("show");
+            setTimeout(() => {
+                if (!container.classList.contains("show")) container.style.display = "none";
+            }, 200);
+        }
         
         this.updateAiProvider(newAi.id);
         
@@ -957,19 +985,15 @@ const settings = {
     this.renderAIList();
   },
 
-
-  updateAiServerUrl(value) {
-    localStorage.setItem("dj_ai_server_url", value.trim());
-    if (this._aiCheckTimeout) clearTimeout(this._aiCheckTimeout);
-    this._aiCheckTimeout = setTimeout(() => {
-        if (window.ai) ai.checkConnection();
-    }, 1000);
-  },
-
   updateAiApiKey(value) {
     const provider = localStorage.getItem("dj_ai_provider") || "none";
-    if (provider !== "none" && provider !== "local") {
-        localStorage.setItem(`dj_ai_api_key_${provider}`, value.trim());
+    if (provider !== "none") {
+        const key = value.trim();
+        if (key) {
+            localStorage.setItem(`dj_ai_api_key_${provider}`, key);
+        } else {
+            localStorage.removeItem(`dj_ai_api_key_${provider}`);
+        }
     }
     if (this._aiCheckTimeout) clearTimeout(this._aiCheckTimeout);
     this._aiCheckTimeout = setTimeout(() => {
@@ -1363,7 +1387,6 @@ window.updateShowWeather = settings.updateShowWeather.bind(settings);
 window.toggleFileMgmt = settings.toggleFileMgmt.bind(settings);
 window.updateAiOutputAtOnce = settings.updateAiOutputAtOnce.bind(settings);
 window.updateAiProvider = settings.updateAiProvider.bind(settings);
-window.updateAiServerUrl = settings.updateAiServerUrl.bind(settings);
 window.updateAiApiKey = settings.updateAiApiKey.bind(settings);
 window.updateAiModel = settings.updateAiModel.bind(settings);
 window.updateLangUI = settings.updateLangUI.bind(settings);

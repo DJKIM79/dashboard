@@ -31,7 +31,7 @@
   "aiCheckFail": "-",
   "aiNeedKey": "-",
   "aiNone": "없음",
-  "lblAIUrl": "주소",
+  "lblAIKey": "API 키",
   "lblAIOutputAtOnce": "답변 한번에 출력",
   "optNone": "사용 안 함",
   "msgConnSuccess": "서버 접속 성공",
