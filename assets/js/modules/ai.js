@@ -86,7 +86,13 @@ const ai = {
           !e.target.closest(".history-title") &&
           !e.target.closest(".ai-model-popup")
         ) {
-          document.getElementById("ai-model-popup")?.classList.remove("show");
+          const popup = document.getElementById("ai-model-popup");
+          if (popup && popup.classList.contains("show")) {
+            popup.classList.remove("show");
+            setTimeout(() => {
+              if (!popup.classList.contains("show")) popup.style.display = "none";
+            }, 200);
+          }
         }
         
         // Hide delete confirmation tip when clicking outside
@@ -150,6 +156,9 @@ const ai = {
     
     if (popup.classList.contains("show")) {
       popup.classList.remove("show");
+      setTimeout(() => {
+        if (!popup.classList.contains("show")) popup.style.display = "none";
+      }, 200);
       return;
     }
 
@@ -170,6 +179,9 @@ const ai = {
           evt.stopPropagation();
           this.selectTemporaryModel(m);
           popup.classList.remove("show");
+          setTimeout(() => {
+            if (!popup.classList.contains("show")) popup.style.display = "none";
+          }, 200);
         };
         popup.appendChild(div);
       });
@@ -184,6 +196,7 @@ const ai = {
         "서버에 연결되면\n모델 목록이 표시됩니다.";
       popup.appendChild(tip);
     }
+    popup.style.display = "block";
     popup.classList.add("show");
   },
 
@@ -424,8 +437,11 @@ const ai = {
             // OpenAI default health check
             const headers = { "Content-Type": "application/json" };
             if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
-            // For connection check, we use /v1/models
-            const res = await fetch(`${fetchUrl}/v1/models`, { 
+            
+            // OpenAI 호환 경로 정규화 (/v1 중복 방지)
+            let checkUrl = fetchUrl.endsWith("/v1") ? fetchUrl.slice(0, -3) : fetchUrl;
+            
+            const res = await fetch(`${checkUrl}/v1/models`, { 
                 headers: headers,
                 signal: controller.signal 
             });
@@ -433,7 +449,7 @@ const ai = {
             if (res.ok) {
                 const data = await res.json();
                 finalize(true, data.data ? data.data.map(m => m.id).sort() : []);
-            } else finalize(false);
+            } else finalize(true); // 응답만 오면 성공으로 간주 (LM Studio 대응)
           }
         } catch (err) {
           clearTimeout(timeoutId);
@@ -446,7 +462,7 @@ const ai = {
   },
 
   getProviderName(provider) {
-    const defaultNames = { none: "사용 안 함", local: "로컬 AI", openai: "OpenAI", gemini: "Gemini" };
+    const defaultNames = { none: "사용 안 함", local: "로컬 AI (Ollama)", openai: "OpenAI", gemini: "Gemini" };
     if (defaultNames[provider]) return defaultNames[provider];
     const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
     const current = customAis.find(a => a.id === provider);
@@ -595,11 +611,17 @@ const ai = {
         };
     } else {
         // OpenAI protocol
-        url = `${this.serverUrl}/v1/chat/completions`;
+        let fetchUrl = this.serverUrl;
+        if (fetchUrl.endsWith("/")) fetchUrl = fetchUrl.slice(0, -1);
+
+        // /v1 중복 방지 정규화
+        const baseUrl = fetchUrl.endsWith("/v1") ? fetchUrl.slice(0, -3) : fetchUrl;
+        url = `${baseUrl}/v1/chat/completions`;
+
         body = {
             model: model,
             messages: chat.messages
-              .map((m) => ({ role: m.role, content: m.content }))
+              .map((m) => ({ role: m.role === "bot" ? "assistant" : m.role, content: m.content }))
               .concat([{ role: "user", content: prompt }]),
             stream: isStream,
         };

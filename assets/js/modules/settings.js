@@ -562,7 +562,7 @@ const settings = {
 
     const defaultAis = [
         { id: "none", name: "사용 안 함", icon: "fas fa-ban" },
-        { id: "local", name: "로컬 AI", icon: "fas fa-desktop" },
+        { id: "local", name: "로컬 AI (Ollama)", icon: "fas fa-desktop" },
         { id: "openai", name: "OpenAI", icon: "fas fa-circle-nodes" },
         { id: "gemini", name: "Gemini", icon: "fas fa-wand-magic-sparkles" }
     ];
@@ -733,7 +733,7 @@ const settings = {
     
     const defaults = {
         none: { name: "사용 안 함", icon: "fas fa-ban" },
-        local: { name: "로컬 AI", icon: "fas fa-desktop" },
+        local: { name: "로컬 AI (Ollama)", icon: "fas fa-desktop" },
         openai: { name: "OpenAI", icon: "fas fa-circle-nodes" },
         gemini: { name: "Gemini", icon: "fas fa-wand-magic-sparkles" }
     };
@@ -774,9 +774,7 @@ const settings = {
     
     const protocols = [
         { id: "openai", name: "OpenAI 호환" },
-        { id: "ollama", name: "Ollama" },
-        { id: "anthropic", name: "Anthropic" },
-        { id: "gemini", name: "Google Gemini" }
+        { id: "anthropic", name: "Anthropic" }
     ];
     
     const current = document.getElementById("customAiProtocol").value;
@@ -803,7 +801,7 @@ const settings = {
     const protocolHidden = document.getElementById("customAiProtocol");
     const addBtn = document.querySelector("#ai-custom-add-container .btn-save");
     const name = nameInput.value.trim();
-    const url = urlInput.value.trim();
+    let url = urlInput.value.trim();
     const protocol = protocolHidden ? protocolHidden.value : "openai";
 
     if (!name || !url) {
@@ -811,11 +809,29 @@ const settings = {
         return;
     }
 
+    // URL 프로토콜 자동 보정
+    // http://, https:// 가 아예 없거나 http:/ 처럼 오타가 있는 경우 보정
+    if (!url.match(/^https?:\/\//)) {
+        // http:/127.0.0.1 처럼 슬래시가 하나만 있는 경우 등 처리
+        url = url.replace(/^https?:\/?\/?/, "");
+        url = "http://" + url;
+        urlInput.value = url;
+    }
+
     const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+    const defaultAis = [
+        { id: "none", name: "사용 안 함" },
+        { id: "local", name: "로컬 AI (Ollama)" },
+        { id: "openai", name: "OpenAI" },
+        { id: "gemini", name: "Gemini" }
+    ];
     
-    // 중복 체크
-    if (customAis.some(a => a.name === name)) {
+    // 중복 체크 (기본 AI 이름 포함)
+    const isDuplicate = defaultAis.some(a => a.name === name) || customAis.some(a => a.name === name);
+    if (isDuplicate) {
         utils.showValidationTip("customAiNameInput", "이미 존재하는 이름입니다.");
+        // 입력창에 포커스 주어 팁이 잘 보이게 함
+        nameInput.focus();
         return;
     }
     
@@ -830,44 +846,73 @@ const settings = {
     // 접속 테스트 시도
     if (addBtn) {
         addBtn.classList.add("loading");
-        const originalText = addBtn.innerHTML;
         addBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>확인 중...</span>';
     }
 
     try {
         let isReachable = false;
+        // URL 정규화: 끝의 슬래시 제거
         let fetchUrl = url.endsWith("/") ? url.slice(0, -1) : url;
         
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
-        
-        try {
-            if (protocol === "openai") {
-                const resOpenAI = await fetch(`${fetchUrl}/v1/models`, { 
+        // OpenAI 호환 프로토콜인 경우 /v1 경로 체크
+        // 만약 사용자가 이미 /v1을 붙였다면 중복되지 않게 처리
+        if (protocol === "openai" && !fetchUrl.endsWith("/v1")) {
+            // fetchUrl = fetchUrl + "/v1"; // 저장할 때 v1을 붙일지 말지 결정 (ai.js의 로직과 맞춰야 함)
+            // 여기서는 일단 베이스 URL만 저장하고 ai.js에서 똑똑하게 붙이도록 함
+        }
+
+        const checkReachable = async (targetUrl) => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3500);
+            try {
+                let testPath = "/v1/models"; // OpenAI 기본
+                if (protocol === "ollama") testPath = "/api/tags";
+                else if (protocol === "anthropic" || protocol === "gemini") return true;
+
+                // 만약 targetUrl에 이미 /v1이 있다면 중복 방지
+                let fullPath = targetUrl.endsWith("/v1") ? targetUrl.replace("/v1", "") + testPath : targetUrl + testPath;
+
+                const res = await fetch(fullPath, { 
                     headers: { "Accept": "application/json" },
                     signal: controller.signal 
                 });
-                if (resOpenAI.ok) isReachable = true;
-            } else if (protocol === "ollama") {
-                const resOllama = await fetch(`${fetchUrl}/api/tags`, { 
-                    signal: controller.signal 
-                });
-                if (resOllama.ok) isReachable = true;
-            } else if (protocol === "anthropic") {
-                isReachable = true; 
-            } else if (protocol === "gemini") {
-                isReachable = true;
+                return true; 
+            } catch (e) {
+                console.log("AI Reachable Check Error:", e);
+                return false;
+            } finally {
+                clearTimeout(timeoutId);
             }
-        } catch (e) { }
-        clearTimeout(timeoutId);
+        };
 
-        if (!isReachable) {
+        isReachable = await checkReachable(fetchUrl);
+        
+        // 만약 실패했고 사용자가 프로토콜을 직접 입력하지 않았던 경우 https로도 한번 더 시도
+        if (!isReachable && url.startsWith("http://") && !urlInput.value.includes("://")) {
+            const httpsUrl = fetchUrl.replace("http://", "https://");
+            if (await checkReachable(httpsUrl)) {
+                isReachable = true;
+                fetchUrl = httpsUrl;
+                url = httpsUrl;
+            }
+        }
+
+        // 로컬 호스트(127.0.0.1, localhost)의 경우 CORS 문제로 fetch가 실패할 수 있음.
+        // 이 경우 사용자에게 경고는 하되 추가는 허용함.
+        const isLocal = url.includes("127.0.0.1") || url.includes("localhost");
+        
+        if (!isReachable && !isLocal) {
             utils.showValidationTip("customAiUrlInput", "AI 서버에 접속할 수 없습니다. 주소와 프로토콜을 확인해 주세요.", "error");
             if (addBtn) {
                 addBtn.classList.remove("loading");
                 addBtn.innerHTML = '<span>추가</span>';
             }
             return;
+        }
+
+        if (!isReachable && isLocal) {
+            // 로컬인 경우 접속 확인 실패해도 진행 (CORS 대비)
+            console.warn("Local AI reachability check failed, likely due to CORS. Proceeding anyway.");
         }
 
         const newAi = {
@@ -933,16 +978,13 @@ const settings = {
   },
 
   updateThemeAdjustment(type) {
-    const lighter = document.getElementById("themeLighter");
-    const darker = document.getElementById("themeDarker");
     const themeColor = localStorage.getItem("dj_theme_color") || "#3b82f6";
+    const currentAdj = localStorage.getItem("dj_theme_adjustment") || "none";
 
-    if (type === "lighter") {
-      localStorage.setItem("dj_theme_adjustment", "lighter");
-    } else if (type === "darker") {
-      localStorage.setItem("dj_theme_adjustment", "darker");
-    } else {
+    if (type === currentAdj) {
       localStorage.setItem("dj_theme_adjustment", "none");
+    } else {
+      localStorage.setItem("dj_theme_adjustment", type);
     }
     this.setTheme(themeColor, true);
   },
@@ -961,6 +1003,27 @@ const settings = {
     lighter.parentElement.style.pointerEvents = isWhite ? "none" : "auto";
     darker.parentElement.style.opacity = isBlack ? "0.3" : "1";
     darker.parentElement.style.pointerEvents = isBlack ? "none" : "auto";
+
+    // Update selected swatch
+    const swatches = document.querySelectorAll(".color-swatch");
+    const expandHex = (hex) => {
+      if (hex.length === 4) {
+        return "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+      }
+      return hex.toLowerCase();
+    };
+    const targetColor = expandHex(color);
+
+    swatches.forEach((s) => {
+      s.classList.remove("active");
+      // Compare background color. Note: s.style.background might return rgb() format
+      // but in index.html it's set as hex. Let's use a simpler way or compare with a temporary element.
+      // Easiest is to check the onclick attribute since it contains the hex.
+      const onclickAttr = s.getAttribute("onclick") || "";
+      if (onclickAttr.includes(`'${color}'`) || onclickAttr.includes(`"${color}"`)) {
+        s.classList.add("active");
+      }
+    });
   },
 
   toggleCustomSearchUrl() {
@@ -1056,7 +1119,7 @@ const settings = {
       item.onclick = (e) => {
         e.stopPropagation();
         this.selectCustomOption(type, opt.value);
-        popup.classList.remove("show");
+        this.toggleCustomSelect(popupId, e);
       };
       popup.appendChild(item);
     });
@@ -1235,6 +1298,7 @@ const settings = {
     
     item.onclick = (e) => {
         e.stopPropagation();
+        this.closeLangPopup();
         if (window.i18n) i18n.setLanguage(lang.id);
     };
 

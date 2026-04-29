@@ -51,7 +51,15 @@ const i18n = {
 
   setLanguage(lang) {
     localStorage.setItem("dj_user_lang", lang);
-    location.reload();
+    const modal = document.getElementById("settingModal");
+    if (modal && modal.classList.contains("show")) {
+      modal.classList.remove("show");
+      setTimeout(() => {
+        location.reload();
+      }, 300);
+    } else {
+      location.reload();
+    }
   }
 };
 
