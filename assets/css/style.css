@@ -2548,6 +2548,9 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   outline: none;
   transition: none;
   border-radius: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .ai-title-input:hover,
 .ai-title-input:focus {
