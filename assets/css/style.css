@@ -2622,6 +2622,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   align-items: stretch;
   border-top: 1px solid var(--glass-border);
   flex-shrink: 0;
+  cursor: text;
 }
 /* Tutorial (Driver.js) v1.0+ Custom Styling - Modern Glassmorphism */
 .driver-popover {
@@ -2733,6 +2734,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  justify-content: flex-end;
 }
 .ai-icon-btn,
 #ai-send-btn {
