@@ -234,6 +234,8 @@
   "optZhTw": "Chi (Trad)",
   "optFr": "Französ.",
   "optDe": "Deutsch",
+  "msgCityAdded": "{0} hinzugefügt.",
+  "tipOntoInfo": "OnTo Informationen",
   "resetConfirmTitle": "Wirklich zurücksetzen?",
   "resetConfirmDesc": "(Alle Einstellungen und Daten werden gelöscht)",
   "btnConfirmReset": "Zurücksetzen"

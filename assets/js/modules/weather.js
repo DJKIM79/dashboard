@@ -152,8 +152,8 @@ const weather = {
         err.className = "weather-item";
         err.style.opacity = "0.7";
         err.innerHTML = `
-          <div class="weather-loc" style="color:var(--warning-color)">API 오류</div>
-          <div class="weather-main" style="font-size:0.8rem">정보 획득 실패</div>
+          <div class="weather-loc" style="color:var(--warning-color)">${i18n.get("msgApiError")}</div>
+          <div class="weather-main" style="font-size:0.8rem">${i18n.get("msgWeatherFail")}</div>
         `;
         document.getElementById("top-right-widgets").appendChild(err);
       }
@@ -287,7 +287,8 @@ const weather = {
     // Show success feedback tip
     setTimeout(() => {
         if (window.utils) {
-            utils.showValidationTip("weather-location-trigger", `${loc.name}가 추가되었습니다.`);
+            const msg = window.i18n ? i18n.get("msgCityAdded").replace("{0}", loc.name) : `${loc.name}가 추가되었습니다.`;
+            utils.showValidationTip("weather-location-trigger", msg);
         }
     }, 100);
 

@@ -234,7 +234,9 @@
   "optZhTw": "中文(繁)",
   "optFr": "法語",
   "optDe": "德語",
-  "resetConfirmTitle": "確定要重設嗎？",
+  "msgCityAdded": "{0}已添加。",
+  "tipOntoInfo": "OnTo資訊",
+  "resetConfirmTitle": "確定要重置嗎？",
   "resetConfirmDesc": "(所有設定和資料將被永久刪除)",
   "btnConfirmReset": "重設"
 }

@@ -66,7 +66,7 @@ const memo = {
       utils.saveData();
       utils.closeModal("memoModal");
     } else {
-      utils.showValidationTip("memoSaveBtn", "제목을 입력해 주세요.");
+      utils.showValidationTip("memoSaveBtn", i18n.get("msgInputTitle"));
     }
   },
 

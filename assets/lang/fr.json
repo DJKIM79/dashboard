@@ -234,6 +234,8 @@
   "optZhTw": "Chi (Trad)",
   "optFr": "Français",
   "optDe": "Allemand",
+  "msgCityAdded": "{0} ajouté.",
+  "tipOntoInfo": "Informations OnTo",
   "resetConfirmTitle": "Voulez-vous réinitialiser ?",
   "resetConfirmDesc": "(Les paramètres et données seront supprimés)",
   "btnConfirmReset": "Réinitialiser"

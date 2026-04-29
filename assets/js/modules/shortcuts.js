@@ -178,9 +178,9 @@ const shortcutMod = {
     } else {
       // 메모/알림과 동일한 풍선 경고창 적용
       if (!n) {
-        utils.showValidationTip("linkSaveBtn", "이름을 입력해 주세요.");
+        utils.showValidationTip("linkSaveBtn", i18n.get("msgInputName"));
       } else if (!u) {
-        utils.showValidationTip("linkSaveBtn", "URL을 입력해 주세요.");
+        utils.showValidationTip("linkSaveBtn", i18n.get("msgInputUrl"));
       }
     }
   },

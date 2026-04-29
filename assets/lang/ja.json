@@ -234,6 +234,8 @@
   "optZhTw": "中国語(繁体)",
   "optFr": "フランス語",
   "optDe": "ドイツ語",
+  "msgCityAdded": "{0}が追加されました。",
+  "tipOntoInfo": "OnTo情報",
   "resetConfirmTitle": "本当に初期化しますか？",
   "resetConfirmDesc": "(すべての設定とデータが完全に削除されます)",
   "btnConfirmReset": "初期化"

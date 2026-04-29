@@ -56,7 +56,7 @@ const files = {
         alert(i18n.get("alertRestore"));
       } catch (err) {
         console.error("Failed to import data", err);
-        alert("Import failed: Invalid file format");
+        alert(i18n.get("msgImportError"));
       }
     };
     r.readAsText(f);

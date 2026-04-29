@@ -147,7 +147,7 @@ const ai = {
       const hasRealMessages = chat && chat.messages.some(m => m.role === "user" || m.role === "bot");
       // 제목 옆에는 삭제 대신 텍스트 내보내기 버튼 표시
       actionsEl.innerHTML = (chat && hasRealMessages) 
-        ? `<i class="fas fa-file-arrow-down ai-btn-export" onclick="ai.exportChatToText(${chat.id}, event)" title=window.i18n ? window.i18n.get("txtExportText") : "텍스트로 내보내기"></i>` 
+        ? `<i class="fas fa-file-arrow-down ai-btn-export" onclick="ai.exportChatToText(${chat.id}, event)" title="${window.i18n ? window.i18n.get("txtExportText") : "텍스트로 내보내기"}"></i>` 
         : "";
     }
   },

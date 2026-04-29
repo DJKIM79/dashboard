@@ -597,9 +597,9 @@ body::before {
   gap: 10px;
   pointer-events: none; /* 컨테이너 자체는 클릭 무시 */
   position: relative;
-  z-index: 20;
+  z-index: 100;
   transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: scale(var(--widget-scale));
+  transform: scale(var(--widget-scale)) translateZ(0);
   transform-origin: bottom left;
   width: max-content;
 }
@@ -612,9 +612,9 @@ body::before {
   flex-direction: column-reverse;
   pointer-events: none; /* 컨테이너 자체는 클릭 무시 */
   position: relative;
-  z-index: 10;
+  z-index: 100;
   transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: scale(var(--widget-scale));
+  transform: scale(var(--widget-scale)) translateZ(0);
   transform-origin: bottom right;
   width: max-content;
 }
@@ -779,6 +779,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .widget-hidden {
   opacity: 0 !important;
+  visibility: hidden !important;
   transform: scale(0.9) translateY(20px) !important;
   pointer-events: none !important;
   max-height: 0 !important;
@@ -789,6 +790,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   padding-bottom: 0 !important;
   overflow: hidden !important;
   border-width: 0 !important;
+  backface-visibility: hidden;
 }
 #top-right-widgets.widget-hidden {
   transform: scale(0.9) translateY(-20px) !important;
@@ -843,6 +845,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   transition: 0.2s;
   display: flex;
   flex-direction: column;
+  transform: translateZ(0);
 }
 .item-card:hover {
   border-color: var(--accent-color);

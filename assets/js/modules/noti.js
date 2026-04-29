@@ -532,16 +532,16 @@ const noti = {
     if (t) {
       if (r) {
         if (repeatRule.days.length === 0) {
-            return utils.showValidationTip("notiSaveBtn", "반복할 요일을 선택해 주세요.");
+            return utils.showValidationTip("notiSaveBtn", i18n.get("msgSelectDay"));
         }
         if (repeatRule.weekSpecific.length === 0) {
-            return utils.showValidationTip("notiSaveBtn", "반복할 주차를 선택해 주세요.");
+            return utils.showValidationTip("notiSaveBtn", i18n.get("msgSelectWeek"));
         }
         if (repeatRule.months.length === 0) {
-            return utils.showValidationTip("notiSaveBtn", "반복할 월을 선택해 주세요.");
+            return utils.showValidationTip("notiSaveBtn", i18n.get("msgSelectMonth"));
         }
         if (repeatRule.years.length === 0) {
-            return utils.showValidationTip("notiSaveBtn", "반복할 년도를 선택해 주세요.");
+            return utils.showValidationTip("notiSaveBtn", i18n.get("msgSelectYear"));
         }
       }
 
@@ -569,7 +569,7 @@ const noti = {
       utils.saveData();
       utils.closeModal("notiModal");
     } else {
-      utils.showValidationTip("notiSaveBtn", "제목을 입력해 주세요.");
+      utils.showValidationTip("notiSaveBtn", i18n.get("msgInputTitle"));
     }
   },
   delete(id = null) {
