@@ -2536,6 +2536,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   align-items: center;
   gap: 12px;
   flex: 1;
+  margin-right: 25px;
 }
 .ai-title-input {
   background: transparent;
