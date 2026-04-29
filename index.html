@@ -352,6 +352,7 @@
           <input
             type="text"
             id="ai-history-search"
+            data-i18n-ph="searchSmallPh"
             placeholder="검색..."
             oninput="ai.filterHistory(this.value)"
           />
@@ -365,6 +366,7 @@
               id="ai-chat-title-input"
               class="ai-title-input"
               onchange="ai.updateChatTitle(this.value)"
+              data-i18n-ph="aiNewChatDefault"
               placeholder="새 대화"
             />
           </div>
@@ -819,14 +821,14 @@
               </div>
               <div id="weather-select-wrap" style="position: relative; margin-bottom: 20px; width: 98%; margin-left: 1%;">
                 <div id="weather-location-trigger" class="weather-custom-select" onclick="weather.toggleLocationPopup(event)">
-                  <span id="weather-trigger-text">도시 목록</span>
+                  <span id="weather-trigger-text" data-i18n="lblCityList">도시 목록</span>
                   <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5;"></i>
                 </div>
                 <div id="weather-location-popup" class="ai-model-popup weather-popup"></div>
                 <div id="city-add-popup" class="engine-popup" style="padding: 15px; z-index: 120; display: none;">
                   <div style="display: flex; flex-direction: column; gap: 10px;">
                     <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
-                      <span>도시 추가</span>
+                      <span data-i18n="lblCityAdd">도시 추가</span>
                     </div>
                     <input
                       type="text"
@@ -890,7 +892,7 @@
                 <div id="engine-add-popup" class="engine-popup" style="padding: 15px; z-index: 120; display: none;">
                   <div style="display: flex; flex-direction: column; gap: 10px;">
                     <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
-                      <span>검색 엔진 추가</span>
+                      <span data-i18n="lblSearchEngineAdd">검색 엔진 추가</span>
                     </div>
                     <input
                       type="text"
@@ -1012,7 +1014,7 @@
                   <div id="ai-provider-trigger" class="weather-custom-select" data-outside-ignore style="flex: 1; margin-bottom: 0; min-width: 0;" onclick="settings.toggleAIPopup(event)">
                     <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; overflow: hidden;">
                       <i id="ai-trigger-icon" class="fas fa-robot" style="font-size: 0.9rem; opacity: 0.7; flex-shrink: 0;"></i>
-                      <span id="ai-trigger-name" class="engine-name">사용 안 함</span>
+                      <span id="ai-trigger-name" class="engine-name" data-i18n="optNone">사용 안 함</span>
                     </div>
                     <i class="fas fa-chevron-down" style="font-size: 0.7rem; opacity: 0.5; flex-shrink: 0;"></i>
                   </div>
@@ -1020,11 +1022,12 @@
                   <div id="ai-custom-add-container" class="engine-popup" style="padding: 15px 15px 20px 15px; z-index: 120; display: none; bottom: 100%; top: auto; margin-bottom: 5px; margin-top: 0;">
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                       <div style="font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
-                        <span>사용자 AI 추가</span>
+                        <span data-i18n="lblCustomAiAdd">사용자 AI 추가</span>
                       </div>
                       <input
                         type="text"
                         id="customAiNameInput"
+                        data-i18n-ph="aiNamePh"
                         placeholder="AI 이름"
                         style="margin-bottom: 0; width: 100%;"
                       />
@@ -1037,18 +1040,19 @@
                       <input
                         type="password"
                         id="customAiKeyInput"
+                        data-i18n-ph="aiKeyPh"
                         placeholder="API Key (선택 사항)"
                         style="margin-bottom: 0; width: 100%;"
                       />
                       <div id="protocol-select-wrap" style="position: relative; width: 100%;">                        <div id="protocol-trigger" class="weather-custom-select" data-outside-ignore onclick="settings.toggleProtocolPopup(event)">
-                          <span id="protocol-trigger-text">OpenAI 호환</span>
+                          <span id="protocol-trigger-text" data-i18n="lblProtocolOpenAi">OpenAI 호환</span>
                           <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
                         </div>
                         <input type="hidden" id="customAiProtocol" value="openai">
                         <div id="protocol-popup" class="engine-popup" style="bottom: 100%; top: auto; margin-bottom: 5px; margin-top: 0;"></div>
                       </div>
                       <button class="btn-save" data-outside-ignore onclick="settings.addCustomAI(event)" style="width: 100%; height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <span>추가</span>
+                        <span data-i18n="btnCheckAdd">추가</span>
                       </button>
                     </div>
                   </div>
@@ -1072,6 +1076,7 @@
                         color: #94a3b8;
                         white-space: nowrap;
                       "
+                      data-i18n="lblAiModel"
                       >모델</span
                     >
                     <div id="ai-model-trigger" class="weather-custom-select" style="flex: 1; margin-bottom: 0; min-width: 0;" onclick="settings.toggleModelSelectPopup(event)">
@@ -1128,6 +1133,7 @@
                     font-size: 0.85rem;
                   "
                   onclick="openModal('resetConfirmModal')"
+                  data-i18n="btnResetAll"
                 >
                   전체 초기화
                 </button>
@@ -1327,8 +1333,8 @@
 
           <!-- 5. 종료일 -->
           <div style="display: flex; flex-direction: column; gap: 8px; position: relative;">
-            <div style="font-size: 0.8rem; color: #94a3b8;">종료일 (미지정 시 계속 반복)</div>
-            <input type="text" id="repeatEndDate" value="미지정" readonly onclick="noti.toggleCalendar(event, 'repeatEndDate')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 10px; border-radius: 8px; font-size: 0.9rem; outline: none; width: 100%; box-sizing: border-box; cursor: pointer;" />
+            <div style="font-size: 0.8rem; color: #94a3b8;" data-i18n="lblRepeatEndDate">종료일 (미지정 시 계속 반복)</div>
+            <input type="text" id="repeatEndDate" value="미지정" data-i18n-value="lblNotSet" readonly onclick="noti.toggleCalendar(event, 'repeatEndDate')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 10px; border-radius: 8px; font-size: 0.9rem; outline: none; width: 100%; box-sizing: border-box; cursor: pointer;" />
           </div>
         </div>
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
@@ -1412,7 +1418,7 @@
           <div class="intro-info-box">
             <div class="info-item">
               <i class="fas fa-shield-alt"></i>
-              <span>사용자 개인정보를 서버로 전송하지 않습니다.</span>
+              <span data-i18n="introPrivacy">사용자 개인정보를 서버로 전송하지 않습니다.</span>
             </div>
             <div class="info-item">
               <a href="https://github.com/DJKIM79/dashboard" target="_blank" style="display: flex; align-items: center; gap: 8px;">
@@ -1424,9 +1430,9 @@
         </div>
 
         <div class="intro-footer">
-          <button class="intro-btn skip" onclick="tutorial.hideIntro()">닫기</button>
+          <button class="intro-btn skip" onclick="tutorial.hideIntro()" data-i18n="introClose">닫기</button>
           <button class="intro-btn start" onclick="tutorial.startFromIntro()">
-            튜토리얼 시작 <i class="fas fa-arrow-right"></i>
+            <span data-i18n="introStart">튜토리얼 시작</span> <i class="fas fa-arrow-right"></i>
           </button>
         </div>
       </div>
@@ -1450,4 +1456,3 @@
     <script src="assets/js/app.js?v=1.0.1"></script>
   </body>
 </html>
-

@@ -491,7 +491,7 @@ const noti = {
     
     const repeatEndDateEl = document.getElementById("repeatEndDate");
     if (repeatEndDateEl) {
-        repeatEndDateEl.value = rule.endDate || "미지정";
+        repeatEndDateEl.value = rule.endDate || (window.i18n ? i18n.get("lblNotSet") : "미지정");
         repeatEndDateEl.style.color = rule.endDate ? "#fff" : "#94a3b8";
     }
 
@@ -520,7 +520,7 @@ const noti = {
         months: Array.from(document.querySelectorAll('input[name="repeatMonth"]:checked')).map(el => parseInt(el.value)),
         weekSpecific: Array.from(document.querySelectorAll('input[name="weekSpecific"]:checked')).map(el => parseInt(el.value)),
         days: Array.from(document.querySelectorAll('input[name="repeatDay"]:checked')).map(el => parseInt(el.value)),
-        endDate: rawEndDate === "미지정" ? "" : rawEndDate
+        endDate: (rawEndDate === "미지정" || rawEndDate === (window.i18n ? i18n.get("lblNotSet") : "미지정")) ? "" : rawEndDate
     };
 
     // For backwards compatibility with older functions checking `n.days`

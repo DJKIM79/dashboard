@@ -1204,8 +1204,13 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   flex-direction: column;
   gap: 5px;
   flex: 1;
+  min-width: 0;
 }
 .setting-group-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
   font-size: 0.85rem;
   color: #94a3b8;
   margin-top: 5px;
@@ -1213,6 +1218,9 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   font-weight: 600;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 5px;
+}
+.setting-group-title > span:first-child {
+  flex-shrink: 0;
 }
 .setting-column .setting-group-title:first-child {
   margin-top: 0;
@@ -1262,7 +1270,12 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   cursor: pointer;
   font-size: 0.85rem;
   color: #fff;
-  white-space: nowrap;
+  white-space: normal;
+  text-align: right;
+  word-break: keep-all;
+  min-width: 0;
+  flex: 1;
+  justify-content: flex-end;
 }
 .compact-checkbox-label input[type="checkbox"] {
   width: 16px !important;
@@ -1272,6 +1285,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   cursor: pointer;
   appearance: checkbox;
   -webkit-appearance: checkbox;
+  flex-shrink: 0;
 }
 .compact-checkbox-label span {
   line-height: 1.2;
