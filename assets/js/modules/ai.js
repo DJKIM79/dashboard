@@ -85,6 +85,11 @@ const ai = {
 
     if (!this.clickListenerAdded) {
       document.addEventListener("click", (e) => {
+        // Focus textarea when clicking the input area (background)
+        if (e.target.closest(".ai-chat-input-area") && !e.target.closest("button") && !e.target.closest("#ai-attach-wrapper")) {
+            document.getElementById("ai-user-input")?.focus();
+        }
+
         if (
           !e.target.closest(".history-title") &&
           !e.target.closest(".ai-model-popup")
