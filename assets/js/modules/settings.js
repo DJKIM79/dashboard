@@ -1241,35 +1241,17 @@ const settings = {
         
         // Wait for render
         setTimeout(() => {
-            const popupRect = popup.getBoundingClientRect();
-            const itemHeight = 40; // average item height with padding
-            const minDownHeight = itemHeight * 3; // space for 3 items
-            const spaceBelow = window.innerHeight - rect.bottom - 20;
-            
-            // Should we go up or down?
-            // If space below is enough for 3 items, go down. Otherwise go up.
-            if (spaceBelow >= minDownHeight) {
-                // Down
-                popup.style.top = "100%";
-                popup.style.bottom = "auto";
-                popup.style.marginTop = "5px";
-                popup.style.marginBottom = "0";
-            } else {
-                // Up
-                popup.style.top = "auto";
-                popup.style.bottom = "100%";
-                popup.style.marginTop = "0";
-                popup.style.marginBottom = "5px";
-            }
+            // Always open Upwards
+            popup.style.top = "auto";
+            popup.style.bottom = "100%";
+            popup.style.marginTop = "0";
+            popup.style.marginBottom = "5px";
             
             // Limit top to not overlap header when opening upward
-            const currentPopupRect = popup.getBoundingClientRect();
-            if (currentPopupRect.top < modalHeader.bottom + 10) {
-                const overlap = modalHeader.bottom + 10 - currentPopupRect.top;
-                popup.style.maxHeight = Math.max(100, currentPopupRect.height - overlap) + "px";
-            } else {
-                popup.style.maxHeight = "280px";
-            }
+            // We want the maxHeight to be the distance from the trigger's top to the modalHeader's bottom
+            const triggerRect = trigger.getBoundingClientRect();
+            const availableHeight = triggerRect.top - modalHeader.bottom - 15; // 5px margin-bottom + 10px spacing
+            popup.style.maxHeight = Math.max(100, availableHeight) + "px";
             
             popup.style.visibility = "visible";
 
@@ -1303,11 +1285,16 @@ const settings = {
 
     const currentLang = localStorage.getItem("dj_user_lang") || "auto";
     
-    // Top 3 mandatory items
+    // Language items
     const mandatory = [
         { id: "auto", label: "optAuto" },
         { id: "ko", label: "optKo" },
-        { id: "en", label: "optEn" }
+        { id: "en", label: "optEn" },
+        { id: "ja", label: "optJa" },
+        { id: "zh-CN", label: "optZhCn" },
+        { id: "zh-TW", label: "optZhTw" },
+        { id: "fr", label: "optFr" },
+        { id: "de", label: "optDe" }
     ];
 
     mandatory.forEach(lang => {
@@ -1340,7 +1327,7 @@ const settings = {
     const triggerText = document.getElementById("lang-trigger-text");
     if (triggerText) {
         const currentLang = localStorage.getItem("dj_user_lang") || "auto";
-        const langMap = { auto: "optAuto", ko: "optKo", en: "optEn" };
+        const langMap = { auto: "optAuto", ko: "optKo", en: "optEn", ja: "optJa", "zh-CN": "optZhCn", "zh-TW": "optZhTw", fr: "optFr", de: "optDe" };
         const labelKey = langMap[currentLang] || "optAuto";
         triggerText.setAttribute("data-i18n", labelKey);
         if (window.i18n) triggerText.innerText = i18n.get(labelKey);

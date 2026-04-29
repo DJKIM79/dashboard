@@ -52,8 +52,33 @@ const tutorial = {
     const dummyMemoId = "tut_memo_" + Date.now();
     const dummyNotiId = "tut_noti_" + Date.now();
     const dummyShortcutId = "tut_shortcut_" + Date.now();
+    const dummyWeatherId = "tut_weather_" + Date.now();
 
     const syncDummyData = (state) => {
+      // 날씨 임시 데이터 상태 관리 (상시 체크하여 없으면 튜토리얼용 임시 날씨 생성)
+      if (window.weather && window.weather.locations) {
+        const hasRealWeather = window.weather.showCurrent || window.weather.locations.some(l => !l.id.startsWith("tut_weather_"));
+        
+        if (state !== 'clear_all') {
+          // 튜토리얼 중: 진짜 날씨가 없다면 가짜 날씨 추가
+          if (!hasRealWeather && !window.weather.locations.find(l => l.id === dummyWeatherId)) {
+            window.weather.locations.push({
+              id: dummyWeatherId,
+              name: "Seoul",
+              lat: 37.5665,
+              lon: 126.9780
+            });
+            window.weather.fetch();
+          }
+        } else {
+          // 튜토리얼 종료/닫기: 가짜 날씨 삭제
+          if (window.weather.locations.find(l => l.id === dummyWeatherId)) {
+            window.weather.locations = window.weather.locations.filter(l => l.id !== dummyWeatherId);
+            window.weather.fetch();
+          }
+        }
+      }
+
       // 바로가기 임시 데이터 상태 관리
       if (state === 'shortcut') {
         if (window.shortcutMod && window.shortcutMod.items && !window.shortcutMod.items.find(s => s.name === ((window.i18n ? window.i18n.get("tutShortcutDummy") : "튜토리얼 바로가기") + " 1"))) {
@@ -93,7 +118,7 @@ const tutorial = {
           if (window.renderShortcuts) window.renderShortcuts();
           if (window.shortcutMod.checkLayout) window.shortcutMod.checkLayout();
         }
-      } else {
+      } else if (state === 'none' || state === 'clear_all' || state === 'memo' || state === 'noti') {
         if (window.shortcutMod && window.shortcutMod.items && window.shortcutMod.items.find(s => s._isTutorial)) {
            window.shortcutMod.items = window.shortcutMod.items.filter(s => !s._isTutorial);
            window.shortcuts = window.shortcutMod.items;
@@ -108,7 +133,7 @@ const tutorial = {
           window.memos = window.memo.items;
           if (window.renderMemos) window.renderMemos();
         }
-      } else {
+      } else if (state === 'none' || state === 'clear_all' || state === 'shortcut' || state === 'noti') {
         if (window.memo && window.memo.items && window.memo.items.find(m => m.id === dummyMemoId)) {
            window.memo.items = window.memo.items.filter(m => m.id !== dummyMemoId);
            window.memos = window.memo.items;
@@ -125,7 +150,7 @@ const tutorial = {
           window.notifications = window.noti.items;
           if (window.renderNotifications) window.renderNotifications();
         }
-      } else {
+      } else if (state === 'none' || state === 'clear_all' || state === 'shortcut' || state === 'memo') {
         if (window.noti && window.noti.items && window.noti.items.find(n => n.id === dummyNotiId)) {
            window.noti.items = window.noti.items.filter(n => n.id !== dummyNotiId);
            window.notifications = window.noti.items;
@@ -408,7 +433,7 @@ const tutorial = {
           document.body.classList.remove("tutorial-open");
           localStorage.setItem("dj_tutorial_done", "true");
           
-          syncDummyData('none');
+          syncDummyData('clear_all');
           
           // 열려있던 요소 초기화
           if (window.utils) window.utils.closeModal('settingModal');

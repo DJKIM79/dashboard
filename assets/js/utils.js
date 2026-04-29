@@ -58,8 +58,11 @@ const utils = {
     if (!container) return;
     container.innerHTML = "";
     
-    const activeLang = i18n.userLang === "auto" ? (navigator.language.startsWith("ko") ? "ko" : "en") : i18n.userLang;
-    const suffix = activeLang === "ko" ? (type === "hour" ? "시" : "분") : (type === "hour" ? "h" : "m");
+    const activeLang = i18n.userLang;
+    let suffix = type === "hour" ? "h" : "m";
+    if (activeLang === "ko") suffix = type === "hour" ? "시" : "분";
+    else if (activeLang === "ja") suffix = type === "hour" ? "時" : "分";
+    else if (activeLang.startsWith("zh")) suffix = type === "hour" ? "时" : "分";
 
     for (let i = 0; i < count; i++) {
       const val = String(i).padStart(2, "0");
@@ -109,8 +112,11 @@ const utils = {
     const input = document.getElementById(inputId);
     const popup = document.getElementById(popupId);
 
-    const activeLang = i18n.userLang === "auto" ? (navigator.language.startsWith("ko") ? "ko" : "en") : i18n.userLang;
-    const suffix = activeLang === "ko" ? (type === "hour" ? "시" : "분") : (type === "hour" ? "h" : "m");
+    const activeLang = i18n.userLang;
+    let suffix = type === "hour" ? "h" : "m";
+    if (activeLang === "ko") suffix = type === "hour" ? "시" : "분";
+    else if (activeLang === "ja") suffix = type === "hour" ? "時" : "分";
+    else if (activeLang.startsWith("zh")) suffix = type === "hour" ? "时" : "分";
 
     if (display) display.innerText = `${val}${suffix}`;
     if (input) {

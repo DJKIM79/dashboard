@@ -1,16 +1,30 @@
 const i18n = {
-  userLang: localStorage.getItem("dj_user_lang") || (navigator.language.startsWith("ko") ? "ko" : "en"),
+  getAutoLang() {
+    const lang = navigator.language.toLowerCase();
+    if (lang.startsWith("ko")) return "ko";
+    if (lang.startsWith("ja")) return "ja";
+    if (lang.startsWith("zh-tw") || lang.startsWith("zh-hk")) return "zh-TW";
+    if (lang.startsWith("zh")) return "zh-CN";
+    if (lang.startsWith("fr")) return "fr";
+    if (lang.startsWith("de")) return "de";
+    return "en";
+  },
+
+  get userLang() {
+    return localStorage.getItem("dj_user_lang") || this.getAutoLang();
+  },
+  
   langData: {},
 
   async init() {
     try {
-      const langToLoad = this.userLang === "auto" ? (navigator.language.startsWith("ko") ? "ko" : "en") : this.userLang;
+      const langToLoad = this.userLang === "auto" ? this.getAutoLang() : this.userLang;
       const res = await fetch(`assets/lang/${langToLoad}.json`);
       this.langData = await res.json();
     } catch (e) {
       console.error("Failed to load language data", e);
       // Fallback
-      const fallback = navigator.language.startsWith("ko") ? "ko" : "en";
+      const fallback = this.getAutoLang();
       const res = await fetch(`assets/lang/${fallback}.json`);
       this.langData = await res.json();
     }
