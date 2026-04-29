@@ -451,9 +451,12 @@ const noti = {
     document.getElementById("notiMin").value = m;
     
     // Update custom display values
-    const activeLang = i18n.userLang === "auto" ? (navigator.language.startsWith("ko") ? "ko" : "en") : i18n.userLang;
-    const hSuffix = activeLang === "ko" ? "시" : "h";
-    const mSuffix = activeLang === "ko" ? "분" : "m";
+    const activeLang = i18n.userLang;
+    let hSuffix = "h";
+    let mSuffix = "m";
+    if (activeLang === "ko") { hSuffix = "시"; mSuffix = "분"; }
+    else if (activeLang === "ja") { hSuffix = "時"; mSuffix = "分"; }
+    else if (activeLang.startsWith("zh")) { hSuffix = "时"; mSuffix = "分"; }
     const hDisplay = document.getElementById("notiHourDisplay");
     const mDisplay = document.getElementById("notiMinDisplay");
     if (hDisplay) hDisplay.innerText = `${h}${hSuffix}`;

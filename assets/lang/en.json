@@ -228,5 +228,13 @@
   "introStart": "Start Tutorial",
   "lblCityAdd": "Add City",
   "msgAiConnected": "{0} Connected",
-  "msgAiChecking": "Checking server"
+  "msgAiChecking": "Checking server",
+  "optJa": "Japanese",
+  "optZhCn": "Chinese (Simp)",
+  "optZhTw": "Chinese (Trad)",
+  "optFr": "French",
+  "optDe": "German",
+  "resetConfirmTitle": "Are you sure you want to reset?",
+  "resetConfirmDesc": "(All settings and data will be permanently deleted.)",
+  "btnConfirmReset": "Reset"
 }

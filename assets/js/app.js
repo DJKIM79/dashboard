@@ -5,27 +5,34 @@ window.currentShortcutIndex = null;
 
 const app = {
   async init() {
-    // 0. Set default values if not exists
-    if (localStorage.getItem("dj_theme_color") === null)
-      localStorage.setItem("dj_theme_color", "#ffffff");
-    if (localStorage.getItem("dj_theme_adjustment") === null)
-      localStorage.setItem("dj_theme_adjustment", "none");
-    if (localStorage.getItem("dj_image_engine") === null)
-      localStorage.setItem("dj_image_engine", "flickr");
-    if (localStorage.getItem("dj_ai_output_at_once") === null)
-      localStorage.setItem("dj_ai_output_at_once", "false");
-    if (localStorage.getItem("dj_bg_keyword") === null)
-      localStorage.setItem("dj_bg_keyword", "");
-    if (localStorage.getItem("dj_search_new_tab") === null)
-      localStorage.setItem("dj_search_new_tab", "true");
-    if (localStorage.getItem("dj_show_current_weather") === null)
-      localStorage.setItem("dj_show_current_weather", "true");
-    if (localStorage.getItem("dj_hide_fileMgmt") === null)
-      localStorage.setItem("dj_hide_fileMgmt", "false");
-    if (localStorage.getItem("dj_quote_font_size") === null)
-      localStorage.setItem("dj_quote_font_size", "medium");
-    if (localStorage.getItem("dj_widget_size") === null)
-      localStorage.setItem("dj_widget_size", "medium");
+    this.initDefaults();
+    await i18n.init();
+    this.initModules();
+    this.clearTutorialData();
+    this.setupIntervals();
+    this.checkTutorial();
+  },
+
+  initDefaults() {
+    const defaults = {
+      "dj_theme_color": "#ffffff",
+      "dj_theme_adjustment": "none",
+      "dj_image_engine": "flickr",
+      "dj_ai_output_at_once": "false",
+      "dj_bg_keyword": "",
+      "dj_search_new_tab": "true",
+      "dj_show_current_weather": "true",
+      "dj_hide_fileMgmt": "false",
+      "dj_quote_font_size": "medium",
+      "dj_widget_size": "medium"
+    };
+
+    for (const [key, value] of Object.entries(defaults)) {
+      if (localStorage.getItem(key) === null) {
+        localStorage.setItem(key, value);
+      }
+    }
+
     if (localStorage.getItem("dj_ai_provider") === null) {
       localStorage.setItem("dj_ai_provider", "none");
       localStorage.setItem("dj_ai_disabled", "true");
@@ -34,7 +41,7 @@ const app = {
     // Force AI chatbot to be closed on startup
     localStorage.setItem("dj_hide_ai", "true");
 
-    // 0.1 Initialize default custom search engines on first run
+    // Initialize default custom search engines on first run
     if (localStorage.getItem("dj_search_engines_custom") === null) {
       const initialCustomEngines = [
         { id: "custom_chatgpt", name: "ChatGPT", url: "https://chatgpt.com/?q=", domain: "chatgpt.com", isDefault: false },
@@ -43,29 +50,20 @@ const app = {
       ];
       localStorage.setItem("dj_search_engines_custom", JSON.stringify(initialCustomEngines));
     }
+  },
 
-    // 1. Initialize i18n first
-    await i18n.init();
-
-    // 2. Initialize Utils & UI
+  initModules() {
     utils.initTimePicker();
     ui.init();
-    ui.applyVisibility(); // Apply saved widget visibility states
+    ui.applyVisibility();
 
-    // 3. Initialize Settings (Theme, etc.)
     const savedTheme = localStorage.getItem("dj_theme_color");
     if (savedTheme) settings.setTheme(savedTheme, true);
 
-    const savedFontSize =
-      localStorage.getItem("dj_quote_font_size") || "medium";
-    settings.setQuoteFontSize(savedFontSize);
+    settings.setQuoteFontSize(localStorage.getItem("dj_quote_font_size") || "medium");
+    settings.setWidgetSize(localStorage.getItem("dj_widget_size") || "medium");
 
-    const savedWidgetSize = localStorage.getItem("dj_widget_size") || "medium";
-    settings.setWidgetSize(savedWidgetSize);
-
-    // 4. Background and Initial Data Fetch
-    const sd =
-      localStorage.getItem("dj_bg_seed") || Math.floor(Math.random() * 10000);
+    const sd = localStorage.getItem("dj_bg_seed") || Math.floor(Math.random() * 10000);
     utils.setBackground(sd);
 
     quote.init();
@@ -74,14 +72,19 @@ const app = {
     shortcutMod.init();
     noti.init();
     memo.init();
+    calendar.render();
+    ui.applyVisibility();
+    search.init();
+  },
 
-    // 튜토리얼 임시 데이터 클리어
+  clearTutorialData() {
+    let dataChanged = false;
     if (window.shortcutMod && window.shortcutMod.items) {
       const beforeCount = window.shortcutMod.items.length;
       window.shortcutMod.items = window.shortcutMod.items.filter(s => !s._isTutorial);
       if (window.shortcutMod.items.length !== beforeCount) {
         window.shortcuts = window.shortcutMod.items;
-        if (window.utils && utils.saveData) utils.saveData();
+        dataChanged = true;
       }
     }
     if (window.memo && window.memo.items) {
@@ -89,7 +92,7 @@ const app = {
       window.memo.items = window.memo.items.filter(m => !String(m.id).startsWith("tut_memo_"));
       if (window.memo.items.length !== beforeCount) {
         window.memos = window.memo.items;
-        if (window.utils && utils.saveData) utils.saveData();
+        dataChanged = true;
       }
     }
     if (window.noti && window.noti.items) {
@@ -97,15 +100,15 @@ const app = {
       window.noti.items = window.noti.items.filter(n => !String(n.id).startsWith("tut_noti_"));
       if (window.noti.items.length !== beforeCount) {
         window.notifications = window.noti.items;
-        if (window.utils && utils.saveData) utils.saveData();
+        dataChanged = true;
       }
     }
+    if (dataChanged && window.utils && utils.saveData) {
+      utils.saveData();
+    }
+  },
 
-    calendar.render();
-    ui.applyVisibility();
-    search.init();
-
-    // 5. Set up Intervals
+  setupIntervals() {
     setInterval(() => {
       const now = new Date();
       const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
@@ -118,14 +121,14 @@ const app = {
       }
     }, 1000);
     clock.update();
+  },
 
-    // 6. Tutorial Check
+  checkTutorial() {
     if (!localStorage.getItem("dj_tutorial_done")) {
       setTimeout(() => {
         tutorial.showIntro();
       }, 800);
     } else {
-      // If tutorial is not showing, focus search input again to be sure
       setTimeout(() => {
         const input = document.getElementById("searchInput");
         if (input) input.focus();
