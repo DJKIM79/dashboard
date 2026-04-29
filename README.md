@@ -12,10 +12,14 @@ Features
 8. Alarm
 9. AI chatbot
 
-Upcoming features.
+<Main Screen>
+<img width="1536" height="1152" alt="image" src="https://github.com/user-attachments/assets/d9f9fb19-776d-47ca-9359-c10e77a88146" />
 
-1. Chrome Extension.
+<Tutorial>
+<img width="1536" height="1152" alt="image" src="https://github.com/user-attachments/assets/b06b0391-3172-460a-bfd2-e4f053a4a430" />
 
-<img width="1638" height="1298" alt="image" src="https://github.com/user-attachments/assets/f4aca1d4-871d-4f20-80ee-f57c2ff838f3" />
-<img width="317" height="312" alt="image" src="https://github.com/user-attachments/assets/eeda2050-72ae-47be-a7d8-b14129d52e2a" />
-<img width="782" height="782" alt="image" src="https://github.com/user-attachments/assets/603678e5-ac31-4ce7-8bf3-74f6b4fec1ad" />
+<Setting>
+<img width="1536" height="1152" alt="image" src="https://github.com/user-attachments/assets/5ab7d87e-85f2-4d73-8a3f-a2e3f666b928" />
+
+<AI Chatbot>
+<img width="1536" height="1152" alt="image" src="https://github.com/user-attachments/assets/a1da9cb2-72e6-46ca-8aa4-d52af8a86c2c" />
