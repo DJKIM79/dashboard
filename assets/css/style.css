@@ -2629,15 +2629,23 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   z-index: 2147483647 !important;
   -webkit-transform: translateZ(0) !important;
   transform: translateZ(0) !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(25px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(25px) saturate(200%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  /* backdrop-filter가 중첩될 때 발생하는 사각형 잔상 버그 방지를 위해 blur 제거 후 투명도 조정 */
+  background: rgba(30, 41, 59, 0.95) !important; 
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 24px !important;
   padding: 24px !important;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   color: #fff !important;
 }
+/* 튜토리얼 진행 중에는 배경 위젯들의 필터나 효과가 팝업과 간섭하지 않도록 처리 */
+body.tutorial-open .quote-container,
+body.tutorial-open .weather-card,
+body.tutorial-open .search-container {
+    backdrop-filter: none !important;
+}
+
 
 .driver-popover-title {
   font-size: 1.25rem !important;

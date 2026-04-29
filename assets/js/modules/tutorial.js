@@ -405,6 +405,7 @@ const tutorial = {
         }
       ],
       onDestroyed: () => {
+          document.body.classList.remove("tutorial-open");
           localStorage.setItem("dj_tutorial_done", "true");
           
           syncDummyData('none');
@@ -430,6 +431,7 @@ const tutorial = {
     });
 
     // 실행 시작
+    document.body.classList.add("tutorial-open");
     d.drive();
   },
 };
