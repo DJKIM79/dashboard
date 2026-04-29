@@ -627,6 +627,7 @@ body::before {
   line-height: 1.2;
   display: inline-block;
   margin-top: 1px;
+  white-space: nowrap;
 }
 .compact-checkbox-label {
   display: flex;
@@ -1273,12 +1274,10 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   cursor: pointer;
   font-size: 0.85rem;
   color: #fff;
-  white-space: normal;
+  white-space: nowrap;
   text-align: right;
   word-break: keep-all;
   min-width: 0;
-  flex: 1;
-  justify-content: flex-end;
 }
 .compact-checkbox-label input[type="checkbox"] {
   width: 16px !important;
