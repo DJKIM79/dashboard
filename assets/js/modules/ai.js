@@ -501,8 +501,8 @@ const ai = {
 
     // Immediately update title if this is the first real message
     if (!chat.messages.some(m => m.role === "user") && this.isDefaultTitle(chat.title)) {
-        const firstLine = text.split("\n")[0];
-        chat.title = firstLine.length > 20 ? firstLine.substring(0, 20) + "..." : firstLine;
+        const firstLine = text.split("\n")[0].trim();
+        chat.title = firstLine.length > 100 ? firstLine.substring(0, 100) + "..." : firstLine;
         this.chats = chats;
         this.updateModelDisplay();
         this.renderHistory();
