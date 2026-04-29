@@ -33,6 +33,10 @@ const i18n = {
       const key = el.dataset.i18nTitle;
       if (T[key]) el.title = T[key];
     });
+    document.querySelectorAll("[data-i18n-value]").forEach((el) => {
+      const key = el.dataset.i18nValue;
+      if (T[key]) el.value = T[key];
+    });
 
     const dayMapping = [1, 2, 3, 4, 5, 6, 0];
     document.querySelectorAll('input[name="repeatDay"] + span').forEach((span, i) => {

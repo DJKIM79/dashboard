@@ -69,7 +69,7 @@ const settings = {
       
       const modelTriggerName = el("ai-model-trigger-name");
       if (modelTriggerName) {
-          modelTriggerName.innerText = localStorage.getItem("dj_ai_model") || (window.i18n ? i18n.get("aiNoServer") : "접속 안됨");
+          modelTriggerName.innerText = localStorage.getItem("dj_ai_model") || (window.i18n ? i18n.get("aiNoServer") : window.i18n ? i18n.get("aiNoServer") : "접속 안됨");
       }
 
       if (el("aiOutputAtOnceCheck"))
@@ -232,7 +232,7 @@ const settings = {
           ${engine.id === currentEngine ? '<i class="fas fa-check-circle engine-active-icon"></i>' : ''}
         </div>
         <div class="engine-actions">
-          ${engine.isDefault ? '<span class="engine-info-tag">기본</span>' : `<i class="fas fa-trash-alt engine-btn-del" onclick="event.stopPropagation(); settings.deleteCustomSearchEngine('${engine.id}')"></i>`}
+          ${engine.isDefault ? `<span class="engine-info-tag">${window.i18n ? i18n.get("lblDefault") : "기본"}</span>` : `<i class="fas fa-trash-alt engine-btn-del" onclick="event.stopPropagation(); settings.deleteCustomSearchEngine('${engine.id}')"></i>`}
         </div>
       `;
       listArea.appendChild(item);
@@ -247,7 +247,7 @@ const settings = {
     const addBtn = document.createElement("div");
     addBtn.className = "engine-item";
     addBtn.style.justifyContent = "center";
-    addBtn.innerHTML = '<i class="fas fa-square-plus" style="margin-right: 8px; color: var(--accent-color);"></i> 검색 엔진 추가';
+    addBtn.innerHTML = `<i class="fas fa-square-plus" style="margin-right: 8px; color: var(--accent-color);"></i> ${window.i18n ? i18n.get("lblSearchEngineAdd") : "검색 엔진 추가"}`;
     addBtn.onclick = (e) => {
         e.stopPropagation();
         this.toggleEngineAddPopup(e);
@@ -321,11 +321,11 @@ const settings = {
     const url = urlInput.value.trim();
     
     if (!name) {
-        utils.showValidationTip("customSearchNameInput", "이름을 입력해 주세요.");
+        utils.showValidationTip("customSearchNameInput", window.i18n ? i18n.get("msgInputName") : window.i18n ? i18n.get("msgInputName") : "이름을 입력해 주세요.");
         return;
     }
     if (!url) {
-        utils.showValidationTip("customSearchUrlInput", "URL을 입력해 주세요.");
+        utils.showValidationTip("customSearchUrlInput", window.i18n ? i18n.get("msgInputUrl") : window.i18n ? i18n.get("msgInputUrl") : "URL을 입력해 주세요.");
         return;
     }
 
@@ -363,7 +363,7 @@ const settings = {
                           builtInEngines.some(e => normalize(e) === normalizedUrl);
         
         if (isDuplicate) {
-            utils.showValidationTip("customSearchUrlInput", "이미 추가된 검색 엔진입니다.");
+            utils.showValidationTip("customSearchUrlInput", window.i18n ? i18n.get("msgEngineExists") : "이미 추가된 검색 엔진입니다.");
             return;
         }
 
@@ -383,7 +383,7 @@ const settings = {
         this.renderSearchEngineList();
         if (window.search && typeof search.renderMenu === "function") search.renderMenu();
     } catch (e) {
-        utils.showValidationTip("customSearchUrlInput", "올바른 URL 형식이 아닙니다.");
+        utils.showValidationTip("customSearchUrlInput", window.i18n ? i18n.get("msgInvalidUrl") : "올바른 URL 형식이 아닙니다.");
     }
   },
 
@@ -541,7 +541,7 @@ const settings = {
     const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
 
     const defaultAis = [
-        { id: "none", name: "사용 안 함", icon: "fas fa-ban" },
+        { id: "none", name: window.i18n ? i18n.get("optNone") : "사용 안 함", icon: "fas fa-ban" },
         { id: "openai", name: "OpenAI", icon: "fas fa-circle-nodes" },
         { id: "gemini", name: "Gemini", icon: "fas fa-wand-magic-sparkles" }
     ];
@@ -568,7 +568,7 @@ const settings = {
         </div>
         <div class="engine-actions">
           ${aiItem.id === 'none' || aiItem.id === 'openai' || aiItem.id === 'gemini' 
-            ? '<span class="engine-info-tag">기본</span>' 
+            ? `<span class="engine-info-tag">${window.i18n ? i18n.get("lblDefault") : "기본"}</span>` 
             : `<i class="fas fa-trash-alt engine-btn-del" onclick="event.stopPropagation(); settings.deleteCustomAI('${aiItem.id}')"></i>`}
         </div>
       `;
@@ -579,7 +579,7 @@ const settings = {
     const addBtn = document.createElement("div");
     addBtn.className = "engine-item";
     addBtn.style.justifyContent = "center";
-    addBtn.innerHTML = '<i class="fas fa-square-plus" style="margin-right: 8px; color: var(--accent-color);"></i> 사용자 AI 추가';
+    addBtn.innerHTML = `<i class="fas fa-square-plus" style="margin-right: 8px; color: var(--accent-color);"></i> ${window.i18n ? i18n.get("lblCustomAiAdd") : "사용자 AI 추가"}`;
     addBtn.onclick = (e) => {
         e.stopPropagation();
         this.toggleCustomAIPopup(e);
@@ -636,7 +636,7 @@ const settings = {
     const models = JSON.parse(localStorage.getItem("dj_ai_models_cache") || "[]");
 
     if (models.length === 0) {
-        popupEl.innerHTML = '<div class="engine-item" style="justify-content: center; opacity: 0.5;">모델 없음</div>';
+        popupEl.innerHTML = `<div class="engine-item" style="justify-content: center; opacity: 0.5;">${window.i18n ? i18n.get("msgAiNoModel") : "모델 없음"}</div>`;
         return;
     }
 
@@ -666,7 +666,7 @@ const settings = {
     const triggerName = document.getElementById("ai-model-trigger-name");
     const trigger = document.getElementById("ai-model-trigger");
     if (triggerName) {
-        triggerName.innerText = value || (window.i18n ? i18n.get("aiNoServer") : "접속 안됨");
+        triggerName.innerText = value || (window.i18n ? i18n.get("aiNoServer") : window.i18n ? i18n.get("aiNoServer") : "접속 안됨");
     }
     if (trigger) {
         if (!value) trigger.classList.add("disabled");
@@ -711,7 +711,7 @@ const settings = {
     const currentProvider = localStorage.getItem("dj_ai_provider") || "none";
     
     const defaults = {
-        none: { name: "사용 안 함", icon: "fas fa-ban" },
+        none: { name: window.i18n ? i18n.get("optNone") : "사용 안 함", icon: "fas fa-ban" },
         openai: { name: "OpenAI", icon: "fas fa-circle-nodes" },
         gemini: { name: "Gemini", icon: "fas fa-wand-magic-sparkles" }
     };
@@ -722,7 +722,7 @@ const settings = {
     } else {
         const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
         const current = customAis.find(a => a.id === currentProvider);
-        if (triggerName) triggerName.innerText = current ? current.name : "사용 안 함";
+        if (triggerName) triggerName.innerText = current ? current.name : window.i18n ? i18n.get("optNone") : "사용 안 함";
         if (triggerIcon) triggerIcon.className = current ? (current.icon || "fas fa-network-wired") : "fas fa-ban";
     }
   },
@@ -751,8 +751,8 @@ const settings = {
     if (!popup) return;
     
     const protocols = [
-        { id: "openai", name: "OpenAI 호환" },
-        { id: "anthropic", name: "Anthropic" }
+        { id: "openai", name: window.i18n ? i18n.get("lblProtocolOpenAi") : "OpenAI 호환" },
+        { id: "anthropic", name: window.i18n ? i18n.get("lblProtocolAnthropic") : "Anthropic" }
     ];
     
     const current = document.getElementById("customAiProtocol").value;
@@ -788,7 +788,7 @@ const settings = {
     const protocol = protocolHidden ? protocolHidden.value : "openai";
 
     if (!name || !url) {
-        utils.showValidationTip(name ? "customAiUrlInput" : "customAiNameInput", "이름과 주소를 모두 입력해 주세요.");
+        utils.showValidationTip(name ? "customAiUrlInput" : "customAiNameInput", window.i18n ? i18n.get("msgInputNameUrl") : "이름과 주소를 모두 입력해 주세요.");
         return;
     }
 
@@ -801,14 +801,14 @@ const settings = {
 
     const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
     const defaultAis = [
-        { id: "none", name: "사용 안 함" },
+        { id: "none", name: window.i18n ? i18n.get("optNone") : "사용 안 함" },
         { id: "openai", name: "OpenAI" },
         { id: "gemini", name: "Gemini" }
     ];
     
     const isDuplicate = defaultAis.some(a => a.name === name) || customAis.some(a => a.name === name);
     if (isDuplicate) {
-        utils.showValidationTip("customAiNameInput", "이미 존재하는 이름입니다.");
+        utils.showValidationTip("customAiNameInput", window.i18n ? i18n.get("msgNameExists") : "이미 존재하는 이름입니다.");
         nameInput.focus();
         return;
     }
@@ -816,18 +816,18 @@ const settings = {
     try {
         new URL(url);
     } catch (e) {
-        utils.showValidationTip("customAiUrlInput", "올바른 URL 형식이 아닙니다.");
+        utils.showValidationTip("customAiUrlInput", window.i18n ? i18n.get("msgInvalidUrl") : "올바른 URL 형식이 아닙니다.");
         return;
     }
 
     if (addBtn) {
         addBtn.classList.add("loading");
-        addBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>확인 중...</span>';
+        addBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>${window.i18n ? i18n.get("msgChecking") : "확인 중..."}</span>`;
     }
 
     try {
         let isReachable = false;
-        let reachError = "AI 서버에 접속할 수 없습니다. 주소와 프로토콜을 확인해 주세요.";
+        let reachError = window.i18n ? i18n.get("msgAiConnError") : "AI 서버에 접속할 수 없습니다. 주소와 프로토콜을 확인해 주세요.";
         
         // URL 정규화: 끝의 슬래시 및 /v1 제거 (ai.js와 규격 통일)
         let fetchUrl = url.endsWith("/") ? url.slice(0, -1) : url;
@@ -863,7 +863,7 @@ const settings = {
 
                 // 401, 403은 서버가 살아있고 KEY만 문제인 상태
                 if (res.status === 401 || res.status === 403) {
-                    return { ok: false, error: "API Key가 올바르지 않거나 권한이 없습니다." };
+                    return { ok: false, error: window.i18n ? i18n.get("msgAiKeyError") : "API Key가 올바르지 않거나 권한이 없습니다." };
                 }
                 
                 // 데이터 내용까지 확인하여 프로토콜 일치 여부 판별
@@ -874,7 +874,7 @@ const settings = {
                     if (res.ok && isJson) {
                         const data = await res.json();
                         if (data && data.data && Array.isArray(data.data)) return { ok: true };
-                        return { ok: false, error: "OpenAI 규격과 일치하지 않는 서버 응답입니다." };
+                        return { ok: false, error: window.i18n ? i18n.get("msgAiOpenAiError") : "OpenAI 규격과 일치하지 않는 서버 응답입니다." };
                     }
                     if (res.status === 404 && isJson) {
                         // LM Studio 등은 404를 줄 수 있으나 응답은 JSON이어야 함
@@ -884,21 +884,21 @@ const settings = {
                     if (res.ok && isJson) {
                         const data = await res.json();
                         if (data && data.models && Array.isArray(data.models)) return { ok: true };
-                        return { ok: false, error: "Ollama 규격과 일치하지 않는 서버 응답입니다." };
+                        return { ok: false, error: window.i18n ? i18n.get("msgAiOllamaError") : "Ollama 규격과 일치하지 않는 서버 응답입니다." };
                     }
                 } else {
                     // Anthropic/Gemini 등은 클라우드 서비스이므로 
                     // 로컬 IP(127.0.0.1, localhost)가 입력되었을 경우 무조건 실패 처리 (오설정 방지)
                     const isLocal = targetUrl.includes("127.0.0.1") || targetUrl.includes("localhost");
                     if (isLocal) {
-                        return { ok: false, error: "로컬 주소는 OpenAI 호환 또는 Ollama 프로토콜을 사용해야 합니다." };
+                        return { ok: false, error: window.i18n ? i18n.get("msgAiLocalError") : "로컬 주소는 OpenAI 호환 또는 Ollama 프로토콜을 사용해야 합니다." };
                     }
                     if (res.ok) return { ok: true };
                 }
 
                 return { ok: false, error: `API 경로를 찾을 수 없거나 프로토콜이 맞지 않습니다. (Status: ${res.status})` };
             } catch (e) {
-                return { ok: false, error: "서버에 접속할 수 없습니다. 주소와 포트, CORS 설정을 확인해 주세요." };
+                return { ok: false, error: window.i18n ? i18n.get("msgAiConnError") : "서버에 접속할 수 없습니다. 주소와 포트, CORS 설정을 확인해 주세요." };
             } finally {
                 clearTimeout(timeoutId);
             }
@@ -924,7 +924,7 @@ const settings = {
             utils.showValidationTip(tipId, reachError, "error");
             if (addBtn) {
                 addBtn.classList.remove("loading");
-                addBtn.innerHTML = '<span>추가</span>';
+                addBtn.innerHTML = `<span>${window.i18n ? i18n.get("btnCheckAdd") : "추가"}</span>`;
             }
             return; // 여기서 함수 실행 종료
         }
@@ -963,13 +963,13 @@ const settings = {
         
         if (addBtn) {
             addBtn.classList.remove("loading");
-            addBtn.innerHTML = '<span>추가</span>';
+            addBtn.innerHTML = `<span>${window.i18n ? i18n.get("btnCheckAdd") : "추가"}</span>`;
         }
     } catch (err) {
-        utils.showValidationTip("customAiUrlInput", "접속 확인 중 오류가 발생했습니다.");
+        utils.showValidationTip("customAiUrlInput", window.i18n ? i18n.get("msgAiUnknownError") : "접속 확인 중 오류가 발생했습니다.");
         if (addBtn) {
             addBtn.classList.remove("loading");
-            addBtn.innerHTML = '<span>추가</span>';
+            addBtn.innerHTML = `<span>${window.i18n ? i18n.get("btnCheckAdd") : "추가"}</span>`;
         }
     }
   },

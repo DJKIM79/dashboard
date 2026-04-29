@@ -217,7 +217,8 @@ const weather = {
 
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(async () => {
-      results.innerHTML = `<div class="city-result-item" style="opacity:0.6; cursor:default">검색 중...</div>`;
+      const msgSearching = window.i18n ? i18n.get("msgSearching") : "검색 중...";
+      results.innerHTML = `<div class="city-result-item" style="opacity:0.6; cursor:default">${msgSearching}</div>`;
       results.style.display = "block";
 
       try {
@@ -247,11 +248,13 @@ const weather = {
             results.appendChild(div);
           });
         } else {
-          results.innerHTML = `<div class="city-result-item" style="opacity:0.6; cursor:default">검색 결과가 없습니다.</div>`;
+          const msgNoResults = window.i18n ? i18n.get("msgNoResults") : "검색 결과가 없습니다.";
+          results.innerHTML = `<div class="city-result-item" style="opacity:0.6; cursor:default">${msgNoResults}</div>`;
         }
       } catch (e) {
         console.error("Search error:", e);
-        results.style.display = "none";
+        const msgNoResults = window.i18n ? i18n.get("msgNoResults") : "검색 결과가 없습니다.";
+        results.innerHTML = `<div class="city-result-item" style="opacity:0.6; cursor:default">${msgNoResults}</div>`;
       }
     }, 400);
   },
@@ -316,8 +319,9 @@ const weather = {
       (loc) => loc.type !== "current",
     );
 
+    const lblCityList = window.i18n ? i18n.get("lblCityList") : "도시 목록";
     wrapEl.style.display = "block";
-    if (triggerText) triggerText.innerText = `도시 목록 (${customLocations.length})`;
+    if (triggerText) triggerText.innerText = `${lblCityList} (${customLocations.length})`;
     
     popupEl.innerHTML = "";
     
@@ -327,7 +331,8 @@ const weather = {
     listArea.style.overflowY = "auto";
     
     if (customLocations.length === 0) {
-        listArea.innerHTML = '<div class="ai-model-tip" style="padding: 15px; opacity: 0.5; text-align: center;">등록된 도시가 없습니다.</div>';
+        const msgNoRegisteredCities = window.i18n ? i18n.get("msgNoRegisteredCities") : "등록된 도시가 없습니다.";
+        listArea.innerHTML = `<div class="ai-model-tip" style="padding: 15px; opacity: 0.5; text-align: center;">${msgNoRegisteredCities}</div>`;
     } else {
         customLocations.forEach(loc => {
             const item = document.createElement("div");
@@ -351,7 +356,7 @@ const weather = {
     const addBtn = document.createElement("div");
     addBtn.className = "engine-item";
     addBtn.style.justifyContent = "center";
-    addBtn.innerHTML = '<i class="fas fa-square-plus" style="margin-right: 8px; color: var(--accent-color);"></i> 도시 추가';
+    addBtn.innerHTML = `<i class="fas fa-square-plus" style="margin-right: 8px; color: var(--accent-color);"></i> ${window.i18n ? window.i18n.get("lblCityAdd") : "도시 추가"}`;
     addBtn.onclick = (e) => {
         e.stopPropagation();
         this.toggleCityAddPopup(e);

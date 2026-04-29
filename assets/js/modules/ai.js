@@ -1,4 +1,11 @@
 const ai = {
+  isDefaultTitle(title) {
+    if (!title) return true;
+    return title === "새 대화" || title === "새로운 대화" || title === "New Chat" || title === (window.i18n ? window.i18n.get("aiNewChatDefault") : "새 대화");
+  },
+  getDisplayTitle(title) {
+    return this.isDefaultTitle(title) ? (window.i18n ? window.i18n.get("aiNewChatDefault") : "새 대화") : title;
+  },
   get provider() {
     return localStorage.getItem("dj_ai_provider") || "none";
   },
@@ -129,7 +136,7 @@ const ai = {
     const titleInput = document.getElementById("ai-chat-title-input");
     const historyTitleEl = document.getElementById("ai-history-model-name");
     const chat = this.getCurrentChat();
-    if (titleInput) titleInput.value = chat ? chat.title : "새 대화";
+    if (titleInput) titleInput.value = chat ? this.getDisplayTitle(chat.title) : this.getDisplayTitle("");
     if (historyTitleEl) {
       // Prioritize the model used in the specific chat
       historyTitleEl.innerText = chat?.model || this.settingsModel || "AI Chat";
@@ -140,7 +147,7 @@ const ai = {
       const hasRealMessages = chat && chat.messages.some(m => m.role === "user" || m.role === "bot");
       // 제목 옆에는 삭제 대신 텍스트 내보내기 버튼 표시
       actionsEl.innerHTML = (chat && hasRealMessages) 
-        ? `<i class="fas fa-file-arrow-down ai-btn-export" onclick="ai.exportChatToText(${chat.id}, event)" title="텍스트로 내보내기"></i>` 
+        ? `<i class="fas fa-file-arrow-down ai-btn-export" onclick="ai.exportChatToText(${chat.id}, event)" title=window.i18n ? window.i18n.get("txtExportText") : "텍스트로 내보내기"></i>` 
         : "";
     }
   },
@@ -200,8 +207,8 @@ const ai = {
       tip.style.fontSize = "0.8rem";
       tip.style.color = "#94a3b8";
       tip.innerText = this.isConnected ? 
-        "다른 모델을 사용하려면\n서버에 모델을 추가 설치해주세요." :
-        "서버에 연결되면\n모델 목록이 표시됩니다.";
+        window.i18n ? window.i18n.get("msgAiModelSelectTip1") : "다른 모델을 사용하려면\n서버에 모델을 추가 설치해주세요." :
+        window.i18n ? window.i18n.get("msgAiModelSelectTip2") : "서버에 연결되면\n모델 목록이 표시됩니다.";
       popup.appendChild(tip);
     }
     popup.style.display = "block";
@@ -223,7 +230,7 @@ const ai = {
         const hasRealMessages = chat.messages.some(m => m.role === "user" || m.role === "bot");
         
         if (hasRealMessages) {
-          const msg = `<i class="fas fa-exclamation-triangle" style="color: #eab308; margin-right: 6px;"></i>모델이 ${m}(으)로 변경되었습니다.`;
+          const msg = `<i class="fas fa-exclamation-triangle" style="color: #eab308; margin-right: 6px;"></i>${window.i18n ? window.i18n.get("msgAiModelChange").replace("{0}", m) : "모델이 " + m + "(으)로 변경되었습니다."}`;
           chat.messages.push({ 
             role: "system", 
             content: msg,
@@ -282,7 +289,7 @@ const ai = {
     } else {
       localStorage.setItem("dj_ai_models_cache", JSON.stringify([]));
       if (triggerName) {
-        triggerName.innerText = window.i18n ? window.i18n.get("aiNoServer") : "접속 안됨";
+        triggerName.innerText = window.i18n ? window.i18n.get("aiNoServer") : window.i18n ? window.i18n.get("aiNoServer") : "접속 안됨";
       }
       if (trigger) trigger.classList.add("disabled");
     }
@@ -308,7 +315,8 @@ const ai = {
       const updateText = () => {
         count = (count % 3) + 1;
         const dots = ".".repeat(count);
-        if (text) text.innerText = `서버 확인 중${dots}`;
+        const checkingText = window.i18n ? window.i18n.get("msgAiChecking") : "서버 확인 중";
+        if (text) text.innerText = `${checkingText}${dots}`;
       };
       updateText();
       this._statusInterval = setInterval(updateText, 500);
@@ -322,7 +330,7 @@ const ai = {
       if (historyDot) historyDot.style.background = green;
       if (text) {
         let pName = this.getProviderName(this.provider);
-        text.innerText = `${pName} 연결됨`;
+        text.innerText = `${window.i18n ? window.i18n.get("msgAiConnected").replace("{0}", pName) : pName + " 연결됨"}`;
       }
       if (statusSpan) statusSpan.style.color = green;
     } else {
@@ -332,7 +340,7 @@ const ai = {
       if (dot) dot.style.background = hasProvider ? red : gray;
       if (historyDot) historyDot.style.background = hasProvider ? red : gray;
       if (text) {
-        text.innerText = hasProvider ? "서버 연결 실패" : (window.i18n ? window.i18n.get("aiNeedConnect") : "서버 연결 안됨");
+        text.innerText = hasProvider ? window.i18n ? window.i18n.get("msgConnFail") : "서버 연결 실패" : (window.i18n ? window.i18n.get("aiNeedConnect") : window.i18n ? window.i18n.get("aiNeedConnect") : "서버 연결 안됨");
       }
       if (statusSpan) statusSpan.style.color = hasProvider ? red : gray;
     }
@@ -359,7 +367,7 @@ const ai = {
       
       if (!isSilent) {
         const pName = this.getProviderName(provider);
-        utils.showValidationTip("ai-provider-trigger", isConnected ? `${pName} 연결 성공!` : `${pName} 연결 실패!`, isConnected ? "success" : "error");
+        utils.showValidationTip("ai-provider-trigger", isConnected ? `${window.i18n ? window.i18n.get("msgAiConnSuccess").replace("{0}", pName) : pName + " 연결 성공!"}` : `${window.i18n ? window.i18n.get("msgAiConnFail").replace("{0}", pName) : pName + " 연결 실패!"}`, isConnected ? "success" : "error");
       }
     };
 
@@ -466,7 +474,7 @@ const ai = {
   },
 
   getProviderName(provider) {
-    const defaultNames = { none: "사용 안 함", openai: "OpenAI", gemini: "Gemini" };
+    const defaultNames = { none: window.i18n ? window.i18n.get("optNone") : "사용 안 함", openai: "OpenAI", gemini: "Gemini" };
     if (defaultNames[provider]) return defaultNames[provider];
     const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
     const current = customAis.find(a => a.id === provider);
@@ -478,7 +486,7 @@ const ai = {
     const text = input.value.trim();
     if (!text || this.isGenerating) return;
     if (!this.isConnected) {
-      alert("AI 서버 연결이 필요합니다.");
+      alert(window.i18n ? window.i18n.get("aiNeedConnectHover") : "AI 서버 연결이 필요합니다.");
       settings.openModal();
       return;
     }
@@ -492,7 +500,7 @@ const ai = {
     }
 
     // Immediately update title if this is the first real message
-    if (!chat.messages.some(m => m.role === "user") && (chat.title === "새 대화" || chat.title === "새로운 대화")) {
+    if (!chat.messages.some(m => m.role === "user") && this.isDefaultTitle(chat.title)) {
         const firstLine = text.split("\n")[0];
         chat.title = firstLine.length > 20 ? firstLine.substring(0, 20) + "..." : firstLine;
         this.chats = chats;
@@ -529,7 +537,7 @@ const ai = {
         // handleModelError has already been called inside callXXXAI
         // Do not update chatbot availability to false because server is actually connected
       } else {
-        botMsgDiv.innerText = "오류: 서버와 통신할 수 없습니다.";
+        botMsgDiv.innerText = window.i18n ? window.i18n.get("msgAiErrorComm") : "오류: 서버와 통신할 수 없습니다.";
         this.updateChatbotAvailability(false);
       }
     } finally {
@@ -543,7 +551,7 @@ const ai = {
 
     if (chat && chat._lastModel && chat._lastModel !== model) {
         const rollbackModel = chat._lastModel;
-        const msg = `<i class="fas fa-exclamation-circle" style="color: #ef4444; margin-right: 6px;"></i>모델이 지원되지 않아 원래 모델(${rollbackModel})로 복귀합니다.`;
+        const msg = `<i class="fas fa-exclamation-circle" style="color: #ef4444; margin-right: 6px;"></i>${window.i18n ? window.i18n.get("msgAiModelNotSupported").replace("{0}", rollbackModel) : "모델이 지원되지 않아 원래 모델(" + rollbackModel + ")로 복귀합니다."}`;
         
         // Switch model silently and show the red error message
         chat.model = rollbackModel;
@@ -556,7 +564,7 @@ const ai = {
         this.updateModelDisplay();
         this.appendMessage("system-error", msg, true, true);
     } else {
-        const msg = `<i class="fas fa-exclamation-circle" style="color: #ef4444; margin-right: 6px;"></i>모델(${model}) 사용 권한이 없거나 지원되지 않습니다.`;
+        const msg = `<i class="fas fa-exclamation-circle" style="color: #ef4444; margin-right: 6px;"></i>${window.i18n ? window.i18n.get("msgAiModelUnauthorized").replace("{0}", model) : "모델(" + model + ") 사용 권한이 없거나 지원되지 않습니다."}`;
         this.appendMessage("system-error", msg, true, true);
     }
   },
@@ -817,11 +825,11 @@ const ai = {
       div.onclick = () => this.loadChat(chat.id);
       
       // 제목이 변경되었거나 메시지가 있는 경우 휴지통 표시
-      const isDefaultTitle = chat.title === "새 대화" || chat.title === "새로운 대화";
+      const isDefaultTitle = this.isDefaultTitle(chat.title);
       const hasRealMessages = chat.messages.some(m => m.role === "user" || m.role === "bot");
       const isDeletable = !isDefaultTitle || hasRealMessages;
       
-      div.innerHTML = `<span>${chat.title}</span>${isDeletable ? `<i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>` : ""}`;
+      div.innerHTML = `<span>${this.getDisplayTitle(chat.title)}</span>${isDeletable ? `<i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>` : ""}`;
       list.appendChild(div);
     });
   },
@@ -854,7 +862,7 @@ const ai = {
     // 제목이 기본값이고 메시지가 없는 진짜 '빈 대화'만 찾아서 재사용
     const emptyChat = chats.find(
       (c) =>
-        (c.title === "새 대화" || c.title === "새로운 대화") &&
+        this.isDefaultTitle(c.title) &&
         (!c.messages || c.messages.length === 0 || !c.messages.some(m => m.role === "user" || m.role === "bot")),
     );
     if (emptyChat) {
@@ -881,7 +889,7 @@ const ai = {
     const html = `
       <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
         <span style="font-size: 0.8rem; white-space: nowrap;">삭제하시겠습니까?</span>
-        <button class="btn-del-confirm" onclick="ai.performDeleteChat(${id})" style="width: 100%;">삭제</button>
+        <button class="btn-del-confirm" onclick="ai.performDeleteChat(${id})" style="width: 100%;">${window.i18n ? window.i18n.get("btnDeleteConfirm") : "삭제"}</button>
       </div>
     `;
 
@@ -931,7 +939,7 @@ const ai = {
     if (e) e.stopPropagation();
     utils.showValidationTip(
       "ai-attach-wrapper",
-      "파일 첨부 기능은 향후에 지원할 예정입니다.",
+      window.i18n ? window.i18n.get("msgAttachFuture") : "파일 첨부 기능은 향후에 지원할 예정입니다.",
     );
   },
   hideAttachTip() {
