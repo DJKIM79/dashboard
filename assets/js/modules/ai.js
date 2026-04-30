@@ -856,6 +856,12 @@ const ai = {
         );
     }
     this.updateModelDisplay();
+    
+    // Focus input if chatbot is visible
+    const container = document.getElementById("ai-chatbot-container");
+    if (container && !container.classList.contains("widget-hidden")) {
+      document.getElementById("ai-user-input")?.focus();
+    }
   },
   createNewChat() {
     const chats = this.chats;
