@@ -121,6 +121,14 @@ const ui = {
     }
 
     this.applyVisibility();
+
+    // AI 위젯을 여는 시점에 입력창 포커싱
+    if (type === "ai" && !newState) {
+      setTimeout(() => {
+        const input = document.getElementById("ai-user-input");
+        if (input) input.focus();
+      }, 150);
+    }
   },
 
   showContextMenu(e, type, id) {
