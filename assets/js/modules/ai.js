@@ -21,10 +21,8 @@ const ai = {
   get apiKey() {
     const provider = this.provider;
     if (provider === "none") return "";
-    if (provider === "openai") return localStorage.getItem("dj_ai_api_key") || "";
-    if (provider === "gemini") return localStorage.getItem("dj_ai_api_key_gemini") || "";
-    // Custom providers
-    return localStorage.getItem(`dj_ai_api_key_${provider}`) || "";
+    // 기본 제공 모델(openai, gemini)도 일관되게 dj_ai_api_key_{provider} 형식을 우선하도록 수정
+    return localStorage.getItem(`dj_ai_api_key_${provider}`) || localStorage.getItem("dj_ai_api_key") || "";
   },
   get settingsModel() {
     return localStorage.getItem("dj_ai_model") || "";
@@ -78,12 +76,18 @@ const ai = {
     this.renderHistory();
     this.loadChat(this.currentChatId);
 
+    // 초기화 시점에 저장된 연결 상태 우선 반영
     this.updateChatbotAvailability(this.isConnected);
+    
     const savedModels = JSON.parse(
       localStorage.getItem("dj_ai_models_cache") || "[]",
     );
-    if (this.isConnected && this.provider !== "none") {
-      if (savedModels.length > 0) this.updateModelSelectUI(savedModels);
+    
+    // AI 공급자가 설정되어 있다면, 현재 연결 상태와 상관없이 접속 확인 시도 (자가 치유)
+    if (this.provider !== "none") {
+      if (this.isConnected && savedModels.length > 0) {
+        this.updateModelSelectUI(savedModels);
+      }
       this.checkConnection(true);
     } else {
       this.updateChatbotAvailability(false);
@@ -348,7 +352,8 @@ const ai = {
 
   async checkConnection(isSilent = false) {
     const provider = localStorage.getItem("dj_ai_provider") || "none";
-    const apiKey = document.getElementById("aiApiKeyInput")?.value.trim() || this.apiKey;
+    // 새로고침 시(isSilent)에는 화면의 입력칸이 비어있을 확률이 높으므로 무조건 저장된 키를 우선 사용
+    const apiKey = isSilent ? this.apiKey : (document.getElementById("aiApiKeyInput")?.value.trim() || this.apiKey);
     
     // Custom AI는 this.serverUrl에서 등록된 URL을 가져옴
     let url = this.serverUrl; 
@@ -418,13 +423,22 @@ const ai = {
                     finalize(false); // 규격 불일치
                 }
             } else finalize(false);
+          } else if (protocol === "gemini") {
+            // 사용자 정의 AI로 등록된 Gemini 처리
+            const checkUrl = `${fetchUrl}/v1beta/models?key=${apiKey}`;
+            const res = await fetch(checkUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (res.ok) {
+                const data = await res.json();
+                finalize(true, data.models.filter((m) => m.supportedGenerationMethods.includes("generateContent")).map((m) => m.name.replace("models/", "")));
+            } else finalize(false);
           } else {
             // OpenAI default health check
             const headers = { "Content-Type": "application/json" };
             
-            // 로컬 호스트가 아닌데 API Key가 없으면 즉시 실패 처리
+            // 로컬 호스트가 아닌데 API Key가 없으면 즉시 실패 처리 (단, 새로고침 중인 경우는 통과)
             const isLocal = fetchUrl.includes("127.0.0.1") || fetchUrl.includes("localhost");
-            if (!apiKey && !isLocal) {
+            if (!apiKey && !isLocal && !isSilent) {
                 finalize(false);
                 return;
             }
