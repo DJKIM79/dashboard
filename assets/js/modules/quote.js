@@ -25,8 +25,32 @@ const quote = {
           author =
             d.author || (i18n.userLang === "ko" ? "지혜의 기록" : "Unknown");
         if (text) {
+          const section = document.getElementById("quote-section");
+          const oldHeight = section && !isFirstLoad ? section.offsetHeight : 0;
+
           if (qt) qt.innerText = `"${text}"`;
           if (qa) qa.innerText = `- ${author}`;
+
+          // Re-apply font size to ensure author size is updated
+          if (window.settings) {
+            const size = localStorage.getItem("dj_quote_font_size") || "medium";
+            settings.setQuoteFontSize(size);
+          }
+
+          if (section && oldHeight > 0) {
+            const newHeight = section.offsetHeight;
+            if (oldHeight !== newHeight) {
+              section.style.height = oldHeight + "px";
+              section.style.overflow = "hidden";
+              section.offsetHeight; // force reflow
+              section.style.height = newHeight + "px";
+
+              setTimeout(() => {
+                section.style.height = "";
+                section.style.overflow = "";
+              }, 500);
+            }
+          }
         } else {
           throw new Error();
         }
@@ -35,11 +59,6 @@ const quote = {
         if (qa) qa.innerText = i18n.get("quoteAuthorDefault");
       } finally {
         if (container) container.classList.remove("quote-switching");
-        // Re-apply font size to ensure author size is updated
-        if (window.settings) {
-          const size = localStorage.getItem("dj_quote_font_size") || "medium";
-          settings.setQuoteFontSize(size);
-        }
         if (window.shortcutMod) shortcutMod.checkLayout();
       }
     };
