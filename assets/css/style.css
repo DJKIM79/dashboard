@@ -2272,6 +2272,11 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .ai-history-panel.collapsed .ai-history-header #ai-history-toggle {
   margin-left: 28px;
 }
+#ai-history-toggle {
+  flex-shrink: 0;
+  width: 20px;
+  text-align: right;
+}
 .ai-history-header i {
   cursor: pointer;
   opacity: 0.6;
@@ -2289,7 +2294,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 150px;
+  max-width: 100px;
   display: inline-block;
   vertical-align: middle;
 }
