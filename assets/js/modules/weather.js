@@ -138,8 +138,8 @@ const weather = {
           <span>${Math.round(current.temperature_2m)}</span>°
         </div>
         <div class="weather-hl">
-          <span>${i18n.get("weatherHigh")}</span> ${Math.round(daily.temperature_2m_max[0])}°
-          <span>${i18n.get("weatherLow")}</span> ${Math.round(daily.temperature_2m_min[0])}°
+          <span style="color: #ff5f5f;">${i18n.get("weatherHigh")}</span> ${Math.round(daily.temperature_2m_max[0])}°
+          <span style="color: #60a5fa;">${i18n.get("weatherLow")}</span> ${Math.round(daily.temperature_2m_min[0])}°
         </div>
         <div id="forecast-${id}" class="forecast-window" onclick="event.stopPropagation()"></div>
       `;
@@ -158,6 +158,33 @@ const weather = {
         document.getElementById("top-right-widgets").appendChild(err);
       }
     }
+  },
+
+  getTempColor(temp) {
+    // T >= 35: Deep Red (Hue 0)
+    // 15 <= T <= 20: Emerald Green (Hue 140)
+    // T <= -5: Deep Cold Blue (Hue 230)
+    
+    if (temp >= 35) return "hsl(0, 100%, 60%)";
+    if (temp <= -5) return "hsl(230, 100%, 65%)";
+    
+    let h;
+    if (temp >= 15 && temp <= 20) {
+      h = 140; // Emerald Green
+    } else if (temp > 20) {
+      // 20 (Green) to 35 (Red)
+      const ratio = (temp - 20) / 15;
+      h = 140 - (ratio * 140);
+    } else {
+      // -5 (Blue) to 15 (Green)
+      // Interpolate Hue from 230 down to 140
+      const ratio = (temp - (-5)) / 20;
+      // Use a slight power curve (0.85) to smooth out the perceptual jump 
+      // around the Cyan range (approx. 5°C), making the transition feel more natural.
+      h = 230 - (Math.pow(ratio, 0.85) * 90);
+    }
+    
+    return `hsl(${h}, 100%, 65%)`;
   },
 
   getIcon(code) {
@@ -197,12 +224,18 @@ const weather = {
       const icon = this.getIcon(daily.weather_code[i]);
       const max = Math.round(daily.temperature_2m_max[i]);
       const min = Math.round(daily.temperature_2m_min[i]);
+      const maxColor = this.getTempColor(max);
+      const minColor = this.getTempColor(min);
+      
       const item = document.createElement("div");
       item.className = "forecast-item";
       item.innerHTML = `
         <div class="forecast-day ${dayClass}">${dayName}</div>
         <div class="forecast-icon"><i class="fas ${icon}"></i></div>
-        <div class="forecast-temp">${max}° / ${min}°</div>
+        <div class="forecast-temp" style="font-weight: 700;">
+          <span style="color: ${maxColor}">${max}°</span> / 
+          <span style="color: ${minColor}">${min}°</span>
+        </div>
       `;
       container.appendChild(item);
     }
