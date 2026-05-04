@@ -118,6 +118,12 @@ const ai = {
         if (document.querySelector(".validation-tip.ai-delete-confirm") && !e.target.closest(".validation-tip")) {
             utils.hideValidationTip();
         }
+
+        // Expand history if collapsed and clicking anywhere in the sidebar (except new chat btn)
+        const sidebar = e.target.closest("#ai-history");
+        if (sidebar && this.historyCollapsed && !e.target.closest("#ai-btn-new-chat")) {
+          this.toggleHistory();
+        }
       });
       this.clickListenerAdded = true;
     }
@@ -204,6 +210,17 @@ const ai = {
         };
         popup.appendChild(div);
       });
+
+      // Scroll to active item and center it
+      setTimeout(() => {
+        const activeItem = popup.querySelector(".ai-model-item.active");
+        if (activeItem) {
+          const containerHeight = popup.clientHeight;
+          const itemOffsetTop = activeItem.offsetTop;
+          const itemHeight = activeItem.offsetHeight;
+          popup.scrollTop = itemOffsetTop - containerHeight / 2 + itemHeight / 2;
+        }
+      }, 50);
     } else {
       const tip = document.createElement("div");
       tip.className = "ai-model-tip";
@@ -303,7 +320,6 @@ const ai = {
     const statusSpan = document.getElementById("ai-connection-status");
     const dot = statusSpan?.querySelector(".status-dot");
     const text = statusSpan?.querySelector(".status-text");
-    const historyDot = document.getElementById("ai-history-status-dot");
 
     if (this._statusInterval) {
         clearInterval(this._statusInterval);
@@ -313,7 +329,6 @@ const ai = {
     if (state === "checking") {
       const gray = "#94a3b8";
       if (dot) dot.style.background = gray;
-      if (historyDot) historyDot.style.background = gray;
       
       let count = 0;
       const updateText = () => {
@@ -331,7 +346,6 @@ const ai = {
     if (this.isConnected) {
       const green = "#22c55e";
       if (dot) dot.style.background = green;
-      if (historyDot) historyDot.style.background = green;
       if (text) {
         let pName = this.getProviderName(this.provider);
         text.innerText = `${window.i18n ? window.i18n.get("msgAiConnected").replace("{0}", pName) : pName + " 연결됨"}`;
@@ -342,7 +356,6 @@ const ai = {
         red = "#ef4444";
       const hasProvider = this.provider !== "none";
       if (dot) dot.style.background = hasProvider ? red : gray;
-      if (historyDot) historyDot.style.background = hasProvider ? red : gray;
       if (text) {
         text.innerText = hasProvider ? window.i18n ? window.i18n.get("msgConnFail") : "서버 연결 실패" : (window.i18n ? window.i18n.get("aiNeedConnect") : window.i18n ? window.i18n.get("aiNeedConnect") : "서버 연결 안됨");
       }
@@ -495,13 +508,26 @@ const ai = {
     return current ? current.name : "AI";
   },
 
+  focusInput() {
+    const input = document.getElementById("ai-user-input");
+    if (!input) return;
+    // Slight delay to ensure focus after event processing (e.g. button click)
+    setTimeout(() => input.focus(), 50);
+  },
+
   async sendMessage() {
     const input = document.getElementById("ai-user-input");
-    const text = input.value.trim();
-    if (!text || this.isGenerating) return;
+    const text = input?.value.trim();
+    
+    if (this.isGenerating) return;
+    if (!text) {
+      this.focusInput();
+      return;
+    }
     if (!this.isConnected) {
       alert(window.i18n ? window.i18n.get("aiNeedConnectHover") : "AI 서버 연결이 필요합니다.");
       settings.openModal();
+      this.focusInput();
       return;
     }
 
@@ -525,8 +551,11 @@ const ai = {
     const activeModel = chat.model || this.settingsModel;
 
     this.appendMessage("user", text);
-    input.value = "";
+    if (input) input.value = "";
+    this.focusInput();
+    
     this.isGenerating = true;
+
     const botMsgDiv = this.appendMessage(
       "bot",
       `<div class="typing-indicator"><span></span><span></span><span></span></div>`,
@@ -549,13 +578,13 @@ const ai = {
     } catch (e) {
       if (e.message === "Model permission error") {
         // handleModelError has already been called inside callXXXAI
-        // Do not update chatbot availability to false because server is actually connected
       } else {
         botMsgDiv.innerText = window.i18n ? window.i18n.get("msgAiErrorComm") : "오류: 서버와 통신할 수 없습니다.";
         this.updateChatbotAvailability(false);
       }
     } finally {
       this.isGenerating = false;
+      this.focusInput();
     }
   },
 
@@ -941,8 +970,21 @@ const ai = {
         executeDelete();
     }
   },
-  toggleHistory() {
+  toggleHistory(e) {
+    if (e) e.stopPropagation();
     this.historyCollapsed = !this.historyCollapsed;
+
+    // Close model popup if collapsing
+    if (this.historyCollapsed) {
+      const popup = document.getElementById("ai-model-popup");
+      if (popup && popup.classList.contains("show")) {
+        popup.classList.remove("show");
+        setTimeout(() => {
+          if (!popup.classList.contains("show")) popup.style.display = "none";
+        }, 200);
+      }
+    }
+
     document
       .getElementById("ai-history")
       ?.classList.toggle("collapsed", this.historyCollapsed);
