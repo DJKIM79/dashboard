@@ -307,34 +307,14 @@
     <div id="ai-chatbot-container" class="widget-hidden">
       <div class="ai-history-panel" id="ai-history">
         <div class="ai-history-header">
-          <div
-            style="
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              position: relative;
-              flex: 1;
-              min-width: 0;
-            "
-          >
+          <div class="ai-header-left">
             <i
               id="ai-btn-new-chat"
               class="fas fa-plus"
               onclick="ai.createNewChat()"
-              data-i18n-title="cmAdd"
+              data-i18n-title="cmNewChat"
               style="font-size: 0.9rem; cursor: pointer"
             ></i>
-            <span
-              id="ai-history-status-dot"
-              style="
-                width: 6px;
-                height: 6px;
-                border-radius: 50%;
-                background: #94a3b8;
-                display: inline-block;
-                margin-left: 2px;
-              "
-            ></span>
             <span
               class="history-title"
               id="ai-history-model-name"
@@ -347,7 +327,7 @@
           <i
             id="ai-history-toggle"
             class="fas fa-angles-left"
-            onclick="ai.toggleHistory()"
+            onclick="ai.toggleHistory(event)"
           ></i>
         </div>
         <div class="ai-history-list" id="ai-history-list"></div>

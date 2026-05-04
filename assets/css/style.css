@@ -2219,32 +2219,46 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   transition: width 0.3s ease;
 }
 .ai-history-panel.collapsed {
-  width: 75px;
+  width: 100px;
   overflow: hidden;
 }
-.ai-history-panel.collapsed .history-title,
-.ai-history-panel.collapsed #ai-btn-new-chat {
-  display: none;
+.ai-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  transition: gap 0.3s ease;
 }
-.ai-history-panel.collapsed .ai-history-item span {
-  display: block !important;
-  font-size: 0.85rem !important;
-  opacity: 0.9;
-  text-align: left;
-  width: 100%;
+.history-title {
+  cursor: pointer;
+  transition: opacity 0.3s ease, max-width 0.3s ease, margin-left 0.3s ease, transform 0.3s ease;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: clip; /* 점 없이 그냥 자름 */
+  text-overflow: ellipsis;
+  max-width: 130px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  display: inline-block;
+  transform-origin: left;
 }
-.ai-history-panel.collapsed .ai-history-item i {
-  display: none;
+.history-title:hover {
+  opacity: 1;
+  color: var(--accent-color);
 }
-.ai-history-panel.collapsed .ai-history-item {
-  justify-content: flex-start;
-  padding: 10px 15px;
+.ai-history-panel.collapsed .history-title {
+  opacity: 0;
+  max-width: 0;
+  margin-left: -8px;
+  transform: scaleX(0.5);
+  pointer-events: none;
+}
+.ai-history-panel.collapsed .ai-header-left {
+  gap: 0;
 }
 .ai-history-header {
-  padding: 15px 20px;
+  padding: 0 5px 0 25px;
   font-size: 0.9rem;
   font-weight: 700;
   display: flex;
@@ -2252,60 +2266,39 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   align-items: center;
   border-bottom: 1px solid var(--glass-border);
   white-space: nowrap;
-  height: 55px;
+  height: 60px;
   box-sizing: border-box;
 }
 .ai-history-panel.collapsed .ai-history-header {
-  justify-content: center;
-  padding: 15px 0;
+  padding: 0 5px 0 25px;
   position: relative;
 }
-.ai-history-panel.collapsed .ai-history-header .history-title,
-.ai-history-panel.collapsed .ai-history-header #ai-btn-new-chat {
-  display: none;
-}
-.ai-history-panel.collapsed .ai-history-header #ai-history-status-dot {
-  margin: 0 !important;
-  position: absolute;
-  left: 13px; /* 13px로 미세 조정 */
-}
 .ai-history-panel.collapsed .ai-history-header #ai-history-toggle {
-  margin-left: 28px;
+  right: 5px;
+  opacity: 0.4;
+}
+.ai-history-panel.collapsed .ai-history-header #ai-history-toggle:hover {
+  opacity: 1;
 }
 #ai-history-toggle {
   flex-shrink: 0;
-  width: 20px;
-  text-align: right;
-}
-.ai-history-header i {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  font-size: 0.9rem;
   opacity: 0.6;
   transition: 0.2s;
-  font-size: 1.1rem;
 }
-.ai-history-header i:hover {
+#ai-history-toggle:hover {
   opacity: 1;
-  color: var(--accent-color);
-}
-.history-title {
-  cursor: pointer;
-  transition: opacity 0.2s;
-  position: relative;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100px;
-  display: inline-block;
-  vertical-align: middle;
-}
-.history-title:hover {
-  opacity: 0.8;
   color: var(--accent-color);
 }
 .ai-model-popup {
   position: absolute;
   top: 100%;
-  bottom: auto;
   left: 0;
   margin-top: 5px;
   background: #1e293b;
@@ -2313,7 +2306,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   border-radius: 12px;
   padding: 8px;
   z-index: 1000;
-  min-width: 180px;
+  min-width: 140px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   display: none;
   max-height: 250px;
@@ -2322,6 +2315,34 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .ai-model-popup.show {
   display: block;
   animation: fadeIn 0.2s ease;
+}
+#ai-btn-new-chat {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.1);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: 0.2s;
+}
+#ai-btn-new-chat:hover {
+  background: var(--accent-color);
+  color: var(--accent-contrast);
+  border-color: var(--accent-color);
+}
+.ai-history-header i {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: 0.2s;
+}
+.ai-history-header i:hover {
+  opacity: 1;
+  color: var(--accent-color);
 }
 .ai-model-item {
   padding: 8px 12px;
