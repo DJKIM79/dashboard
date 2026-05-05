@@ -1,5 +1,4 @@
 let sharedAudioCtx = null;
-
 const utils = {
   playBeep() {
     if (!sharedAudioCtx) {
@@ -17,53 +16,52 @@ const utils = {
     osc.start();
     setTimeout(() => osc.stop(), 150);
   },
-
   setBackground(seed) {
+    const engine = localStorage.getItem("dj_image_engine") || "unsplash";
+    document.body.dataset.bgEngine = engine;
+    
+    if (engine === "none") {
+      document.body.style.backgroundImage = "none";
+      const themeColor = localStorage.getItem("dj_theme_color") || "#eab308";
+      const isBlackTheme = themeColor === "#000" || themeColor === "#000000";
+      // Use softer shades instead of pure white/black
+      document.body.style.backgroundColor = isBlackTheme ? "#f8fafc" : "#0f172a";
+      return;
+    }
+
     let keyword = localStorage.getItem("dj_bg_keyword");
     if (keyword === null) keyword = "landscape";
     keyword = keyword.trim().replace(/\s+/g, ",");
-
-    const engine = localStorage.getItem("dj_image_engine") || "unsplash";
-
-    // LoremFlickr supports sources by adding them as tags
-    // e.g. https://loremflickr.com/1920/1080/nature,unsplash
+    
     const sourceTag = engine === "unsplash" ? "unsplash" : "flickr";
     const tags = keyword ? `${keyword},${sourceTag}` : sourceTag;
-
     const url = `https://loremflickr.com/1920/1080/${tags}?random=${seed}`;
-
     document.body.style.backgroundImage = `url('${url}')`;
+    document.body.style.backgroundColor = "transparent"; // Reset background color
   },
-
   changeBackgroundInstant() {
     const seed = Math.floor(Math.random() * 100000);
     localStorage.setItem("dj_bg_seed", seed);
     this.setBackground(seed);
   },
-
   initTimePicker() {
     this.renderTimeList("notiHourList", 24, "hour");
     this.renderTimeList("notiMinList", 60, "min");
-
-    // Click outside listener for time popups
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.custom-time-picker')) {
         document.querySelectorAll('.time-popup').forEach(p => p.classList.remove('show'));
       }
     });
   },
-
   renderTimeList(containerId, count, type) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = "";
-    
     const activeLang = i18n.userLang;
     let suffix = type === "hour" ? "h" : "m";
     if (activeLang === "ko") suffix = type === "hour" ? "시" : "분";
     else if (activeLang === "ja") suffix = type === "hour" ? "時" : "分";
     else if (activeLang.startsWith("zh")) suffix = type === "hour" ? "时" : "分";
-
     for (let i = 0; i < count; i++) {
       const val = String(i).padStart(2, "0");
       const div = document.createElement("div");
@@ -77,23 +75,17 @@ const utils = {
       container.appendChild(div);
     }
   },
-
   toggleTimePopup(type, e) {
     if (e) e.stopPropagation();
     const popupId = type === "hour" ? "notiHourPopup" : "notiMinPopup";
     const popup = document.getElementById(popupId);
     if (!popup) return;
-
     const isShowing = popup.classList.contains("show");
-    // Close other popups
     document.querySelectorAll('.time-popup').forEach(p => {
       if (p.id !== popupId) p.classList.remove('show');
     });
-
-    // Close calendar popup
     const calPopup = document.getElementById("noti-calendar-popup");
     if (calPopup) calPopup.classList.remove("show");
-
     if (!isShowing) {
       popup.classList.add("show");
       const currentVal = document.getElementById(type === "hour" ? "notiHour" : "notiMin").value;
@@ -102,59 +94,47 @@ const utils = {
       popup.classList.remove("show");
     }
   },
-
   selectTime(type, val) {
     const displayId = type === "hour" ? "notiHourDisplay" : "notiMinDisplay";
     const inputId = type === "hour" ? "notiHour" : "notiMin";
     const popupId = type === "hour" ? "notiHourPopup" : "notiMinPopup";
-    
     const display = document.getElementById(displayId);
     const input = document.getElementById(inputId);
     const popup = document.getElementById(popupId);
-
     const activeLang = i18n.userLang;
     let suffix = type === "hour" ? "h" : "m";
     if (activeLang === "ko") suffix = type === "hour" ? "시" : "분";
     else if (activeLang === "ja") suffix = type === "hour" ? "時" : "分";
     else if (activeLang.startsWith("zh")) suffix = type === "hour" ? "时" : "分";
-
     if (display) display.innerText = `${val}${suffix}`;
     if (input) {
       input.value = val;
-      // Trigger change if needed
       input.dispatchEvent(new Event('change'));
     }
-    
     if (popup) popup.classList.remove("show");
     this.updateTimeSelectionUI(type, val);
   },
-
   updateTimeSelectionUI(type, val) {
     const listId = type === "hour" ? "notiHourList" : "notiMinList";
     const list = document.getElementById(listId);
     if (!list) return;
-
     list.querySelectorAll('.time-item').forEach(item => {
       item.classList.toggle('selected', item.dataset.value === val);
     });
   },
-
   scrollToSelected(type, val) {
     const listId = type === "hour" ? "notiHourList" : "notiMinList";
     const list = document.getElementById(listId);
     if (!list) return;
-
     const selectedItem = list.querySelector(`.time-item[data-value="${val}"]`);
     if (selectedItem) {
       this.updateTimeSelectionUI(type, val);
-      // 중앙에 오도록 스크롤 계산
       const listHeight = list.clientHeight;
       const itemTop = selectedItem.offsetTop;
       const itemHeight = selectedItem.clientHeight;
       list.scrollTop = itemTop - listHeight / 2 + itemHeight / 2;
     }
   },
-
   toggleDaySelector(s) {
     const wrap = document.getElementById("day-selector-wrap");
     const dateInput = document.getElementById("notiDate");
@@ -167,17 +147,14 @@ const utils = {
       dateInput.style.pointerEvents = s ? "none" : "auto";
     }
   },
-
   openModal(id) {
     const modal = document.getElementById(id);
     if (modal) modal.classList.add("show");
   },
-
   closeModal(id) {
     const modal = document.getElementById(id);
     if (modal) modal.classList.remove("show");
   },
-
   saveData() {
     if (window.shortcutMod)
       localStorage.setItem("dj_shortcuts", JSON.stringify(shortcutMod.items));
@@ -191,24 +168,18 @@ const utils = {
         JSON.stringify(weather.locations),
       );
   },
-
   showValidationTip(elementId, message, type = "error", options = {}) {
     const btn = typeof elementId === "string" ? document.getElementById(elementId) : elementId;
     if (!btn) return;
-
-    // 기존 팁 제거
     const existing = document.querySelector(".validation-tip");
     if (existing) existing.remove();
-
     const tip = document.createElement("div");
     tip.className = `validation-tip ${type}`;
     if (options.isHtml) tip.innerHTML = message;
     else tip.innerText = message;
     document.body.appendChild(tip);
-
     const rect = btn.getBoundingClientRect();
     const pos = options.position || "top";
-
     if (pos === "top") {
       tip.style.left = `${rect.left + rect.width / 2}px`;
       tip.style.top = `${rect.top - 10}px`;
@@ -217,7 +188,6 @@ const utils = {
       tip.style.left = `${rect.right + 25}px`;
       tip.style.top = `${rect.top + rect.height / 2}px`;
     }
-
     setTimeout(() => {
       tip.classList.add("show");
       if (!options.noAutoHide) {
@@ -231,7 +201,6 @@ const utils = {
     }, 10);
     return tip;
   },
-
   hideValidationTip() {
     const existing = document.querySelector(".validation-tip");
     if (existing) {
@@ -239,7 +208,6 @@ const utils = {
       setTimeout(() => existing.remove(), 300);
     }
   },
-
   resetAllData() {
     localStorage.clear();
     const cookies = document.cookie.split(";");
@@ -252,7 +220,6 @@ const utils = {
     location.reload();
   },
 };
-
 window.utils = utils;
 window.openModal = utils.openModal;
 window.closeModal = utils.closeModal;

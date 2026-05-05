@@ -1,10 +1,8 @@
 const memo = {
   items: JSON.parse(localStorage.getItem("dj_memos")) || [],
-
   init() {
     this.render();
   },
-
   render() {
     const c = document.getElementById("memo-list");
     if (!c) return;
@@ -24,7 +22,6 @@ const memo = {
       c.appendChild(div);
     });
   },
-
   openModal(id = null) {
     window.currentEditMemoId = id;
     window.currentContextType = "memo";
@@ -44,7 +41,6 @@ const memo = {
     utils.openModal("memoModal");
     setTimeout(() => document.getElementById("memoTitle").focus(), 50);
   },
-
   add() {
     const t = document.getElementById("memoTitle").value,
       c = document.getElementById("memoContent").value;
@@ -69,7 +65,6 @@ const memo = {
       utils.showValidationTip("memoSaveBtn", i18n.get("msgInputTitle"));
     }
   },
-
   delete(id = null) {
     const targetId = id || window.currentEditMemoId;
     this.items = this.items.filter((x) => x.id != targetId);
@@ -79,7 +74,6 @@ const memo = {
     utils.closeModal("memoModal");
   },
 };
-
 window.memo = memo;
 window.memos = memo.items; // For backward compatibility
 window.renderMemos = memo.render.bind(memo);

@@ -16,7 +16,6 @@ const files = {
     a.download = "onto.json";
     a.click();
   },
-
   import(e) {
     const f = e.target.files[0];
     if (!f) return;
@@ -42,14 +41,12 @@ const files = {
           window.memo.items = d.memos;
           localStorage.setItem("dj_memos", JSON.stringify(d.memos));
         }
-
         if (d.theme) settings.setTheme(d.theme);
         if (d.bgKeyword) localStorage.setItem("dj_bg_keyword", d.bgKeyword);
         if (d.seed) {
           localStorage.setItem("dj_bg_seed", d.seed);
           utils.setBackground(d.seed);
         }
-
         renderShortcuts();
         renderNotifications();
         renderMemos();
@@ -62,7 +59,6 @@ const files = {
     r.readAsText(f);
   },
 };
-
 window.files = files;
 window.exportData = files.export.bind(files);
 window.importData = files.import.bind(files);

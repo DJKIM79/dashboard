@@ -243,7 +243,6 @@ body::before {
   position: relative;
   margin-bottom: 20px;
 }
-
 .city-result-item {
   padding: 10px;
   cursor: pointer;
@@ -264,7 +263,7 @@ body::before {
   gap: 8px;
   margin-bottom: 15px;
   min-height: 40px;
-  position: relative; /* 팝업 기준점 */
+  position: relative; 
 }
 .weather-custom-select {
   background: rgba(15, 23, 42, 0.6);
@@ -299,7 +298,6 @@ body::before {
   background: rgba(255, 255, 255, 0.05);
   border-color: var(--accent-color);
 }
-
   max-height: 200px;
   overflow-y: auto;
   z-index: 1001;
@@ -386,21 +384,18 @@ body::before {
   z-index: 10;
   padding: 0 50px;
 }
-
 @media (max-width: 1100px) {
   #shortcut-container {
     width: calc(100% - 300px);
     padding: 0 150px;
   }
 }
-
 @media (max-width: 800px) {
   #shortcut-container {
     width: calc(100% - 60px);
     padding: 0 30px;
   }
 }
-
 .grid-layout,
 .shortcut-list-view {
   grid-template-columns: repeat(auto-fill, 140px);
@@ -409,7 +404,6 @@ body::before {
   max-width: 930px;
   margin: 0 auto;
 }
-
 .shortcut-list-view .shortcut-item {
   flex-direction: row !important;
   padding: 8px 12px !important;
@@ -422,7 +416,6 @@ body::before {
   justify-content: flex-start !important;
   background: rgba(0, 0, 0, 0.45) !important;
 }
-
 .shortcut-list-view .shortcut-item .shortcut-icon-wrapper,
 .shortcut-list-view .shortcut-item img,
 .shortcut-list-view .shortcut-item .shortcut-default-icon {
@@ -432,14 +425,12 @@ body::before {
   font-size: 0.75rem !important;
   border-radius: 4px !important;
 }
-
 .shortcut-list-view .shortcut-item span {
   font-size: 0.75rem !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .shortcut-item {
   background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(15px);
@@ -515,7 +506,6 @@ body::before {
   color: var(--accent-contrast);
   transform: translateY(-2px);
 }
-/* Drag and Drop - 최적화: 붕 뜨는 효과 삭제 */
 #shortcut-container.sorting-active .shortcut-item {
   transition: none !important;
 }
@@ -565,7 +555,7 @@ body::before {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 .context-menu .cm-hide {
-  color: #38bdf8; /* 연한 파란색 */
+  color: #38bdf8; 
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 #clock-container,
@@ -574,7 +564,7 @@ body::before {
   border: 1px solid var(--glass-border);
 }
 #clock-container:hover,
-.calendar-widget:hover {
+#calendar-container:hover {
   border-color: var(--accent-color);
 }
 .bottom-widgets {
@@ -595,7 +585,7 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  pointer-events: none; /* 컨테이너 자체는 클릭 무시 */
+  pointer-events: none; 
   position: relative;
   z-index: 100;
   transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -604,13 +594,13 @@ body::before {
   width: max-content;
 }
 .left-area > * {
-  pointer-events: auto; /* 내부 실제 요소들만 클릭 가능하게 */
+  pointer-events: auto; 
 }
 .right-area {
   align-items: flex-end;
   display: flex;
   flex-direction: column-reverse;
-  pointer-events: none; /* 컨테이너 자체는 클릭 무시 */
+  pointer-events: none; 
   position: relative;
   z-index: 100;
   transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -619,7 +609,7 @@ body::before {
   width: max-content;
 }
 .right-area > * {
-  pointer-events: auto; /* 내부 실제 요소들만 클릭 가능하게 */
+  pointer-events: auto; 
 }
 .setting-label-text {
   font-size: 0.75rem;
@@ -689,7 +679,6 @@ body::before {
 .sidebar-trigger:hover .sidebar-hint {
   opacity: 0 !important;
 }
-/* Hide hint when sidebar is open/hovered */
 body:has(.widget-sidebar:hover) .sidebar-hint {
   opacity: 0 !important;
 }
@@ -754,9 +743,12 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
     margin 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     padding 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    filter 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    filter 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: center;
-  max-height: 1000px; /* Base for transition */
+  max-height: 1000px; 
 }
 @keyframes widgetFadeIn {
   from {
@@ -926,7 +918,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-self: center; /* 수직 중앙 정렬 강화 */
+  align-self: center; 
 }
 .clock-digit-strip {
   display: flex;
@@ -943,7 +935,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .clock-separator {
   opacity: 0.7;
   margin: 0 1px;
-  align-self: center; /* 수직 중앙 정렬 강화 */
+  align-self: center; 
 }
 .clock-ampm {
   font-size: 0.65rem;
@@ -994,7 +986,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .calendar-header {
   display: flex;
-  justify-content: center; /* 중앙 정렬 */
+  justify-content: center; 
   align-items: center;
   margin-bottom: 12px;
   font-weight: 700;
@@ -1007,7 +999,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .calendar-header-center {
   display: flex;
   align-items: center;
-  position: relative; /* 자식인 today-icon의 기준점 */
+  position: relative; 
 }
 #cal-month-year {
   font-size: 0.9rem;
@@ -1015,7 +1007,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .today-icon {
   position: absolute;
-  left: calc(100% + 8px); /* 텍스트 바로 오른쪽에 위치 */
+  left: calc(100% + 8px); 
   font-size: 0.75rem;
   opacity: 0.5;
   cursor: pointer;
@@ -1025,7 +1017,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .today-icon:hover {
   opacity: 1;
   color: var(--accent-color);
-  transform: scale(1.2) rotate(-360deg); /* 한 바퀴 회전하며 되돌아가는 느낌 */
+  transform: scale(1.2) rotate(-360deg); 
   filter: drop-shadow(0 0 5px var(--accent-color));
 }
 .cal-nav {
@@ -1036,7 +1028,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   transition: 0.2s;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 1.1rem; /* 크기 1포인트 증가 */
+  font-size: 1.1rem; 
 }
 .cal-nav:hover {
   opacity: 1;
@@ -1241,11 +1233,9 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   height: 38px;
   box-sizing: border-box;
 }
-/* Quote size field takes more space */
 .field-quote-size {
   flex: 1;
 }
-/* Weather toggle field is more compact and centered */
 .field-weather-toggle {
   flex: 1;
   justify-content: center;
@@ -1376,7 +1366,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   margin-bottom: 5px;
   min-height: 0;
 }
-/* .setting-grid overflow related styles removed as .modal-content handles it now */
 .modal-content.delete-modal {
   width: 320px;
   padding: 30px;
@@ -1593,7 +1582,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   gap: 10px;
   margin-bottom: 15px;
 }
-/* 커스텀 시간 선택기 스타일 */
 .custom-time-picker {
   position: relative;
   flex: 1;
@@ -1639,7 +1627,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   padding: 5px 0;
   scroll-behavior: smooth;
 }
-/* 통일된 세련된 스크롤바 스타일 */
 .time-list::-webkit-scrollbar {
   width: 5px;
 }
@@ -1688,7 +1675,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   margin-top: 0;
   pointer-events: none;
 }
-
 #day-selector-wrap.show {
   max-height: 1000px;
   opacity: 1;
@@ -1697,26 +1683,21 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   border-color: rgba(255, 255, 255, 0.05);
   pointer-events: auto;
 }
-
 #day-selector-wrap .day-check {
   flex: 1;
   display: flex;
   margin: 0;
 }
-
 #day-selector-wrap .day-check span {
   width: 100%;
   box-sizing: border-box;
 }
-
 .year-slide-left {
   animation: slideLeft 0.3s ease-out;
 }
-
 .year-slide-right {
   animation: slideRight 0.3s ease-out;
 }
-
 .repeat-row {
   display: flex;
   align-items: center;
@@ -1838,8 +1819,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
     transform: translateY(0);
   }
 }
-
-/* AI Settings Styles */
 .ai-check-tooltip {
   position: absolute;
   bottom: calc(100% + 10px);
@@ -1880,17 +1859,12 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   opacity: 1;
   color: #ef4444;
 }
-
 .ai-search-icon {
   transition: color 0.3s ease;
 }
 .ai-search-icon.error {
   color: #ef4444 !important;
 }
-
-/* --- 팝업 시스템 복구 및 분리 --- */
-
-/* 1. 공통 팝업 베이스 (가장 안정적인 설정) */
 .engine-popup {
   position: absolute;
   background: #1e293b;
@@ -1905,14 +1879,11 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   max-height: 280px;
   overflow-y: auto;
 }
-
 .engine-popup.show {
   display: flex !important;
   flex-direction: column;
   animation: fadeIn 0.2s ease;
 }
-
-/* 2. AI 및 검색엔진 설정 (위로 열림) */
 #search-engine-popup,
 #ai-provider-popup,
 #ai-model-select-popup,
@@ -1920,14 +1891,12 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   bottom: 45px;
   left: 0;
 }
-
 #ai-provider-popup,
 #ai-model-select-popup,
 #ai-custom-add-container {
   width: 280px;
   max-height: 280px;
 }
-
 #lang-popup {
   width: 100% !important;
   max-height: 220px;
@@ -1940,7 +1909,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   margin-bottom: 5px !important;
   overflow-y: auto;
 }
-
 #protocol-popup {
   width: 100% !important;
   max-height: 280px;
@@ -1948,18 +1916,13 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   left: 0 !important;
   box-sizing: border-box !important;
 }
-
 #lang-popup *,
 #protocol-popup * {
   box-sizing: border-box;
 }
-
 #search-engine-popup {
   width: 100%;
 }
-
-
-/* 3. 도시 및 날씨 설정 (아래로 열림 - 요청 사항) */
 .weather-popup,
 .city-results {
   position: absolute;
@@ -1977,8 +1940,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   box-sizing: border-box;
   padding: 6px;
 }
-
-/* 크기 선택 전용 드롭다운 (소, 중, 대) */
 #quote-size-popup,
 #widget-size-popup {
   min-width: unset !important;
@@ -1986,7 +1947,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   left: 0 !important;
   transform: none !important;
 }
-
 #quote-size-popup .ai-model-item,
 #widget-size-popup .ai-model-item,
 #quote-size-popup .ai-model-item span,
@@ -1995,23 +1955,16 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   text-align: center !important;
   flex: 1;
 }
-
-/* 4. 스크롤 제어 */
-/* 일반적인 팝업은 자체 스크롤 */
 #search-engine-popup,
 #ai-model-select-popup,
 #citySearchResults,
 .weather-popup {
   overflow-y: auto;
 }
-
-/* AI 제공자 목록처럼 내부에 고정 영역이 있는 경우 */
 .popup-list-area {
   overflow-y: auto;
   flex: 1;
 }
-
-/* 스크롤바 스타일 통일 (AI 모델 목록 스타일 적용) */
 .engine-popup::-webkit-scrollbar,
 .ai-model-popup::-webkit-scrollbar,
 .popup-list-area::-webkit-scrollbar,
@@ -2023,7 +1976,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #ai-user-input::-webkit-scrollbar {
   width: 5px;
 }
-
 .engine-popup::-webkit-scrollbar-track,
 .ai-model-popup::-webkit-scrollbar-track,
 .popup-list-area::-webkit-scrollbar-track,
@@ -2035,7 +1987,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #ai-user-input::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .engine-popup::-webkit-scrollbar-thumb,
 .ai-model-popup::-webkit-scrollbar-thumb,
 .popup-list-area::-webkit-scrollbar-thumb,
@@ -2048,7 +1999,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
 }
-
 .engine-popup::-webkit-scrollbar-thumb:hover,
 .ai-model-popup::-webkit-scrollbar-thumb:hover,
 .popup-list-area::-webkit-scrollbar-thumb:hover,
@@ -2164,8 +2114,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   width: 98%;
   margin-left: 1%;
 }
-
-/* AI Chatbot */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -2388,6 +2336,61 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
     transform: translateY(0);
   }
 }
+
+/* --- Black Theme Visibility Fixes --- */
+.theme-black .month-item.current,
+.theme-black .month-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.theme-black .ai-history-item:hover,
+.theme-black .ai-history-item.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.theme-black .ai-history-item:hover i,
+.theme-black .ai-history-item.active i {
+  color: #fff;
+}
+
+.theme-black .history-title:hover,
+.theme-black .ai-history-header i:hover,
+.theme-black .ai-model-item:hover,
+.theme-black .ai-model-item.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.theme-black #clock-time,
+.theme-black #clock-date,
+.theme-black #cal-month-year {
+  color: #fff !important;
+}
+
+.theme-black .calendar-day.today {
+  background: #fff;
+  color: #000;
+}
+
+body[data-bg-engine="none"].theme-black .shortcut-item {
+  color: #000; /* Visible on white body */
+  text-shadow: none;
+}
+
+body[data-bg-engine="none"].theme-black .shortcut-item:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+body[data-bg-engine="none"].theme-black .shortcut-item:hover .shortcut-default-icon {
+  background: #000;
+  color: #fff;
+}
 .ai-history-list {
   flex: 1;
   overflow-y: auto;
@@ -2450,16 +2453,13 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   transform-origin: center;
   overflow: hidden;
 }
-
 .ai-history-item.chat-adding {
   animation: chatSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
-
 .ai-history-item.chat-deleting {
   animation: chatPopOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   pointer-events: none;
 }
-
 @keyframes chatSlideIn {
   from {
     opacity: 0;
@@ -2478,7 +2478,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
     padding-bottom: 10px;
   }
 }
-
 @keyframes chatPopOut {
   0% {
     opacity: 1;
@@ -2497,7 +2496,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
     padding-bottom: 0;
   }
 }
-
 .ai-history-item:hover {
   background: rgba(255, 255, 255, 0.05);
   border-color: var(--accent-color);
@@ -2534,7 +2532,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .ai-history-panel.collapsed .ai-history-item i {
   display: none;
 }
-/* 호버하거나, 활성화된 대화인 경우 아이콘 표시 */
 .ai-history-item:hover i,
 .ai-history-item.active i {
   opacity: 0.6;
@@ -2602,14 +2599,13 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   font-size: 1.2rem;
   color: var(--accent-color);
   opacity: 1;
-  filter: brightness(1.2); /* 아이콘 자체를 더 밝고 쨍하게 */
+  filter: brightness(1.2); 
 }
 .ai-actions i:hover {
   transform: scale(1.1);
   filter: brightness(1.4);
 }
 .ai-btn-export {
-  /* 테마색을 직접 사용하여 시인성 확보 */
 }
 .ai-chat-messages {
   flex: 1;
@@ -2683,12 +2679,10 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   flex-shrink: 0;
   cursor: text;
 }
-/* Tutorial (Driver.js) v1.0+ Custom Styling - Modern Glassmorphism */
 .driver-popover {
   z-index: 2147483647 !important;
   -webkit-transform: translateZ(0) !important;
   transform: translateZ(0) !important;
-  /* backdrop-filter가 중첩될 때 발생하는 사각형 잔상 버그 방지를 위해 blur 제거 후 투명도 조정 */
   background: rgba(30, 41, 59, 0.95) !important; 
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -2698,14 +2692,11 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   color: #fff !important;
 }
-/* 튜토리얼 진행 중에는 배경 위젯들의 필터나 효과가 팝업과 간섭하지 않도록 처리 */
 body.tutorial-open .quote-container,
 body.tutorial-open .weather-card,
 body.tutorial-open .search-container {
     backdrop-filter: none !important;
 }
-
-
 .driver-popover-title {
   font-size: 1.25rem !important;
   font-weight: 800 !important;
@@ -2713,38 +2704,31 @@ body.tutorial-open .search-container {
   margin-bottom: 12px !important;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
-
 .driver-popover-description {
   font-size: 0.95rem !important;
   line-height: 1.6 !important;
   color: rgba(255, 255, 255, 0.95) !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
-
 .driver-popover-close-btn {
   display: none !important;
 }
-
-/* 둥근 스포트라이트 효과 강제 적용 */
 .driver-stage {
-  border-radius: 20px !important; /* 약간 둥근 모서리 */
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important; /* 이동 애니메이션 */
+  border-radius: 20px !important; 
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important; 
   background: transparent !important;
   border: 2px solid rgba(255, 255, 255, 0.6) !important;
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.3) !important;
 }
-
 .driver-popover-arrow {
   display: none !important;
 }
-
 .driver-popover-footer {
   margin-top: 24px !important;
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
 }
-
 .driver-popover-btn {
   background: rgba(255, 255, 255, 0.2) !important;
   color: #fff !important;
@@ -2757,25 +2741,21 @@ body.tutorial-open .search-container {
   transition: all 0.3s ease !important;
   cursor: pointer !important;
 }
-
 .driver-popover-btn:hover {
   background: rgba(255, 255, 255, 0.35) !important;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
-
 .driver-popover-next-btn {
   background: var(--accent-color) !important;
   border-color: transparent !important;
   color: var(--accent-contrast) !important;
   text-shadow: none !important;
 }
-
 .driver-popover-next-btn:hover {
   background: var(--accent-color) !important;
   filter: brightness(1.1);
 }
-
 #ai-user-input {
   flex: 1;
   background: rgba(15, 23, 42, 0.6);
@@ -2822,7 +2802,7 @@ body.tutorial-open .search-container {
   color: var(--accent-contrast);
 }
 .ai-icon-btn i {
-  pointer-events: none; /* 아이콘이 마우스 이벤트를 방해하지 않게 함 */
+  pointer-events: none; 
 }
 .ai-icon-btn:hover {
   background: rgba(255, 255, 255, 0.2);
@@ -2863,10 +2843,10 @@ body.tutorial-open .search-container {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   white-space: nowrap;
-  --tip-bg: #ef4444; /* 기본값: 빨간색 */
+  --tip-bg: #ef4444; 
 }
 .validation-tip.success {
-  --tip-bg: #22c55e; /* 성공: 초록색 */
+  --tip-bg: #22c55e; 
 }
 .ai-delete-confirm {
   --tip-bg: #334155;
@@ -2923,11 +2903,10 @@ body.tutorial-open .search-container {
   transform: scale(1.05);
   opacity: 0.9;
 }
-
 .ai-refresh-icon {
   color: #94a3b8;
   transition: all 0.3s ease;
-  pointer-events: none; /* Let parent button handle hover */
+  pointer-events: none; 
 }
 #ai-check-btn:hover .ai-refresh-icon {
   transform: rotate(180deg) scale(1.2);
@@ -2956,7 +2935,6 @@ body.tutorial-open .search-container {
 .ai-search-icon.active {
   filter: drop-shadow(0 0 5px var(--accent-color));
 }
-
 .ai-orbit {
   position: absolute;
   top: 50%;
@@ -2982,8 +2960,6 @@ body.tutorial-open .search-container {
   margin-top: -2px;
   margin-left: -2px;
 }
-
-/* 궤도 애니메이션 - 중심축 기준 대칭 회전 */
 .dot-1 {
   animation: orbit-center-1 3s linear infinite;
 }
@@ -2993,7 +2969,6 @@ body.tutorial-open .search-container {
 .dot-3 {
   animation: orbit-center-3 6s linear infinite;
 }
-
 @keyframes orbit-center-1 {
   0% {
     transform: rotate(0deg) translateX(16px) rotate(0deg) scale(1);
@@ -3041,13 +3016,10 @@ body.tutorial-open .search-container {
     z-index: 3;
   }
 }
-
 .ai-search-icon:hover {
   opacity: 0.8;
   transform: scale(1.1);
 }
-
-/* --- Intro Screen Styles --- */
 .intro-overlay {
   position: fixed;
   top: 0;
@@ -3064,12 +3036,10 @@ body.tutorial-open .search-container {
   visibility: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .intro-overlay.show {
   opacity: 1;
   visibility: visible;
 }
-
 .intro-card {
   background: rgba(15, 23, 42, 0.8);
   backdrop-filter: blur(25px) saturate(180%);
@@ -3084,33 +3054,26 @@ body.tutorial-open .search-container {
   opacity: 0;
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
 .intro-overlay.show .intro-card {
   transform: scale(1) translateY(0);
   opacity: 1;
 }
-
-/* Tutorial Fade Out Animation */
 body.tutorial-closing .driver-overlay {
   opacity: 0 !important;
   transition: opacity 0.3s ease !important;
 }
-
 body.tutorial-closing .driver-popover {
   opacity: 0 !important;
   transform: scale(0.9) !important;
   transition: opacity 0.3s ease, transform 0.3s ease !important;
 }
-
 body.tutorial-closing .driver-active-element {
   filter: brightness(1) !important;
   transition: filter 0.3s ease !important;
 }
-
 .intro-header {
   margin-bottom: 30px;
 }
-
 .intro-logo {
   width: 70px;
   height: 70px;
@@ -3124,7 +3087,6 @@ body.tutorial-closing .driver-active-element {
   margin: 0 auto 20px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
-
 .intro-card h1 {
   font-size: 1.8rem;
   font-weight: 800;
@@ -3132,21 +3094,18 @@ body.tutorial-closing .driver-active-element {
   color: #fff;
   letter-spacing: -0.02em;
 }
-
 .intro-subtitle {
   color: var(--accent-color);
   font-size: 0.95rem;
   font-weight: 600;
   opacity: 0.9;
 }
-
 .intro-body {
   margin-bottom: 35px;
   color: rgba(255, 255, 255, 0.7);
   line-height: 1.6;
   font-size: 1rem;
 }
-
 .intro-info-box {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -3157,7 +3116,6 @@ body.tutorial-closing .driver-active-element {
   flex-direction: column;
   gap: 10px;
 }
-
 .info-item {
   display: flex;
   align-items: center;
@@ -3165,22 +3123,18 @@ body.tutorial-closing .driver-active-element {
   gap: 10px;
   font-size: 0.85rem;
 }
-
 .info-item a {
   color: #94a3b8;
   text-decoration: none;
   transition: color 0.2s;
 }
-
 .info-item a:hover {
   color: #fff;
 }
-
 .intro-footer {
   display: flex;
   gap: 15px;
 }
-
 .intro-btn {
   flex: 1;
   padding: 14px;
@@ -3191,29 +3145,24 @@ body.tutorial-closing .driver-active-element {
   transition: all 0.2s;
   border: none;
 }
-
 .intro-btn.skip {
   background: rgba(255, 255, 255, 0.05);
   color: #94a3b8;
 }
-
 .intro-btn.skip:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
-
 .intro-btn.start {
   background: var(--accent-color);
   color: var(--accent-contrast);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
-
 .intro-btn.start:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   filter: brightness(1.1);
 }
-
 @keyframes modalPopUp {
   from { opacity: 0; transform: scale(0.8); }
   to { opacity: 1; transform: scale(1); }

@@ -1,9 +1,7 @@
 const calendar = {
   currentDate: new Date(),
   isMonthSelectorOpen: false,
-
   init() {
-    // Listen for clicks outside the calendar to close month selector
     window.addEventListener('click', (e) => {
       const container = document.getElementById("calendar-container");
       if (this.isMonthSelectorOpen && container && !container.contains(e.target)) {
@@ -12,7 +10,6 @@ const calendar = {
       }
     });
   },
-
   changeMonth(val) {
     const grid = document.getElementById("calendar-grid");
     if (grid) {
@@ -20,16 +17,13 @@ const calendar = {
       void grid.offsetWidth; // Trigger reflow
       grid.classList.add(val > 0 ? "slide-left" : "slide-right");
     }
-
     this.currentDate.setMonth(this.currentDate.getMonth() + val);
     this.render();
   },
-
   changeYear(val) {
     this.currentDate.setFullYear(this.currentDate.getFullYear() + val);
     this.render();
   },
-
   resetToToday() {
     const grid = document.getElementById("calendar-grid");
     if (grid) {
@@ -41,35 +35,28 @@ const calendar = {
     this.isMonthSelectorOpen = false;
     this.render();
   },
-
   handleWidgetClick(e) {
-    // If month selector is open, any click inside (that didn't stop propagation) closes it
     if (this.isMonthSelectorOpen) {
       this.isMonthSelectorOpen = false;
       this.render();
       return;
     }
-
-    // Trigger month selector only when clicking the title area or empty spaces (not arrows/days)
     if (e.target.id === "cal-month-year" || e.target.classList.contains('calendar-header-center')) {
       this.isMonthSelectorOpen = true;
       this.render();
     }
   },
-
   selectMonth(monthIndex) {
     this.currentDate.setMonth(monthIndex);
     this.isMonthSelectorOpen = false;
     this.render();
   },
-  
   addAlarmFromDate(y, m, d) {
     const dateStr = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     if (window.noti) {
       window.noti.openModal(null, dateStr);
     }
   },
-
   render() {
     const year = this.currentDate.getFullYear(),
       month = this.currentDate.getMonth(),
@@ -77,25 +64,17 @@ const calendar = {
       isCurrentMonth =
         todayDate.getFullYear() === year && todayDate.getMonth() === month,
       today = todayDate.getDate();
-
-    const monthsEn = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-    ];
-
-    // Update Header
+    const lang = window.i18n ? window.i18n.userLang : "en";
     const monthYearEl = document.getElementById("cal-month-year");
     if (monthYearEl) {
-      monthYearEl.innerText =
-        i18n.userLang === "ko"
-          ? `${year}.${String(month + 1).padStart(2, "0")}`
-          : `${monthsEn[month]} ${year}`;
+      if (lang.startsWith("ko")) {
+        monthYearEl.innerText = `${year}.${String(month + 1).padStart(2, "0")}`;
+      } else {
+        monthYearEl.innerText = new Intl.DateTimeFormat(lang, { year: "numeric", month: "short" }).format(this.currentDate);
+      }
     }
-
-    // Toggle Month Selector View
     const monthSelector = document.getElementById("month-selector");
     const calendarBody = document.getElementById("calendar-body");
-
     if (this.isMonthSelectorOpen) {
       monthSelector.classList.add("active");
       calendarBody.style.opacity = "0";
@@ -106,15 +85,15 @@ const calendar = {
       calendarBody.style.opacity = "1";
       calendarBody.style.pointerEvents = "auto";
     }
-
-    // Render Days Header
     const daysHeader = document.getElementById("cal-days-header");
     if (daysHeader) {
       daysHeader.innerHTML = "";
-      (i18n.userLang === "ko"
-        ? ["일", "월", "화", "수", "목", "금", "토"]
-        : ["S", "M", "T", "W", "T", "F", "S"]
-      ).forEach((label, i) => {
+      const dayNames = [];
+      for (let i = 0; i < 7; i++) {
+        // 2023-01-01 was Sunday
+        dayNames.push(new Intl.DateTimeFormat(lang, { weekday: "narrow" }).format(new Date(2023, 0, i + 1)));
+      }
+      dayNames.forEach((label, i) => {
         const div = document.createElement("div");
         div.innerText = label;
         if (i === 0) div.classList.add("sun");
@@ -122,17 +101,12 @@ const calendar = {
         daysHeader.appendChild(div);
       });
     }
-
-    // Render Grid
     const grid = document.getElementById("calendar-grid");
     if (!grid) return;
     grid.innerHTML = "";
-
     const firstDay = new Date(year, month, 1).getDay(),
       lastDate = new Date(year, month + 1, 0).getDate(),
       prevLastDate = new Date(year, month, 0).getDate();
-
-    // Previous month days
     for (let i = firstDay; i > 0; i--) {
       const div = document.createElement("div");
       div.className = "calendar-day other-month";
@@ -145,7 +119,6 @@ const calendar = {
       };
       grid.appendChild(div);
     }
-    // Current month days
     for (let i = 1; i <= lastDate; i++) {
       const div = document.createElement("div");
       div.className = "calendar-day";
@@ -160,7 +133,6 @@ const calendar = {
       };
       grid.appendChild(div);
     }
-    // Next month days
     for (let i = 1; grid.children.length < 42; i++) {
       const div = document.createElement("div");
       div.className = "calendar-day other-month";
@@ -173,16 +145,12 @@ const calendar = {
       grid.appendChild(div);
     }
   },
-
   renderMonthSelector() {
     const selector = document.getElementById("month-selector");
     if (!selector) return;
     selector.innerHTML = "";
-
     const year = this.currentDate.getFullYear();
     const currentMonth = this.currentDate.getMonth();
-
-    // Year Header
     const yearHeader = document.createElement("div");
     yearHeader.className = "month-selector-year-header";
     yearHeader.innerHTML = `
@@ -191,21 +159,13 @@ const calendar = {
       <i class="fas fa-caret-right" onclick="calendar.changeYear(1); event.stopPropagation();"></i>
     `;
     selector.appendChild(yearHeader);
-
-    // Month Grid
     const monthGrid = document.createElement("div");
     monthGrid.className = "month-selector-grid";
-
-    const monthsKo = [
-      "1월", "2월", "3월", "4월", "5월", "6월",
-      "7월", "8월", "9월", "10월", "11월", "12월",
-    ];
-    const monthsEn = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-    ];
-    const months = i18n.userLang === "ko" ? monthsKo : monthsEn;
-
+    const lang = window.i18n ? window.i18n.userLang : "en";
+    const months = [];
+    for (let i = 0; i < 12; i++) {
+      months.push(new Intl.DateTimeFormat(lang, { month: "short" }).format(new Date(2023, i, 1)));
+    }
     months.forEach((m, i) => {
       const div = document.createElement("div");
       div.className = "month-item";
@@ -217,11 +177,9 @@ const calendar = {
       };
       monthGrid.appendChild(div);
     });
-
     selector.appendChild(monthGrid);
   },
 };
-
 window.calendar = calendar;
 window.currentCalDate = calendar.currentDate;
 window.changeMonth = calendar.changeMonth.bind(calendar);

@@ -2,17 +2,12 @@ const quote = {
   init() {
     this.fetch();
   },
-
   async fetch() {
     const container = document.querySelector(".quote-container");
     const qt = document.getElementById("quote-text"),
       qa = document.getElementById("quote-author");
-
-    // Only show switching effect if we already have content (not first load)
     const isFirstLoad = !qt || qt.innerText === "..." || qt.innerText === "";
-
     if (container && !isFirstLoad) container.classList.add("quote-switching");
-
     const fetchAction = async () => {
       try {
         const res = await fetch(
@@ -27,16 +22,12 @@ const quote = {
         if (text) {
           const section = document.getElementById("quote-section");
           const oldHeight = section && !isFirstLoad ? section.offsetHeight : 0;
-
           if (qt) qt.innerText = `"${text}"`;
           if (qa) qa.innerText = `- ${author}`;
-
-          // Re-apply font size to ensure author size is updated
           if (window.settings) {
             const size = localStorage.getItem("dj_quote_font_size") || "medium";
             settings.setQuoteFontSize(size);
           }
-
           if (section && oldHeight > 0) {
             const newHeight = section.offsetHeight;
             if (oldHeight !== newHeight) {
@@ -44,7 +35,6 @@ const quote = {
               section.style.overflow = "hidden";
               section.offsetHeight; // force reflow
               section.style.height = newHeight + "px";
-
               setTimeout(() => {
                 section.style.height = "";
                 section.style.overflow = "";
@@ -62,7 +52,6 @@ const quote = {
         if (window.shortcutMod) shortcutMod.checkLayout();
       }
     };
-
     if (isFirstLoad) {
       await fetchAction();
     } else {
@@ -70,6 +59,5 @@ const quote = {
     }
   },
 };
-
 window.quote = quote;
 window.fetchQuote = quote.fetch.bind(quote);

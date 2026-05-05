@@ -9,32 +9,28 @@ const i18n = {
     if (lang.startsWith("de")) return "de";
     return "en";
   },
-
   get userLang() {
-    return localStorage.getItem("dj_user_lang") || this.getAutoLang();
+    const stored = localStorage.getItem("dj_user_lang");
+    if (!stored || stored === "auto") return this.getAutoLang();
+    return stored;
   },
-  
   langData: {},
-
   async init() {
     try {
-      const langToLoad = this.userLang === "auto" ? this.getAutoLang() : this.userLang;
+      const langToLoad = this.userLang;
       const res = await fetch(`assets/lang/${langToLoad}.json`);
       this.langData = await res.json();
     } catch (e) {
       console.error("Failed to load language data", e);
-      // Fallback
       const fallback = this.getAutoLang();
       const res = await fetch(`assets/lang/${fallback}.json`);
       this.langData = await res.json();
     }
     this.apply();
   },
-
   apply() {
     const T = this.langData;
     if (!T) return;
-
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.dataset.i18n;
       if (T[key]) el.innerHTML = T[key];
@@ -51,22 +47,18 @@ const i18n = {
       const key = el.dataset.i18nValue;
       if (T[key]) el.value = T[key];
     });
-
     const dayMapping = [1, 2, 3, 4, 5, 6, 0];
     document.querySelectorAll('input[name="repeatDay"] + span').forEach((span, i) => {
       if (T.days && dayMapping[i] !== undefined) span.innerText = T.days[dayMapping[i]];
     });
-
     const weekMapping = [0, 1, 2, 3, 4, 5]; // 1주~5주, 말일
     document.querySelectorAll('input[name="weekSpecific"] + span').forEach((span, i) => {
       if (T.weeks && weekMapping[i] !== undefined) span.innerText = T.weeks[weekMapping[i]];
     });
   },
-
   get(key) {
     return this.langData[key] || key;
   },
-
   setLanguage(lang) {
     localStorage.setItem("dj_user_lang", lang);
     const modal = document.getElementById("settingModal");
@@ -80,5 +72,4 @@ const i18n = {
     }
   }
 };
-
 window.i18n = i18n;

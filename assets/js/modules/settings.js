@@ -1,15 +1,12 @@
 const settings = {
   openModal() {
     try {
-      // Close AI widget if it's open
       if (localStorage.getItem("dj_hide_ai") !== "true") {
         localStorage.setItem("dj_hide_ai", "true");
         if (window.ui) ui.applyVisibility();
       }
-
       let bgKeyword = localStorage.getItem("dj_bg_keyword");
       if (bgKeyword === null) bgKeyword = "";
-
       const quoteFontSize =
         localStorage.getItem("dj_quote_font_size") || "medium";
       const widgetSize = localStorage.getItem("dj_widget_size") || "medium";
@@ -21,71 +18,57 @@ const settings = {
         localStorage.getItem("dj_show_current_weather") === "true";
       const aiOutputAtOnce =
         localStorage.getItem("dj_ai_output_at_once") === "true";
-
       const el = (id) => document.getElementById(id);
-
       if (el("bgKeywordInput")) el("bgKeywordInput").value = bgKeyword;
-      
-      // Update custom selects initial text
       const quoteSizeText = el("quote-size-text");
       if (quoteSizeText) {
         const sizeMap = { small: "optSmall", medium: "optMedium", large: "optLarge" };
         quoteSizeText.setAttribute("data-i18n", sizeMap[quoteFontSize]);
         if (window.i18n) quoteSizeText.innerText = i18n.get(sizeMap[quoteFontSize]);
       }
-      
       const widgetSizeText = el("widget-size-text");
       if (widgetSizeText) {
         const sizeMap = { small: "optSmall", medium: "optMedium", large: "optLarge" };
         widgetSizeText.setAttribute("data-i18n", sizeMap[widgetSize]);
         if (window.i18n) widgetSizeText.innerText = i18n.get(sizeMap[widgetSize]);
       }
-
       if (el("searchNewTab")) el("searchNewTab").checked = searchNewTab;
       if (el("showFileMgmtCheckbox")) el("showFileMgmtCheckbox").checked = showFileMgmt;
       if (el("showCurrentWeather"))
         el("showCurrentWeather").checked = showWeather;
       if (el("customSearchUrlInput"))
         el("customSearchUrlInput").value = "";
-
       const themeColor = localStorage.getItem("dj_theme_color") || "#eab308";
       const themeAdj = localStorage.getItem("dj_theme_adjustment") || "none";
-
       this.updateThemeAdjustmentUI(themeColor, themeAdj);
       this.updateLangUI();
-
       const imgEngine = localStorage.getItem("dj_image_engine") || "flickr";
+      if (el("engineNone"))
+        el("engineNone").checked = imgEngine === "none";
       if (el("engineUnsplash"))
         el("engineUnsplash").checked = imgEngine === "unsplash";
       if (el("engineFlickr"))
         el("engineFlickr").checked = imgEngine === "flickr";
-
       this.updateSearchEngineTriggerUI();
       this.renderSearchEngineList();
       if (window.renderWeatherLocationList) renderWeatherLocationList();
-
       this.updateAIProviderTriggerUI();
       this.toggleAiSettings(localStorage.getItem("dj_ai_provider") === "none");
-      
       const modelTriggerName = el("ai-model-trigger-name");
       if (modelTriggerName) {
           modelTriggerName.innerText = localStorage.getItem("dj_ai_model") || (window.i18n ? i18n.get("aiNoServer") : window.i18n ? i18n.get("aiNoServer") : "접속 안됨");
       }
-
       if (el("aiOutputAtOnceCheck"))
         el("aiOutputAtOnceCheck").checked = aiOutputAtOnce;
-
       this.onAIProviderChange();
       if (window.ai && typeof ai.updateStatusUI === "function")
         ai.updateStatusUI();
-
       utils.openModal("settingModal");
     } catch (e) {
       console.error("openModal error:", e);
       utils.openModal("settingModal");
     }
   },
-
   updateBgKeyword(value) {
     localStorage.setItem("dj_bg_keyword", value.trim());
     if (this.bgTimeout) clearTimeout(this.bgTimeout);
@@ -93,31 +76,25 @@ const settings = {
       utils.changeBackgroundInstant();
     }, 1000);
   },
-
   updateImageEngine(engine) {
+    const none = document.getElementById("engineNone");
     const unsplash = document.getElementById("engineUnsplash");
     const flickr = document.getElementById("engineFlickr");
-    if (engine === "unsplash") {
-      flickr.checked = false;
-      unsplash.checked = true;
-      localStorage.setItem("dj_image_engine", "unsplash");
-    } else {
-      unsplash.checked = false;
-      flickr.checked = true;
-      localStorage.setItem("dj_image_engine", "flickr");
-    }
+    
+    if (none) none.checked = engine === "none";
+    if (unsplash) unsplash.checked = engine === "unsplash";
+    if (flickr) flickr.checked = engine === "flickr";
+    
+    localStorage.setItem("dj_image_engine", engine);
     utils.changeBackgroundInstant();
   },
-
   updateSearchNewTab(checked) {
     localStorage.setItem("dj_search_new_tab", checked ? "true" : "false");
   },
-
   updateSearchEngineTriggerUI() {
     const triggerFavicon = document.getElementById("trigger-favicon");
     const triggerName = document.getElementById("trigger-name");
     if (!triggerFavicon && !triggerName) return;
-
     const currentEngineId = localStorage.getItem("dj_search_engine") || "google";
     const defaultEngines = [
       { id: "google", name: "Google", domain: "google.com", isDefault: true },
@@ -126,7 +103,6 @@ const settings = {
     const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
     const allEngines = [...defaultEngines, ...customEngines];
     const engine = allEngines.find(e => e.id === currentEngineId) || defaultEngines[0];
-
     let faviconUrl = "";
     if (engine.isDefault) {
       faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}`;
@@ -136,7 +112,6 @@ const settings = {
         faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
       } catch (e) { faviconUrl = ""; }
     }
-
     if (triggerFavicon) {
       triggerFavicon.innerHTML = faviconUrl ? `<img src="${faviconUrl}" alt="icon">` : '<i class="fas fa-search"></i>';
     }
@@ -144,20 +119,16 @@ const settings = {
       triggerName.innerText = engine.name;
     }
   },
-
   closeAllPopups(exceptId = null) {
     const popups = document.querySelectorAll(
       ".ai-model-popup, .engine-popup, .weather-popup",
     );
     popups.forEach((p) => {
       if (p.id && p.id === exceptId) return;
-      
-      // If exceptId is provided, don't close its ancestors
       if (exceptId) {
           const exceptEl = document.getElementById(exceptId);
           if (exceptEl && p.contains(exceptEl)) return;
       }
-
       if (p.id === "search-engine-popup") this.closeSearchEnginePopup();
       else if (p.id === "engine-add-popup") this.closeEngineAddPopup();
       else if (p.id === "ai-provider-popup") this.closeAIPopup();
@@ -182,31 +153,24 @@ const settings = {
       }
     });
   },
-
   renderSearchEngineList() {
     const popupEl = document.getElementById("search-engine-popup");
     if (!popupEl) return;
     popupEl.innerHTML = "";
-    
     const listArea = document.createElement("div");
     listArea.className = "popup-list-area";
     listArea.style.maxHeight = "300px";
     listArea.style.overflowY = "auto";
-
     const currentEngine = localStorage.getItem("dj_search_engine") || "google";
     const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
-    
     const defaultEngines = [
       { id: "google", name: "Google", domain: "google.com", isDefault: true },
       { id: "naver", name: "Naver", domain: "naver.com", isDefault: true }
     ];
-
     const allEngines = [...defaultEngines, ...customEngines];
-
     allEngines.forEach(engine => {
       const item = document.createElement("div");
       item.className = `engine-item ${engine.id === currentEngine ? "active" : ""}`;
-      
       let faviconUrl = "";
       if (engine.isDefault) {
         faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}`;
@@ -216,13 +180,11 @@ const settings = {
           faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
         } catch(e) { faviconUrl = ""; }
       }
-
       item.onclick = (e) => {
           e.stopPropagation();
           this.updateSearchEngine(engine.id);
           this.closeSearchEnginePopup();
       };
-
       item.innerHTML = `
         <div class="engine-favicon">
           ${faviconUrl ? `<img src="${faviconUrl}" alt="icon">` : '<i class="fas fa-search"></i>'}
@@ -238,12 +200,10 @@ const settings = {
       listArea.appendChild(item);
     });
     popupEl.appendChild(listArea);
-
     const footer = document.createElement("div");
     footer.style.borderTop = "1px solid rgba(255,255,255,0.1)";
     footer.style.paddingTop = "5px";
     footer.style.marginTop = "5px";
-    
     const addBtn = document.createElement("div");
     addBtn.className = "engine-item";
     addBtn.style.justifyContent = "center";
@@ -256,19 +216,16 @@ const settings = {
     footer.appendChild(addBtn);
     popupEl.appendChild(footer);
   },
-
   toggleEngineAddPopup(e) {
     if (e) e.stopPropagation();
     const popup = document.getElementById("engine-add-popup");
     if (!popup) return;
-    
     const isShowing = popup.classList.contains("show");
     if (!isShowing) {
         this.closeAllPopups("engine-add-popup");
         popup.style.display = "block";
         popup.offsetHeight;
         popup.classList.add("show");
-        
         const nameInput = document.getElementById("customSearchNameInput");
         const urlInput = document.getElementById("customSearchUrlInput");
         if (nameInput) nameInput.value = "";
@@ -278,7 +235,6 @@ const settings = {
         this.closeEngineAddPopup();
     }
   },
-
   closeEngineAddPopup() {
     const popup = document.getElementById("engine-add-popup");
     if (popup) {
@@ -288,12 +244,10 @@ const settings = {
         }, 300);
     }
   },
-
   toggleSearchEnginePopup(e) {
     if (e) e.stopPropagation();
     const popup = document.getElementById("search-engine-popup");
     if (!popup) return;
-    
     const isShowing = popup.classList.contains("show");
     if (!isShowing) {
         this.closeAllPopups("search-engine-popup");
@@ -303,7 +257,6 @@ const settings = {
         this.closeSearchEnginePopup();
     }
   },
-
   closeSearchEnginePopup() {
     const popup = document.getElementById("search-engine-popup");
     if (popup) {
@@ -313,13 +266,11 @@ const settings = {
         }, 200);
     }
   },
-
   addCustomSearchEngine() {
     const nameInput = document.getElementById("customSearchNameInput");
     const urlInput = document.getElementById("customSearchUrlInput");
     const name = nameInput.value.trim();
     const url = urlInput.value.trim();
-    
     if (!name) {
         utils.showValidationTip("customSearchNameInput", window.i18n ? i18n.get("msgInputName") : window.i18n ? i18n.get("msgInputName") : "이름을 입력해 주세요.");
         return;
@@ -328,17 +279,13 @@ const settings = {
         utils.showValidationTip("customSearchUrlInput", window.i18n ? i18n.get("msgInputUrl") : window.i18n ? i18n.get("msgInputUrl") : "URL을 입력해 주세요.");
         return;
     }
-
     try {
         const urlObj = new URL(url);
-        
-        // Normalize URL for comparison (remove www. and query value if present)
         const normalize = (u) => {
             try {
                 const urlObj = new URL(u);
                 const hostname = urlObj.hostname.replace(/^www\./, '');
                 let result = `${urlObj.protocol}//${hostname}${urlObj.pathname}${urlObj.search}`;
-                
                 const parts = result.split(/[?&]/);
                 if (parts.length > 1) {
                     const lastPart = parts[parts.length - 1];
@@ -346,27 +293,21 @@ const settings = {
                         result = result.substring(0, result.lastIndexOf('=') + 1);
                     }
                 }
-                // Remove trailing slash if no query
                 if (!urlObj.search && result.endsWith('/')) {
                     result = result.slice(0, -1);
                 }
                 return result;
             } catch(e) { return u; }
         };
-
         const normalizedUrl = normalize(url);
         const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
-        
         const builtInEngines = ["https://www.google.com/search?q=", "https://search.naver.com/search.naver?query=", "https://chatgpt.com/?q="];
-        
         const isDuplicate = customEngines.some(e => normalize(e.url) === normalizedUrl) || 
                           builtInEngines.some(e => normalize(e) === normalizedUrl);
-        
         if (isDuplicate) {
             utils.showValidationTip("customSearchUrlInput", window.i18n ? i18n.get("msgEngineExists") : "이미 추가된 검색 엔진입니다.");
             return;
         }
-
         const newEngine = {
             id: `custom_${Date.now()}`,
             name: name,
@@ -374,7 +315,6 @@ const settings = {
             domain: urlObj.hostname,
             isDefault: false
         };
-
         customEngines.push(newEngine);
         localStorage.setItem("dj_search_engines_custom", JSON.stringify(customEngines));
         nameInput.value = "";
@@ -386,7 +326,6 @@ const settings = {
         utils.showValidationTip("customSearchUrlInput", window.i18n ? i18n.get("msgInvalidUrl") : "올바른 URL 형식이 아닙니다.");
     }
   },
-
   deleteCustomSearchEngine(id) {
     let customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
     customEngines = customEngines.filter(e => e.id !== id);
@@ -395,7 +334,6 @@ const settings = {
     else this.renderSearchEngineList();
     if (window.search && typeof search.renderMenu === "function") search.renderMenu();
   },
-
   updateSearchEngine(engine) {
     localStorage.setItem("dj_search_engine", engine);
     if (window.search) {
@@ -405,52 +343,38 @@ const settings = {
     this.updateSearchEngineTriggerUI();
     this.renderSearchEngineList();
   },
-
   updateCustomSearchUrl(value) {
     localStorage.setItem("dj_custom_search_url", value.trim());
   },
-
   updateShowWeather(checked) {
     localStorage.setItem("dj_show_current_weather", checked ? "true" : "false");
     if (window.weather) {
       weather.showCurrent = checked;
-      // Use setTimeout to ensure localStorage is settled before fetch
       setTimeout(() => weather.fetch(), 50);
     }
   },
-
   toggleFileMgmt(checked) {
     localStorage.setItem("dj_hide_fileMgmt", checked ? "false" : "true");
     if (window.ui) ui.applyVisibility();
   },
-
   updateAiOutputAtOnce(checked) {
     localStorage.setItem("dj_ai_output_at_once", checked);
     if (window.ai) ai.outputAtOnce = checked;
   },
-
   updateAiProvider(provider) {
     const oldProvider = localStorage.getItem("dj_ai_provider");
     const oldModel = localStorage.getItem("dj_ai_model");
-    
-    // Save current model for the old provider before switching
     if (oldProvider && oldProvider !== "none" && oldModel) {
         localStorage.setItem(`dj_ai_last_model_${oldProvider}`, oldModel);
     }
-
     localStorage.setItem("dj_ai_provider", provider);
     const isDisabled = provider === "none";
     localStorage.setItem("dj_ai_disabled", isDisabled);
     this.toggleAiSettings(isDisabled);
     this.updateAIProviderTriggerUI();
-    
-    // Restore the last used model for the new provider, or clear if none
     const restoredModel = localStorage.getItem(`dj_ai_last_model_${provider}`) || "";
     this.updateAiModel(restoredModel);
-    
     this.onAIProviderChange();
-    
-    // AI 변경 시 즉시 상태 업데이트
     if (window.ai) {
         ai.isConnected = false;
         ai.updateModelSelectUI([]);
@@ -461,7 +385,6 @@ const settings = {
             icon.classList.remove("active");
             icon.style.color = "#94a3b8";
         }
-        // 공급자 변경 시 즉시 서버 연결 체크
         if (provider !== "none") {
             ai.checkConnection();
         }
@@ -472,29 +395,23 @@ const settings = {
     const keyInput = document.getElementById("aiApiKeyInput");
     const keyLabel = document.getElementById("aiKeyLabel");
     const customAddArea = document.getElementById("ai-custom-add-container");
-
     if (keyInput) {
       if (keyLabel) keyLabel.innerText = "Key";
       keyInput.value = localStorage.getItem(`dj_ai_api_key_${provider}`) || localStorage.getItem("dj_ai_api_key") || "";
     }
-    
     if (customAddArea) {
         customAddArea.classList.remove("show"); // Hide by default
     }
     this.updateAIProviderTriggerUI();
   },
-
   toggleAIPopup(e) {
     if (e) e.stopPropagation();
     const popup = document.getElementById("ai-provider-popup");
     if (!popup) return;
-
     const isShowing = popup.classList.contains("show");
     if (!isShowing) {
         this.closeAllPopups("ai-provider-popup");
         this.renderAIList();
-        
-        // Scroll active item into view
         setTimeout(() => {
           const listContainer = popup.querySelector(".popup-list-area");
           if (listContainer) {
@@ -509,7 +426,6 @@ const settings = {
         this.closeAIPopup();
     }
   },
-
   closeAIPopup() {
     const popup = document.getElementById("ai-provider-popup");
     if (popup) {
@@ -519,45 +435,35 @@ const settings = {
         }, 200);
     }
   },
-
   renderAIList() {
     const popupEl = document.getElementById("ai-provider-popup");
     if (!popupEl) return;
     popupEl.innerHTML = "";
-    
-    // Create list container and footer
     const listContainer = document.createElement("div");
     listContainer.className = "popup-list-area";
     listContainer.style.overflowY = "auto";
     listContainer.style.flex = "1";
-    
     const footer = document.createElement("div");
     footer.className = "popup-footer-area";
     footer.style.borderTop = "1px solid rgba(255,255,255,0.1)";
     footer.style.paddingTop = "5px";
     footer.style.marginTop = "5px";
-
     const currentProvider = localStorage.getItem("dj_ai_provider") || "none";
     const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
-
     const defaultAis = [
         { id: "none", name: window.i18n ? i18n.get("optNone") : "사용 안 함", icon: "fas fa-ban" },
         { id: "openai", name: "OpenAI", icon: "fas fa-circle-nodes" },
         { id: "gemini", name: "Gemini", icon: "fas fa-wand-magic-sparkles" }
     ];
-
     const allAis = [...defaultAis, ...customAis];
-
     allAis.forEach(aiItem => {
       const item = document.createElement("div");
       item.className = `engine-item ${aiItem.id === currentProvider ? "active" : ""}`;
-      
       item.onclick = (e) => {
           e.stopPropagation();
           this.updateAiProvider(aiItem.id);
           this.closeAIPopup();
       };
-
       item.innerHTML = `
         <div class="engine-favicon">
           <i class="${aiItem.icon || 'fas fa-network-wired'}"></i>
@@ -574,8 +480,6 @@ const settings = {
       `;
       listContainer.appendChild(item);
     });
-
-    // Add "+" button to footer
     const addBtn = document.createElement("div");
     addBtn.className = "engine-item";
     addBtn.style.justifyContent = "center";
@@ -586,25 +490,18 @@ const settings = {
         this.closeAIPopup();
     };
     footer.appendChild(addBtn);
-    
     popupEl.appendChild(listContainer);
     popupEl.appendChild(footer);
   },
-
   toggleModelSelectPopup(e) {
     if (e) e.stopPropagation();
     const popup = document.getElementById("ai-model-select-popup");
     if (!popup) return;
-    
-    // 연결 안된 상태면 안뜸
     if (!window.ai || !ai.isConnected) return;
-
     const isShowing = popup.classList.contains("show");
     if (!isShowing) {
         this.closeAllPopups("ai-model-select-popup");
         this.renderModelList();
-        
-        // Scroll active item into view
         setTimeout(() => {
           const activeItem = popup.querySelector(".active");
           if (activeItem) {
@@ -616,7 +513,6 @@ const settings = {
         this.closeModelPopup();
     }
   },
-
   closeModelPopup() {
     const popup = document.getElementById("ai-model-select-popup");
     if (popup) {
@@ -626,30 +522,24 @@ const settings = {
         }, 200);
     }
   },
-
   renderModelList() {
     const popupEl = document.getElementById("ai-model-select-popup");
     if (!popupEl) return;
     popupEl.innerHTML = "";
-
     const currentModel = localStorage.getItem("dj_ai_model") || "";
     const models = JSON.parse(localStorage.getItem("dj_ai_models_cache") || "[]");
-
     if (models.length === 0) {
         popupEl.innerHTML = `<div class="engine-item" style="justify-content: center; opacity: 0.5;">${window.i18n ? i18n.get("msgAiNoModel") : "모델 없음"}</div>`;
         return;
     }
-
     models.forEach(modelName => {
       const item = document.createElement("div");
       item.className = `engine-item ${modelName === currentModel ? "active" : ""}`;
-      
       item.onclick = (e) => {
           e.stopPropagation();
           this.updateAiModel(modelName);
           this.closeModelPopup();
       };
-
       item.innerHTML = `
         <div class="engine-name" style="padding-left: 5px;">${modelName}</div>
         <div class="engine-status">
@@ -659,7 +549,6 @@ const settings = {
       popupEl.appendChild(item);
     });
   },
-
   updateAiModel(value) {
     const oldModel = localStorage.getItem("dj_ai_model");
     localStorage.setItem("dj_ai_model", value);
@@ -672,50 +561,39 @@ const settings = {
         if (!value) trigger.classList.add("disabled");
         else trigger.classList.remove("disabled");
     }
-    
     if (window.ai && oldModel !== value) {
-        // 전역 설정 모델이 바뀌면, 현재 열린 대화창의 모델도 즉시 변경하고 시스템 메시지 표시
         ai.selectTemporaryModel(value);
     } else if (window.ai && typeof ai.updateModelDisplay === "function") {
         ai.updateModelDisplay();
     }
   },
-
   toggleCustomAIPopup(e) {
     if (e) e.stopPropagation();
     const container = document.getElementById("ai-custom-add-container");
     if (!container) return;
-    
     const isShowing = container.classList.contains("show");
-    
     if (!isShowing) {
         this.closeAllPopups("ai-custom-add-container");
         container.classList.add("show");
-        
-        // AI 이름 입력창에 포커스
         const nameInput = document.getElementById("customAiNameInput");
         if (nameInput) setTimeout(() => nameInput.focus(), 100);
     } else {
         this.closeCustomAIPopup();
     }
   },
-
   closeCustomAIPopup() {
     const container = document.getElementById("ai-custom-add-container");
     if (container) container.classList.remove("show");
   },
-
   updateAIProviderTriggerUI() {
     const triggerName = document.getElementById("ai-trigger-name");
     const triggerIcon = document.getElementById("ai-trigger-icon");
     const currentProvider = localStorage.getItem("dj_ai_provider") || "none";
-    
     const defaults = {
         none: { name: window.i18n ? i18n.get("optNone") : "사용 안 함", icon: "fas fa-ban" },
         openai: { name: "OpenAI", icon: "fas fa-circle-nodes" },
         gemini: { name: "Gemini", icon: "fas fa-wand-magic-sparkles" }
     };
-
     if (defaults[currentProvider]) {
         if (triggerName) triggerName.innerText = defaults[currentProvider].name;
         if (triggerIcon) triggerIcon.className = defaults[currentProvider].icon;
@@ -726,12 +604,10 @@ const settings = {
         if (triggerIcon) triggerIcon.className = current ? (current.icon || "fas fa-network-wired") : "fas fa-ban";
     }
   },
-
   toggleProtocolPopup(e) {
     if (e) e.stopPropagation();
     const popup = document.getElementById("protocol-popup");
     if (!popup) return;
-    
     const isShowing = popup.classList.contains("show");
     if (!isShowing) {
         this.closeAllPopups("protocol-popup");
@@ -745,19 +621,15 @@ const settings = {
         }, 200);
     }
   },
-
   renderProtocolList() {
     const popup = document.getElementById("protocol-popup");
     if (!popup) return;
-    
     const protocols = [
         { id: "openai", name: window.i18n ? i18n.get("lblProtocolOpenAi") : "OpenAI 호환" },
         { id: "anthropic", name: window.i18n ? i18n.get("lblProtocolAnthropic") : "Anthropic" }
     ];
-    
     const current = document.getElementById("customAiProtocol").value;
     popup.innerHTML = "";
-    
     protocols.forEach(p => {
         const item = document.createElement("div");
         item.className = `ai-model-item ${p.id === current ? "active" : ""}`;
@@ -772,12 +644,10 @@ const settings = {
         popup.appendChild(item);
     });
   },
-
   async addCustomAI(e) {
     if (e) e.stopPropagation();
     const addBtn = document.querySelector("#ai-custom-add-container .btn-save");
     if (addBtn && addBtn.classList.contains("loading")) return;
-
     const nameInput = document.getElementById("customAiNameInput");
     const urlInput = document.getElementById("customAiUrlInput");
     const keyInput = document.getElementById("customAiKeyInput");
@@ -786,62 +656,50 @@ const settings = {
     let url = urlInput.value.trim();
     const apiKey = keyInput ? keyInput.value.trim() : "";
     const protocol = protocolHidden ? protocolHidden.value : "openai";
-
     if (!name || !url) {
         utils.showValidationTip(name ? "customAiUrlInput" : "customAiNameInput", window.i18n ? i18n.get("msgInputNameUrl") : "이름과 주소를 모두 입력해 주세요.");
         return;
     }
-
-    // URL 프로토콜 자동 보정
     if (!url.match(/^https?:\/\//)) {
         url = url.replace(/^https?:\/?\/?/, "");
         url = "http://" + url;
         urlInput.value = url;
     }
-
     const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
     const defaultAis = [
         { id: "none", name: window.i18n ? i18n.get("optNone") : "사용 안 함" },
         { id: "openai", name: "OpenAI" },
         { id: "gemini", name: "Gemini" }
     ];
-    
     const isDuplicate = defaultAis.some(a => a.name === name) || customAis.some(a => a.name === name);
     if (isDuplicate) {
         utils.showValidationTip("customAiNameInput", window.i18n ? i18n.get("msgNameExists") : "이미 존재하는 이름입니다.");
         nameInput.focus();
         return;
     }
-    
     try {
         new URL(url);
     } catch (e) {
         utils.showValidationTip("customAiUrlInput", window.i18n ? i18n.get("msgInvalidUrl") : "올바른 URL 형식이 아닙니다.");
         return;
     }
-
     if (addBtn) {
         addBtn.classList.add("loading");
         addBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>${window.i18n ? i18n.get("msgChecking") : "확인 중..."}</span>`;
     }
-
     try {
         let isReachable = false;
         let reachError = window.i18n ? i18n.get("msgAiConnError") : "AI 서버에 접속할 수 없습니다. 주소와 프로토콜을 확인해 주세요.";
-        
-        // URL 정규화: 끝의 슬래시 및 /v1 제거 (ai.js와 규격 통일)
         let fetchUrl = url.endsWith("/") ? url.slice(0, -1) : url;
         if (protocol === "openai" && fetchUrl.endsWith("/v1")) {
             fetchUrl = fetchUrl.slice(0, -3);
         }
-
         const checkReachable = async (targetUrl) => {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 3500);
             try {
                 let fullPath = targetUrl;
                 let testPath = "";
-
                 if (protocol === "openai") {
                     testPath = "/v1/models";
                     fullPath = targetUrl + testPath;
@@ -849,27 +707,18 @@ const settings = {
                     testPath = "/api/tags";
                     fullPath = targetUrl + testPath;
                 } else if (protocol === "anthropic") {
-                    // Anthropic은 보통 /v1/messages를 사용하므로 베이스 경로가 응답하더라도 
-                    // 프로토콜 특성을 확인하기 위해 특정 헤더나 경로 체크가 필요함
                     fullPath = targetUrl;
                 } else if (protocol === "gemini") {
                     fullPath = targetUrl;
                 }
-
                 const headers = { "Accept": "application/json" };
                 if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
-
                 const res = await fetch(fullPath, { headers, signal: controller.signal });
-
-                // 401, 403은 서버가 살아있고 KEY만 문제인 상태
                 if (res.status === 401 || res.status === 403) {
                     return { ok: false, error: window.i18n ? i18n.get("msgAiKeyError") : "API Key가 올바르지 않거나 권한이 없습니다." };
                 }
-                
-                // 데이터 내용까지 확인하여 프로토콜 일치 여부 판별
                 const contentType = res.headers.get("content-type");
                 const isJson = contentType && contentType.includes("application/json");
-
                 if (protocol === "openai") {
                     if (res.ok && isJson) {
                         const data = await res.json();
@@ -877,7 +726,6 @@ const settings = {
                         return { ok: false, error: window.i18n ? i18n.get("msgAiOpenAiError") : "OpenAI 규격과 일치하지 않는 서버 응답입니다." };
                     }
                     if (res.status === 404 && isJson) {
-                        // LM Studio 등은 404를 줄 수 있으나 응답은 JSON이어야 함
                         return { ok: true };
                     }
                 } else if (protocol === "ollama") {
@@ -887,15 +735,12 @@ const settings = {
                         return { ok: false, error: window.i18n ? i18n.get("msgAiOllamaError") : "Ollama 규격과 일치하지 않는 서버 응답입니다." };
                     }
                 } else {
-                    // Anthropic/Gemini 등은 클라우드 서비스이므로 
-                    // 로컬 IP(127.0.0.1, localhost)가 입력되었을 경우 무조건 실패 처리 (오설정 방지)
                     const isLocal = targetUrl.includes("127.0.0.1") || targetUrl.includes("localhost");
                     if (isLocal) {
                         return { ok: false, error: window.i18n ? i18n.get("msgAiLocalError") : "로컬 주소는 OpenAI 호환 또는 Ollama 프로토콜을 사용해야 합니다." };
                     }
                     if (res.ok) return { ok: true };
                 }
-
                 return { ok: false, error: `API 경로를 찾을 수 없거나 프로토콜이 맞지 않습니다. (Status: ${res.status})` };
             } catch (e) {
                 return { ok: false, error: window.i18n ? i18n.get("msgAiConnError") : "서버에 접속할 수 없습니다. 주소와 포트, CORS 설정을 확인해 주세요." };
@@ -903,12 +748,9 @@ const settings = {
                 clearTimeout(timeoutId);
             }
         };
-
         const result = await checkReachable(fetchUrl);
         isReachable = result.ok;
         reachError = result.error || reachError;
-        
-        // http 실패 시 https 재시도 (사용자가 프로토콜을 명시하지 않았을 때만)
         if (!isReachable && url.startsWith("http://") && !urlInput.value.includes("://") && !reachError.includes("API Key")) {
             const httpsUrl = fetchUrl.replace("http://", "https://");
             const retryResult = await checkReachable(httpsUrl);
@@ -917,8 +759,6 @@ const settings = {
                 fetchUrl = httpsUrl;
             }
         }
-
-        // 최종 체크: 연결 실패 시 절대 추가하지 않음
         if (!isReachable) {
             const tipId = reachError.includes("API Key") ? "customAiKeyInput" : "customAiUrlInput";
             utils.showValidationTip(tipId, reachError, "error");
@@ -928,8 +768,6 @@ const settings = {
             }
             return; // 여기서 함수 실행 종료
         }
-
-        // 연결 성공 시에만 아래 로직 실행
         const newAi = {
             id: `custom_${Date.now()}`,
             name: name,
@@ -938,19 +776,14 @@ const settings = {
             icon: "fas fa-network-wired",
             isDefault: false
         };
-
         customAis.push(newAi);
         localStorage.setItem("dj_ai_custom_providers", JSON.stringify(customAis));
-        
         if (apiKey) {
             localStorage.setItem(`dj_ai_api_key_${newAi.id}`, apiKey);
         }
-        
-        // UI 정리
         nameInput.value = "";
         urlInput.value = "";
         if (keyInput) keyInput.value = "";
-        
         const container = document.getElementById("ai-custom-add-container");
         if (container) {
             container.classList.remove("show");
@@ -958,9 +791,7 @@ const settings = {
                 if (!container.classList.contains("show")) container.style.display = "none";
             }, 200);
         }
-        
         this.updateAiProvider(newAi.id);
-        
         if (addBtn) {
             addBtn.classList.remove("loading");
             addBtn.innerHTML = `<span>${window.i18n ? i18n.get("btnCheckAdd") : "추가"}</span>`;
@@ -973,18 +804,15 @@ const settings = {
         }
     }
   },
-
   deleteCustomAI(id) {
     let customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
     customAis = customAis.filter(a => a.id !== id);
     localStorage.setItem("dj_ai_custom_providers", JSON.stringify(customAis));
-    
     if (localStorage.getItem("dj_ai_provider") === id) {
         this.updateAiProvider("none");
     }
     this.renderAIList();
   },
-
   updateAiApiKey(value) {
     const provider = localStorage.getItem("dj_ai_provider") || "none";
     if (provider !== "none") {
@@ -1000,11 +828,9 @@ const settings = {
         if (window.ai) ai.checkConnection();
     }, 1000);
   },
-
   updateThemeAdjustment(type) {
     const themeColor = localStorage.getItem("dj_theme_color") || "#3b82f6";
     const currentAdj = localStorage.getItem("dj_theme_adjustment") || "none";
-
     if (type === currentAdj) {
       localStorage.setItem("dj_theme_adjustment", "none");
     } else {
@@ -1012,7 +838,6 @@ const settings = {
     }
     this.setTheme(themeColor, true);
   },
-
   updateThemeAdjustmentUI(color, adjustment) {
     const lighter = document.getElementById("themeLighter");
     const darker = document.getElementById("themeDarker");
@@ -1027,8 +852,6 @@ const settings = {
     lighter.parentElement.style.pointerEvents = isWhite ? "none" : "auto";
     darker.parentElement.style.opacity = isBlack ? "0.3" : "1";
     darker.parentElement.style.pointerEvents = isBlack ? "none" : "auto";
-
-    // Update selected swatch
     const swatches = document.querySelectorAll(".color-swatch");
     const expandHex = (hex) => {
       if (hex.length === 4) {
@@ -1037,26 +860,20 @@ const settings = {
       return hex.toLowerCase();
     };
     const targetColor = expandHex(color);
-
     swatches.forEach((s) => {
       s.classList.remove("active");
-      // Compare background color. Note: s.style.background might return rgb() format
-      // but in index.html it's set as hex. Let's use a simpler way or compare with a temporary element.
-      // Easiest is to check the onclick attribute since it contains the hex.
       const onclickAttr = s.getAttribute("onclick") || "";
       if (onclickAttr.includes(`'${color}'`) || onclickAttr.includes(`"${color}"`)) {
         s.classList.add("active");
       }
     });
   },
-
   toggleCustomSearchUrl() {
     const select = document.getElementById("searchEngineSelect"),
       input = document.getElementById("customSearchUrlInput");
     if (select && input)
       input.style.display = select.value === "custom" ? "block" : "none";
   },
-
   toggleAiSettings(isDisabled) {
     const panel = document.getElementById("aiSettingsPanel");
     if (panel) {
@@ -1065,7 +882,6 @@ const settings = {
       panel.style.pointerEvents = isDisabled ? "none" : "auto";
     }
   },
-
   setQuoteFontSize(size) {
     document.documentElement.style.setProperty(
       "--quote-font-size",
@@ -1076,8 +892,6 @@ const settings = {
       `var(--quote-author-size-${size})`,
     );
     localStorage.setItem("dj_quote_font_size", size);
-    
-    // Update trigger text
     const textEl = document.getElementById("quote-size-text");
     if (textEl) {
         const sizeMap = { small: "optSmall", medium: "optMedium", large: "optLarge" };
@@ -1085,7 +899,6 @@ const settings = {
         if (window.i18n) textEl.innerText = i18n.get(sizeMap[size]);
     }
   },
-
   setWidgetSize(size) {
     document.documentElement.style.setProperty(
       "--widget-scale",
@@ -1093,8 +906,6 @@ const settings = {
     );
     localStorage.setItem("dj_widget_size", size);
     if (window.shortcutMod) shortcutMod.checkLayout();
-    
-    // Update trigger text
     const textEl = document.getElementById("widget-size-text");
     if (textEl) {
         const sizeMap = { small: "optSmall", medium: "optMedium", large: "optLarge" };
@@ -1102,12 +913,10 @@ const settings = {
         if (window.i18n) textEl.innerText = i18n.get(sizeMap[size]);
     }
   },
-
   toggleCustomSelect(popupId, event) {
     if (event) event.stopPropagation();
     const popup = document.getElementById(popupId);
     if (!popup) return;
-
     const isShowing = popup.classList.contains("show");
     if (!isShowing) {
         this.closeAllPopups(popupId);
@@ -1121,20 +930,16 @@ const settings = {
         }, 200);
     }
   },
-
   renderCustomSelectOptions(popupId) {
     const popup = document.getElementById(popupId);
     if (!popup) return;
-
     const type = popupId.includes("quote") ? "quote" : "widget";
     const currentValue = localStorage.getItem(type === "quote" ? "dj_quote_font_size" : "dj_widget_size") || "medium";
-    
     const options = [
       { value: "small", label: "optSmall" },
       { value: "medium", label: "optMedium" },
       { value: "large", label: "optLarge" }
     ];
-
     popup.innerHTML = "";
     options.forEach((opt) => {
       const item = document.createElement("div");
@@ -1148,7 +953,6 @@ const settings = {
       popup.appendChild(item);
     });
   },
-
   selectCustomOption(type, value) {
     if (type === "quote") {
       this.setQuoteFontSize(value);
@@ -1156,19 +960,15 @@ const settings = {
       this.setWidgetSize(value);
     }
   },
-
   setTheme(color, keepAdj = true) {
     if (keepAdj === false) localStorage.setItem("dj_theme_adjustment", "none");
     const adj = localStorage.getItem("dj_theme_adjustment") || "none";
-    
-    // Helper to expand short hex #fff -> #ffffff
     const expandHex = (hex) => {
       if (hex.length === 4) {
         return "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
       }
       return hex;
     };
-
     let finalColor = color;
     if (adj !== "none") {
       const isWhite = color === "#fff" || color === "#ffffff",
@@ -1179,23 +979,30 @@ const settings = {
     }
     document.documentElement.style.setProperty("--accent-color", finalColor);
     localStorage.setItem("dj_theme_color", color);
-    
-    // Calculate contrast color based on brightness
     const getContrast = (hex) => {
       const expanded = expandHex(hex);
       const r = parseInt(expanded.slice(1, 3), 16);
       const g = parseInt(expanded.slice(3, 5), 16);
       const b = parseInt(expanded.slice(5, 7), 16);
-      // Brightness formula (YIQ)
       const yiq = (r * 299 + g * 587 + b * 114) / 1000;
       return yiq >= 128 ? "#0f172a" : "#ffffff";
     };
-
     const contrast = getContrast(finalColor);
     document.documentElement.style.setProperty("--accent-contrast", contrast);
     this.updateThemeAdjustmentUI(color, adj);
-  },
 
+    const isBlackTheme = finalColor === "#000" || finalColor === "#000000";
+    if (isBlackTheme) {
+      document.body.classList.add("theme-black");
+    } else {
+      document.body.classList.remove("theme-black");
+    }
+
+    // If background engine is 'none', background color might need to update based on the new theme
+    if (localStorage.getItem("dj_image_engine") === "none" && window.utils) {
+      utils.changeBackgroundInstant();
+    }
+  },
   adjustColor(hex, percent) {
     const expandHex = (h) => {
       if (h.length === 4) {
@@ -1212,50 +1019,32 @@ const settings = {
     b = Math.min(255, Math.max(0, b + (b * percent) / 100));
     return `#${Math.round(r).toString(16).padStart(2, "0")}${Math.round(g).toString(16).padStart(2, "0")}${Math.round(b).toString(16).padStart(2, "0")}`;
   },
-
   toggleLangPopup(e) {
     if (e) e.stopPropagation();
     const popup = document.getElementById("lang-popup");
     const trigger = document.getElementById("lang-trigger");
     if (!popup || !trigger) return;
-
     const isShowing = popup.classList.contains("show");
     if (!isShowing) {
         this.closeAllPopups("lang-popup");
         this.renderLangList();
-        
-        // Positioning Logic
         popup.style.display = "block";
         popup.style.visibility = "hidden";
-        
-        // Ensure parent wrap has high z-index while popup is open
         const wrap = document.getElementById("lang-select-wrap");
         if (wrap) wrap.style.zIndex = "100";
-        
         const rect = trigger.getBoundingClientRect();
         const modalContent = trigger.closest('.modal-content');
         const modalHeader = modalContent.querySelector('h3').getBoundingClientRect();
-        
-        // Set initial state
         popup.classList.add("show");
-        
-        // Wait for render
         setTimeout(() => {
-            // Always open Upwards
             popup.style.top = "auto";
             popup.style.bottom = "100%";
             popup.style.marginTop = "0";
             popup.style.marginBottom = "5px";
-            
-            // Limit top to not overlap header when opening upward
-            // We want the maxHeight to be the distance from the trigger's top to the modalHeader's bottom
             const triggerRect = trigger.getBoundingClientRect();
             const availableHeight = triggerRect.top - modalHeader.bottom - 15; // 5px margin-bottom + 10px spacing
             popup.style.maxHeight = Math.max(100, availableHeight) + "px";
-            
             popup.style.visibility = "visible";
-
-            // Scroll active item into view
             const activeItem = popup.querySelector(".active");
             if (activeItem) {
                 activeItem.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -1265,7 +1054,6 @@ const settings = {
         this.closeLangPopup();
     }
   },
-
   closeLangPopup() {
     const popup = document.getElementById("lang-popup");
     const wrap = document.getElementById("lang-select-wrap");
@@ -1277,15 +1065,11 @@ const settings = {
     }
     if (wrap) wrap.style.zIndex = "";
   },
-
   renderLangList() {
     const popupEl = document.getElementById("lang-popup");
     if (!popupEl) return;
     popupEl.innerHTML = "";
-
     const currentLang = localStorage.getItem("dj_user_lang") || "auto";
-    
-    // Language items
     const mandatory = [
         { id: "auto", label: "optAuto" },
         { id: "ko", label: "optKo" },
@@ -1296,23 +1080,19 @@ const settings = {
         { id: "fr", label: "optFr" },
         { id: "de", label: "optDe" }
     ];
-
     mandatory.forEach(lang => {
       const item = this.createLangItem(lang, currentLang);
       popupEl.appendChild(item);
     });
   },
-
   createLangItem(lang, currentLang) {
     const item = document.createElement("div");
     item.className = `engine-item ${lang.id === currentLang ? "active" : ""}`;
-    
     item.onclick = (e) => {
         e.stopPropagation();
         this.closeLangPopup();
         if (window.i18n) i18n.setLanguage(lang.id);
     };
-
     const label = window.i18n ? i18n.get(lang.label) : lang.id;
     item.innerHTML = `
       <div class="engine-name" style="padding-left: 5px;">${label}</div>
@@ -1322,7 +1102,6 @@ const settings = {
     `;
     return item;
   },
-
   updateLangUI() {
     const triggerText = document.getElementById("lang-trigger-text");
     if (triggerText) {
@@ -1334,28 +1113,19 @@ const settings = {
     }
   },
 };
-
-// Global click listener to close all settings popups when clicking outside
 document.addEventListener("click", (e) => {
-    // If click is not inside a popup and not stopped by a trigger's stopPropagation,
-    // it means it's an "outside" click.
     const activePopups = document.querySelectorAll(".ai-model-popup.show, .engine-popup.show, .weather-popup.show");
     if (activePopups.length > 0) {
-        // If the click is on a trigger that should be ignored, don't close all popups here
-        // (the trigger itself will handle toggling)
         if (e.target.closest('[data-outside-ignore]')) return;
-
         let clickedInsidePopup = false;
         activePopups.forEach(p => {
             if (p.contains(e.target)) clickedInsidePopup = true;
         });
-        
         if (!clickedInsidePopup) {
             settings.closeAllPopups();
         }
     }
 });
-
 window.settings = settings;
 window.openSettingModal = settings.openModal.bind(settings);
 window.toggleCustomSearchUrl = settings.toggleCustomSearchUrl.bind(settings);

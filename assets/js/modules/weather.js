@@ -3,29 +3,21 @@ const weather = {
   showCurrent: localStorage.getItem("dj_show_current_weather") === "true",
   callId: 0,
   searchTimeout: null,
-
   init() {
     this.showCurrent = localStorage.getItem("dj_show_current_weather") === "true";
     this.locations = JSON.parse(localStorage.getItem("dj_weather_locations")) || [];
     this.fetch();
     this.renderLocationList();
   },
-
   async fetch() {
     const container = document.getElementById("top-right-widgets");
     if (!container) return;
-    
-    // Clear only current weather items to avoid flickering if possible, 
-    // but for simplicity and reliability, we ensure the current state is reflected.
     const myCallId = ++this.callId;
-    
-    // If we're not showing current and have no locations, just clear and return
     const customLocations = this.locations.filter(loc => loc.id !== 'current');
     if (!this.showCurrent && customLocations.length === 0) {
       container.innerHTML = "";
       return;
     }
-
     container.innerHTML = "";
     let pendingRequests = (this.showCurrent ? 1 : 0) + customLocations.length;
     let loadingEl = document.createElement("div");
@@ -34,7 +26,6 @@ const weather = {
     loadingEl.style.cursor = "default";
     loadingEl.innerText = i18n.get("weatherLoading");
     container.appendChild(loadingEl);
-
     const requestFinished = () => {
       if (myCallId !== this.callId) return;
       pendingRequests--;
@@ -43,7 +34,6 @@ const weather = {
         loadingEl = null;
       }
     };
-
     if (this.showCurrent) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -98,14 +88,12 @@ const weather = {
         ).then(requestFinished);
       }
     }
-
     customLocations.forEach((loc) => {
       this.getData(loc.lat, loc.lon, loc.name, loc.id, myCallId).finally(
         requestFinished,
       );
     });
   },
-
   async getData(lat, lon, locName, id, callId) {
     try {
       const res = await fetch(
@@ -114,12 +102,9 @@ const weather = {
       if (!res.ok) throw new Error("Weather API failed");
       const d = await res.json();
       if (!d.current || !d.daily) throw new Error("Invalid weather data");
-
       if (callId !== undefined && callId !== this.callId) return;
-
       const current = d.current;
       const daily = d.daily;
-
       const container = document.createElement("div");
       container.className = "weather-item";
       container.id = `weather-${id}`;
@@ -128,9 +113,7 @@ const weather = {
         this.toggleForecast(id, daily, lat, lon);
       };
       container.oncontextmenu = (e) => showContextMenu(e, "weather", id);
-
       const icon = this.getIcon(current.weather_code);
-
       container.innerHTML = `
         <div class="weather-loc">${locName}</div>
         <div class="weather-main">
@@ -159,34 +142,21 @@ const weather = {
       }
     }
   },
-
   getTempColor(temp) {
-    // T >= 35: Deep Red (Hue 0)
-    // 15 <= T <= 20: Emerald Green (Hue 140)
-    // T <= -5: Deep Cold Blue (Hue 230)
-    
     if (temp >= 35) return "hsl(0, 100%, 60%)";
     if (temp <= -5) return "hsl(230, 100%, 65%)";
-    
     let h;
     if (temp >= 15 && temp <= 20) {
       h = 140; // Emerald Green
     } else if (temp > 20) {
-      // 20 (Green) to 35 (Red)
       const ratio = (temp - 20) / 15;
       h = 140 - (ratio * 140);
     } else {
-      // -5 (Blue) to 15 (Green)
-      // Interpolate Hue from 230 down to 140
       const ratio = (temp - (-5)) / 20;
-      // Use a slight power curve (0.85) to smooth out the perceptual jump 
-      // around the Cyan range (approx. 5°C), making the transition feel more natural.
       h = 230 - (Math.pow(ratio, 0.85) * 90);
     }
-    
     return `hsl(${h}, 100%, 65%)`;
   },
-
   getIcon(code) {
     if (code === 0) return "fa-sun";
     if (code <= 3) return "fa-cloud-sun";
@@ -198,7 +168,6 @@ const weather = {
     if ([95, 96, 99].includes(code)) return "fa-bolt";
     return "fa-cloud";
   },
-
   toggleForecast(id, daily) {
     const el = document.getElementById(`forecast-${id}`);
     const isActive = el.classList.contains("active");
@@ -210,7 +179,6 @@ const weather = {
       el.classList.add("active");
     }
   },
-
   renderForecast(container, daily) {
     container.innerHTML = "";
     const days = i18n.get("days");
@@ -226,7 +194,6 @@ const weather = {
       const min = Math.round(daily.temperature_2m_min[i]);
       const maxColor = this.getTempColor(max);
       const minColor = this.getTempColor(min);
-      
       const item = document.createElement("div");
       item.className = "forecast-item";
       item.innerHTML = `
@@ -240,20 +207,17 @@ const weather = {
       container.appendChild(item);
     }
   },
-
   async searchCities(query) {
     const results = document.getElementById("citySearchResults");
     if (!query || query.trim().length < 2) {
       results.style.display = "none";
       return;
     }
-
     clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(async () => {
       const msgSearching = window.i18n ? i18n.get("msgSearching") : "검색 중...";
       results.innerHTML = `<div class="city-result-item" style="opacity:0.6; cursor:default">${msgSearching}</div>`;
       results.style.display = "block";
-
       try {
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10&accept-language=${i18n.userLang}&addressdetails=1`;
         const res = await fetch(url, {
@@ -291,17 +255,14 @@ const weather = {
       }
     }, 400);
   },
-
   addLocation(item, cityName) {
     const isDuplicate = this.locations.some(
       (loc) => loc.lat == item.lat && loc.lon == item.lon,
     );
-
     if (isDuplicate) {
       utils.openModal("alertModal");
       return;
     }
-
     const loc = {
       type: "custom",
       name: cityName || item.display_name.split(",")[0],
@@ -316,17 +277,13 @@ const weather = {
     document.getElementById("citySearchResults").style.display = "none";
     this.closeCityAddPopup();
     this.renderLocationList();
-
-    // Show success feedback tip
     setTimeout(() => {
         if (window.utils) {
             const msg = window.i18n ? i18n.get("msgCityAdded").replace("{0}", loc.name) : `${loc.name}가 추가되었습니다.`;
             utils.showValidationTip("weather-location-trigger", msg);
         }
     }, 100);
-
   },
-
   removeLocation(id) {
     const idStr = String(id);
     this.locations = this.locations.filter((l) => String(l.id) !== idStr);
@@ -334,7 +291,6 @@ const weather = {
     this.fetch();
     this.renderLocationList();
   },
-
   saveLocations() {
     localStorage.setItem(
       "dj_weather_locations",
@@ -342,28 +298,22 @@ const weather = {
     );
     window.weatherLocations = this.locations;
   },
-
   renderLocationList() {
     const popupEl = document.getElementById("weather-location-popup");
     const wrapEl = document.getElementById("weather-select-wrap");
     const triggerText = document.getElementById("weather-trigger-text");
     if (!popupEl || !wrapEl) return;
-
     const customLocations = this.locations.filter(
       (loc) => loc.type !== "current",
     );
-
     const lblCityList = window.i18n ? i18n.get("lblCityList") : "도시 목록";
     wrapEl.style.display = "block";
     if (triggerText) triggerText.innerText = `${lblCityList} (${customLocations.length})`;
-    
     popupEl.innerHTML = "";
-    
     const listArea = document.createElement("div");
     listArea.className = "popup-list-area";
     listArea.style.maxHeight = "300px";
     listArea.style.overflowY = "auto";
-    
     if (customLocations.length === 0) {
         const msgNoRegisteredCities = window.i18n ? i18n.get("msgNoRegisteredCities") : "등록된 도시가 없습니다.";
         listArea.innerHTML = `<div class="ai-model-tip" style="padding: 15px; opacity: 0.5; text-align: center;">${msgNoRegisteredCities}</div>`;
@@ -381,12 +331,10 @@ const weather = {
         });
     }
     popupEl.appendChild(listArea);
-
     const footer = document.createElement("div");
     footer.style.borderTop = "1px solid rgba(255,255,255,0.1)";
     footer.style.paddingTop = "5px";
     footer.style.marginTop = "5px";
-    
     const addBtn = document.createElement("div");
     addBtn.className = "engine-item";
     addBtn.style.justifyContent = "center";
@@ -399,12 +347,10 @@ const weather = {
     footer.appendChild(addBtn);
     popupEl.appendChild(footer);
   },
-
   toggleCityAddPopup(e) {
     if (e) e.stopPropagation();
     const popup = document.getElementById("city-add-popup");
     if (!popup) return;
-    
     const isShowing = popup.classList.contains("show");
     if (!isShowing) {
         if (window.settings) settings.closeAllPopups("city-add-popup");
@@ -421,7 +367,6 @@ const weather = {
         this.closeCityAddPopup();
     }
   },
-
   closeCityAddPopup() {
     const popup = document.getElementById("city-add-popup");
     if (popup) {
@@ -431,12 +376,10 @@ const weather = {
         }, 300);
     }
   },
-
   toggleLocationPopup(e) {
     if (e) e.stopPropagation();
     const popup = document.getElementById("weather-location-popup");
     if (!popup) return;
-    
     const isShowing = popup.classList.contains("show");
     if (!isShowing) {
         if (window.settings) settings.closeAllPopups("weather-location-popup");
@@ -447,7 +390,6 @@ const weather = {
         this.closeLocationPopup();
     }
   },
-
   closeLocationPopup() {
     const popup = document.getElementById("weather-location-popup");
     if (!popup) return;
@@ -457,7 +399,6 @@ const weather = {
     }, 200);
   },
 };
-
 window.weather = weather;
 window.fetchWeather = weather.fetch.bind(weather);
 window.searchCities = weather.searchCities.bind(weather);

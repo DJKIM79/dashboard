@@ -3,64 +3,48 @@ const tutorial = {
     const intro = document.getElementById("introScreen");
     if (intro) {
       intro.style.display = "flex";
-      // 작은 지연 후 show 클래스 추가하여 transition 실행
       setTimeout(() => intro.classList.add("show"), 10);
       if (window.utils) utils.closeModal("settingModal");
     }
   },
-
   hideIntro() {
     const intro = document.getElementById("introScreen");
     if (intro) {
       intro.classList.remove("show");
-      // 애니메이션 끝난 후 display none
       setTimeout(() => {
         intro.style.display = "none";
       }, 400);
     }
     localStorage.setItem("dj_tutorial_done", "true");
   },
-
   startFromIntro() {
     this.hideIntro();
-    // 인트로가 완전히 사라진 후 튜토리얼을 시작하도록 충분한 지연시간
     setTimeout(() => {
       this.show();
     }, 600);
   },
-
   show() {
     const settingModal = document.getElementById("settingModal");
     if (settingModal && settingModal.classList.contains("show")) {
-      // 튜토리얼을 모달 내에서 시작했을 경우 잔상 없이 즉시 닫기
       settingModal.style.transition = "none";
       settingModal.classList.remove("show");
       void settingModal.offsetHeight; // 강제 리플로우
       settingModal.style.transition = "";
     }
     if (window.utils) utils.closeModal("settingModal");
-
-    // driver.js 객체 접근 방식 통일 및 로드 확인
     const driverLib = (window.driver && window.driver.js && window.driver.js.driver) ? window.driver.js.driver : (typeof window.driver === 'function' ? window.driver : null);
-
     if (!driverLib) {
       console.error("Tutorial Library (driver.js) not found.");
       return;
     }
-
-    // 튜토리얼용 임시 데이터 ID 생성
     const dummyMemoId = "tut_memo_" + Date.now();
     const dummyNotiId = "tut_noti_" + Date.now();
     const dummyShortcutId = "tut_shortcut_" + Date.now();
     const dummyWeatherId = "tut_weather_" + Date.now();
-
     const syncDummyData = (state) => {
-      // 날씨 임시 데이터 상태 관리 (상시 체크하여 없으면 튜토리얼용 임시 날씨 생성)
       if (window.weather && window.weather.locations) {
         const hasRealWeather = window.weather.showCurrent || window.weather.locations.some(l => !l.id.startsWith("tut_weather_"));
-        
         if (state !== 'clear_all') {
-          // 튜토리얼 중: 진짜 날씨가 없다면 가짜 날씨 추가
           if (!hasRealWeather && !window.weather.locations.find(l => l.id === dummyWeatherId)) {
             window.weather.locations.push({
               id: dummyWeatherId,
@@ -71,15 +55,12 @@ const tutorial = {
             window.weather.fetch();
           }
         } else {
-          // 튜토리얼 종료/닫기: 가짜 날씨 삭제
           if (window.weather.locations.find(l => l.id === dummyWeatherId)) {
             window.weather.locations = window.weather.locations.filter(l => l.id !== dummyWeatherId);
             window.weather.fetch();
           }
         }
       }
-
-      // 바로가기 임시 데이터 상태 관리
       if (state === 'shortcut') {
         if (window.shortcutMod && window.shortcutMod.items && !window.shortcutMod.items.find(s => s.name === ((window.i18n ? window.i18n.get("tutShortcutDummy") : "튜토리얼 바로가기") + " 1"))) {
           let targetCount = 8;
@@ -91,26 +72,19 @@ const tutorial = {
             const absoluteTop = rect.top + window.scrollY;
             const threshold = window.innerHeight - 100;
             const availableHeight = (threshold - absoluteTop) / scale;
-            
             const gap = 15;
             const itemHeight = 84;
             const itemWidth = 140;
-            
             const computed = getComputedStyle(container);
             const pLeft = parseFloat(computed.paddingLeft) || 0;
             const pRight = parseFloat(computed.paddingRight) || 0;
             const innerWidth = (rect.width / scale) - pLeft - pRight;
-            
             const rows = Math.max(1, Math.floor((availableHeight + gap) / (itemHeight + gap)));
             const cols = Math.max(1, Math.floor((innerWidth + gap) / (itemWidth + gap)));
-            
             targetCount = (rows * cols) - window.shortcutMod.items.length;
-            // 1줄 리스트로 넘어가는 경계값에서 약간 여유를 둬서 그리드 유지 보장
             targetCount = Math.max(1, targetCount - 1); 
-            // 너무 많이 생성되는 것 방지
             targetCount = Math.min(20, targetCount);
           }
-
           for (let i = 1; i <= targetCount; i++) {
             window.shortcutMod.items.push({ name: `${window.i18n ? window.i18n.get("tutShortcutDummy") : "튜토리얼 바로가기"} ${i}`, url: `https://example.com/${i}`, _isTutorial: true });
           }
@@ -125,8 +99,6 @@ const tutorial = {
            if (window.renderShortcuts) window.renderShortcuts();
         }
       }
-
-      // 메모 임시 데이터 상태 관리
       if (state === 'memo') {
         if (window.memo && window.memo.items && !window.memo.items.find(m => m.id === dummyMemoId)) {
           window.memo.items.push({ id: dummyMemoId, title: window.i18n ? window.i18n.get("tutMemoTitle") : "튜토리얼 메모", content: window.i18n ? window.i18n.get("tutMemoContent") : "이것은 튜토리얼을 위한 임시 메모입니다." });
@@ -140,8 +112,6 @@ const tutorial = {
            if (window.renderMemos) window.renderMemos();
         }
       }
-
-      // 알람 임시 데이터 상태 관리
       if (state === 'noti') {
         if (window.noti && window.noti.items && !window.noti.items.find(n => n.id === dummyNotiId)) {
           const tomorrow = new Date();
@@ -158,7 +128,6 @@ const tutorial = {
         }
       }
     };
-
     const d = driverLib({
       showProgress: true,
       nextBtnText: window.i18n ? window.i18n.get("tutNextBtn") : "다음 →",
@@ -175,7 +144,6 @@ const tutorial = {
         if (!d.getState().isDestroying) {
             d.getState().isDestroying = true;
             document.body.classList.add("tutorial-closing");
-
             setTimeout(() => {
                 d.destroy();
                 document.body.classList.remove("tutorial-closing");
@@ -407,15 +375,11 @@ const tutorial = {
             syncDummyData('none');
             const blFab = document.getElementById('bl-fab');
             if (blFab) blFab.classList.remove('active');
-            
-            // 모달을 강제로 열어서 driver.js가 하이라이트 할 수 있게 함
             const modal = document.getElementById('settingModal');
             if (modal) {
               modal.style.display = ""; // 이전 코드에서 남아있을 수 있는 속성 제거
               modal.classList.add("show");
             }
-
-            // 축하 폭죽 효과 (Confetti)
             if (typeof window.confetti === 'function') {
               setTimeout(() => {
                 window.confetti({
@@ -432,10 +396,7 @@ const tutorial = {
       onDestroyed: () => {
           document.body.classList.remove("tutorial-open");
           localStorage.setItem("dj_tutorial_done", "true");
-          
           syncDummyData('clear_all');
-          
-          // 열려있던 요소 초기화
           if (window.utils) window.utils.closeModal('settingModal');
           const modal = document.getElementById('settingModal');
           if (modal) {
@@ -445,7 +406,6 @@ const tutorial = {
              void modal.offsetHeight;
              modal.style.transition = "";
           }
-          
           const blFab = document.getElementById('bl-fab');
           if (blFab) blFab.classList.remove('active');
           const memoFolder = document.getElementById('memo-folder');
@@ -454,13 +414,10 @@ const tutorial = {
           if (notiFolder) notiFolder.classList.remove('open');
       }
     });
-
-    // 실행 시작
     document.body.classList.add("tutorial-open");
     d.drive();
   },
 };
-
 window.tutorial = tutorial;
 window.showTutorial = tutorial.show.bind(tutorial);
 window.showIntro = tutorial.showIntro.bind(tutorial);
