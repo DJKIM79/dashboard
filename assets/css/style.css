@@ -1046,7 +1046,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   transition: 0.2s;
 }
 #cal-month-year:hover {
-  color: #fff;
+  color: var(--accent-color);
   transform: scale(1.05);
 }
 .calendar-body-container {
@@ -2367,7 +2367,8 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 
 .theme-black #clock-time,
 .theme-black #clock-date,
-.theme-black #cal-month-year {
+.theme-black #cal-month-year,
+.theme-black .month-selector-year-header {
   color: #fff !important;
 }
 
@@ -2378,6 +2379,14 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 
 body[data-bg-engine="none"].theme-black .shortcut-item {
   color: #000; /* Visible on white body */
+  text-shadow: none;
+}
+
+body[data-bg-engine="none"].theme-black #quote-text,
+body[data-bg-engine="none"].theme-black #quote-author,
+body[data-bg-engine="none"].theme-black .weather-loc,
+body[data-bg-engine="none"].theme-black .weather-hl {
+  color: #000;
   text-shadow: none;
 }
 
