@@ -146,6 +146,40 @@
       </div>
     </div>
     <div
+      id="restoreConfirmModal"
+      class="modal"
+      onclick="event.target == this && closeModal('restoreConfirmModal')"
+    >
+      <div class="modal-content delete-modal">
+        <div class="delete-icon"><i class="fas fa-file-import" style="color: #3b82f6;"></i></div>
+        <h3 style="margin-bottom: 30px">
+          <span data-i18n="restoreConfirmTitle">정말로 복원 하시겠습니까?</span><br /><span
+            style="font-size: 0.8rem; font-weight: normal; opacity: 0.7"
+            data-i18n="msgRestoreDesc"
+            >(기존 데이터가 백업 데이터로 대체됩니다)</span
+          >
+        </h3>
+        <div style="display: flex; gap: 12px">
+          <button
+            class="btn-save"
+            style="background: #334155; color: #fff; flex: 1"
+            onclick="closeModal('restoreConfirmModal')"
+            data-i18n="btnCancel"
+          >
+            취소
+          </button>
+          <button
+            id="btnConfirmRestore"
+            class="btn-save"
+            style="background: #3b82f6; color: #fff; flex: 1"
+            data-i18n="btnOk"
+          >
+            확인
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
       id="aiErrorModal"
       class="modal"
       onclick="event.target == this && (ai.closeErrorModal())"
@@ -177,7 +211,7 @@
         </div>
       </div>
     </div>
-    <div id="top-left-widgets">
+    <div id="top-left-widgets" oncontextmenu="showContextMenu(event, 'fileMgmt')">
       <div class="fab-container">
         <div
           class="widget-btn fab-main"
@@ -416,6 +450,7 @@
             class="widget-btn fab-main"
             data-i18n-title="tipMenu"
             onclick="toggleFab('bl-fab', event)"
+            oncontextmenu="event.preventDefault(); toggleFab('bl-fab', event)"
           >
             <i class="fas fa-cog"></i>
           </div>

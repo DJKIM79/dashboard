@@ -63,6 +63,10 @@ const ui = {
           if (type === "fileMgmt") {
              const hideFile = localStorage.getItem("dj_hide_fileMgmt") === "true";
              el.classList.toggle("widget-hidden", hideFile);
+             
+             // Sync with checkbox in settings
+             const checkbox = document.getElementById("showFileMgmtCheckbox");
+             if (checkbox) checkbox.checked = !hideFile;
           } else {
              el.classList.toggle("widget-hidden", isHidden);
           }

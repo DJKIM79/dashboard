@@ -1,0 +1,21 @@
+fa-house
+fa-user
+fa-gear
+fa-trash
+fa-plus
+fa-minus
+fa-star
+fa-heart
+fa-bell
+fa-envelope
+fa-lock
+fa-key
+fa-magnifying-glass
+fa-check
+fa-xmark
+fab fa-google
+fab fa-facebook
+fab fa-twitter
+fab fa-instagram
+fab fa-youtube
+fab fa-github

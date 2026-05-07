@@ -1734,6 +1734,42 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   box-sizing: border-box;
   justify-items: center;
 }
+.icon-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  
+  /* Entrance Animation */
+  opacity: 0;
+  animation: iconSubtleFadeIn 0.3s ease-out forwards;
+}
+.icon-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+.icon-item i {
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+@keyframes iconSubtleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 #day-selector-wrap .day-check {
   flex: 1;
   display: flex;
