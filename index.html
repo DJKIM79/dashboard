@@ -1212,8 +1212,8 @@
             onkeypress="event.key === 'Enter' && addShortcut()"
           />
           <input type="file" id="iconUpload" style="display: none;" accept="image/*" onchange="shortcutMod.handleFileUpload(event)">
-          <button class="btn-save" onclick="document.getElementById('iconUpload').click()" style="width: 42px; height: 42px; padding: 0; background: #334155; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; border-radius: 10px;" data-i18n-title="tipIconUpload" title="내 컴퓨터에서 이미지 업로드">
-            <i class="fas fa-image" style="font-size: 1rem;"></i>
+          <button onclick="document.getElementById('iconUpload').click()" style="width: 42px; height: 42px; padding: 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" data-i18n-title="tipIconUpload" title="내 컴퓨터에서 이미지 업로드">
+            <i class="fas fa-image" style="font-size: 1.1rem; opacity: 0.7; color: #f1f5f9;"></i>
           </button>
         </div>
         <div id="iconPickerArea">
