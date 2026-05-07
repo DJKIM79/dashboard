@@ -1894,7 +1894,9 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #ai-provider-popup,
 #ai-model-select-popup,
 #ai-custom-add-container {
-  width: 280px;
+  min-width: 280px;
+  width: max-content;
+  max-width: 450px;
   max-height: 280px;
 }
 #lang-popup {
