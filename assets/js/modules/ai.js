@@ -440,9 +440,7 @@ const ai = {
       return;
     }
     if (!this.isConnected) {
-      alert(window.i18n ? window.i18n.get("aiNeedConnectHover") : "AI 서버 연결이 필요합니다.");
-      settings.openModal();
-      this.focusInput();
+      this.showErrorModal();
       return;
     }
     let chats = this.chats;
@@ -485,6 +483,7 @@ const ai = {
       } else {
         botMsgDiv.innerText = window.i18n ? window.i18n.get("msgAiErrorComm") : "오류: 서버와 통신할 수 없습니다.";
         this.updateChatbotAvailability(false);
+        setTimeout(() => this.showErrorModal(), 300);
       }
     } finally {
       this.isGenerating = false;
@@ -919,6 +918,20 @@ const ai = {
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
     return div;
+  },
+  showErrorModal() {
+    utils.openModal("aiErrorModal");
+  },
+  closeErrorModal() {
+    utils.closeModal("aiErrorModal");
+    localStorage.setItem("dj_hide_ai", "true");
+    ui.applyVisibility();
+  },
+  handleErrorSettings() {
+    utils.closeModal("aiErrorModal");
+    localStorage.setItem("dj_hide_ai", "true");
+    ui.applyVisibility();
+    settings.openModal();
   },
 };
 window.ai = ai;

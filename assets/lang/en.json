@@ -248,5 +248,7 @@
   "msgWeatherFail": "Failed to get data",
   "resetConfirmTitle": "Are you sure you want to reset?",
   "resetConfirmDesc": "(All settings and data will be permanently deleted.)",
-  "btnConfirmReset": "Reset"
+  "btnConfirmReset": "Reset",
+  "msgAiConnLost": "Connection to the server has been lost.",
+  "btnClose": "Close"
 }

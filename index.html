@@ -145,6 +145,38 @@
         </div>
       </div>
     </div>
+    <div
+      id="aiErrorModal"
+      class="modal"
+      onclick="event.target == this && (ai.closeErrorModal())"
+    >
+      <div class="modal-content delete-modal">
+        <div class="delete-icon">
+          <i class="fas fa-plug-circle-xmark"></i>
+        </div>
+        <h3 style="margin-bottom: 30px" data-i18n="msgAiConnLost">
+          서버와 연결이 끊어졌습니다.
+        </h3>
+        <div style="display: flex; gap: 12px">
+          <button
+            class="btn-save"
+            style="background: #334155; color: #fff; flex: 1"
+            onclick="ai.closeErrorModal()"
+            data-i18n="btnClose"
+          >
+            닫기
+          </button>
+          <button
+            class="btn-save"
+            style="background: var(--accent-color); color: var(--accent-contrast); flex: 1"
+            onclick="ai.handleErrorSettings()"
+            data-i18n="lblAISetting"
+          >
+            AI 설정
+          </button>
+        </div>
+      </div>
+    </div>
     <div id="top-left-widgets">
       <div class="fab-container">
         <div
