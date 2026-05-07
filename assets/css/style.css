@@ -1724,8 +1724,9 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #iconGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  align-content: start; /* Align rows to the top */
   gap: 10px 8px;
-  max-height: 35vh; /* Responsive height */
+  height: 230px; /* Fixed height for 5 rows */
   overflow-y: auto;
   overflow-x: hidden;
   padding: 5px;

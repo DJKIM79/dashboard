@@ -404,6 +404,14 @@ const shortcutMod = {
       ? this.popularIcons.filter(icon => icon.includes(filter.toLowerCase())) 
       : this.popularIcons;
     
+    if (filtered.length === 0) {
+      const msg = document.createElement("div");
+      msg.style.cssText = "grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 0.85rem; padding: 20px 0; gap: 10px;";
+      msg.innerHTML = `<i class="fas fa-search" style="font-size: 1.5rem; opacity: 0.2;"></i><span>${i18n.get("msgNoResults")}</span>`;
+      grid.appendChild(msg);
+      return;
+    }
+
     filtered.forEach(icon => {
       const div = document.createElement("div");
       div.style.cssText = "display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:8px; background:rgba(255,255,255,0.05); cursor:pointer; transition:0.2s; border:1px solid transparent; flex-shrink:0;";
