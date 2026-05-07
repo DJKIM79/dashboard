@@ -892,6 +892,7 @@ const settings = {
       `var(--quote-author-size-${size})`,
     );
     localStorage.setItem("dj_quote_font_size", size);
+    if (window.shortcutMod) shortcutMod.checkLayout();
     const textEl = document.getElementById("quote-size-text");
     if (textEl) {
         const sizeMap = { small: "optSmall", medium: "optMedium", large: "optLarge" };

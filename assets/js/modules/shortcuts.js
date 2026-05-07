@@ -7,7 +7,7 @@ const shortcutMod = {
   },
   checkLayout() {
     const c = document.getElementById("shortcut-container");
-    if (!c) return;
+    if (!c || c.classList.contains("widget-hidden")) return;
     requestAnimationFrame(() => {
       setTimeout(() => {
         const itemCount = this.items.length;
@@ -15,8 +15,9 @@ const shortcutMod = {
           c.classList.remove("shortcut-list-view");
           return;
         }
-        const containerTop = c.offsetTop || 400; 
-        const containerWidth = c.offsetWidth || (window.innerWidth - 100);
+        const rect = c.getBoundingClientRect();
+        const containerTop = rect.top + window.scrollY;
+        const containerWidth = rect.width || (window.innerWidth - 100);
         const style = window.getComputedStyle(c);
         const paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) || 100;
         const availableWidth = containerWidth - paddingX;
@@ -26,7 +27,7 @@ const shortcutMod = {
         const rowCount = Math.ceil(itemCount / itemsPerRow);
         const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--widget-scale')) || 1;
         const squareGridHeight = (rowCount * 84 + (rowCount - 1) * gap) * scale;
-        const absoluteBottom = containerTop + squareGridHeight - window.scrollY;
+        const absoluteBottom = containerTop + squareGridHeight;
         const threshold = window.innerHeight - 100;
         const needsListView = absoluteBottom > threshold || window.innerHeight < 450;
         const isCurrentlyList = c.classList.contains("shortcut-list-view");
@@ -34,7 +35,7 @@ const shortcutMod = {
           if (needsListView) c.classList.add("shortcut-list-view");
           else c.classList.remove("shortcut-list-view");
         }
-      }, 100);
+      }, 50);
     });
   },
   render() {

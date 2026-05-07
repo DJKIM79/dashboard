@@ -71,6 +71,10 @@ const ui = {
       const sideIcon = document.getElementById(`side-${type}`);
       if (sideIcon) sideIcon.classList.toggle("active", !isHidden);
     });
+    if (window.shortcutMod) {
+       shortcutMod.checkLayout();
+       setTimeout(() => shortcutMod.checkLayout(), 550);
+    }
   },
   toggleWidget(type) {
     if (type === "ai") {

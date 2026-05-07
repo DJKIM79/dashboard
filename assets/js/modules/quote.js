@@ -38,6 +38,7 @@ const quote = {
               setTimeout(() => {
                 section.style.height = "";
                 section.style.overflow = "";
+                if (window.shortcutMod) shortcutMod.checkLayout();
               }, 500);
             }
           }
