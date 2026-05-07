@@ -1163,6 +1163,33 @@
           placeholder="URL (example.com)"
           onkeypress="event.key === 'Enter' && addShortcut()"
         />
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+          <div id="iconPreview" style="width: 42px; height: 42px; background: rgba(255,255,255,0.05); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s;" onclick="shortcutMod.toggleIconPicker()" data-i18n-title="tipIconList" title="아이콘 목록에서 선택">
+            <i class="fas fa-icons" style="opacity: 0.7; font-size: 1.1rem;"></i>
+          </div>
+          <input
+            type="text"
+            id="siteIcon"
+            data-i18n-ph="lblIcon"
+            placeholder="아이콘 (URL 또는 FontAwesome)"
+            style="margin-bottom: 0; flex: 1; height: 42px;"
+            oninput="shortcutMod.updatePreview()"
+            onkeypress="event.key === 'Enter' && addShortcut()"
+          />
+          <input type="file" id="iconUpload" style="display: none;" accept="image/*" onchange="shortcutMod.handleFileUpload(event)">
+          <button class="btn-save" onclick="document.getElementById('iconUpload').click()" style="width: 42px; height: 42px; padding: 0; background: #334155; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; border-radius: 10px;" data-i18n-title="tipIconUpload" title="내 컴퓨터에서 이미지 업로드">
+            <i class="fas fa-image" style="font-size: 1rem;"></i>
+          </button>
+        </div>
+        <div id="iconPickerArea">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 0 5px;">
+            <i class="fas fa-search" style="font-size: 0.85rem; opacity: 0.4;"></i>
+            <input type="text" id="iconSearchInput" data-i18n-ph="iconSearchPh" placeholder="아이콘 검색..." oninput="shortcutMod.filterIcons(this.value)">
+          </div>
+          <div id="iconGrid">
+            <!-- Icons will be rendered here -->
+          </div>
+        </div>
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
           <button
             class="btn-save"

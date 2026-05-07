@@ -502,8 +502,6 @@ body::before {
   transition: all 0.3s ease;
 }
 .shortcut-item:hover .shortcut-default-icon {
-  background: var(--accent-color);
-  color: var(--accent-contrast);
   transform: translateY(-2px);
 }
 #shortcut-container.sorting-active .shortcut-item {
@@ -1270,6 +1268,13 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   word-break: keep-all;
   min-width: 0;
 }
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.icon-picker-open {
+  animation: slideDown 0.3s ease-out forwards;
+}
 .compact-checkbox-label input[type="checkbox"] {
   width: 16px !important;
   height: 16px !important;
@@ -1683,6 +1688,51 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   border-color: rgba(255, 255, 255, 0.05);
   pointer-events: auto;
 }
+#iconPickerArea {
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  padding: 0 15px;
+  border: 1px solid transparent;
+  margin-bottom: 0;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+#iconPickerArea.show {
+  max-height: 1000px;
+  opacity: 1;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-color: rgba(255, 255, 255, 0.05);
+  pointer-events: auto;
+}
+#iconSearchInput {
+  margin-bottom: 0;
+  padding: 5px 5px 5px 2px; /* Added slight left padding */
+  background: transparent;
+  border: none;
+  font-size: 0.9rem;
+  width: 100%;
+  color: #fff;
+  margin-left: 10px; /* Increased margin from 8px to 10px */
+}
+#iconGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px 8px;
+  max-height: 35vh; /* Responsive height */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 5px;
+  width: 100%;
+  box-sizing: border-box;
+  justify-items: center;
+}
 #day-selector-wrap .day-check {
   flex: 1;
   display: flex;
@@ -1975,31 +2025,13 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .location-list::-webkit-scrollbar,
 .ai-chat-messages::-webkit-scrollbar,
 .ai-history-list::-webkit-scrollbar,
-#ai-user-input::-webkit-scrollbar {
-  width: 5px;
+#ai-user-input::-webkit-scrollbar,
+#iconGrid::-webkit-scrollbar {
+  display: none;
 }
-.engine-popup::-webkit-scrollbar-track,
-.ai-model-popup::-webkit-scrollbar-track,
-.popup-list-area::-webkit-scrollbar-track,
-.city-results::-webkit-scrollbar-track,
-.weather-popup::-webkit-scrollbar-track,
-.location-list::-webkit-scrollbar-track,
-.ai-chat-messages::-webkit-scrollbar-track,
-.ai-history-list::-webkit-scrollbar-track,
-#ai-user-input::-webkit-scrollbar-track {
-  background: transparent;
-}
-.engine-popup::-webkit-scrollbar-thumb,
-.ai-model-popup::-webkit-scrollbar-thumb,
-.popup-list-area::-webkit-scrollbar-thumb,
-.city-results::-webkit-scrollbar-thumb,
-.weather-popup::-webkit-scrollbar-thumb,
-.location-list::-webkit-scrollbar-thumb,
-.ai-chat-messages::-webkit-scrollbar-thumb,
-.ai-history-list::-webkit-scrollbar-thumb,
-#ai-user-input::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+#iconGrid {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 .engine-popup::-webkit-scrollbar-thumb:hover,
 .ai-model-popup::-webkit-scrollbar-thumb:hover,
