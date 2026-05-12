@@ -47,7 +47,12 @@ const app = {
     ui.init();
     ui.applyVisibility();
     const savedTheme = localStorage.getItem("dj_theme_color");
-    if (savedTheme) settings.setTheme(savedTheme, true);
+    if (savedTheme === "#ec4899") {
+      localStorage.setItem("dj_theme_color", "#71717a");
+      settings.setTheme("#71717a", true);
+    } else if (savedTheme) {
+      settings.setTheme(savedTheme, true);
+    }
     settings.setQuoteFontSize(localStorage.getItem("dj_quote_font_size") || "medium");
     settings.setWidgetSize(localStorage.getItem("dj_widget_size") || "medium");
     const sd = localStorage.getItem("dj_bg_seed") || Math.floor(Math.random() * 10000);

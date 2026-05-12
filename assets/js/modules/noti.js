@@ -582,8 +582,7 @@ const noti = {
               if (diff >= 604800000) rem.style.color = "#22c55e"; // 1주일 이상
               else if (diff >= 86400000) rem.style.color = "#38bdf8"; // 1일~1주일
               else if (diff >= 3600000) rem.style.color = "#eab308"; // 1시간~1일
-              else rem.style.color = "#ec4899"; // 1시간 미만
-            } else {
+              else rem.style.color = "#71717a"; // 1시간 미만            } else {
               if (!n.isRepeat) {
                 this.items = this.items.filter((x) => x.id != n.id);
                 itemsChanged = true;
