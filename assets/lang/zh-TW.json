@@ -26,7 +26,7 @@
   "aiNeedConnect": "未連線伺服器",
   "aiNeedConnectHover": "請設定 AI",
   "aiConnecting": "AI 已連線",
-  "aiInputPh": "請輸入訊息...",
+  "aiInputPh": "輸入訊息後，按 Ctrl + Enter 發送。",
   "aiNoServer": "未連線",
   "aiNeedCheck": "-",
   "aiCheckFail": "-",

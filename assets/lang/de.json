@@ -26,7 +26,7 @@
   "aiNeedConnect": "Keine Serververbindung",
   "aiNeedConnectHover": "Bitte AI konfigurieren",
   "aiConnecting": "KI verbunden",
-  "aiInputPh": "Nachricht eingeben...",
+  "aiInputPh": "Nachricht eingeben, dann Strg + Enter drücken.",
   "aiNoServer": "Nicht verbunden",
   "aiNeedCheck": "Prüfung erforderlich",
   "aiCheckFail": "Prüfung fehlgeschlagen",

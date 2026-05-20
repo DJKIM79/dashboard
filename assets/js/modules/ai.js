@@ -21,7 +21,7 @@ const ai = {
   get apiKey() {
     const provider = this.provider;
     if (provider === "none") return "";
-    return localStorage.getItem(`dj_ai_api_key_${provider}`) || localStorage.getItem("dj_ai_api_key") || "";
+    return localStorage.getItem(`dj_ai_api_key_${provider}`) || "";
   },
   get settingsModel() {
     return localStorage.getItem("dj_ai_model") || "";
@@ -312,7 +312,8 @@ const ai = {
   },
   async checkConnection(isSilent = false) {
     const provider = localStorage.getItem("dj_ai_provider") || "none";
-    const apiKey = isSilent ? this.apiKey : (document.getElementById("aiApiKeyInput")?.value.trim() || this.apiKey);
+    const apiKeyInput = document.getElementById("aiApiKeyInput");
+    const apiKey = (isSilent || !apiKeyInput) ? this.apiKey : apiKeyInput.value.trim();
     let url = this.serverUrl; 
     if (provider === "none") {
         this.updateChatbotAvailability(false);
@@ -715,9 +716,11 @@ const ai = {
     }
   },
   handleKeyDown(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && e.ctrlKey) {
       e.preventDefault();
       this.sendMessage();
+    } else if (e.key === "Escape") {
+      e.target.blur();
     }
   },
   renderHistory(searchTerm = "", addedChatId = null) {

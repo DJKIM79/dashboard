@@ -26,7 +26,7 @@
   "aiNeedConnect": "서버 연결 안됨",
   "aiNeedConnectHover": "AI를 설정해 주세요",
   "aiConnecting": "AI 연결됨",
-  "aiInputPh": "메시지를 입력하세요...",
+  "aiInputPh": "메시지를 입력 후, Ctrl + Enter를 입력하세요.",
   "aiNoServer": "접속 안됨",
   "aiNeedCheck": "-",
   "aiCheckFail": "-",

@@ -26,7 +26,7 @@
   "aiNeedConnect": "Serveur non connecté",
   "aiNeedConnectHover": "Veuillez configurer l'IA",
   "aiConnecting": "IA connectée",
-  "aiInputPh": "Entrez un message...",
+  "aiInputPh": "Entrez un message, puis appuyez sur Ctrl + Entrée.",
   "aiNoServer": "Non connecté",
   "aiNeedCheck": "-",
   "aiCheckFail": "-",

@@ -26,7 +26,7 @@
   "aiNeedConnect": "未连接服务器",
   "aiNeedConnectHover": "请设置 AI",
   "aiConnecting": "AI 已连接",
-  "aiInputPh": "请输入消息...",
+  "aiInputPh": "输入消息后，按 Ctrl + Enter 发送。",
   "aiNoServer": "未连接",
   "aiNeedCheck": "-",
   "aiCheckFail": "-",

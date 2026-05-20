@@ -121,6 +121,22 @@ const noti = {
           ? `${year}.${String(month + 1).padStart(2, "0")}`
           : `${monthsEn[month]} ${year}`;
     }
+
+    const prevBtn = document.getElementById("noti-cal-prev");
+    if (prevBtn) {
+      const isPastOrCurrentMonth = year < todayDate.getFullYear() || (year === todayDate.getFullYear() && month <= todayDate.getMonth());
+      if (isPastOrCurrentMonth) {
+        prevBtn.style.opacity = "0.1";
+        prevBtn.classList.add("cursor-not-allowed");
+        prevBtn.onclick = (e) => { e.stopPropagation(); e.preventDefault(); };
+      } else {
+        prevBtn.style.opacity = "1";
+        prevBtn.classList.remove("cursor-not-allowed");
+        prevBtn.style.cursor = "pointer";
+        prevBtn.onclick = (e) => { e.stopPropagation(); this.changeCalendarMonth(-1); };
+      }
+    }
+
     const monthSelector = document.getElementById("noti-month-selector");
     const calendarBody = document.getElementById("noti-calendar-body");
     if (this.isMonthSelectorOpen) {
@@ -166,8 +182,8 @@ const noti = {
         if (dIndex === 6) div.classList.add("sat");
         if (isPast) {
           div.style.opacity = "0.15";
-          div.style.cursor = "default";
-          div.style.pointerEvents = "none";
+          div.classList.add("cursor-not-allowed");
+          div.onclick = (e) => { e.stopPropagation(); e.preventDefault(); };
         } else {
           div.onclick = (e) => {
             e.stopPropagation();
@@ -204,15 +220,18 @@ const noti = {
     leftIcon.className = "fas fa-caret-left";
     if (isPastYear) {
       leftIcon.style.opacity = "0.1";
-      leftIcon.style.cursor = "default";
+      leftIcon.classList.add("cursor-not-allowed");
+      leftIcon.onclick = (e) => { e.stopPropagation(); e.preventDefault(); };
     } else {
       leftIcon.onclick = (e) => { e.stopPropagation(); this.changeCalendarYear(-1); };
+      leftIcon.style.cursor = "pointer";
     }
     const yearSpan = document.createElement("span");
     yearSpan.innerText = year;
     const rightIcon = document.createElement("i");
     rightIcon.className = "fas fa-caret-right";
     rightIcon.onclick = (e) => { e.stopPropagation(); this.changeCalendarYear(1); };
+    rightIcon.style.cursor = "pointer";
     yearHeader.appendChild(leftIcon);
     yearHeader.appendChild(yearSpan);
     yearHeader.appendChild(rightIcon);
@@ -227,12 +246,13 @@ const noti = {
       div.className = "month-item";
       if (i === currentMonth) div.classList.add("current");
       div.innerText = m;
-      const isPastMonth = year === todayYear && i < todayMonth;
+      const isPastMonth = year < todayYear || (year === todayYear && i < todayMonth);
       if (isPastMonth) {
         div.style.opacity = "0.15";
-        div.style.cursor = "default";
-        div.style.pointerEvents = "none";
+        div.classList.add("cursor-not-allowed");
+        div.onclick = (e) => { e.stopPropagation(); e.preventDefault(); };
       } else {
+        div.style.cursor = "pointer";
         div.onclick = (e) => {
           e.stopPropagation();
           this.selectCalendarMonth(i);

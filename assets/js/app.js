@@ -215,6 +215,64 @@ window.addCurrentItem = app.addCurrentItem.bind(app);
 window.editCurrentItem = app.editCurrentItem.bind(app);
 window.deleteCurrentItem = app.deleteCurrentItem.bind(app);
 window.requestNotiPermission = app.requestNotiPermission.bind(app);
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    // 1. Validation Tips (e.g., Chat Delete Confirmation) - Highest Priority
+    if (document.querySelector(".validation-tip.show")) {
+      utils.hideValidationTip();
+      return;
+    }
+
+    // 2. Modals (Settings, Add/Edit Modals)
+    const visibleModals = document.querySelectorAll(".modal.show");
+    if (visibleModals.length > 0) {
+      const lastModal = visibleModals[visibleModals.length - 1];
+      utils.closeModal(lastModal.id);
+      
+      const ctxMenu = document.getElementById("globalContextMenu");
+      if (ctxMenu) ctxMenu.style.display = "none";
+      if (window.settings && settings.closeAllPopups) settings.closeAllPopups();
+      
+      return;
+    }
+
+    // 3. Dropdowns, Popups, FABs, Folders, Weather Forecast
+    const activePopups = document.querySelectorAll(
+      ".ai-model-popup.show, .engine-popup.show, .weather-popup.show, .time-popup.show, #noti-calendar-popup.show, #search-engine-menu.active, .fab-menu.active, .smart-folder.open, .forecast-window.active"
+    );
+    if (activePopups.length > 0) {
+      if (window.settings && settings.closeAllPopups) settings.closeAllPopups();
+      document.querySelectorAll(".time-popup.show, #search-engine-menu.active, .fab-menu.active, .smart-folder.open, .forecast-window.active").forEach(el => {
+          el.classList.remove("show", "active", "open");
+      });
+      const notiCal = document.getElementById("noti-calendar-popup");
+      if (notiCal) notiCal.classList.remove("show");
+      return;
+    }
+
+    // 4. AI Chatbot (Only if no main modal/tip is open)
+    const aiChat = document.getElementById("ai-chatbot-container");
+    if (aiChat && !aiChat.classList.contains("widget-hidden")) {
+      if (window.ui) ui.toggleWidget('ai');
+      return;
+    }
+
+    // 5. Context Menu
+    const ctxMenu = document.getElementById("globalContextMenu");
+    if (ctxMenu && ctxMenu.style.display === "block") {
+      ctxMenu.style.display = "none";
+      return;
+    }
+
+    // 6. Intro Screen
+    const intro = document.getElementById("introScreen");
+    if (intro && intro.style.display !== "none") {
+      if (window.tutorial) tutorial.hideIntro();
+      return;
+    }
+  }
+});
+
 window.addEventListener("DOMContentLoaded", () => {
   app.init();
 });

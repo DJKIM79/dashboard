@@ -25,7 +25,7 @@
   "aiNeedConnect": "Server Connection Required",
   "aiNeedConnectHover": "Please set up AI",
   "aiConnecting": "Connected",
-  "aiInputPh": "Type a message...",
+  "aiInputPh": "Enter message, then press Ctrl + Enter.",
   "aiNoServer": "Disconnected",
   "aiNeedCheck": "Check Required",
   "aiCheckFail": "Check Failed",

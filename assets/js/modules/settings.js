@@ -397,7 +397,7 @@ const settings = {
     const customAddArea = document.getElementById("ai-custom-add-container");
     if (keyInput) {
       if (keyLabel) keyLabel.innerText = "Key";
-      keyInput.value = localStorage.getItem(`dj_ai_api_key_${provider}`) || localStorage.getItem("dj_ai_api_key") || "";
+      keyInput.value = localStorage.getItem(`dj_ai_api_key_${provider}`) || "";
     }
     if (customAddArea) {
         customAddArea.classList.remove("show"); // Hide by default
