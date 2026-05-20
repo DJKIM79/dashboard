@@ -842,16 +842,15 @@ const settings = {
     const lighter = document.getElementById("themeLighter");
     const darker = document.getElementById("themeDarker");
     if (!lighter || !darker) return;
-    const isWhite = color === "#fff" || color === "#ffffff",
-      isBlack = color === "#000" || color === "#000000";
+    const isWhite = color === "#fff" || color === "#ffffff";
     lighter.disabled = isWhite;
-    darker.disabled = isBlack;
+    darker.disabled = false;
     lighter.checked = adjustment === "lighter";
     darker.checked = adjustment === "darker";
     lighter.parentElement.style.opacity = isWhite ? "0.3" : "1";
     lighter.parentElement.style.pointerEvents = isWhite ? "none" : "auto";
-    darker.parentElement.style.opacity = isBlack ? "0.3" : "1";
-    darker.parentElement.style.pointerEvents = isBlack ? "none" : "auto";
+    darker.parentElement.style.opacity = "1";
+    darker.parentElement.style.pointerEvents = "auto";
     const swatches = document.querySelectorAll(".color-swatch");
     const expandHex = (hex) => {
       if (hex.length === 4) {
@@ -972,10 +971,8 @@ const settings = {
     };
     let finalColor = color;
     if (adj !== "none") {
-      const isWhite = color === "#fff" || color === "#ffffff",
-        isBlack = color === "#000" || color === "#000000";
+      const isWhite = color === "#fff" || color === "#ffffff";
       if (isWhite && adj === "darker") finalColor = "#cbd5e1";
-      else if (isBlack && adj === "lighter") finalColor = "#0f172a";
       else finalColor = this.adjustColor(color, adj === "lighter" ? 35 : -35);
     }
     document.documentElement.style.setProperty("--accent-color", finalColor);
@@ -991,13 +988,6 @@ const settings = {
     const contrast = getContrast(finalColor);
     document.documentElement.style.setProperty("--accent-contrast", contrast);
     this.updateThemeAdjustmentUI(color, adj);
-
-    const isBlackTheme = finalColor === "#000" || finalColor === "#000000";
-    if (isBlackTheme) {
-      document.body.classList.add("theme-black");
-    } else {
-      document.body.classList.remove("theme-black");
-    }
 
     // If background engine is 'none', background color might need to update based on the new theme
     if (localStorage.getItem("dj_image_engine") === "none" && window.utils) {

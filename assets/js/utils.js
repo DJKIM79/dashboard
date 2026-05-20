@@ -22,10 +22,7 @@ const utils = {
     
     if (engine === "none") {
       document.body.style.backgroundImage = "none";
-      const themeColor = localStorage.getItem("dj_theme_color") || "#eab308";
-      const isBlackTheme = themeColor === "#000" || themeColor === "#000000";
-      // Use softer shades instead of pure white/black
-      document.body.style.backgroundColor = isBlackTheme ? "#f8fafc" : "#0f172a";
+      document.body.style.backgroundColor = "#0f172a";
       return;
     }
 
@@ -47,6 +44,20 @@ const utils = {
   initTimePicker() {
     this.renderTimeList("notiHourList", 24, "hour");
     this.renderTimeList("notiMinList", 60, "min");
+    
+    // Add listeners to re-render time lists when date or hour changes
+    const notiDate = document.getElementById("notiDate");
+    if (notiDate) {
+        // We need to detect when the value is set programmatically or by the calendar
+        // The calendar doesn't trigger 'change' event on the input, so we'll check in toggleTimePopup
+    }
+    const notiHour = document.getElementById("notiHour");
+    if (notiHour) {
+        notiHour.addEventListener('change', () => {
+            this.renderTimeList("notiMinList", 60, "min");
+        });
+    }
+
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.custom-time-picker')) {
         document.querySelectorAll('.time-popup').forEach(p => p.classList.remove('show'));
@@ -57,12 +68,28 @@ const utils = {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = "";
+
+    const notiDateVal = document.getElementById("notiDate") ? document.getElementById("notiDate").value : null;
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const isToday = notiDateVal === todayStr;
+    const currentHour = now.getHours();
+    const currentMin = now.getMinutes();
+
     const activeLang = i18n.userLang;
     let suffix = type === "hour" ? "h" : "m";
     if (activeLang === "ko") suffix = type === "hour" ? "시" : "분";
     else if (activeLang === "ja") suffix = type === "hour" ? "時" : "分";
     else if (activeLang.startsWith("zh")) suffix = type === "hour" ? "时" : "分";
     for (let i = 0; i < count; i++) {
+      if (isToday) {
+          if (type === "hour" && i < currentHour) continue;
+          if (type === "min") {
+              const selectedHour = parseInt(document.getElementById("notiHour").value);
+              if (selectedHour === currentHour && i < currentMin) continue;
+          }
+      }
+
       const val = String(i).padStart(2, "0");
       const div = document.createElement("div");
       div.className = "time-item";
@@ -87,6 +114,10 @@ const utils = {
     const calPopup = document.getElementById("noti-calendar-popup");
     if (calPopup) calPopup.classList.remove("show");
     if (!isShowing) {
+      // Re-render the list to reflect current date/hour constraints
+      const count = type === "hour" ? 24 : 60;
+      this.renderTimeList(type === "hour" ? "notiHourList" : "notiMinList", count, type);
+      
       popup.classList.add("show");
       const currentVal = document.getElementById(type === "hour" ? "notiHour" : "notiMin").value;
       this.scrollToSelected(type, currentVal);

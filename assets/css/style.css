@@ -1890,8 +1890,8 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .theme-colors {
   display: grid;
-  grid-template-columns: repeat(5, 35px);
-  gap: 10px;
+  grid-template-columns: repeat(4, 35px);
+  gap: 15px;
   justify-content: center;
   margin-bottom: 10px;
 }
@@ -2461,72 +2461,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   }
 }
 
-/* --- Black Theme Visibility Fixes --- */
-.theme-black .month-item.current,
-.theme-black .month-item:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.theme-black .ai-history-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--accent-color) !important;
-}
-
-.theme-black .ai-history-item.active,
-.theme-black .ai-model-item.active,
-.theme-black .engine-item.active {
-  background: rgba(var(--accent-color-rgb, 56, 189, 248), 0.15);
-  color: var(--accent-color) !important;
-  border-color: var(--accent-color) !important;
-}
-
-.theme-black .ai-history-item:hover i,
-.theme-black .ai-history-item.active i,
-.theme-black .engine-item.active i {
-  color: var(--accent-color);
-}
-
-.theme-black .engine-item.active .engine-name {
-  color: var(--accent-color) !important;
-}
-
-.theme-black #clock-time,
-.theme-black #clock-date,
-.theme-black #cal-month-year,
-.theme-black .month-selector-year-header {
-  color: #fff !important;
-}
-
-.theme-black .calendar-day.today {
-  background: #fff;
-  color: #000;
-}
-
-body[data-bg-engine="none"].theme-black .shortcut-item {
-  color: #000; /* Visible on white body */
-  text-shadow: none;
-}
-
-body[data-bg-engine="none"].theme-black #quote-text,
-body[data-bg-engine="none"].theme-black #quote-author,
-body[data-bg-engine="none"].theme-black .weather-loc,
-body[data-bg-engine="none"].theme-black .weather-hl {
-  color: #000;
-  text-shadow: none;
-}
-
-body[data-bg-engine="none"].theme-black .shortcut-item:hover {
-  background: rgba(0, 0, 0, 0.05) !important;
-  border-color: rgba(0, 0, 0, 0.3) !important;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-body[data-bg-engine="none"].theme-black .shortcut-item:hover .shortcut-default-icon {
-  background: #000;
-  color: #fff;
-}
 .ai-history-list {
   flex: 1;
   overflow-y: auto;
@@ -2636,7 +2570,6 @@ body[data-bg-engine="none"].theme-black .shortcut-item:hover .shortcut-default-i
 .ai-history-item:hover {
   border-color: var(--accent-color) !important;
   background: rgba(255, 255, 255, 0.08);
-  transform: scale(1.02);
 }
 .ai-history-item.active {
   background: rgba(56, 189, 248, 0.1);

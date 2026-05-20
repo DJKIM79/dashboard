@@ -47,9 +47,10 @@ const app = {
     ui.init();
     ui.applyVisibility();
     const savedTheme = localStorage.getItem("dj_theme_color");
-    if (savedTheme === "#ec4899") {
-      localStorage.setItem("dj_theme_color", "#71717a");
-      settings.setTheme("#71717a", true);
+    const invalidThemes = ["#ec4899", "#71717a", "#000", "#000000"];
+    if (invalidThemes.includes(savedTheme)) {
+      localStorage.setItem("dj_theme_color", "#ffffff");
+      settings.setTheme("#ffffff", true);
     } else if (savedTheme) {
       settings.setTheme(savedTheme, true);
     }

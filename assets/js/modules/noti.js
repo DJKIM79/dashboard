@@ -599,10 +599,11 @@ const noti = {
               } else {
                  rem.innerText = `${String(hTotal).padStart(2, "0")}:${mm}:${ss}`;
               }
-              if (diff >= 604800000) rem.style.color = "#22c55e"; // 1주일 이상
-              else if (diff >= 86400000) rem.style.color = "#38bdf8"; // 1일~1주일
-              else if (diff >= 3600000) rem.style.color = "#eab308"; // 1시간~1일
-              else rem.style.color = "#71717a"; // 1시간 미만            } else {
+              if (diff >= 86400000) rem.style.color = "#22c55e"; // 24시간 이상: 녹색
+              else if (diff >= 3600000) rem.style.color = "#3b82f6"; // 1시간~24시간: 파랑
+              else if (diff >= 600000) rem.style.color = "#eab308"; // 10분~1시간: 황색
+              else rem.style.color = "#ef4444"; // 10분 미만: 빨강
+            } else {
               if (!n.isRepeat) {
                 this.items = this.items.filter((x) => x.id != n.id);
                 itemsChanged = true;
