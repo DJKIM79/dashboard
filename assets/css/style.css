@@ -2619,12 +2619,12 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   background: transparent;
 }
 .ai-chat-header {
-  padding: 15px 25px;
+  padding: 0 25px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--glass-border);
-  height: 55px;
+  height: 60px;
   box-sizing: border-box;
 }
 .ai-status {
