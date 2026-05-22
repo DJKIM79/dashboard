@@ -185,6 +185,7 @@
   "msgAiErrorComm": "錯誤: 無法與伺服器通訊。",
   "msgAiModelNotSupported": "模型不受支援，正在恢復至原模型 ({0})。",
   "msgAiModelUnauthorized": "無模型 ({0}) 使用權限或不受支援。",
+  "msgAiChatLocked": "要繼續對話，請將 AI 更改為 {0}。",
   "btnDeleteConfirm": "刪除",
   "tipAttachFile": "新增附件",
   "tipAttachList": "已添加附件清單",

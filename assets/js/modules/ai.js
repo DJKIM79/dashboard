@@ -216,32 +216,94 @@ const ai = {
     this.attachments = [];
     this.renderFilePreviews();
   },
-  getStorageKey() {
-    return `dj_ai_chats_${this.provider}`;
+  _currentEmptyChat: null,
+  get isChatLocked() {
+    const chat = this.getCurrentChat();
+    if (!chat) return false;
+    
+    // Empty chats are never locked
+    const hasRealMessages = chat.messages && chat.messages.some(m => m.role === "user" || m.role === "bot");
+    if (!hasRealMessages) return false;
+    
+    const chatProvider = chat.provider || this.provider;
+    return chatProvider !== this.provider;
+  },
+  getStorageKey(p = this.provider) {
+    return `dj_ai_chats_${p}`;
   },
   get chats() {
-    if (this.provider === "none") return [];
-    const data = localStorage.getItem(this.getStorageKey());
-    return data ? JSON.parse(data) : [];
+    const allProviders = ["openai", "gemini"];
+    const custom = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+    custom.forEach(p => allProviders.push(p.id));
+
+    let allChats = [];
+    allProviders.forEach(p => {
+      const data = localStorage.getItem(`dj_ai_chats_${p}`);
+      if (data) {
+        try {
+          const chats = JSON.parse(data);
+          chats.forEach(c => {
+            if (!c.provider) c.provider = p;
+          });
+          allChats.push(...chats);
+        } catch (e) { console.error("Failed to parse chats for", p, e); }
+      }
+    });
+
+    if (this._currentEmptyChat) {
+      if (!allChats.some(c => c.id === this._currentEmptyChat.id)) {
+        allChats.push(this._currentEmptyChat);
+      }
+    }
+
+    return allChats.sort((a, b) => {
+        const timeA = a.updatedAt || a.id || 0;
+        const timeB = b.updatedAt || b.id || 0;
+        return timeB - timeA;
+    });
   },
   set chats(val) {
     if (!val) return;
-    localStorage.setItem(this.getStorageKey(), JSON.stringify(val));
+    const allProviders = ["openai", "gemini"];
+    const custom = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+    custom.forEach(p => allProviders.push(p.id));
+
+    const byProvider = {};
+    allProviders.forEach(p => byProvider[p] = []);
+
+    val.forEach(c => {
+      // Don't save chats with no messages
+      const hasRealMessages = c.messages && c.messages.some(m => m.role === "user" || m.role === "bot");
+      if (!hasRealMessages) return;
+
+      const p = c.provider || this.provider;
+      if (p === "none") return;
+      if (!byProvider[p]) byProvider[p] = [];
+      byProvider[p].push(c);
+    });
+
+    Object.keys(byProvider).forEach(p => {
+      localStorage.setItem(`dj_ai_chats_${p}`, JSON.stringify(byProvider[p]));
+    });
   },
   init() {
     this.resetUI();
-    const allChats = this.chats;
+    // Only count chats with real messages for initial loading
+    const allChats = this.chats.filter(c => c.messages && c.messages.some(m => m.role === "user" || m.role === "bot"));
+    
     if (allChats.length > 0) {
       this.currentChatId = allChats[0].id;
+      this._currentEmptyChat = null;
     } else {
       this.currentChatId = Date.now();
-      const newChat = {
+      this._currentEmptyChat = {
         id: this.currentChatId,
         title: "새 대화",
         messages: [],
         model: this.settingsModel,
+        provider: this.provider,
+        updatedAt: this.currentChatId
       };
-      this.chats = [newChat];
     }
     this.renderHistory();
     this.loadChat(this.currentChatId);
@@ -263,7 +325,8 @@ const ai = {
     if (!this.clickListenerAdded) {
       document.addEventListener("click", (e) => {
         if (e.target.closest(".ai-chat-input-area") && !e.target.closest("button") && !e.target.closest("#ai-attach-wrapper")) {
-            document.getElementById("ai-user-input")?.focus();
+            const input = document.getElementById("ai-user-input");
+            if (input && !input.disabled) input.focus();
         }
         
         // 1. Handle Header attachment popover closing
@@ -294,10 +357,6 @@ const ai = {
             }, 200);
           }
         }
-        const sidebar = e.target.closest("#ai-history");
-        if (sidebar && this.historyCollapsed && !e.target.closest("#ai-btn-new-chat")) {
-          this.toggleHistory();
-        }
       });
       this.clickListenerAdded = true;
     }
@@ -305,22 +364,71 @@ const ai = {
   resetUI() {
     this.renderWelcome();
     const input = document.getElementById("ai-user-input");
-    if (input) input.value = "";
+    if (input) {
+      input.value = "";
+      input.disabled = false;
+      input.placeholder = window.i18n ? window.i18n.get("aiInputPh") : "메시지를 입력 후, Ctrl + Enter를 입력하세요.";
+    }
+    const sendBtn = document.getElementById("ai-send-btn");
+    if (sendBtn) sendBtn.disabled = false;
+    const attachBtn = document.getElementById("ai-attach-btn");
+    if (attachBtn) attachBtn.disabled = false;
+    
     const historyList = document.getElementById("ai-history-list");
     if (historyList) historyList.innerHTML = "";
     this.isGenerating = false;
   },
   getCurrentChat() {
-    return this.chats.find((c) => c.id === this.currentChatId);
+    return this.chats.find((c) => c.id === this.currentChatId) || this._currentEmptyChat;
   },
   updateModelDisplay() {
     const titleInput = document.getElementById("ai-chat-title-input");
     const historyTitleEl = document.getElementById("ai-history-model-name");
     const chat = this.getCurrentChat();
-    if (titleInput) titleInput.value = chat ? this.getDisplayTitle(chat.title) : this.getDisplayTitle("");
+    
+    // Handle input area lock
+    const isLocked = this.isChatLocked;
+    const input = document.getElementById("ai-user-input");
+    const sendBtn = document.getElementById("ai-send-btn");
+    const attachBtn = document.getElementById("ai-attach-btn");
+    const inputArea = document.querySelector(".ai-chat-input-area");
+
+    if (titleInput) {
+      titleInput.value = chat ? this.getDisplayTitle(chat.title) : this.getDisplayTitle("");
+      titleInput.disabled = isLocked;
+    }
     if (historyTitleEl) {
       historyTitleEl.innerText = chat?.model || this.settingsModel || "AI Chat";
+      if (isLocked) {
+          historyTitleEl.style.pointerEvents = "none";
+          historyTitleEl.style.opacity = "0.5";
+      } else {
+          historyTitleEl.style.pointerEvents = "auto";
+          historyTitleEl.style.opacity = "1";
+      }
     }
+    
+    if (input) {
+      input.disabled = isLocked;
+      if (isLocked) {
+        const chatProvider = chat?.provider || this.provider;
+        const pName = this.getProviderName(chatProvider);
+        const msg = window.i18n ? window.i18n.get("msgAiChatLocked").replace("{0}", pName) : `대화를 이어가려면 AI를 ${pName} 로 변경하세요.`;
+        input.placeholder = msg;
+        input.value = "";
+        input.classList.add("locked-placeholder");
+      } else {
+        input.placeholder = window.i18n ? window.i18n.get("aiInputPh") : "메시지를 입력 후, Ctrl + Enter를 입력하세요.";
+        input.classList.remove("locked-placeholder");
+      }
+    }
+    if (sendBtn) sendBtn.disabled = isLocked;
+    if (attachBtn) attachBtn.disabled = isLocked;
+    if (inputArea) {
+      if (isLocked) inputArea.classList.add("locked");
+      else inputArea.classList.remove("locked");
+    }
+
     const actionsEl = document.querySelector(".ai-actions");
     if (actionsEl) {
       const hasRealMessages = chat && chat.messages.some(m => m.role === "user" || m.role === "bot");
@@ -355,11 +463,12 @@ const ai = {
   updateChatTitle(newTitle) {
     if (!this.currentChatId) return;
     const chats = this.chats;
-    const chat = chats.find((c) => c.id === this.currentChatId);
+    const chat = chats.find((c) => c.id === this.currentChatId) || (this._currentEmptyChat?.id === this.currentChatId ? this._currentEmptyChat : null);
     if (chat) {
       chat.title = newTitle.trim() || "새 대화";
+      chat.updatedAt = Date.now();
       this.chats = chats;
-      this.renderHistory();
+      this.renderHistory("", chat.id);
     }
   },
   closeModelPopup() {
@@ -668,6 +777,7 @@ const ai = {
     });
   },
   async sendMessage() {
+    if (this.isChatLocked) return;
     const input = document.getElementById("ai-user-input");
     const text = input?.value.trim();
     if (this.isGenerating) return;
@@ -679,25 +789,16 @@ const ai = {
       this.showErrorModal();
       return;
     }
-    let chats = this.chats;
-    let chat = chats.find((c) => c.id === this.currentChatId);
+    let chat = this.getCurrentChat();
     if (!chat) {
       this.createNewChat();
-      chats = this.chats;
-      chat = chats[0];
-    }
-    if (text && !chat.messages.some(m => m.role === "user") && this.isDefaultTitle(chat.title)) {
-        const firstLine = text.split("\n")[0].trim();
-        chat.title = firstLine.length > 100 ? firstLine.substring(0, 100) + "..." : firstLine;
-        this.chats = chats;
-        this.updateModelDisplay();
-        this.renderHistory();
+      chat = this._currentEmptyChat;
     }
     const activeModel = chat.model || this.settingsModel;
     const currentAttachments = [...this.attachments];
     
     // UI displays original text + attachment icons
-    this.appendMessage("user", text, true, false, currentAttachments);
+    this.appendMessage("user", text, true, false, currentAttachments, true);
     if (input) input.value = "";
     this.clearAttachments();
     this.focusInput();
@@ -707,6 +808,8 @@ const ai = {
       `<div class="typing-indicator"><span></span><span></span><span></span></div>`,
       false,
       true,
+      [],
+      true
     );
     try {
       const provider = this.provider;
@@ -733,7 +836,7 @@ const ai = {
   },
   handleModelError(model) {
     const chats = this.chats;
-    const chat = chats.find((c) => c.id === this.currentChatId);
+    const chat = chats.find((c) => c.id === this.currentChatId) || (this._currentEmptyChat?.id === this.currentChatId ? this._currentEmptyChat : null);
     if (chat && chat._lastModel && chat._lastModel !== model) {
         const rollbackModel = chat._lastModel;
         const msg = `<i class="fas fa-exclamation-circle" style="color: #ef4444; margin-right: 6px;"></i>${window.i18n ? window.i18n.get("msgAiModelNotSupported").replace("{0}", rollbackModel) : "모델이 지원되지 않아 원래 모델(" + rollbackModel + ")로 복귀합니다."}`;
@@ -1151,7 +1254,10 @@ const ai = {
   },
   saveMessage(chatId, userPrompt, botResponse, attachments = []) {
     const chats = this.chats;
-    const c = chats.find((x) => x.id === chatId);
+    let c = chats.find((x) => x.id === chatId);
+    if (!c && this._currentEmptyChat?.id === chatId) {
+        c = this._currentEmptyChat;
+    }
     if (c) {
       const now = Date.now();
       const userMsg = { role: "user", content: userPrompt, timestamp: now };
@@ -1165,40 +1271,180 @@ const ai = {
       }
       c.messages.push(userMsg);
       c.messages.push({ role: "bot", content: botResponse, timestamp: now });
+
+      // Auto title for new chats
+      if (this.isDefaultTitle(c.title)) {
+          const firstLine = userPrompt.split("\n")[0].trim();
+          c.title = firstLine.length > 100 ? firstLine.substring(0, 100) + "..." : (firstLine || "새 대화");
+      }
+
       c._lastModel = c.model || this.settingsModel;
-      this.chats = chats;
-      this.renderHistory();
+      if (!c.provider) c.provider = this.provider;
+      c.updatedAt = now;
+
+      if (c === this._currentEmptyChat) {
+          this._currentEmptyChat = null;
+          this.chats = [c, ...this.chats.filter(x => x.id !== c.id)];
+      } else {
+          this.chats = chats;
+      }
+      this.renderHistory("", chatId); // Pass chatId to trigger animation
       this.updateModelDisplay();
     }
   },
   handleKeyDown(e) {
     if (e.key === "Enter" && e.ctrlKey) {
       e.preventDefault();
-      this.sendMessage();
+      if (!this.isChatLocked) this.sendMessage();
     } else if (e.key === "Escape") {
       e.target.blur();
     }
   },
-  renderHistory(searchTerm = "", addedChatId = null) {
+  createHistoryItemElement(chat, currentProvider, animatedId = null, isTrulyNew = false) {
+    const div = document.createElement("div");
+    div.className = `ai-history-item ${chat.id === this.currentChatId ? "active" : ""}`;
+    
+    if (isTrulyNew) {
+        div.classList.add("chat-new-item");
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                div.classList.add("visible");
+                setTimeout(() => div.classList.remove("chat-new-item", "visible"), 500);
+            });
+        });
+    }
+
+    const chatProvider = chat.provider || currentProvider;
+    const isOther = chatProvider !== currentProvider;
+    if (isOther) div.classList.add("other-model");
+    
+    div.dataset.id = chat.id;
+    div.onclick = () => this.loadChat(chat.id);
+    
+    // Add tooltip for last activity
+    const lastTime = chat.updatedAt || chat.id;
+    if (lastTime) {
+        const d = new Date(lastTime);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const hh = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        const timeStr = window.i18n ? 
+            window.i18n.get("aiLastChat") ? window.i18n.get("aiLastChat").replace("{0}", `${yyyy}-${mm}-${dd} ${hh}:${min}`) : `마지막 대화: ${yyyy}-${mm}-${dd} ${hh}:${min}` :
+            `마지막 대화: ${yyyy}-${mm}-${dd} ${hh}:${min}`;
+        div.title = timeStr;
+    }
+
+    const isDefaultTitle = this.isDefaultTitle(chat.title);
+    div.innerHTML = `<span>${this.getDisplayTitle(chat.title)}</span><i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>`;
+    return div;
+  },
+  renderHistory(searchTerm = "", updatedChatId = null) {
     const list = document.getElementById("ai-history-list");
     if (!list) return;
-    list.innerHTML = "";
+    
     const lowerSearch = searchTerm.toLowerCase();
-    this.chats.forEach((chat) => {
-      if (searchTerm && !chat.title.toLowerCase().includes(lowerSearch)) return;
-      const div = document.createElement("div");
-      div.className = `ai-history-item ${chat.id === this.currentChatId ? "active" : ""}`;
-      if (chat.id === addedChatId) {
-        div.classList.add("chat-adding");
-      }
-      div.dataset.id = chat.id;
-      div.onclick = () => this.loadChat(chat.id);
-      const isDefaultTitle = this.isDefaultTitle(chat.title);
-      const hasRealMessages = chat.messages.some(m => m.role === "user" || m.role === "bot");
-      const isDeletable = !isDefaultTitle || hasRealMessages;
-      div.innerHTML = `<span>${this.getDisplayTitle(chat.title)}</span>${isDeletable ? `<i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>` : ""}`;
-      list.appendChild(div);
+    const currentProvider = this.provider;
+    const sortedChats = this.chats.filter(chat => {
+        const hasMessages = chat.messages && chat.messages.some(m => m.role === "user" || m.role === "bot");
+        const isCurrent = chat.id === this.currentChatId;
+        
+        // Show if: 1. It has real messages, OR 2. It's the one we're currently looking at
+        const shouldShow = hasMessages || isCurrent;
+        if (!shouldShow) return false;
+
+        if (!searchTerm) return true;
+        return chat.title.toLowerCase().includes(lowerSearch);
     });
+
+    // If search is active or list is empty, full rebuild
+    if (searchTerm || list.children.length === 0) {
+        list.innerHTML = "";
+        sortedChats.forEach(chat => {
+            list.appendChild(this.createHistoryItemElement(chat, currentProvider, updatedChatId));
+        });
+        return;
+    }
+
+    // FLIP: First - Capture all positions before modification
+    const firstRects = new Map();
+    Array.from(list.children).forEach(child => {
+        firstRects.set(child.dataset.id, child.getBoundingClientRect());
+    });
+
+    // Surgical updates
+    sortedChats.forEach((chat, index) => {
+        let existing = list.querySelector(`.ai-history-item[data-id="${chat.id}"]`);
+        if (existing) {
+            // Update state
+            const isOther = (chat.provider || currentProvider) !== currentProvider;
+            existing.classList.toggle("active", chat.id === this.currentChatId);
+            existing.classList.toggle("other-model", isOther);
+            existing.querySelector("span").innerText = this.getDisplayTitle(chat.title);
+            
+            // Re-order if needed
+            if (list.children[index] !== existing) {
+                list.insertBefore(existing, list.children[index]);
+            }
+        } else {
+            // Add new - use the height-expansion animation
+            const div = this.createHistoryItemElement(chat, currentProvider, updatedChatId, true);
+            list.insertBefore(div, list.children[index]);
+        }
+    });
+
+    // Remove old
+    Array.from(list.children).forEach(child => {
+        const id = parseInt(child.dataset.id);
+        if (!sortedChats.some(c => c.id === id)) {
+            child.remove();
+        }
+    });
+
+    // FLIP: Last, Invert - Capture immediately after DOM changes
+    const animatedItems = [];
+    Array.from(list.children).forEach(child => {
+        // Skip animating items that are currently in their initial height-expansion phase
+        if (child.classList.contains("chat-new-item")) return;
+
+        const id = child.dataset.id;
+        const firstRect = firstRects.get(id);
+        
+        // Calculate inversion
+        let invertY = 0;
+        if (firstRect) {
+            const lastRect = child.getBoundingClientRect();
+            invertY = firstRect.top - lastRect.top;
+        }
+
+        if (invertY !== 0) {
+            child.style.transition = "none";
+            child.style.transform = `translateY(${invertY}px)`;
+            if (id === String(updatedChatId)) child.style.opacity = "0.7";
+            animatedItems.push({ el: child, id: id });
+        }
+    });
+
+    // FLIP: Play - Trigger in the next available frame
+    if (animatedItems.length > 0) {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                animatedItems.forEach(({ el, id }) => {
+                    el.classList.add("chat-moving");
+                    el.style.transition = "";
+                    el.style.transform = "";
+                    if (id === String(updatedChatId)) el.style.opacity = "1";
+                    
+                    setTimeout(() => {
+                        el.classList.remove("chat-moving");
+                        el.style.opacity = "";
+                        el.style.transform = "";
+                    }, 550);
+                });
+            });
+        });
+    }
   },
   filterHistory(val) {
     this.renderHistory(val);
@@ -1223,11 +1469,17 @@ const ai = {
         chat.messages.forEach((m) =>
           this.appendMessage(m.role, m.content, false, m.role.startsWith("system"), m.attachments),
         );
+      
+      // Trigger transition animation
+      msgContainer.classList.remove("content-loading");
+      void msgContainer.offsetWidth; // Force reflow
+      msgContainer.classList.add("content-loading");
     }
     this.updateModelDisplay();
     const container = document.getElementById("ai-chatbot-container");
     if (container && !container.classList.contains("widget-hidden")) {
-      document.getElementById("ai-user-input")?.focus();
+      const input = document.getElementById("ai-user-input");
+      if (input && !input.disabled) input.focus();
     }
   },
   createNewChat() {
@@ -1235,7 +1487,8 @@ const ai = {
     const emptyChat = chats.find(
       (c) =>
         this.isDefaultTitle(c.title) &&
-        (!c.messages || c.messages.length === 0 || !c.messages.some(m => m.role === "user" || m.role === "bot")),
+        (!c.messages || c.messages.length === 0 || !c.messages.some(m => m.role === "user" || m.role === "bot")) &&
+        (c.provider || this.provider) === this.provider
     );
     if (emptyChat) {
       this.loadChat(emptyChat.id);
@@ -1244,20 +1497,33 @@ const ai = {
     const newId = Date.now();
     this.currentChatId = newId;
     this.clearAttachments(); // Explicitly clear any pending attachments
-    const newChat = {
+    this._currentEmptyChat = {
       id: newId,
       title: "새 대화",
       messages: [],
       model: this.settingsModel,
+      provider: this.provider,
+      updatedAt: newId
     };
-    const newChats = [newChat, ...chats];
-    this.chats = newChats;
     this.loadChat(newId, newId);
   },
   deleteChat(id, e) {
     if (e) e.stopPropagation();
     const target = e ? e.target : null;
     if (!target) return;
+
+    const chats = this.chats;
+    const chat = chats.find(c => c.id === id) || (this._currentEmptyChat?.id === id ? this._currentEmptyChat : null);
+    
+    const isDefaultTitle = chat ? this.isDefaultTitle(chat.title) : false;
+    const hasRealMessages = chat ? chat.messages.some(m => m.role === "user" || m.role === "bot") : false;
+
+    // Immediate delete if it's an empty "New Chat"
+    if (isDefaultTitle && !hasRealMessages) {
+        this.performDeleteChat(id);
+        return;
+    }
+
     const html = `
       <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; min-width: 120px;">
         <span style="font-size: 0.85rem; white-space: nowrap; font-weight: 600; color: #f1f5f9;">삭제하시겠습니까?</span>
@@ -1275,12 +1541,24 @@ const ai = {
     const list = document.getElementById("ai-history-list");
     const item = list?.querySelector(`.ai-history-item[data-id="${id}"]`);
     const executeDelete = () => {
+        // Handle _currentEmptyChat deletion
+        if (this._currentEmptyChat && this._currentEmptyChat.id === id) {
+            this._currentEmptyChat = null;
+        }
+
         const chats = this.chats.filter((c) => c.id !== id);
         this.chats = chats;
         this.deleteFilesByChatId(id).catch(console.error);
-        if (chats.length === 0) this.createNewChat();
-        else if (this.currentChatId === id) this.loadChat(this.chats[0].id);
-        else this.renderHistory();
+        
+        if (this.chats.filter(c => c.messages && c.messages.some(m => m.role === "user" || m.role === "bot")).length === 0 && !this._currentEmptyChat) {
+            this.createNewChat();
+        } else if (this.currentChatId === id) {
+            const remaining = this.chats;
+            if (remaining.length > 0) this.loadChat(remaining[0].id);
+            else this.createNewChat();
+        } else {
+            this.renderHistory();
+        }
     };
     if (item) {
         item.classList.add("chat-deleting");
@@ -1447,6 +1725,7 @@ const ai = {
     }
 
     popover.innerHTML = "";
+    const isLocked = this.isChatLocked;
     for (const file of uniqueAttachments) {
       const item = document.createElement("div");
       item.className = "popover-file-item";
@@ -1483,14 +1762,16 @@ const ai = {
       infoDiv.appendChild(nameSpan);
       item.appendChild(infoDiv);
 
-      const delBtn = document.createElement("div");
-      delBtn.className = "popover-delete-btn";
-      delBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-      delBtn.onclick = (evt) => {
-        evt.stopPropagation();
-        this.showDeleteFileConfirm(evt.target, file.id);
-      };
-      item.appendChild(delBtn);
+      if (!isLocked) {
+        const delBtn = document.createElement("div");
+        delBtn.className = "popover-delete-btn";
+        delBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+        delBtn.onclick = (evt) => {
+          evt.stopPropagation();
+          this.showDeleteFileConfirm(evt.target, file.id);
+        };
+        item.appendChild(delBtn);
+      }
 
       item.onclick = () => this.downloadAttachment(file.id, file.name);
       popover.appendChild(item);
@@ -1574,11 +1855,12 @@ const ai = {
       });
     }
   },
-  appendMessage(role, text, save = true, isHtml = false, attachments = []) {
+  appendMessage(role, text, save = true, isHtml = false, attachments = [], isNew = false) {
     const container = document.getElementById("ai-messages");
     if (!container) return null;
     const div = document.createElement("div");
     div.className = `ai-message ${role}`;
+    if (isNew) div.classList.add("new-message");
     
     if (role === "system" || role === "system-error") {
       div.style.width = "auto";
@@ -1655,7 +1937,11 @@ const ai = {
     }
 
     container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
+    if (isNew) {
+        container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    } else {
+        container.scrollTop = container.scrollHeight;
+    }
     return div;
   },
   showErrorModal() {
