@@ -1977,15 +1977,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   border-style: solid;
   border-color: var(--tip-bg, #1e293b) transparent transparent transparent;
 }
-.engine-btn-del {
-  padding: 6px;
-  opacity: 0.5;
-  transition: 0.2s;
-}
-.engine-btn-del:hover {
-  opacity: 1;
-  color: #ef4444;
-}
 .ai-search-icon {
   transition: color 0.3s ease;
 }
@@ -2219,16 +2210,18 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   flex-shrink: 0;
   margin-left: 5px;
 }
-.engine-btn-del {
-  color: #ef4444;
+.engine-btn-del,
+#settingModal .modal-content i.engine-btn-del {
+  color: #ef4444 !important;
   opacity: 0.6;
-  transition: 0.2s;
+  transition: all 0.2s;
   cursor: pointer;
-  padding: 4px;
 }
-.engine-btn-del:hover {
-  opacity: 1;
+.engine-btn-del:hover,
+#settingModal .modal-content i.engine-btn-del:hover {
+  opacity: 1 !important;
   transform: scale(1.1);
+  color: #ef4444 !important;
 }
 .engine-add-container {
   display: flex;
@@ -2658,30 +2651,240 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   color: rgba(255, 255, 255, 0.3);
 }
 .ai-actions {
-  cursor: pointer;
+  cursor: default;
   opacity: 1;
   transition: 0.2s;
   font-size: 1.2rem;
   display: flex;
   align-items: center;
+  gap: 15px;
+  position: relative;
 }
 .ai-actions i {
   cursor: pointer;
   transition: all 0.2s;
   font-size: 1.2rem;
   color: var(--accent-color);
-  opacity: 1;
-  filter: brightness(1.2); 
+  opacity: 0.8;
 }
 .ai-actions i:hover {
   transform: scale(1.1);
-  filter: brightness(1.4);
+  opacity: 1;
+  filter: brightness(1.2);
 }
-.ai-btn-export {
+.header-attachment-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.attachment-popover {
+  position: absolute;
+  top: calc(100% + 15px);
+  right: 0;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 8px;
+  min-width: 200px;
+  max-width: min(450px, calc(100vw - 40px));
+  display: none;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  animation: popoverFadeIn 0.2s ease-out;
+}
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.attachment-popover.show {
+  display: block;
+}
+.popover-file-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #f1f5f9;
+  transition: 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+.popover-file-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.popover-file-item .file-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.popover-file-item .popover-delete-btn {
+  margin-left: 10px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  color: #ef4444;
+}
+.popover-file-item:hover .popover-delete-btn {
+  opacity: 0.6;
+}
+.popover-file-item .popover-delete-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  color: #ef4444 !important;
+}
+.popover-file-item .popover-delete-btn i {
+  font-size: 0.9rem !important;
+  color: #ef4444 !important;
+}
+.validation-tip {
+  position: fixed;
+  background: var(--tip-bg, #ef4444);
+  color: #fff;
+  padding: 8px 15px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 2147483647;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 5px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+  --tip-bg: #ef4444; 
+}
+.validation-tip.success {
+  --tip-bg: #22c55e; 
+}
+.ai-delete-confirm,
+.ai-file-delete-confirm {
+  --tip-bg: #1e293b;
+  background: var(--tip-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto !important;
+  border-radius: 12px;
+}
+.ai-delete-confirm .btn-del-confirm,
+.ai-file-delete-confirm .btn-del-confirm {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 6px 15px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: 0.2s;
+  width: 100%;
+  font-weight: 600;
+  text-align: center;
+}
+.ai-delete-confirm .btn-del-confirm:hover,
+.ai-file-delete-confirm .btn-del-confirm:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
+.validation-tip.show {
+  opacity: 1;
+  transform: translate(-50%, -100%);
+}
+.validation-tip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--tip-bg);
+}
+.validation-tip.pos-right {
+  transform: translateY(-50%);
+}
+.validation-tip.pos-right.show {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+.validation-tip.pos-right::after {
+  top: 50%;
+  right: 100%;
+  left: auto;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: var(--tip-bg);
+}
+.validation-tip.pos-left {
+  transform: translateY(-50%);
+}
+.validation-tip.pos-left.show {
+  opacity: 1;
+  transform: translate(-100%, -50%);
+}
+.validation-tip.pos-left::after {
+  top: 50%;
+  left: 100%;
+  right: auto;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-left-color: var(--tip-bg);
+}
+.validation-tip.pos-bottom {
+  transform: translate(-50%, -10px);
+}
+.validation-tip.pos-bottom.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.validation-tip.pos-bottom::after {
+  bottom: 100%;
+  top: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: var(--tip-bg);
+}
+.popover-file-item i.file-main-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 1.05rem;
+  color: var(--accent-color);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.popover-file-item span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+.popover-file-item img {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}.ai-btn-export {
 }
 .ai-chat-messages {
   flex: 1;
   overflow-y: auto;
+  overflow-x: visible;
   padding: 25px;
   display: flex;
   flex-direction: column;
@@ -2695,6 +2898,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   line-height: 1.5;
   position: relative;
   word-break: break-word;
+  overflow: visible;
 }
 .ai-message.user {
   align-self: flex-end;
@@ -2708,6 +2912,107 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--glass-border);
   border-bottom-left-radius: 4px;
+}
+.ai-message-attachment-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  background: var(--accent-color);
+  color: var(--accent-contrast, #fff);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  z-index: 20;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  border: 1.5px solid rgba(255,255,255,0.1);
+}
+.ai-message-attachment-badge:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+.attachment-tooltip {
+  position: absolute;
+  top: -10px;
+  right: 0;
+  transform: translateY(-100%);
+  background: #1e293b;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 180px;
+  max-width: min(400px, calc(100vw - 80px));
+  z-index: 9999;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  animation: tooltip-fade-in 0.2s ease-out;
+}
+.attachment-tooltip.show {
+  display: flex;
+}
+.attachment-tooltip.pos-bottom {
+  top: auto;
+  bottom: -10px;
+  transform: translateY(100%);
+  animation: tooltip-fade-in-bottom 0.2s ease-out;
+}
+@keyframes tooltip-fade-in {
+  from { opacity: 0; transform: translateY(-90%) scale(0.95); }
+  to { opacity: 1; transform: translateY(-100%) scale(1); }
+}
+@keyframes tooltip-fade-in-bottom {
+  from { opacity: 0; transform: translateY(90%) scale(0.95); }
+  to { opacity: 1; transform: translateY(100%) scale(1); }
+}
+.tooltip-file-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: #f1f5f9;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tooltip-file-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent-color);
+}
+.tooltip-file-item.deleted {
+  text-decoration: line-through;
+  text-decoration-color: #ff4d4d;
+  text-decoration-thickness: 2px;
+  opacity: 0.7;
+  cursor: default;
+}
+.tooltip-file-item.deleted i,
+.tooltip-file-item.deleted span {
+  color: #94a3b8 !important;
+}
+.tooltip-file-item i {
+  color: var(--accent-color);
+  font-size: 1.05rem;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.tooltip-file-item span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
 }
 .typing-indicator {
   display: flex;
@@ -2746,94 +3051,51 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   padding: 15px 25px;
   background: rgba(0, 0, 0, 0.2);
   display: flex;
+  flex-direction: column;
   gap: 12px;
   align-items: stretch;
   border-top: 1px solid var(--glass-border);
   flex-shrink: 0;
+  position: relative;
   cursor: text;
 }
-.driver-popover {
-  z-index: 2147483647 !important;
-  -webkit-transform: translateZ(0) !important;
-  transform: translateZ(0) !important;
-  background: rgba(30, 41, 59, 0.95) !important; 
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 24px !important;
-  padding: 24px !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-  color: #fff !important;
+.ai-input-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  position: relative;
+  z-index: 1;
 }
-body.tutorial-open .quote-container,
-body.tutorial-open .weather-card,
-body.tutorial-open .search-container {
-    backdrop-filter: none !important;
+.ai-drag-overlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 2px dashed var(--accent-color);
+  border-radius: 16px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  pointer-events: none;
 }
-.driver-popover-title {
-  font-size: 1.25rem !important;
-  font-weight: 800 !important;
-  color: #fff !important;
-  margin-bottom: 12px !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+.ai-drag-overlay span {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  opacity: 0.4;
+  pointer-events: none;
 }
-.driver-popover-description {
-  font-size: 0.95rem !important;
-  line-height: 1.6 !important;
-  color: rgba(255, 255, 255, 0.95) !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-.driver-popover-close-btn {
-  display: none !important;
-}
-.driver-stage {
-  border-radius: 20px !important; 
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important; 
-  background: transparent !important;
-  border: 2px solid rgba(255, 255, 255, 0.6) !important;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3) !important;
-}
-.driver-popover-arrow {
-  display: none !important;
-}
-.driver-popover-footer {
-  margin-top: 24px !important;
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-}
-.driver-popover-btn {
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: #fff !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  border-radius: 12px !important;
-  padding: 10px 18px !important;
-  font-size: 0.9rem !important;
-  font-weight: 600 !important;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.4) !important;
-  transition: all 0.3s ease !important;
-  cursor: pointer !important;
-}
-.driver-popover-btn:hover {
-  background: rgba(255, 255, 255, 0.35) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-.driver-popover-next-btn {
-  background: var(--accent-color) !important;
-  border-color: transparent !important;
-  color: var(--accent-contrast) !important;
-  text-shadow: none !important;
-}
-.driver-popover-next-btn:hover {
-  background: var(--accent-color) !important;
-  filter: brightness(1.1);
+.ai-chat-input-area.drag-over .ai-drag-overlay {
+  display: flex;
 }
 #ai-user-input {
   flex: 1;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--glass-border);
-  border-radius: 15px;
+  border-radius: 12px;
   color: #fff;
   padding: 12px 15px;
   font-family: inherit;
@@ -2843,9 +3105,9 @@ body.tutorial-open .search-container {
   outline: none;
   transition: border-color 0.2s;
   box-sizing: border-box;
-  cursor: text;
+  cursor: text !important;
   position: relative;
-  z-index: 1;
+  z-index: 5;
 }
 #ai-user-input:focus {
   border-color: var(--accent-color);
@@ -2856,11 +3118,11 @@ body.tutorial-open .search-container {
   gap: 6px;
   justify-content: flex-end;
 }
-.ai-icon-btn,
-#ai-send-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border: 1px solid transparent;
+#ai-send-btn,
+#ai-attach-btn {
+  background: transparent;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
   width: 36px;
   height: 27px;
   border-radius: 8px;
@@ -2868,16 +3130,65 @@ body.tutorial-open .search-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: 0.2s;
+  transition: all 0.2s;
 }
-#ai-send-btn {
-  background: transparent;
-  border: 1px solid var(--accent-color);
-  color: var(--accent-color);
-}
-#ai-send-btn:hover {
-  background: rgba(var(--accent-color-rgb, 56, 189, 248), 0.1);
+#ai-send-btn:hover,
+#ai-attach-btn:hover {
+  background: rgba(56, 189, 248, 0.1);
   transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+.ai-file-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 0 8px 0;
+}
+.ai-file-previews:empty {
+  display: none;
+}
+.ai-file-preview-item {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+  flex-shrink: 0;
+}
+.ai-file-preview-item:hover {
+  border-color: var(--accent-color);
+}
+.ai-file-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ai-file-preview-item .remove-btn {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 14px;
+  height: 14px;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.ai-file-preview-item .file-icon {
+  font-size: 1rem;
+  opacity: 0.7;
 }
 .ai-icon-btn i {
   pointer-events: none; 
@@ -2914,7 +3225,7 @@ body.tutorial-open .search-container {
   border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 600;
-  z-index: 10000;
+  z-index: 100000;
   pointer-events: none;
   opacity: 0;
   transform: translate(-50%, 5px);
@@ -2926,7 +3237,8 @@ body.tutorial-open .search-container {
 .validation-tip.success {
   --tip-bg: #22c55e; 
 }
-.ai-delete-confirm {
+.ai-delete-confirm,
+.ai-file-delete-confirm {
   --tip-bg: #334155;
   background: var(--tip-bg);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -2934,21 +3246,7 @@ body.tutorial-open .search-container {
   display: flex;
   align-items: center;
   gap: 10px;
-  pointer-events: auto;
-}
-.ai-delete-confirm .btn-del-confirm {
-  background: #ef4444;
-  color: #fff;
-  border: none;
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.ai-delete-confirm .btn-del-confirm:hover {
-  background: #dc2626;
-  transform: scale(1.05);
+  pointer-events: auto !important;
 }
 .validation-tip.show {
   opacity: 1;
@@ -2976,6 +3274,22 @@ body.tutorial-open .search-container {
   transform: translateY(-50%);
   border-top-color: transparent;
   border-right-color: var(--tip-bg);
+}
+.validation-tip.pos-left {
+  transform: translateY(-50%);
+}
+.validation-tip.pos-left.show {
+  transform: translate(-100%, -50%);
+  margin-left: -15px;
+}
+.validation-tip.pos-left::after {
+  top: 50%;
+  left: 100%;
+  right: auto;
+  transform: translateY(-50%);
+  border-top-color: transparent;
+  border-left-color: var(--tip-bg);
+}
 .ai-refresh-icon {
   color: #94a3b8;
   transition: all 0.3s ease;
@@ -3145,6 +3459,90 @@ body.tutorial-closing .driver-active-element {
   filter: brightness(1) !important;
   transition: filter 0.3s ease !important;
 }
+
+/* Driver.js Active Element Contrast */
+.driver-active-element {
+  outline: none !important;
+  box-shadow: none !important;
+  filter: brightness(1.3) contrast(1.1) !important;
+  transition: all 0.3s ease !important;
+  z-index: 100001 !important;
+}
+
+/* Driver.js Custom Dark Theme */
+.driver-popover.driverjs-theme {
+  background: rgba(15, 23, 42, 0.9) !important;
+  backdrop-filter: blur(15px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important;
+  padding: 20px !important;
+  color: #fff !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-title {
+  color: #fff !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 10px !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-description {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-close-btn {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-close-btn:hover {
+  color: #fff !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-arrow-side-left::after { border-left-color: rgba(15, 23, 42, 0.9) !important; }
+.driver-popover.driverjs-theme .driver-popover-arrow-side-right::after { border-right-color: rgba(15, 23, 42, 0.9) !important; }
+.driver-popover.driverjs-theme .driver-popover-arrow-side-top::after { border-top-color: rgba(15, 23, 42, 0.9) !important; }
+.driver-popover.driverjs-theme .driver-popover-arrow-side-bottom::after { border-bottom-color: rgba(15, 23, 42, 0.9) !important; }
+
+.driver-popover.driverjs-theme .driver-popover-footer {
+  margin-top: 15px !important;
+  gap: 10px !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #94a3b8 !important;
+  border-radius: 10px !important;
+  padding: 8px 15px !important;
+  font-weight: 600 !important;
+  text-shadow: none !important;
+  transition: all 0.2s !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-next-btn {
+  background: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: var(--accent-contrast, #fff) !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-next-btn:hover {
+  filter: brightness(1.1) !important;
+  background: var(--accent-color) !important;
+}
+
+.driver-popover.driverjs-theme .driver-popover-progress-text {
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-size: 0.8rem !important;
+}
+
 .intro-header {
   margin-bottom: 30px;
 }

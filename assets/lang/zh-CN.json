@@ -186,6 +186,8 @@
   "msgAiModelNotSupported": "模型不受支持，正在恢复至原模型 ({0})。",
   "msgAiModelUnauthorized": "无模型 ({0}) 使用权限或不受支持。",
   "btnDeleteConfirm": "删除",
+  "tipAttachFile": "添加附件",
+  "tipAttachList": "已添加附件列表",
   "msgAttachFuture": "文件附件功能将在未来支持。",
   "txtExportText": "导出为文本",
   "msgAiModelSelectTip1": "如需使用其他模型，\n请在服务器上安装更多模型。",

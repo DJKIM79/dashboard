@@ -130,6 +130,7 @@ const tutorial = {
     };
     const d = driverLib({
       showProgress: true,
+      popoverClass: 'driverjs-theme',
       nextBtnText: window.i18n ? window.i18n.get("tutNextBtn") : "다음 →",
       prevBtnText: window.i18n ? window.i18n.get("tutPrevBtn") : "← 이전",
       doneBtnText: window.i18n ? window.i18n.get("tutDoneBtn") : "완료",
@@ -137,7 +138,7 @@ const tutorial = {
       allowClose: true,
       animate: true,
       smoothScroll: true,
-      overlayColor: "rgba(0, 0, 0, 0.85)", // 강한 후레시 효과를 위해 주변을 더 어둡게
+      overlayColor: "rgba(0, 0, 0, 0.93)", // 강한 후레시 효과를 위해 주변을 훨씬 더 어둡게
       stagePadding: 15, // 좀 더 넓은 후레시 반경
       stageRadius: 100, // 높은 값을 주어 둥근 효과 유도
       onDestroyStarted: () => {

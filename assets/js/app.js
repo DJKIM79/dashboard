@@ -218,8 +218,9 @@ window.deleteCurrentItem = app.deleteCurrentItem.bind(app);
 window.requestNotiPermission = app.requestNotiPermission.bind(app);
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
-    // 1. Validation Tips (e.g., Chat Delete Confirmation) - Highest Priority
-    if (document.querySelector(".validation-tip.show")) {
+    // 1. Validation Tips (e.g., Deletion Confirmations) - Highest Priority
+    const activeTip = document.querySelector(".validation-tip.show");
+    if (activeTip) {
       utils.hideValidationTip();
       return;
     }

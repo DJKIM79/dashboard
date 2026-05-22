@@ -37,6 +37,185 @@ const ai = {
   historyCollapsed: false,
   currentChatId: null,
   lastSuccessfulModel: localStorage.getItem("dj_ai_last_success_model") || null,
+  attachments: [],
+  db: null,
+  abortController: null,
+  stopGeneration() {
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
+    this.isGenerating = false;
+    const typing = document.querySelector(".typing-indicator");
+    if (typing) {
+        const parent = typing.closest(".ai-message.bot");
+        if (parent) parent.remove();
+        else typing.remove();
+    }
+  },
+  async initDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open("dj_ai_files", 1);
+      request.onerror = () => reject("IndexedDB error");
+      request.onsuccess = (e) => {
+        this.db = e.target.result;
+        resolve();
+      };
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains("files")) {
+          const store = db.createObjectStore("files", { keyPath: "id" });
+          store.createIndex("chatId", "chatId", { unique: false });
+        }
+      };
+    });
+  },
+  async saveFileToDB(file, chatId) {
+    if (!this.db) await this.initDB();
+    const id = `${Date.now()}_${file.name}`;
+    const entry = { id, chatId, file, name: file.name, type: file.type };
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction("files", "readwrite");
+      tx.objectStore("files").add(entry);
+      tx.oncomplete = () => resolve(entry);
+      tx.onerror = () => reject();
+    });
+  },
+  async getFilesByChatId(chatId) {
+    if (!this.db) await this.initDB();
+    return new Promise((resolve) => {
+      const tx = this.db.transaction("files", "readonly");
+      const index = tx.objectStore("files").index("chatId");
+      const request = index.getAll(chatId);
+      request.onsuccess = () => resolve(request.result);
+    });
+  },
+  async deleteFilesByChatId(chatId) {
+    if (!this.db) await this.initDB();
+    const files = await this.getFilesByChatId(chatId);
+    if (files.length === 0) return;
+    const tx = this.db.transaction("files", "readwrite");
+    const store = tx.objectStore("files");
+    files.forEach(f => store.delete(f.id));
+    return new Promise((resolve) => {
+      tx.oncomplete = () => resolve();
+    });
+  },
+  setupInputListeners() {
+    const input = document.getElementById("ai-user-input");
+    const container = document.querySelector(".ai-chat-input-area");
+    if (!input || !container) return;
+
+    input.addEventListener("paste", (e) => {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      const files = [];
+      for (const item of items) {
+        if (item.kind === "file") {
+          files.push(item.getAsFile());
+        }
+      }
+      if (files.length > 0) {
+        this.addFiles(files);
+      }
+    });
+
+    container.addEventListener("dragenter", (e) => {
+      e.preventDefault();
+      container.classList.add("drag-over");
+    });
+
+    container.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+      if (!container.classList.contains("drag-over")) {
+        container.classList.add("drag-over");
+      }
+    });
+
+    container.addEventListener("dragleave", (e) => {
+      const rect = container.getBoundingClientRect();
+      if (e.clientX <= rect.left || e.clientX >= rect.right || e.clientY <= rect.top || e.clientY >= rect.bottom) {
+        container.classList.remove("drag-over");
+      }
+    });
+
+    container.addEventListener("drop", (e) => {
+      e.preventDefault();
+      container.classList.remove("drag-over");
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) {
+        this.addFiles(files);
+      }
+    });
+  },
+  handleFileSelect(e) {
+    const files = Array.from(e.target.files);
+    this.addFiles(files);
+    e.target.value = "";
+  },
+  async addFiles(files) {
+    const chat = this.getCurrentChat();
+    if (!chat) return;
+    
+    for (const file of files) {
+      if (this.attachments.some(a => a.name === file.name && a.size === file.size)) continue;
+      
+      try {
+        const entry = await this.saveFileToDB(file, chat.id);
+        this.attachments.push({
+          id: entry.id,
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          data: file
+        });
+      } catch (err) {
+        console.error("Failed to save file", err);
+      }
+    }
+    this.renderFilePreviews();
+    document.getElementById("ai-user-input")?.focus();
+  },
+  renderFilePreviews() {
+    const container = document.getElementById("ai-file-previews");
+    if (!container) return;
+    container.innerHTML = "";
+    this.attachments.forEach((file, index) => {
+      const div = document.createElement("div");
+      div.className = "ai-file-preview-item";
+      
+      if (file.type.startsWith("image/")) {
+        const img = document.createElement("img");
+        const url = URL.createObjectURL(file.data);
+        img.src = url;
+        img.onload = () => URL.revokeObjectURL(url);
+        div.appendChild(img);
+      } else {
+        const icon = document.createElement("i");
+        icon.className = "fas fa-file file-icon";
+        div.appendChild(icon);
+      }
+      
+      const removeBtn = document.createElement("div");
+      removeBtn.className = "remove-btn";
+      removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+      removeBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.removeAttachment(index);
+      };
+      div.appendChild(removeBtn);
+      
+      container.appendChild(div);
+    });
+  },
+  removeAttachment(index) {
+    this.attachments.splice(index, 1);
+    this.renderFilePreviews();
+  },
+  clearAttachments() {
+    this.attachments = [];
+    this.renderFilePreviews();
+  },
   getStorageKey() {
     return `dj_ai_chats_${this.provider}`;
   },
@@ -67,6 +246,8 @@ const ai = {
     this.renderHistory();
     this.loadChat(this.currentChatId);
     this.updateChatbotAvailability(this.isConnected);
+    this.setupInputListeners();
+    this.initDB().catch(console.error);
     const savedModels = JSON.parse(
       localStorage.getItem("dj_ai_models_cache") || "[]",
     );
@@ -84,6 +265,23 @@ const ai = {
         if (e.target.closest(".ai-chat-input-area") && !e.target.closest("button") && !e.target.closest("#ai-attach-wrapper")) {
             document.getElementById("ai-user-input")?.focus();
         }
+        
+        // 1. Handle Header attachment popover closing
+        if (!e.target.closest(".attachment-trigger") && !e.target.closest(".attachment-popover") && !e.target.closest(".validation-tip")) {
+          document.querySelectorAll(".attachment-popover.show").forEach(p => p.classList.remove("show"));
+        }
+
+        // 2. Handle Message attachment tooltips closing
+        if (!e.target.closest(".ai-message-attachment-badge") && !e.target.closest(".attachment-tooltip")) {
+          document.querySelectorAll(".attachment-tooltip.show").forEach(t => t.classList.remove("show"));
+        }
+
+        // 3. Close any validation tip when clicking outside
+        if (document.querySelector(".validation-tip.show") && !e.target.closest(".validation-tip") && !e.target.closest(".popover-delete-btn") && !e.target.closest(".ai-history-item i")) {
+            utils.hideValidationTip();
+        }
+
+        // 4. Handle Model popup closing
         if (
           !e.target.closest(".history-title") &&
           !e.target.closest(".ai-model-popup")
@@ -95,9 +293,6 @@ const ai = {
               if (!popup.classList.contains("show")) popup.style.display = "none";
             }, 200);
           }
-        }
-        if (document.querySelector(".validation-tip.ai-delete-confirm") && !e.target.closest(".validation-tip")) {
-            utils.hideValidationTip();
         }
         const sidebar = e.target.closest("#ai-history");
         if (sidebar && this.historyCollapsed && !e.target.closest("#ai-btn-new-chat")) {
@@ -129,9 +324,32 @@ const ai = {
     const actionsEl = document.querySelector(".ai-actions");
     if (actionsEl) {
       const hasRealMessages = chat && chat.messages.some(m => m.role === "user" || m.role === "bot");
-      actionsEl.innerHTML = (chat && hasRealMessages) 
-        ? `<i class="fas fa-file-arrow-down ai-btn-export" onclick="ai.exportChatToText(${chat.id}, event)" title="${window.i18n ? window.i18n.get("txtExportText") : "텍스트로 내보내기"}"></i>` 
-        : "";
+      if (chat && hasRealMessages) {
+        let actionsHtml = "";
+        
+        // Global Attachment icon
+        const allAttachments = [];
+        chat.messages.forEach(m => {
+          if (m.attachments) {
+            allAttachments.push(...m.attachments.filter(a => !a.deleted));
+          }
+        });
+        
+        if (allAttachments.length > 0) {
+          actionsHtml += `
+            <div class="header-attachment-wrapper">
+              <i class="fas fa-paperclip" onclick="ai.toggleAttachmentPopover(event)" title="${window.i18n ? window.i18n.get("tipAttachList") : "첨부된 파일 목록"}"></i>
+              <div id="ai-header-attachment-popover" class="attachment-popover"></div>
+            </div>`;
+        }
+        
+        // Export icon
+        actionsHtml += `<i class="fas fa-file-arrow-down ai-btn-export" onclick="ai.exportChatToText(${chat.id}, event)" title="${window.i18n ? window.i18n.get("txtExportText") : "텍스트로 내보내기"}"></i>`;
+        
+        actionsEl.innerHTML = actionsHtml;
+      } else {
+        actionsEl.innerHTML = "";
+      }
     }
   },
   updateChatTitle(newTitle) {
@@ -155,6 +373,7 @@ const ai = {
   },
   toggleModelPopup(e) {
     e.stopPropagation();
+    utils.hideValidationTip();
     const popup = document.getElementById("ai-model-popup");
     if (!popup) return;
     if (popup.classList.contains("show")) {
@@ -432,11 +651,27 @@ const ai = {
     if (!input) return;
     setTimeout(() => input.focus(), 50);
   },
+  fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file instanceof Blob ? file : file.data);
+    });
+  },
+  readFileContent(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsText(file instanceof Blob ? file : file.data);
+    });
+  },
   async sendMessage() {
     const input = document.getElementById("ai-user-input");
     const text = input?.value.trim();
     if (this.isGenerating) return;
-    if (!text) {
+    if (!text && this.attachments.length === 0) {
       this.focusInput();
       return;
     }
@@ -451,7 +686,7 @@ const ai = {
       chats = this.chats;
       chat = chats[0];
     }
-    if (!chat.messages.some(m => m.role === "user") && this.isDefaultTitle(chat.title)) {
+    if (text && !chat.messages.some(m => m.role === "user") && this.isDefaultTitle(chat.title)) {
         const firstLine = text.split("\n")[0].trim();
         chat.title = firstLine.length > 100 ? firstLine.substring(0, 100) + "..." : firstLine;
         this.chats = chats;
@@ -459,8 +694,12 @@ const ai = {
         this.renderHistory();
     }
     const activeModel = chat.model || this.settingsModel;
-    this.appendMessage("user", text);
+    const currentAttachments = [...this.attachments];
+    
+    // UI displays original text + attachment icons
+    this.appendMessage("user", text, true, false, currentAttachments);
     if (input) input.value = "";
+    this.clearAttachments();
     this.focusInput();
     this.isGenerating = true;
     const botMsgDiv = this.appendMessage(
@@ -472,12 +711,13 @@ const ai = {
     try {
       const provider = this.provider;
       if (provider.startsWith("custom_"))
-        await this.callLocalAI(text, botMsgDiv, chat, activeModel);
+        await this.callLocalAI(text, botMsgDiv, chat, activeModel, currentAttachments);
       else if (provider === "openai")
-        await this.callOpenAI(text, botMsgDiv, chat, activeModel);
+        await this.callOpenAI(text, botMsgDiv, chat, activeModel, currentAttachments);
       else if (provider === "gemini")
-        await this.callGemini(text, botMsgDiv, chat, activeModel);
+        await this.callGemini(text, botMsgDiv, chat, activeModel, currentAttachments);
       this.updateStatusUI();
+      this.updateModelDisplay();
       this.renderHistory();
     } catch (e) {
       if (e.message === "Model permission error") {
@@ -511,7 +751,67 @@ const ai = {
         this.appendMessage("system-error", msg, true, true);
     }
   },
-  async callLocalAI(prompt, msgDiv, chat, model) {
+  getSystemBasePrompt() {
+    return "You are a helpful AI assistant in a web interface that supports file uploads. The interface provides you with metadata about files (name, type, status). If a file is marked as 'DELETED', its content is no longer accessible, but you must remember its presence in the conversation history to answer questions about what was uploaded or deleted during this session.";
+  },
+  async prepareAIInput(originalPrompt, attachments = []) {
+    let aiPrompt = originalPrompt || "";
+    const activeAttachments = (attachments || []).filter(a => !a.deleted);
+    const deletedAttachments = (attachments || []).filter(a => a.deleted);
+
+    let attachmentInfo = "";
+    if (activeAttachments.length > 0) {
+      attachmentInfo += `\n\n[CONTEXT: The user has just uploaded ${activeAttachments.length} active file(s)]`;
+      for (const file of activeAttachments) {
+        const isImage = file.type && file.type.startsWith("image/");
+        attachmentInfo += `\n- File Name: ${file.name} (Type: ${isImage ? "Image" : "Document"})`;
+        
+        if (!isImage) {
+          try {
+            const content = await this.readFileContent(file);
+            attachmentInfo += `\n[Content of ${file.name}]:\n${content}\n---`;
+          } catch (e) {
+            console.error(`Failed to read file ${file.name}`, e);
+          }
+        }
+      }
+    }
+
+    if (deletedAttachments.length > 0) {
+      attachmentInfo += `\n\n[CONTEXT: The following files were attached but have been DELETED. You cannot access their contents, but you should know they were part of this message]:`;
+      deletedAttachments.forEach(file => {
+        attachmentInfo += `\n- ${file.name} (Status: DELETED)`;
+      });
+    }
+
+    if (attachmentInfo) {
+      aiPrompt = attachmentInfo + "\n\n" + aiPrompt;
+    }
+    return aiPrompt;
+  },
+  formatMessageContent(msg) {
+    let content = msg.content;
+    const activeAttachments = (msg.attachments || []).filter(a => !a.deleted);
+    const deletedAttachments = (msg.attachments || []).filter(a => a.deleted);
+    
+    let info = "";
+    if (activeAttachments.length > 0) {
+      info += `\n\n(Session Metadata - Active Files: ${activeAttachments.length})`;
+      activeAttachments.forEach(a => {
+        info += `\n- ${a.name} (${a.type && a.type.startsWith("image/") ? "Image" : "File"})`;
+      });
+    }
+    
+    if (deletedAttachments.length > 0) {
+      info += `\n\n(Session Metadata - Deleted Files: ${deletedAttachments.length})`;
+      deletedAttachments.forEach(a => {
+        info += `\n- ${a.name} (Status: DELETED)`;
+      });
+    }
+    
+    return content + info;
+  },
+  async callLocalAI(originalPrompt, msgDiv, chat, model, attachments = []) {
     const isStream = !this.outputAtOnce;
     const provider = this.provider;
     const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
@@ -521,51 +821,139 @@ const ai = {
     if (this.apiKey) {
         headers["Authorization"] = `Bearer ${this.apiKey}`;
     }
+
+    const aiPrompt = await this.prepareAIInput(originalPrompt, attachments);
+
     let url = "";
     let body = {};
     if (protocol === "ollama") {
+        const userMsg = { role: "user", content: aiPrompt };
+        if (attachments && attachments.length > 0) {
+            userMsg.images = [];
+            for (const file of attachments) {
+                if (file.type && file.type.startsWith("image/")) {
+                    try {
+                        userMsg.images.push(await this.fileToBase64(file));
+                    } catch (e) { console.error(e); }
+                }
+            }
+        }
         url = `${this.serverUrl}/api/chat`;
+        
+        let systemMsg = this.getSystemBasePrompt();
+        const existingSystem = chat.messages.find(m => m.role === "system");
+        if (existingSystem) systemMsg += "\n\n" + existingSystem.content.replace(/<[^>]*>/g, '');
+
         body = {
             model: model,
-            messages: chat.messages
-              .map((m) => ({ role: m.role, content: m.content }))
-              .concat([{ role: "user", content: prompt }]),
+            messages: [{ role: "system", content: systemMsg }]
+              .concat(chat.messages
+                .filter(m => m.role !== "system")
+                .map((m) => ({ role: m.role, content: this.formatMessageContent(m) })))
+              .concat([userMsg]),
             stream: isStream,
         };
     } else if (protocol === "anthropic") {
+        const userContent = [{ type: "text", text: aiPrompt }];
+        if (attachments && attachments.length > 0) {
+            for (const file of attachments) {
+                if (file.type && file.type.startsWith("image/")) {
+                    try {
+                        const base64 = await this.fileToBase64(file);
+                        userContent.push({
+                            type: "image",
+                            source: {
+                                type: "base64",
+                                media_type: file.type,
+                                data: base64
+                            }
+                        });
+                    } catch (e) { console.error(e); }
+                }
+            }
+        }
         url = `${this.serverUrl}/v1/messages`;
+        
+        let systemText = this.getSystemBasePrompt();
+        const existingSystem = chat.messages.find(m => m.role === "system");
+        if (existingSystem) systemText += "\n\n" + existingSystem.content.replace(/<[^>]*>/g, '');
+
         body = {
             model: model,
+            system: systemText,
             messages: chat.messages
               .filter(m => m.role !== "system")
-              .map((m) => ({ role: m.role === "bot" ? "assistant" : "user", content: m.content }))
-              .concat([{ role: "user", content: prompt }]),
+              .map((m) => ({ role: m.role === "bot" ? "assistant" : "user", content: this.formatMessageContent(m) }))
+              .concat([{ role: "user", content: userContent }]),
             max_tokens: 4096,
             stream: isStream,
         };
-        const systemMsg = chat.messages.find(m => m.role === "system");
-        if (systemMsg) body.system = systemMsg.content;
     } else if (protocol === "gemini") {
+        const parts = [{ text: aiPrompt }];
+        if (attachments && attachments.length > 0) {
+            for (const file of attachments) {
+                if (file.type && file.type.startsWith("image/")) {
+                    try {
+                        const base64 = await this.fileToBase64(file);
+                        parts.push({
+                            inline_data: {
+                                mime_type: file.type,
+                                data: base64
+                            }
+                        });
+                    } catch (e) { console.error(e); }
+                }
+            }
+        }
         url = `${this.serverUrl}/v1beta/models/${model}:generateContent`;
+        const history = chat.messages
+            .filter(m => m.role !== "system")
+            .map(m => ({
+                role: m.role === "bot" ? "model" : "user",
+                parts: [{ text: this.formatMessageContent(m) }]
+            }));
+        
+        let systemText = this.getSystemBasePrompt();
+        const existingSystem = chat.messages.find(m => m.role === "system");
+        if (existingSystem) systemText += "\n\n" + existingSystem.content.replace(/<[^>]*>/g, '');
+
         body = {
-            contents: chat.messages
-              .filter(m => m.role !== "system")
-              .map(m => ({
-                  role: m.role === "bot" ? "model" : "user",
-                  parts: [{ text: m.content }]
-              }))
-              .concat([{ role: "user", parts: [{ text: prompt }] }])
+            contents: history.concat([{ role: "user", parts: parts }]),
+            system_instruction: { parts: [{ text: systemText }] }
         };
     } else {
+        const userContent = [{ type: "text", text: aiPrompt }];
+        if (attachments && attachments.length > 0) {
+            for (const file of attachments) {
+                if (file.type && file.type.startsWith("image/")) {
+                    try {
+                        const base64 = await this.fileToBase64(file);
+                        userContent.push({
+                            type: "image_url",
+                            image_url: {
+                                url: `data:${file.type};base64,${base64}`
+                            }
+                        });
+                    } catch (e) { console.error(e); }
+                }
+            }
+        }
         let fetchUrl = this.serverUrl;
         if (fetchUrl.endsWith("/")) fetchUrl = fetchUrl.slice(0, -1);
         const baseUrl = fetchUrl.endsWith("/v1") ? fetchUrl.slice(0, -3) : fetchUrl;
         url = `${baseUrl}/v1/chat/completions`;
+
+        let systemMsg = this.getSystemBasePrompt();
+        const existingSystem = chat.messages.find(m => m.role === "system");
+        if (existingSystem) systemMsg += "\n\n" + existingSystem.content.replace(/<[^>]*>/g, '');
+
         body = {
             model: model,
-            messages: chat.messages
-              .map((m) => ({ role: m.role === "bot" ? "assistant" : m.role, content: m.content }))
-              .concat([{ role: "user", content: prompt }]),
+            messages: [{ role: "system", content: systemMsg }]
+              .concat(chat.messages
+                .filter(m => m.role !== "system")
+                .map((m) => ({ role: m.role === "bot" ? "assistant" : m.role, content: this.formatMessageContent(m) })))
+              .concat([{ role: "user", content: userContent }]),
             stream: isStream,
         };
     }
@@ -651,9 +1039,30 @@ const ai = {
       msgDiv.innerHTML = "";
       msgDiv.innerText = fullText;
     }
-    this.saveMessage(chat.id, prompt, fullText);
+    this.saveMessage(chat.id, originalPrompt, fullText, attachments);
   },
-  async callOpenAI(prompt, msgDiv, chat, model) {
+  async callOpenAI(originalPrompt, msgDiv, chat, model, attachments = []) {
+    const aiPrompt = await this.prepareAIInput(originalPrompt, attachments);
+
+    let content = [{ type: "text", text: aiPrompt }];
+    if (attachments && attachments.length > 0) {
+      for (const file of attachments) {
+        if (file.type && file.type.startsWith("image/")) {
+          try {
+            const base64 = await this.fileToBase64(file);
+            content.push({
+              type: "image_url",
+              image_url: {
+                url: `data:${file.type};base64,${base64}`
+              }
+            });
+          } catch (e) {
+            console.error("Failed to convert image to base64", e);
+          }
+        }
+      }
+    }
+
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -662,9 +1071,10 @@ const ai = {
       },
       body: JSON.stringify({
         model: model,
-        messages: chat.messages
-          .map((m) => ({ role: m.role, content: m.content }))
-          .concat([{ role: "user", content: prompt }]),
+        messages: [{ role: "system", content: this.getSystemBasePrompt() }]
+          .concat(chat.messages
+            .map((m) => ({ role: m.role === "bot" ? "assistant" : m.role, content: this.formatMessageContent(m) })))
+          .concat([{ role: "user", content: content }]),
       }),
     });
     if (!res.ok) {
@@ -678,15 +1088,52 @@ const ai = {
       text = json.choices[0].message.content;
     msgDiv.innerHTML = "";
     msgDiv.innerText = text;
-    this.saveMessage(chat.id, prompt, text);
+    this.saveMessage(chat.id, originalPrompt, text, attachments);
   },
-  async callGemini(prompt, msgDiv, chat, model) {
+  async callGemini(originalPrompt, msgDiv, chat, model, attachments = []) {
+    const aiPrompt = await this.prepareAIInput(originalPrompt, attachments);
+
+    const parts = [{ text: aiPrompt }];
+    if (attachments && attachments.length > 0) {
+      for (const file of attachments) {
+        if (file.type && file.type.startsWith("image/")) {
+          try {
+            const base64 = await this.fileToBase64(file);
+            parts.push({
+              inline_data: {
+                mime_type: file.type,
+                data: base64
+              }
+            });
+          } catch (e) {
+            console.error("Failed to convert image to base64", e);
+          }
+        }
+      }
+    }
+
+    const history = chat.messages
+      .filter(m => m.role !== "system")
+      .map(m => ({
+          role: m.role === "bot" ? "model" : "user",
+          parts: [{ text: this.formatMessageContent(m) }]
+      }));
+
+    let systemText = this.getSystemBasePrompt();
+    const systemMsg = chat.messages.find(m => m.role === "system");
+    if (systemMsg) systemText += "\n\n" + systemMsg.content.replace(/<[^>]*>/g, '');
+
+    const body = {
+        contents: history.concat([{ role: "user", parts: parts }]),
+        system_instruction: { parts: [{ text: systemText }] }
+    };
+
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        body: JSON.stringify(body),
       },
     );
     if (!res.ok) {
@@ -700,14 +1147,23 @@ const ai = {
       text = json.candidates[0].content.parts[0].text;
     msgDiv.innerHTML = "";
     msgDiv.innerText = text;
-    this.saveMessage(chat.id, prompt, text);
+    this.saveMessage(chat.id, originalPrompt, text, attachments);
   },
-  saveMessage(chatId, userPrompt, botResponse) {
+  saveMessage(chatId, userPrompt, botResponse, attachments = []) {
     const chats = this.chats;
     const c = chats.find((x) => x.id === chatId);
     if (c) {
       const now = Date.now();
-      c.messages.push({ role: "user", content: userPrompt, timestamp: now });
+      const userMsg = { role: "user", content: userPrompt, timestamp: now };
+      if (attachments && attachments.length > 0) {
+        userMsg.attachments = attachments.map(a => ({
+          id: a.id,
+          name: a.name,
+          type: a.type,
+          size: a.size
+        }));
+      }
+      c.messages.push(userMsg);
       c.messages.push({ role: "bot", content: botResponse, timestamp: now });
       c._lastModel = c.model || this.settingsModel;
       this.chats = chats;
@@ -749,6 +1205,7 @@ const ai = {
   },
   loadChat(id = null, addedChatId = null) {
     const chats = this.chats;
+    this.stopGeneration(); // Stop any ongoing generation
     if (!id) {
       if (chats.length > 0) this.currentChatId = chats[0].id;
       else {
@@ -756,6 +1213,7 @@ const ai = {
         return;
       }
     } else this.currentChatId = id;
+    this.clearAttachments();
     this.renderHistory("", addedChatId);
     const chat = this.getCurrentChat();
     const msgContainer = document.getElementById("ai-messages");
@@ -763,7 +1221,7 @@ const ai = {
       msgContainer.innerHTML = "";
       if (chat)
         chat.messages.forEach((m) =>
-          this.appendMessage(m.role, m.content, false, m.role.startsWith("system")),
+          this.appendMessage(m.role, m.content, false, m.role.startsWith("system"), m.attachments),
         );
     }
     this.updateModelDisplay();
@@ -785,6 +1243,7 @@ const ai = {
     }
     const newId = Date.now();
     this.currentChatId = newId;
+    this.clearAttachments(); // Explicitly clear any pending attachments
     const newChat = {
       id: newId,
       title: "새 대화",
@@ -800,9 +1259,9 @@ const ai = {
     const target = e ? e.target : null;
     if (!target) return;
     const html = `
-      <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
-        <span style="font-size: 0.8rem; white-space: nowrap;">삭제하시겠습니까?</span>
-        <button class="btn-del-confirm" onclick="ai.performDeleteChat(${id})" style="width: 100%;">${window.i18n ? window.i18n.get("btnDeleteConfirm") : "삭제"}</button>
+      <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; min-width: 120px;">
+        <span style="font-size: 0.85rem; white-space: nowrap; font-weight: 600; color: #f1f5f9;">삭제하시겠습니까?</span>
+        <button class="btn-del-confirm" onclick="ai.performDeleteChat(${id})">${window.i18n ? window.i18n.get("btnDeleteConfirm") : "삭제"}</button>
       </div>
     `;
     utils.showValidationTip(target, html, "ai-delete-confirm", {
@@ -818,6 +1277,7 @@ const ai = {
     const executeDelete = () => {
         const chats = this.chats.filter((c) => c.id !== id);
         this.chats = chats;
+        this.deleteFilesByChatId(id).catch(console.error);
         if (chats.length === 0) this.createNewChat();
         else if (this.currentChatId === id) this.loadChat(this.chats[0].id);
         else this.renderHistory();
@@ -831,6 +1291,7 @@ const ai = {
   },
   toggleHistory(e) {
     if (e) e.stopPropagation();
+    utils.hideValidationTip();
     this.historyCollapsed = !this.historyCollapsed;
     if (this.historyCollapsed) {
       const popup = document.getElementById("ai-model-popup");
@@ -855,13 +1316,46 @@ const ai = {
   },
   exportChatToText(id, e) {
     if (e) e.stopPropagation();
-    const chat = this.chats.find(c => c.id === id);
+    const chatId = id || this.currentChatId;
+    const chat = this.chats.find(c => c.id === chatId);
     if (!chat || chat.messages.length === 0) return;
+
+    // Collect all unique attachments for the header
+    const allAttachments = [];
+    const seenFileIds = new Set();
+    chat.messages.forEach(m => {
+      if (m.attachments) {
+        m.attachments.forEach(a => {
+          if (!seenFileIds.has(a.id)) {
+            seenFileIds.add(a.id);
+            allAttachments.push({
+              name: a.name,
+              timestamp: m.timestamp
+            });
+          }
+        });
+      }
+    });
+
     let content = `[AI Chat Export]\n`;
     content += `Title: ${chat.title}\n`;
     content += `Model: ${chat.model || this.settingsModel}\n`;
     content += `Date: ${new Date(chat.id).toLocaleString()}\n`;
-    content += `------------------------------------------\n\n`;
+    content += `------------------------------------------\n`;
+
+    if (allAttachments.length > 0) {
+      content += `첨부된 파일 목록\n`;
+      allAttachments.forEach((file) => {
+        let timeStr = "";
+        if (file.timestamp) {
+          const d = new Date(file.timestamp);
+          timeStr = ` (${d.toLocaleString()})`;
+        }
+        content += `${file.name}${timeStr}\n`;
+      });
+      content += `------------------------------------------\n`;
+    }
+
     chat.messages.forEach(msg => {
       let roleName = "AI";
       let textContent = msg.content;
@@ -878,13 +1372,30 @@ const ai = {
         const ss = d.getSeconds().toString().padStart(2, '0');
         timeStr = ` - ${hh}:${mm}:${ss}`;
       }
-      content += `[${roleName}]${timeStr}\n${textContent}\n\n`;
+      content += `[${roleName}]${timeStr}\n${textContent}\n`;
+      
+      if (msg.attachments && msg.attachments.length > 0) {
+        msg.attachments.forEach(a => {
+          content += `\n[첨부 파일: ${a.name}]`;
+        });
+        content += `\n`;
+      }
+      content += `\n`;
     });
     content += `------------------------------------------\n`;
     const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    const fileName = `${chat.title.replace(/[/\\?%*:|"<>]/g, '-')}_${new Date().getTime()}.txt`;
+    
+    // Custom filename format: Title_YYYY_MM_DD_SS
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const dateStr = `${year}${month}${day}_${seconds}`;
+    const fileName = `${chat.title.replace(/[/\\?%*:|"<>]/g, '-')}_${dateStr}.txt`;
+
     a.href = url;
     a.download = fileName;
     document.body.appendChild(a);
@@ -894,11 +1405,181 @@ const ai = {
       URL.revokeObjectURL(url);
     }, 100);
   },
-  appendMessage(role, text, save = true, isHtml = false) {
+  async toggleAttachmentPopover(e) {
+    if (e) e.stopPropagation();
+    const popover = document.getElementById("ai-header-attachment-popover");
+    if (!popover) return;
+    
+    const wasShowing = popover.classList.contains("show");
+    document.querySelectorAll(".attachment-popover.show").forEach(p => p.classList.remove("show"));
+    
+    if (!wasShowing) {
+      this.renderAttachmentList();
+      popover.classList.add("show");
+    }
+  },
+  async renderAttachmentList() {
+    const popover = document.getElementById("ai-header-attachment-popover");
+    if (!popover) return;
+    
+    const chat = this.getCurrentChat();
+    if (!chat) return;
+    
+    const allAttachments = [];
+    chat.messages.forEach(m => {
+      if (m.attachments) allAttachments.push(...m.attachments);
+    });
+    
+    // Header popover only shows non-deleted unique files
+    const uniqueAttachments = [];
+    const seenIds = new Set();
+    allAttachments.forEach(a => {
+      if (!a.deleted && !seenIds.has(a.id)) {
+        seenIds.add(a.id);
+        uniqueAttachments.push(a);
+      }
+    });
+
+    if (uniqueAttachments.length === 0) {
+      popover.classList.remove("show");
+      popover.innerHTML = "";
+      return;
+    }
+
+    popover.innerHTML = "";
+    for (const file of uniqueAttachments) {
+      const item = document.createElement("div");
+      item.className = "popover-file-item";
+      
+      const infoDiv = document.createElement("div");
+      infoDiv.className = "file-info";
+      
+      if (file.type && file.type.startsWith("image/")) {
+        const img = document.createElement("img");
+        try {
+          if (!this.db) await this.initDB();
+          const tx = this.db.transaction("files", "readonly");
+          const store = tx.objectStore("files");
+          const req = store.get(file.id);
+          req.onsuccess = () => {
+            if (req.result && req.result.file instanceof Blob) {
+              const url = URL.createObjectURL(req.result.file);
+              img.src = url;
+              img.onload = () => URL.revokeObjectURL(url);
+            }
+          };
+        } catch (err) {}
+        infoDiv.appendChild(img);
+      } else {
+        const icon = document.createElement("i");
+        icon.className = (file.type && (file.type.includes("text") || file.name.endsWith(".txt") || file.name.endsWith(".md"))) 
+          ? "fas fa-file-lines file-main-icon" 
+          : "fas fa-file file-main-icon";
+        infoDiv.appendChild(icon);
+      }
+      
+      const nameSpan = document.createElement("span");
+      nameSpan.innerText = file.name;
+      infoDiv.appendChild(nameSpan);
+      item.appendChild(infoDiv);
+
+      const delBtn = document.createElement("div");
+      delBtn.className = "popover-delete-btn";
+      delBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+      delBtn.onclick = (evt) => {
+        evt.stopPropagation();
+        this.showDeleteFileConfirm(evt.target, file.id);
+      };
+      item.appendChild(delBtn);
+
+      item.onclick = () => this.downloadAttachment(file.id, file.name);
+      popover.appendChild(item);
+    }
+  },
+  showDeleteFileConfirm(target, fileId) {
+    const html = `
+      <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; min-width: 120px;">
+        <span style="font-size: 0.85rem; white-space: nowrap; font-weight: 600; color: #f1f5f9;">삭제하시겠습니까?</span>
+        <button class="btn-del-confirm" onclick="ai.deleteAttachmentCompletely('${fileId}')" style="width: 100%; height: 32px; background: #ef4444; color: #fff; border: none; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.2s;">${window.i18n ? window.i18n.get("btnDeleteConfirm") : "삭제"}</button>
+      </div>
+    `;
+    utils.showValidationTip(target, html, "ai-file-delete-confirm", {
+      position: "bottom",
+      isHtml: true,
+      noAutoHide: true
+    });
+  },
+  async downloadAttachment(id, name) {
+    try {
+      if (!this.db) await this.initDB();
+      const tx = this.db.transaction("files", "readonly");
+      const store = tx.objectStore("files");
+      const req = store.get(id);
+      req.onsuccess = () => {
+        if (req.result && req.result.file instanceof Blob) {
+          const url = URL.createObjectURL(req.result.file);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = name;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 100);
+        }
+      };
+    } catch (e) {
+      console.error("Download failed", e);
+    }
+  },
+  async deleteAttachmentCompletely(id) {
+    try {
+      utils.hideValidationTip();
+      if (!this.db) await this.initDB();
+      // 1. Delete from IndexedDB
+      const tx = this.db.transaction("files", "readwrite");
+      tx.objectStore("files").delete(id);
+      
+      // 2. Mark as deleted in conversation history
+      const chats = this.chats;
+      const chat = chats.find(c => c.id === this.currentChatId);
+      if (chat) {
+        chat.messages.forEach(m => {
+          if (m.attachments) {
+            m.attachments.forEach(a => {
+              if (a.id === id) a.deleted = true;
+            });
+          }
+        });
+        this.chats = chats;
+      }
+      
+      // 3. UI Update without closing popover
+      this.updateModelDisplay();
+      this.renderAttachmentList();
+      this.refreshMessages();
+    } catch (e) {
+      console.error("Delete failed", e);
+    }
+  },
+  refreshMessages() {
+    const chat = this.getCurrentChat();
+    if (!chat) return;
+    const container = document.getElementById("ai-messages");
+    if (container) {
+      container.innerHTML = "";
+      chat.messages.forEach(m => {
+        this.appendMessage(m.role, m.content, false, m.role.startsWith("system"), m.attachments);
+      });
+    }
+  },
+  appendMessage(role, text, save = true, isHtml = false, attachments = []) {
     const container = document.getElementById("ai-messages");
     if (!container) return null;
     const div = document.createElement("div");
     div.className = `ai-message ${role}`;
+    
     if (role === "system" || role === "system-error") {
       div.style.width = "auto";
       div.style.maxWidth = "90%";
@@ -916,8 +1597,63 @@ const ai = {
       div.style.alignItems = "center";
       div.style.justifyContent = "center";
     }
-    if (isHtml) div.innerHTML = text;
-    else div.innerText = text;
+
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "message-content";
+    if (isHtml) contentDiv.innerHTML = text;
+    else contentDiv.innerText = text;
+    div.appendChild(contentDiv);
+
+    // Render attachments if any
+    if (attachments && attachments.length > 0) {
+      // 1. Add Badge Icon at top-right
+      const badge = document.createElement("div");
+      badge.className = "ai-message-attachment-badge";
+      badge.innerHTML = '<i class="fas fa-paperclip"></i>';
+      div.appendChild(badge);
+
+      // 2. Add Hover Tooltip (Changed to Click to toggle)
+      const tooltip = document.createElement("div");
+      tooltip.className = "attachment-tooltip";
+      
+      // If it's the first message, show tooltip below
+      if (container.children.length === 0) {
+        tooltip.classList.add("pos-bottom");
+      }
+      
+      badge.onclick = (e) => {
+        e.stopPropagation();
+        const wasShowing = tooltip.classList.contains("show");
+        // Close all other tooltips first
+        document.querySelectorAll(".attachment-tooltip.show").forEach(t => t.classList.remove("show"));
+        if (!wasShowing) tooltip.classList.add("show");
+      };
+
+      attachments.forEach(file => {
+        const item = document.createElement("div");
+        item.className = "tooltip-file-item";
+        if (file.deleted) item.classList.add("deleted");
+        
+        const icon = document.createElement("i");
+        icon.className = (file.type && (file.type.includes("text") || file.name.endsWith(".txt") || file.name.endsWith(".md"))) 
+          ? "fas fa-file-lines" 
+          : (file.type && file.type.startsWith("image/") ? "fas fa-image" : "fas fa-file");
+        
+        const nameSpan = document.createElement("span");
+        nameSpan.innerText = file.name;
+        
+        item.appendChild(icon);
+        item.appendChild(nameSpan);
+        item.onclick = (e) => {
+          e.stopPropagation();
+          if (file.deleted) return;
+          this.downloadAttachment(file.id, file.name);
+        };
+        tooltip.appendChild(item);
+      });
+      div.appendChild(tooltip);
+    }
+
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
     return div;

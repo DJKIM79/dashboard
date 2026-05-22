@@ -416,16 +416,26 @@
         </div>
         <div class="ai-chat-messages" id="ai-messages"></div>
         <div class="ai-chat-input-area">
-          <textarea
-            id="ai-user-input"
-            data-i18n-ph="aiInputPh"
-            placeholder="메시지를 입력하세요... (Ctrl+Enter로 전송)"
-            onkeydown="ai.handleKeyDown(event)"
-          ></textarea>
-          <div class="ai-input-actions">
-            <button id="ai-send-btn" onclick="ai.sendMessage()">
-              <i class="fas fa-paper-plane"></i>
-            </button>
+          <div id="ai-drag-overlay" class="ai-drag-overlay">
+            <span data-i18n="aiDropHere">여기에 드랍하세요</span>
+          </div>
+          <div id="ai-file-previews" class="ai-file-previews"></div>
+          <div class="ai-input-wrapper">
+            <textarea
+              id="ai-user-input"
+              data-i18n-ph="aiInputPh"
+              placeholder="메시지를 입력하세요... (Ctrl+Enter로 전송)"
+              onkeydown="ai.handleKeyDown(event)"
+            ></textarea>
+            <div class="ai-input-actions">
+              <input type="file" id="ai-attach-input" multiple style="display: none;" onchange="ai.handleFileSelect(event)">
+              <button id="ai-attach-btn" onclick="document.getElementById('ai-attach-input').click()" data-i18n-title="tipAttachFile">
+                <i class="fas fa-paperclip"></i>
+              </button>
+              <button id="ai-send-btn" onclick="ai.sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>

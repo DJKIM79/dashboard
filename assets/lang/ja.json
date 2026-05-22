@@ -186,6 +186,8 @@
   "msgAiModelNotSupported": "モデルがサポートされていないため、元のモデル ({0}) に戻ります。",
   "msgAiModelUnauthorized": "モデル ({0}) の使用権限がないか、サポートされていません。",
   "btnDeleteConfirm": "削除",
+  "tipAttachFile": "ファイルを添付",
+  "tipAttachList": "添付ファイルリスト",
   "msgAttachFuture": "ファイル添付機能は将来サポートされる予定です。",
   "txtExportText": "テキストで書き出し",
   "msgAiModelSelectTip1": "他のモデルを使用するには、\nサーバーにモデルを追加インストールしてください。",

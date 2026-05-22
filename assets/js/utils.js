@@ -218,6 +218,14 @@ const utils = {
       tip.classList.add("pos-right");
       tip.style.left = `${rect.right + 25}px`;
       tip.style.top = `${rect.top + rect.height / 2}px`;
+    } else if (pos === "left") {
+      tip.classList.add("pos-left");
+      tip.style.left = `${rect.left - 15}px`;
+      tip.style.top = `${rect.top + rect.height / 2}px`;
+    } else if (pos === "bottom") {
+      tip.classList.add("pos-bottom");
+      tip.style.left = `${rect.left + rect.width / 2}px`;
+      tip.style.top = `${rect.bottom + 10}px`;
     }
     setTimeout(() => {
       tip.classList.add("show");
