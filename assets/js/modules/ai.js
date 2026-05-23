@@ -245,7 +245,9 @@ const ai = {
           chats.forEach(c => {
             if (!c.provider) c.provider = p;
           });
-          allChats.push(...chats);
+          // Filter out completely empty chats to permanently delete them on load
+          const validChats = chats.filter(c => c.messages && c.messages.some(m => m.role === "user" || m.role === "bot"));
+          allChats.push(...validChats);
         } catch (e) { console.error("Failed to parse chats for", p, e); }
       }
     });
@@ -310,6 +312,9 @@ const ai = {
     this.updateChatbotAvailability(this.isConnected);
     this.setupInputListeners();
     this.initDB().catch(console.error);
+    this.updateModelDisplay();
+    window.addEventListener("resize", () => this.updateTagScrollVisibility());
+
     const savedModels = JSON.parse(
       localStorage.getItem("dj_ai_models_cache") || "[]",
     );
@@ -354,6 +359,40 @@ const ai = {
             popup.classList.remove("show");
             setTimeout(() => {
               if (!popup.classList.contains("show")) popup.style.display = "none";
+            }, 200);
+          }
+        }
+
+        // 5. Handle Tag Filter popup closing
+        if (
+          !e.target.closest("#ai-history-tag-btn") &&
+          !e.target.closest("#ai-history-tag-popup")
+        ) {
+          const tagPopup = document.getElementById("ai-history-tag-popup");
+          if (tagPopup && tagPopup.classList.contains("show")) {
+            tagPopup.classList.remove("show");
+            tagPopup.classList.add("hide");
+            setTimeout(() => {
+              if (!tagPopup.classList.contains("show")) {
+                tagPopup.style.display = "none";
+                tagPopup.classList.remove("hide");
+              }
+            }, 200);
+          }
+        }
+
+        // 6. Handle Floating Search closing
+        if (
+          !e.target.closest(".ai-history-search-container") &&
+          !e.target.closest("#ai-history-search")
+        ) {
+          const searchInput = document.getElementById("ai-history-search");
+          const panel = document.getElementById("ai-history");
+          if (panel && panel.classList.contains("collapsed") && searchInput && searchInput.classList.contains("show")) {
+            searchInput.classList.remove("show");
+            searchInput.classList.add("hide");
+            setTimeout(() => {
+                if (!searchInput.classList.contains("show")) searchInput.classList.remove("hide");
             }, 200);
           }
         }
@@ -413,7 +452,7 @@ const ai = {
       if (isLocked) {
         const chatProvider = chat?.provider || this.provider;
         const pName = this.getProviderName(chatProvider);
-        const msg = window.i18n ? window.i18n.get("msgAiChatLocked").replace("{0}", pName) : `대화를 이어가려면 AI를 ${pName} 로 변경하세요.`;
+        const msg = window.i18n ? window.i18n.get("msgAiChatLocked").replace("{0}", pName) : `대화를 이어가려면 ${pName}로 변경하십시오.`;
         input.placeholder = msg;
         input.value = "";
         input.classList.add("locked-placeholder");
@@ -424,40 +463,111 @@ const ai = {
     }
     if (sendBtn) sendBtn.disabled = isLocked;
     if (attachBtn) attachBtn.disabled = isLocked;
+    
     if (inputArea) {
       if (isLocked) inputArea.classList.add("locked");
       else inputArea.classList.remove("locked");
     }
 
+    this.renderChatTags(chat);
+
     const actionsEl = document.querySelector(".ai-actions");
     if (actionsEl) {
-      const hasRealMessages = chat && chat.messages.some(m => m.role === "user" || m.role === "bot");
-      if (chat && hasRealMessages) {
-        let actionsHtml = "";
+      if (chat) {
+        actionsEl.innerHTML = "";
         
-        // Global Attachment icon
-        const allAttachments = [];
-        chat.messages.forEach(m => {
-          if (m.attachments) {
-            allAttachments.push(...m.attachments.filter(a => !a.deleted));
-          }
-        });
-        
-        if (allAttachments.length > 0) {
-          actionsHtml += `
-            <div class="header-attachment-wrapper">
-              <i class="fas fa-paperclip" onclick="ai.toggleAttachmentPopover(event)" title="${window.i18n ? window.i18n.get("tipAttachList") : "첨부된 파일 목록"}"></i>
-              <div id="ai-header-attachment-popover" class="attachment-popover"></div>
-            </div>`;
+        // Tag Add icon
+        const tagAddBtn = document.createElement("i");
+        tagAddBtn.id = "ai-header-tag-add-btn";
+        tagAddBtn.className = "fas fa-tag";
+        tagAddBtn.title = window.i18n ? window.i18n.get("tipAddTag") : "태그 추가";
+        const hasRealMessages = chat.messages.some(m => m.role === "user" || m.role === "bot");
+        const isShell = this._currentEmptyChat && chat.id === this._currentEmptyChat.id;
+
+        if (isLocked || (isShell && !hasRealMessages) || (!hasRealMessages && this.isDefaultTitle(chat.title))) {
+            tagAddBtn.style.opacity = "0.3";
+            tagAddBtn.style.pointerEvents = "none";
+        } else {
+            tagAddBtn.onclick = () => this.openTagModal();
         }
-        
-        // Export icon
-        actionsHtml += `<i class="fas fa-file-arrow-down ai-btn-export" onclick="ai.exportChatToText(${chat.id}, event)" title="${window.i18n ? window.i18n.get("txtExportText") : "텍스트로 내보내기"}"></i>`;
-        
-        actionsEl.innerHTML = actionsHtml;
+        actionsEl.appendChild(tagAddBtn);
+
+        if (hasRealMessages) {
+          // Global Attachment icon
+          const allAttachments = [];
+          chat.messages.forEach(m => {
+            if (m.attachments) {
+              allAttachments.push(...m.attachments.filter(a => !a.deleted));
+            }
+          });
+          
+          if (allAttachments.length > 0) {
+            const attachListBtn = document.createElement("i");
+            attachListBtn.className = "fas fa-paperclip";
+            attachListBtn.title = window.i18n ? window.i18n.get("tipAttachList") : "첨부된 파일 목록";
+            attachListBtn.onclick = (e) => this.toggleAttachmentPopover(e);
+            
+            const wrapper = document.createElement("div");
+            wrapper.className = "header-attachment-wrapper";
+            wrapper.appendChild(attachListBtn);
+            
+            const popover = document.createElement("div");
+            popover.id = "ai-header-attachment-popover";
+            popover.className = "attachment-popover";
+            wrapper.appendChild(popover);
+            
+            actionsEl.appendChild(wrapper);
+          }
+          
+          // Export icon
+          const exportBtn = document.createElement("i");
+          exportBtn.className = "fas fa-file-arrow-down ai-btn-export";
+          exportBtn.title = window.i18n ? window.i18n.get("txtExportText") : "텍스트로 내보내기";
+          exportBtn.onclick = (e) => this.exportChatToText(chat.id, e);
+          actionsEl.appendChild(exportBtn);
+        }
       } else {
         actionsEl.innerHTML = "";
       }
+    }
+  },
+  parseTitleAndTags(rawTitle, requireDelimiter = false) {
+    if (!rawTitle) return { title: "", tags: [] };
+    const tags = [];
+    const regex = requireDelimiter
+      ? /#([^\s,	]+)([ \s,	])/g
+      : /#([^\s,	]+)([ \s,	]|$)/g;
+
+    let titleStr = rawTitle.replace(regex, (match, tag, delimiter) => {
+      tags.push(tag);
+      return delimiter || ""; // Return the delimiter to maintain spacing if needed, but the requirement says "disappear"
+    });
+    return { title: titleStr, tags };
+  },
+  handleTitleInput(val) {
+    if (!this.currentChatId) return;
+    const parsed = this.parseTitleAndTags(val, true);
+    const chats = this.chats;
+    const chat = chats.find((c) => c.id === this.currentChatId) || (this._currentEmptyChat?.id === this.currentChatId ? this._currentEmptyChat : null);
+    
+    if (chat && parsed.tags.length > 0) {
+        chat.tags = [...new Set([...(chat.tags || []), ...parsed.tags])];
+        this.renderChatTags(chat);
+        
+        // Requirement 3: Remove tag from title input in real-time
+        const titleInput = document.getElementById("ai-chat-title-input");
+        if (titleInput) {
+            const start = titleInput.selectionStart;
+            titleInput.value = parsed.title;
+            // Try to keep cursor position if possible, but real-time removal is tricky
+            const newPos = Math.max(0, start - (val.length - parsed.title.length));
+            titleInput.setSelectionRange(newPos, newPos);
+        }
+        
+        // Also update internal title if it's not the initial input
+        chat.title = parsed.title.trim() || "새 대화";
+        this.chats = chats;
+        this.renderHistory("", chat.id);
     }
   },
   updateChatTitle(newTitle) {
@@ -465,10 +575,299 @@ const ai = {
     const chats = this.chats;
     const chat = chats.find((c) => c.id === this.currentChatId) || (this._currentEmptyChat?.id === this.currentChatId ? this._currentEmptyChat : null);
     if (chat) {
-      chat.title = newTitle.trim() || "새 대화";
+      const parsed = this.parseTitleAndTags(newTitle);
+      chat.title = parsed.title || "새 대화";
+      if (parsed.tags.length > 0) {
+          chat.tags = [...new Set([...(chat.tags || []), ...parsed.tags])];
+      }
       chat.updatedAt = Date.now();
       this.chats = chats;
+      
+      const titleInput = document.getElementById("ai-chat-title-input");
+      if (titleInput) titleInput.value = chat.title;
+      this.renderChatTags(chat);
+
       this.renderHistory("", chat.id);
+    }
+  },
+  renderChatTags(chat, toggledTag = null) {
+    const container = document.getElementById("ai-chat-tags-container");
+    const wrapper = document.querySelector(".ai-header-tags-wrapper");
+    if (!container) return;
+    container.innerHTML = "";
+    const hasTags = chat && chat.tags && chat.tags.length > 0;
+    if (hasTags) {
+      chat.tags.forEach(tag => {
+        const chip = document.createElement("div");
+        const isActive = this.activeTagFilters && this.activeTagFilters.includes(tag);
+        const isAnimating = toggledTag === tag;
+        
+        // Define animation class based on whether it was toggled ON or OFF
+        let animClass = "";
+        if (isAnimating) {
+            animClass = isActive ? "filling" : "emptying";
+        }
+        
+        chip.className = `ai-tag-chip ${isActive ? "active" : ""} ${animClass}`;
+        
+        const span = document.createElement("span");
+        span.innerText = `#${tag}`;
+        chip.appendChild(span);
+        
+        if (!this.isChatLocked) {
+            const delIcon = document.createElement("i");
+            delIcon.className = "fas fa-times delete-tag";
+            delIcon.onclick = (e) => {
+                e.stopPropagation();
+                this.deleteTag(chat.id, tag);
+            };
+            chip.appendChild(delIcon);
+        }
+        
+        chip.onclick = (e) => {
+            if (e.target.classList.contains("delete-tag")) return;
+            e.stopPropagation();
+            
+            // Toggle tag in filters
+            if (!this.activeTagFilters) this.activeTagFilters = [];
+            const index = this.activeTagFilters.indexOf(tag);
+            if (index === -1) {
+                this.activeTagFilters.push(tag);
+            } else {
+                this.activeTagFilters.splice(index, 1);
+            }
+            
+            this.updateTagFilterIconUI();
+            this.renderHistory();
+            
+            // Pass the tag name to renderChatTags so only this tag animates
+            this.renderChatTags(chat, tag);
+            
+            // Also update checkboxes if popup is open
+            const popup = document.getElementById("ai-history-tag-popup");
+            if (popup && popup.classList.contains("show")) {
+                // We need to re-render the popup to show updated checkbox state
+                this.toggleTagFilterPopup(); 
+                this.toggleTagFilterPopup(); 
+            }
+        };
+        
+        container.appendChild(chip);
+      });
+    }
+    if (wrapper) {
+        wrapper.style.display = hasTags ? "flex" : "none";
+    }
+    this.updateTagScrollVisibility();
+    this.updateTagFilterIconUI();
+  },
+  updateTagFilterIconUI() {
+    const btn = document.getElementById("ai-history-tag-btn");
+    if (!btn) return;
+    const isActive = this.activeTagFilters && this.activeTagFilters.length > 0;
+    btn.classList.toggle("active", isActive);
+  },
+  updateTagScrollVisibility() {
+    const container = document.getElementById("ai-chat-tags-container");
+    if (!container) return;
+    const leftBtn = document.querySelector(".tag-scroll-btn.fa-caret-left");
+    const rightBtn = document.querySelector(".tag-scroll-btn.fa-caret-right");
+    if (leftBtn && rightBtn) {
+        // Use a small delay to ensure rendering and animations are stable
+        setTimeout(() => {
+            const hasOverflow = container.scrollWidth > container.clientWidth + 2; // 2px buffer
+            leftBtn.style.display = hasOverflow ? "block" : "none";
+            rightBtn.style.display = hasOverflow ? "block" : "none";
+
+            if (hasOverflow) {
+                // Update disabled state based on scroll position
+                const scrollLeft = container.scrollLeft;
+                const maxScroll = container.scrollWidth - container.clientWidth;
+                
+                // Tolerance of 1px for rounding issues
+                leftBtn.classList.toggle("disabled", scrollLeft <= 1);
+                rightBtn.classList.toggle("disabled", scrollLeft >= maxScroll - 1);
+            }
+        }, 50);
+    }
+  },
+  scrollTags(direction) {
+    const container = document.getElementById("ai-chat-tags-container");
+    if (!container) return;
+    const scrollAmount = 150;
+    container.scrollLeft += direction * scrollAmount;
+    
+    // Update button states after scroll
+    setTimeout(() => this.updateTagScrollVisibility(), 100);
+    // Also listen for scroll events if not already
+    if (!container.dataset.hasScrollListener) {
+        container.addEventListener("scroll", () => this.updateTagScrollVisibility(), { passive: true });
+        container.dataset.hasScrollListener = "true";
+    }
+  },
+  openTagModal(isManage = false) {
+    if (this.isChatLocked) return;
+    const modal = document.getElementById("aiTagModal");
+    if (!modal) return;
+    
+    const titleEl = modal.querySelector("h3");
+    if (titleEl) {
+        const key = isManage ? "modalTagManage" : "modalTagAdd";
+        titleEl.setAttribute("data-i18n", key);
+        if (window.i18n) titleEl.innerHTML = window.i18n.get(key);
+        else titleEl.innerText = isManage ? "태그 관리" : "태그 추가";
+    }
+    
+    modal.style.display = "flex";
+    void modal.offsetWidth;
+    modal.classList.add("show");
+    
+    const input = document.getElementById("aiTagInput");
+    if (input) {
+        input.value = "";
+        input.setAttribute("data-i18n-ph", "tagInputPh");
+        if (window.i18n) input.placeholder = window.i18n.get("tagInputPh");
+        else input.placeholder = "태그를 입력하여 주세요";
+        setTimeout(() => input.focus(), 100);
+    }
+    this.renderModalTags();
+  },
+  closeTagModal() {
+    const modal = document.getElementById("aiTagModal");
+    if (modal) {
+        modal.classList.remove("show");
+        setTimeout(() => {
+            if (!modal.classList.contains("show")) modal.style.display = "none";
+        }, 300);
+    }
+  },
+  handleTagInputKeyDown(e) {
+    // Delimiters: space, comma, tab, Enter
+    const delimiters = [" ", ",", "Tab", "Enter"];
+    if (delimiters.includes(e.key)) {
+        e.preventDefault();
+        const input = e.target;
+        const val = input.value.trim();
+        if (val) {
+            const cleanTags = val.split(/[ ,	]+/).map(t => t.replace(/^#+/, "")).filter(t => t);
+            if (cleanTags.length > 0) {
+                const chats = this.chats;
+                const chat = chats.find(c => c.id === this.currentChatId) || (this._currentEmptyChat?.id === this.currentChatId ? this._currentEmptyChat : null);
+                if (chat) {
+                    chat.tags = [...new Set([...(chat.tags || []), ...cleanTags])];
+                    this.chats = chats;
+                    this.renderChatTags(chat);
+                    this.renderModalTags();
+                    chat.updatedAt = Date.now();
+                    this.renderHistory("", chat.id);
+                }
+            }
+            input.value = "";
+        }
+    }
+  },
+  addTagFromInput() {
+    const input = document.getElementById("aiTagInput");
+    if (!input) return;
+    const val = input.value.trim();
+    if (val) {
+        const cleanTags = val.split(/[ ,	]+/).map(t => t.replace(/^#+/, "")).filter(t => t);
+        if (cleanTags.length > 0) {
+            const chats = this.chats;
+            const chat = chats.find(c => c.id === this.currentChatId) || (this._currentEmptyChat?.id === this.currentChatId ? this._currentEmptyChat : null);
+            if (chat) {
+                chat.tags = [...new Set([...(chat.tags || []), ...cleanTags])];
+                this.chats = chats;
+                this.renderChatTags(chat);
+                this.renderModalTags();
+                chat.updatedAt = Date.now();
+                this.renderHistory("", chat.id);
+            }
+        }
+        input.value = "";
+        this.closeTagModal();
+    } else {
+        this.closeTagModal();
+    }
+  },
+  renderModalTags() {
+    const container = document.getElementById("aiModalTagsPreview");
+    if (!container) return;
+    container.innerHTML = "";
+    const chat = this.getCurrentChat();
+    if (chat && chat.tags && chat.tags.length > 0) {
+        container.classList.add("has-tags");
+        chat.tags.forEach(tag => {
+            const chip = document.createElement("div");
+            chip.className = "ai-tag-chip";
+            
+            const span = document.createElement("span");
+            span.innerText = `#${tag}`;
+            chip.appendChild(span);
+            
+            const delIcon = document.createElement("i");
+            delIcon.className = "fas fa-times delete-tag";
+            delIcon.style.display = "inline-block"; // Always show in modal
+            delIcon.onclick = (e) => {
+                e.stopPropagation();
+                this.deleteTag(chat.id, tag);
+                this.renderModalTags();
+            };
+            chip.appendChild(delIcon);
+            
+            container.appendChild(chip);
+        });
+    } else {
+        container.classList.remove("has-tags");
+    }
+  },
+  promptAddTag() {
+    // Legacy - replaced by openTagModal
+    this.openTagModal();
+  },
+  editTag(chatId, oldTag) {
+    if (this.isChatLocked) return;
+    const newTag = prompt("태그 수정:", oldTag);
+    if (newTag !== null) {
+        const cleanTag = newTag.trim().replace(/^#+/, "");
+        const chats = this.chats;
+        const chat = chats.find(c => c.id === chatId) || (this._currentEmptyChat?.id === chatId ? this._currentEmptyChat : null);
+        if (chat && chat.tags) {
+            if (!cleanTag) {
+                // if they cleared the prompt, treat as delete
+                this.deleteTag(chatId, oldTag);
+                return;
+            }
+            const idx = chat.tags.indexOf(oldTag);
+            if (idx > -1) {
+                chat.tags[idx] = cleanTag;
+                // remove duplicates
+                chat.tags = [...new Set(chat.tags)];
+                this.chats = chats;
+                this.renderChatTags(chat);
+                chat.updatedAt = Date.now();
+                this.renderHistory("", chat.id);
+            }
+        }
+    }
+  },
+  deleteTag(chatId, tagToRemove) {
+    if (this.isChatLocked) return;
+    const chats = this.chats;
+    const chat = chats.find(c => c.id === chatId) || (this._currentEmptyChat?.id === chatId ? this._currentEmptyChat : null);
+    if (chat && chat.tags) {
+        chat.tags = chat.tags.filter(t => t !== tagToRemove);
+        this.chats = chats;
+        this.renderChatTags(chat);
+        chat.updatedAt = Date.now();
+        this.renderHistory("", chat.id);
+        
+        // Refresh popup if it is currently open to reflect the deleted tag
+        const popup = document.getElementById("ai-history-tag-popup");
+        if (popup && (popup.classList.contains("show") || popup.style.display === "flex")) {
+            this.toggleTagFilterPopup(); // hide
+            this.toggleTagFilterPopup(); // show
+        }
     }
   },
   closeModelPopup() {
@@ -1275,7 +1674,12 @@ const ai = {
       // Auto title for new chats
       if (this.isDefaultTitle(c.title)) {
           const firstLine = userPrompt.split("\n")[0].trim();
-          c.title = firstLine.length > 100 ? firstLine.substring(0, 100) + "..." : (firstLine || "새 대화");
+          let newTitle = firstLine.length > 100 ? firstLine.substring(0, 100) + "..." : (firstLine || "새 대화");
+          const parsed = this.parseTitleAndTags(newTitle);
+          c.title = parsed.title;
+          if (parsed.tags.length > 0) {
+              c.tags = [...new Set([...(c.tags || []), ...parsed.tags])];
+          }
       }
 
       c._lastModel = c.model || this.settingsModel;
@@ -1283,7 +1687,19 @@ const ai = {
       c.updatedAt = now;
 
       if (c === this._currentEmptyChat) {
+          const emptyId = this._currentEmptyChat.id;
           this._currentEmptyChat = null;
+          
+          // Force immediate removal from DOM before any re-render
+          const list = document.getElementById("ai-history-list");
+          if (list) {
+            const ghost = list.querySelector(`.ai-history-item[data-id="${emptyId}"]`);
+            if (ghost) {
+                ghost.style.display = "none";
+                ghost.remove();
+            }
+          }
+          
           this.chats = [c, ...this.chats.filter(x => x.id !== c.id)];
       } else {
           this.chats = chats;
@@ -1315,7 +1731,8 @@ const ai = {
     }
 
     const chatProvider = chat.provider || currentProvider;
-    const isOther = chatProvider !== currentProvider;
+    const isShell = this._currentEmptyChat && chat.id === this._currentEmptyChat.id;
+    const isOther = !isShell && chatProvider !== currentProvider;
     if (isOther) div.classList.add("other-model");
     
     div.dataset.id = chat.id;
@@ -1337,7 +1754,8 @@ const ai = {
     }
 
     const isDefaultTitle = this.isDefaultTitle(chat.title);
-    div.innerHTML = `<span>${this.getDisplayTitle(chat.title)}</span><i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>`;
+    const trashIcon = isDefaultTitle ? "" : `<i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>`;
+    div.innerHTML = `<span>${this.getDisplayTitle(chat.title)}</span>${trashIcon}`;
     return div;
   },
   renderHistory(searchTerm = "", updatedChatId = null) {
@@ -1346,21 +1764,57 @@ const ai = {
     
     const lowerSearch = searchTerm.toLowerCase();
     const currentProvider = this.provider;
+    const activeTags = this.activeTagFilters || [];
+
+    // IMMEDIATELY remove 'active' from all existing items to hide trash icons before animation
+    Array.from(list.children).forEach(child => {
+        if (parseInt(child.dataset.id) !== this.currentChatId) {
+            child.classList.remove("active");
+        }
+    });
+    
     const sortedChats = this.chats.filter(chat => {
         const hasMessages = chat.messages && chat.messages.some(m => m.role === "user" || m.role === "bot");
         const isCurrent = chat.id === this.currentChatId;
+        const isShell = this._currentEmptyChat && chat.id === this._currentEmptyChat.id;
         
-        // Show if: 1. It has real messages, OR 2. It's the one we're currently looking at
-        const shouldShow = hasMessages || isCurrent;
+        // Show if: 1. It has real messages, OR 2. It's the one we're currently looking at, OR 3. It's the empty shell
+        const shouldShow = hasMessages || isCurrent || isShell;
         if (!shouldShow) return false;
 
-        if (!searchTerm) return true;
-        return chat.title.toLowerCase().includes(lowerSearch);
+        // Check text search
+        if (searchTerm) {
+            const searchTerms = lowerSearch.split(/\s+/).filter(t => t);
+            const chatTitleLower = chat.title.toLowerCase();
+            if (searchTerms.some(term => !chatTitleLower.includes(term))) return false;
+        }
+        
+        // Check tag filters
+        if (activeTags.length > 0) {
+            if (!chat.tags) return false; 
+            // OR logic: Show if any of the active tags are present
+            const hasAnyTag = activeTags.some(tag => chat.tags.includes(tag));
+            if (!hasAnyTag) return false;
+        }
+
+        return true;
     });
 
     // If search is active or list is empty, full rebuild
     if (searchTerm || list.children.length === 0) {
-        list.innerHTML = "";
+        // Find existing items to remove with animation
+        Array.from(list.children).forEach(child => {
+            const id = parseInt(child.dataset.id);
+            if (!sortedChats.some(c => c.id === id) && !child.classList.contains("chat-exit")) {
+                child.classList.add("chat-exit");
+                setTimeout(() => child.remove(), 400);
+            } else if (!child.classList.contains("chat-exit")) {
+                // If it should stay, we'll rebuild later, but for now just hide it to avoid double
+                child.style.display = "none"; 
+                child.remove();
+            }
+        });
+        
         sortedChats.forEach(chat => {
             list.appendChild(this.createHistoryItemElement(chat, currentProvider, updatedChatId));
         });
@@ -1394,19 +1848,25 @@ const ai = {
         }
     });
 
-    // Remove old
+    // Remove old with animation
     Array.from(list.children).forEach(child => {
         const id = parseInt(child.dataset.id);
         if (!sortedChats.some(c => c.id === id)) {
-            child.remove();
+            if (!child.classList.contains("chat-exit")) {
+                child.classList.remove("active"); // REMOVE ACTIVE to hide trash icon during exit
+                child.classList.add("chat-exit");
+                setTimeout(() => {
+                    if (child.parentNode === list) child.remove();
+                }, 400);
+            }
         }
     });
 
     // FLIP: Last, Invert - Capture immediately after DOM changes
     const animatedItems = [];
     Array.from(list.children).forEach(child => {
-        // Skip animating items that are currently in their initial height-expansion phase
-        if (child.classList.contains("chat-new-item")) return;
+        // Skip animating items that are currently in their initial height-expansion phase or exiting
+        if (child.classList.contains("chat-new-item") || child.classList.contains("chat-exit")) return;
 
         const id = child.dataset.id;
         const firstRect = firstRects.get(id);
@@ -1487,10 +1947,12 @@ const ai = {
     const emptyChat = chats.find(
       (c) =>
         this.isDefaultTitle(c.title) &&
-        (!c.messages || c.messages.length === 0 || !c.messages.some(m => m.role === "user" || m.role === "bot")) &&
-        (c.provider || this.provider) === this.provider
+        (!c.messages || c.messages.length === 0 || !c.messages.some(m => m.role === "user" || m.role === "bot"))
     );
     if (emptyChat) {
+      // Update provider to current one when reusing the shell
+      emptyChat.provider = this.provider;
+      emptyChat.model = this.settingsModel;
       this.loadChat(emptyChat.id);
       return;
     }
@@ -1506,6 +1968,36 @@ const ai = {
       updatedAt: newId
     };
     this.loadChat(newId, newId);
+  },
+  cleanupEmptyShell() {
+    if (this._currentEmptyChat) {
+      const emptyId = this._currentEmptyChat.id;
+      this._currentEmptyChat = null;
+      
+      const list = document.getElementById("ai-history-list");
+      if (list) {
+        const ghost = list.querySelector(`.ai-history-item[data-id="${emptyId}"]`);
+        if (ghost) {
+            ghost.style.display = "none";
+            ghost.remove();
+        }
+      }
+
+      // If current chat was the empty shell, load the first available chat or clear UI
+      if (this.currentChatId === emptyId) {
+        const validChats = this.chats.filter(c => c.messages && c.messages.some(m => m.role === "user" || m.role === "bot"));
+        if (validChats.length > 0) {
+          this.loadChat(validChats[0].id);
+        } else {
+          // No chats remain
+          const msgContainer = document.getElementById("ai-messages");
+          if (msgContainer) msgContainer.innerHTML = "";
+          this.updateModelDisplay();
+        }
+      } else {
+        this.renderHistory();
+      }
+    }
   },
   deleteChat(id, e) {
     if (e) e.stopPropagation();
@@ -1570,16 +2062,24 @@ const ai = {
   toggleHistory(e) {
     if (e) e.stopPropagation();
     utils.hideValidationTip();
-    this.historyCollapsed = !this.historyCollapsed;
-    if (this.historyCollapsed) {
-      const popup = document.getElementById("ai-model-popup");
-      if (popup && popup.classList.contains("show")) {
-        popup.classList.remove("show");
-        setTimeout(() => {
-          if (!popup.classList.contains("show")) popup.style.display = "none";
-        }, 200);
+    
+    // Instantly close popups when toggling history to prevent position jumping
+    const popupsToClose = ["ai-model-popup", "ai-history-tag-popup"];
+    popupsToClose.forEach(id => {
+      const popup = document.getElementById(id);
+      if (popup) {
+        popup.classList.remove("show", "hide");
+        popup.style.display = "none";
       }
+    });
+
+    // Close floating search instantly when toggling history
+    const searchInput = document.getElementById("ai-history-search");
+    if (searchInput) {
+        searchInput.classList.remove("show", "hide");
     }
+
+    this.historyCollapsed = !this.historyCollapsed;
     document
       .getElementById("ai-history")
       ?.classList.toggle("collapsed", this.historyCollapsed);
@@ -1587,6 +2087,219 @@ const ai = {
       .historyCollapsed
       ? "fas fa-angles-right"
       : "fas fa-angles-left";
+  },
+  toggleFloatingSearch(e) {
+    if (e) e.stopPropagation();
+    
+    // Close tag popup if open
+    const tagPopup = document.getElementById("ai-history-tag-popup");
+    if (tagPopup && (tagPopup.classList.contains("show") || tagPopup.style.display === "flex")) {
+      tagPopup.classList.remove("show");
+      tagPopup.classList.add("hide");
+      setTimeout(() => {
+        if (!tagPopup.classList.contains("show")) {
+          tagPopup.style.display = "none";
+          tagPopup.classList.remove("hide");
+        }
+      }, 200);
+    }
+
+    const panel = document.getElementById("ai-history");
+    const input = document.getElementById("ai-history-search");
+    if (!panel || !input) return;
+
+    if (panel.classList.contains("collapsed")) {
+        if (input.classList.contains("show")) {
+            input.classList.remove("show");
+            input.classList.add("hide");
+            setTimeout(() => {
+                if (!input.classList.contains("show")) input.classList.remove("hide");
+            }, 200);
+        } else {
+            input.classList.remove("hide");
+            input.classList.add("show");
+            input.focus();
+        }
+    }
+  },
+  handleSearchBlur(e) {
+    const input = e.target;
+    const panel = document.getElementById("ai-history");
+    if (panel && panel.classList.contains("collapsed")) {
+        // Delay slightly to check if we clicked on something else important
+        setTimeout(() => {
+            if (input.classList.contains("show")) {
+                input.classList.remove("show");
+                input.classList.add("hide");
+                setTimeout(() => {
+                    if (!input.classList.contains("show")) input.classList.remove("hide");
+                }, 200);
+            }
+        }, 200);
+    }
+  },
+  toggleTagFilterPopup(e) {
+    if (e) e.stopPropagation();
+
+    // Close floating search if open
+    const searchInput = document.getElementById("ai-history-search");
+    if (searchInput && searchInput.classList.contains("show")) {
+        searchInput.classList.remove("show");
+        searchInput.classList.add("hide");
+        setTimeout(() => {
+            if (!searchInput.classList.contains("show")) searchInput.classList.remove("hide");
+        }, 200);
+    }
+
+    const popup = document.getElementById("ai-history-tag-popup");
+    if (!popup) return;
+    
+    if (popup.classList.contains("show") || popup.style.display === "flex") {
+      popup.classList.remove("show");
+      popup.classList.add("hide");
+      setTimeout(() => {
+        if (!popup.classList.contains("show")) {
+          popup.style.display = "none";
+          popup.classList.remove("hide");
+        }
+      }, 200);
+      return;
+    }
+
+    // Close other popups
+    const modelPopup = document.getElementById("ai-model-popup");
+    if (modelPopup) modelPopup.style.display = "none";
+
+    popup.innerHTML = "";
+    
+    // Collect all unique tags
+    const allTags = new Set();
+    this.chats.forEach(c => {
+        if (c.tags) c.tags.forEach(t => allTags.add(t));
+    });
+    
+    if (this._currentEmptyChat && this._currentEmptyChat.tags) {
+        this._currentEmptyChat.tags.forEach(t => allTags.add(t));
+    }
+    
+    const sortedTags = Array.from(allTags).sort();
+    
+    if (sortedTags.length === 0) {
+        popup.innerHTML = `<div style="padding: 10px; font-size: 0.8rem; color: #94a3b8; text-align: center;">등록된 태그가 없습니다.</div>`;
+    } else {
+        sortedTags.forEach(tag => {
+            const isActive = this.activeTagFilters && this.activeTagFilters.includes(tag);
+            const item = document.createElement("div");
+            item.className = `tag-filter-item ${isActive ? "active" : ""}`;
+            
+            const span = document.createElement("span");
+            span.className = "tag-filter-text";
+            span.innerText = tag;
+            item.appendChild(span);
+
+            const checkIcon = document.createElement("i");
+            checkIcon.className = "fas fa-check";
+            checkIcon.style.fontSize = "0.7rem";
+            checkIcon.style.opacity = "0.8";
+            if (!isActive) checkIcon.style.display = "none";
+            item.appendChild(checkIcon);
+            
+            item.onclick = (evt) => {
+                evt.stopPropagation();
+                this.toggleTagFilter(tag);
+                const nowActive = this.activeTagFilters && this.activeTagFilters.includes(tag);
+                if (nowActive) {
+                    item.classList.add("active");
+                } else {
+                    item.classList.remove("active");
+                }
+                checkIcon.style.display = nowActive ? "inline-block" : "none";
+                
+                // Update "No Tag Filter" state
+                const noFilterItem = popup.querySelector('.tag-filter-item.all-tags');
+                if (noFilterItem) {
+                    const isAllActive = (!this.activeTagFilters || this.activeTagFilters.length === 0);
+                    if (isAllActive) {
+                        noFilterItem.classList.add("active");
+                    } else {
+                        noFilterItem.classList.remove("active");
+                    }
+                    const noFilterCheck = noFilterItem.querySelector('i');
+                    if (noFilterCheck) noFilterCheck.style.display = isAllActive ? "inline-block" : "none";
+                }
+            };
+            
+            popup.appendChild(item);
+        });
+    }
+
+    // Add separator
+    const separator = document.createElement("div");
+    separator.style.height = "1px";
+    separator.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+    separator.style.margin = "4px 0";
+    popup.appendChild(separator);
+
+    // Add "No Tag Filter" option at the bottom
+    const allItem = document.createElement("div");
+    const isAllActiveInitial = !this.activeTagFilters || this.activeTagFilters.length === 0;
+    allItem.className = `tag-filter-item all-tags ${isAllActiveInitial ? "active" : ""}`;
+    
+    const allSpan = document.createElement("span");
+    allSpan.innerText = window.i18n ? window.i18n.get("aiNoTagFilter") : "태그 필터 없음";
+    allSpan.className = "tag-filter-text";
+    allItem.appendChild(allSpan);
+
+    const allCheckIcon = document.createElement("i");
+    allCheckIcon.className = "fas fa-check";
+    allCheckIcon.style.fontSize = "0.7rem";
+    allCheckIcon.style.opacity = "0.8";
+    if (!isAllActiveInitial) {
+        allCheckIcon.style.display = "none";
+    }
+    allItem.appendChild(allCheckIcon);
+
+    allItem.onclick = (evt) => {
+        evt.stopPropagation();
+        this.activeTagFilters = [];
+        this.renderHistory();
+        const chat = this.getCurrentChat();
+        if (chat) this.renderChatTags(chat);
+        this.updateTagFilterIconUI();
+        
+        // Refresh popup visually without closing it
+        Array.from(popup.querySelectorAll('.tag-filter-item:not(.all-tags)')).forEach(node => {
+            node.classList.remove('active');
+            const chk = node.querySelector('i.fa-check');
+            if (chk) chk.style.display = "none";
+        });
+        allItem.classList.add('active');
+        allCheckIcon.style.display = "inline-block";
+    };
+    
+    popup.appendChild(allItem);
+    
+    popup.style.display = "flex";
+    popup.classList.add("show");
+  },
+  activeTagFilters: [],
+  toggleTagFilter(tag) {
+    if (!this.activeTagFilters) this.activeTagFilters = [];
+    const index = this.activeTagFilters.indexOf(tag);
+    if (index === -1) {
+        this.activeTagFilters.push(tag);
+    } else {
+        this.activeTagFilters.splice(index, 1);
+    }
+    this.renderHistory();
+    // Synchronize with chat header tags
+    const chat = this.getCurrentChat();
+    if (chat) this.renderChatTags(chat);
+
+    this.updateTagFilterIconUI();
+    const searchInput = document.getElementById("ai-history-search");
+    const searchTerm = searchInput ? searchInput.value : "";
+    this.filterHistory(searchTerm);
   },
   renderWelcome() {
     const msgContainer = document.getElementById("ai-messages");

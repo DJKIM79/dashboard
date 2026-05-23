@@ -26,8 +26,8 @@
   </head>
   <body onclick="requestNotiPermission()">
     <div id="globalContextMenu" class="context-menu">
-      <div id="ctx-add" onclick="addCurrentItem()" data-i18n="cmAdd">추가</div>
-      <div id="ctx-edit" onclick="editCurrentItem()" data-i18n="cmEdit">
+      <div id="ctx-add" class="cm-add" onclick="addCurrentItem()" data-i18n="cmAdd">추가</div>
+      <div id="ctx-edit" class="cm-edit" onclick="editCurrentItem()" data-i18n="cmEdit">
         수정
       </div>
       <div
@@ -211,6 +211,38 @@
         </div>
       </div>
     </div>
+    <div
+      id="aiTagModal"
+      class="modal"
+      onclick="event.target == this && ai.closeTagModal()"
+    >
+      <div class="modal-content">
+        <h3 data-i18n="modalTagAdd">태그 추가</h3>
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+          <div class="tag-input-wrapper">
+            <input
+              type="text"
+              id="aiTagInput"
+              data-i18n-ph="tagInputPh"
+              placeholder="태그 입력 (#태그, 띄어쓰기, 쉼표 등으로 구분)"
+              onkeydown="ai.handleTagInputKeyDown(event)"
+            />
+          </div>
+          <div id="aiModalTagsPreview" class="ai-modal-tags-preview">
+            <!-- Tags will be rendered here -->
+          </div>
+          <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+            <button
+              class="btn-save"
+              style="width: auto; min-width: 100px;"
+              onclick="ai.addTagFromInput()"
+              data-i18n="btnAdd"
+            >
+              추가
+            </button>          </div>
+        </div>
+      </div>
+    </div>
     <div id="top-left-widgets" oncontextmenu="showContextMenu(event, 'fileMgmt')">
       <div class="fab-container">
         <div
@@ -390,14 +422,20 @@
         </div>
         <div class="ai-history-list" id="ai-history-list"></div>
         <div class="ai-history-footer">
-          <i class="fas fa-search" style="font-size: 0.8rem; opacity: 0.5"></i>
-          <input
-            type="text"
-            id="ai-history-search"
-            data-i18n-ph="searchSmallPh"
-            placeholder="검색..."
-            oninput="ai.filterHistory(this.value)"
-          />
+          <div class="ai-history-search-container">
+            <i class="fas fa-search ai-history-search-icon" onclick="ai.toggleFloatingSearch(event)"></i>
+            <input
+              type="text"
+              id="ai-history-search"
+              data-i18n-ph="searchSmallPh"
+              placeholder="검색..."
+              oninput="ai.filterHistory(this.value)"
+            />
+          </div>
+          <div class="ai-history-tag-filter-wrapper">
+            <i class="fas fa-tags" id="ai-history-tag-btn" onclick="ai.toggleTagFilterPopup(event)"></i>
+            <div id="ai-history-tag-popup" class="ai-history-tag-popup"></div>
+          </div>
         </div>
       </div>
       <div class="ai-main-panel">
@@ -407,10 +445,16 @@
               type="text"
               id="ai-chat-title-input"
               class="ai-title-input"
+              oninput="ai.handleTitleInput(this.value)"
               onchange="ai.updateChatTitle(this.value)"
               data-i18n-ph="aiNewChatDefault"
               placeholder="새 대화"
             />
+          </div>
+          <div class="ai-header-tags-wrapper">
+            <i class="fas fa-caret-left tag-scroll-btn" onclick="ai.scrollTags(-1)"></i>
+            <div id="ai-chat-tags-container" class="ai-chat-tags-container"></div>
+            <i class="fas fa-caret-right tag-scroll-btn" onclick="ai.scrollTags(1)"></i>
           </div>
           <div class="ai-actions"></div>
         </div>
@@ -432,7 +476,7 @@
               <button id="ai-attach-btn" onclick="document.getElementById('ai-attach-input').click()" data-i18n-title="tipAttachFile">
                 <i class="fas fa-paperclip"></i>
               </button>
-              <button id="ai-send-btn" onclick="ai.sendMessage()">
+              <button id="ai-send-btn" data-i18n-title="tipSendMsg" onclick="ai.sendMessage()">
                 <i class="fas fa-paper-plane"></i>
               </button>
             </div>

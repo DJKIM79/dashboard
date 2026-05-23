@@ -259,5 +259,9 @@
   "msgRestoreDesc": "(Les données existantes seront remplacées par la sauvegarde)",
   "btnConfirmReset": "Réinitialiser",
   "msgAiConnLost": "La connexion au serveur a été perdue.",
-  "btnClose": "Fermer"
+  "btnClose": "Fermer",
+  "btnAdd": "Ajouter",
+  "tipAddTag": "Ajouter un tag",
+  "tipSendMsg": "Envoyer",
+  "aiNoTagFilter": "Aucun filtre"
 }

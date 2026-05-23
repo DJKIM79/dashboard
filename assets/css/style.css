@@ -298,6 +298,7 @@ body::before {
   background: rgba(255, 255, 255, 0.05);
   border-color: var(--accent-color);
 }
+.location-list {
   max-height: 200px;
   overflow-y: auto;
   z-index: 1001;
@@ -398,7 +399,7 @@ body::before {
 }
 .grid-layout,
 .shortcut-list-view {
-  grid-template-columns: repeat(auto-fill, 140px);
+  grid-template-columns: repeat(auto-fit, 140px);
   justify-content: center;
   display: grid;
   max-width: 930px;
@@ -505,16 +506,21 @@ body::before {
   transform: translateY(-2px);
 }
 #shortcut-container.sorting-active .shortcut-item {
-  transition: none !important;
+  /* Clear default transitions to let Sortable.js handle transform animations via inline styles */
+  transition: none; 
+  box-shadow: none !important;
 }
 #shortcut-container.sorting-active .shortcut-item:hover {
   border-color: var(--glass-border) !important;
   box-shadow: none !important;
+  transform: none !important;
 }
 .sortable-chosen {
   border-color: var(--accent-color) !important;
-  box-shadow: 0 0 12px var(--accent-color) !important;
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important; 
+  transform: none !important; 
+  transition: none !important; /* Chosen item follows mouse instantly without lag */
   opacity: 1 !important;
   z-index: 100;
 }
@@ -547,6 +553,12 @@ body::before {
 }
 .context-menu div:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+.context-menu .cm-add {
+  color: #fff;
+}
+.context-menu .cm-edit {
+  color: #eab308; /* Yellow/Amber */
 }
 .context-menu .cm-del {
   color: #ef4444;
@@ -1342,7 +1354,8 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 #alertModal,
 #deleteConfirmModal,
-#resetConfirmModal {
+#resetConfirmModal,
+#aiTagModal {
   z-index: 10000 !important;
 }
 .modal-content {
@@ -2256,7 +2269,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   border-radius: 24px;
   margin: 0 auto;
   display: flex;
-  overflow: hidden;
+  overflow: visible; /* 1.1: Allow children (tag popup) to overflow container */
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   position: fixed;
   left: 50%;
@@ -2281,45 +2294,48 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   flex-direction: column;
   background: rgba(0, 0, 0, 0.2);
   transition: width 0.3s ease;
+  position: relative; /* Established stacking context */
+  z-index: 100; /* Ensure it stays above main panel and messages */
+  overflow: visible !important;
 }
 .ai-history-panel.collapsed {
   width: 100px;
-  overflow: hidden;
+  overflow: visible;
 }
 .ai-header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
   position: relative;
   flex: 1;
   min-width: 0;
-  transition: gap 0.3s ease;
+  height: 100%;
 }
 .history-title {
+  position: absolute;
+  left: 40px; 
+  top: 50%;
+  transform: translateY(-50%);
   cursor: pointer;
-  transition: opacity 0.3s ease, max-width 0.3s ease, margin-left 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 130px;
+  max-width: calc(100% - 35px); /* Increased width to show 1-2 more characters */
   font-size: 0.85rem;
   opacity: 0.8;
-  display: inline-block;
-  transform-origin: left;
+  z-index: 1;
 }
 .history-title:hover {
   opacity: 1;
   color: var(--accent-color);
 }
 .ai-history-panel.collapsed .history-title {
-  opacity: 0;
-  max-width: 0;
-  margin-left: -8px;
-  transform: scaleX(0.5);
-  pointer-events: none;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 .ai-history-panel.collapsed .ai-header-left {
-  gap: 0;
+  /* No gap change needed as title is absolute */
 }
 .ai-history-header {
   padding: 0 5px 0 25px;
@@ -2461,27 +2477,299 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   padding: 10px;
 }
 .ai-history-footer {
-  padding: 12px 15px;
+  padding: 0 10px;
+  height: 50px;
   border-top: 1px solid var(--glass-border);
+  position: relative;
+  background: rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
+  box-sizing: border-box;
+  overflow: visible !important;
 }
-.ai-history-footer input {
+
+.ai-history-search-container {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.ai-history-search-icon {
+  font-size: 0.9rem;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 15;
+}
+
+.ai-history-search-icon:hover {
+  opacity: 1;
+}
+
+.ai-history-panel.collapsed .ai-history-search-icon:hover {
+  color: var(--accent-color);
+}
+
+#ai-history-search {
+  flex: 1;
   background: transparent;
   border: none;
   color: #fff;
   font-size: 0.85rem;
+  outline: none !important;
+  padding: 0 5px;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s ease;
+  opacity: 1;
   width: 100%;
-  outline: none;
 }
-.ai-history-footer input::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+#ai-history-search:focus {
+  outline: none !important;
 }
-.ai-history-panel.collapsed .ai-history-footer {
+
+/* Base collapsed state: hidden and transparent to fade out smoothly when panel collapses */
+.ai-history-panel.collapsed #ai-history-search {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  width: 0;
+  padding: 0;
+  margin: 0;
+  transition: none;
+}
+
+/* Floating Search for Collapsed Mode (Active States) */
+.ai-history-panel.collapsed #ai-history-search.show,
+.ai-history-panel.collapsed #ai-history-search.hide {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  margin-bottom: 10px;
+  width: 180px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 8px 15px;
+  height: 36px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  color: #fff !important;
+  z-index: 100;
+}
+.ai-history-panel.collapsed #ai-history-search.show::placeholder,
+.ai-history-panel.collapsed #ai-history-search.hide::placeholder {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.ai-history-panel.collapsed #ai-history-search.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  animation: floatingSearchShow 0.2s ease forwards;
+}
+
+.ai-history-panel.collapsed #ai-history-search.hide {
+  pointer-events: none;
+  animation: floatingSearchHide 0.2s ease forwards;
+}
+
+@keyframes floatingSearchShow {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatingSearchHide {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(10px); }
+}
+
+.ai-history-tag-filter-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ai-history-panel.collapsed .ai-history-tag-filter-wrapper {
+  /* No special transform needed here, just relative to footer center */
+}
+
+#ai-history-tag-btn {
+  font-size: 0.9rem;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#ai-history-tag-btn:hover,
+#ai-history-tag-btn.active {
+  opacity: 1;
+  color: var(--accent-color);
+}
+
+.ai-history-tag-popup {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 15px;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 8px;
+  z-index: 1000;
+  min-width: 160px;
+  max-width: 180px; /* Reduced from 200px to prevent overflowing the left edge of expanded panel */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   display: none;
+  flex-direction: column;
+  gap: 2px;
 }
+
+.ai-history-tag-popup.show {
+  display: flex;
+  animation: fadeIn 0.2s ease;
+}
+
+.ai-history-tag-popup.hide {
+  display: flex !important;
+  animation: popoverFadeOutDown 0.2s ease-in forwards;
+}
+
+@keyframes popoverFadeOutDown {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(10px); }
+}
+
+.tag-filter-item {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 8px 12px !important;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #f1f5f9;
+  cursor: pointer;
+  transition: 0.2s;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  user-select: none;
+  border: none !important;
+}
+
+.tag-filter-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tag-filter-item.active {
+  background: rgba(var(--accent-color-rgb, 56, 189, 248), 0.15) !important;
+}
+
+.tag-filter-item.all-tags {
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.ai-history-panel.collapsed .ai-history-tag-popup {
+  left: 0 !important;
+  right: auto !important;
+}
+
+.tag-filter-text {
+  flex: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  text-align: left !important;
+  line-height: 1.2 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.ai-tag-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(56, 189, 248, 0.05); /* Slightly lighter base */
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease, border-color 0.3s ease;
+  position: relative;
+  max-width: 150px; 
+  overflow: hidden;
+  opacity: 1 !important; /* Ensure the whole chip is instantly visible */
+}
+
+/* Base style when NOT active */
+.ai-tag-chip:not(.active) {
+  /* When re-rendered as non-active, it just shows the base background. 
+     Transition will only fire if the element persists. 
+     We rely on the base state here to avoid eyes hurting on first render. */
+  background-color: rgba(56, 189, 248, 0.05);
+}
+
+.ai-tag-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none; /* Let the chip handle click */
+  z-index: 1;
+}
+
+.ai-tag-chip.active {
+  background-color: var(--accent-color);
+  color: var(--accent-contrast, #fff);
+}
+
+/* Special animation for the "filling" effect ONLY when toggled */
+.ai-tag-chip.filling {
+  animation: tagFillBg 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.ai-tag-chip.emptying {
+  animation: tagEmptyBg 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes tagFillBg {
+  from { background-color: rgba(56, 189, 248, 0.05); color: var(--accent-color); }
+  to { background-color: var(--accent-color); color: var(--accent-contrast, #fff); }
+}
+@keyframes tagEmptyBg {
+  from { background-color: var(--accent-color); color: var(--accent-contrast, #fff); }
+  to { background-color: rgba(56, 189, 248, 0.05); color: var(--accent-color); }
+}
+.ai-tag-chip .delete-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  color: inherit;
+  opacity: 0.5;
+  flex-shrink: 0;
+  padding: 2px;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+.ai-tag-chip:hover .delete-tag {
+  opacity: 1;
+  background: rgba(0,0,0,0.1);
+}
+
 #ai-btn-new-chat {
   background: rgba(255, 255, 255, 0.1);
   width: 30px;
@@ -2501,16 +2789,16 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   border-color: var(--accent-color);
 }
 .ai-history-item {
-  padding: 8px 12px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
   transition: all 0.2s ease;
   font-size: 0.85rem;
-  border: 1px solid transparent;
   color: #fff;
   position: relative;
   transform-origin: center;
@@ -2548,6 +2836,19 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   padding-top: 8px !important;
   padding-bottom: 8px !important;
   border-width: 1px !important;
+}
+.ai-history-item.chat-exit {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-width: 0 !important;
+  pointer-events: none;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease,
+              margin-bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .ai-history-item.chat-moving {
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
@@ -2627,6 +2928,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   display: flex;
   flex-direction: column;
   background: transparent;
+  min-width: 0;
 }
 .ai-chat-header {
   padding: 0 25px;
@@ -2636,13 +2938,71 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   border-bottom: 1px solid var(--glass-border);
   height: 60px;
   box-sizing: border-box;
+  gap: 12px; /* Reduced from 15px to match .ai-actions gap */
 }
 .ai-status {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: 1;
-  margin-right: 25px;
+  flex: 1; /* Grows to take all available space */
+  min-width: 0;
+}
+.ai-header-tags-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 auto; /* Dynamic width based on content */
+  min-width: 0;
+  max-width: 50%; /* Max width 50% as requested */
+  position: relative;
+  justify-content: flex-end; /* Push content to the right within the wrapper */
+}
+.ai-chat-tags-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 5px 0;
+  scroll-behavior: smooth;
+  min-width: 0;
+  /* justify-content: flex-end here can hide content if overflowing in some browsers, 
+     but wrapper's justify-content handles alignment when not overflowing. */
+}
+.ai-chat-tags-container::-webkit-scrollbar {
+  display: none;
+}
+.tag-scroll-btn {
+  cursor: pointer;
+  color: var(--accent-color);
+  opacity: 0.5;
+  transition: 0.2s;
+  font-size: 0.9rem;
+  padding: 5px;
+  display: none;
+}
+.tag-scroll-btn.disabled {
+  opacity: 0.1 !important;
+  pointer-events: none;
+}
+.tag-scroll-btn:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+#ai-header-tag-add-btn {
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1.2rem;
+  color: var(--accent-color);
+  opacity: 0.8;
+  flex-shrink: 0;
+  padding: 5px;
+  margin-left: 2px;
+}
+#ai-header-tag-add-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+  opacity: 1;
+  filter: brightness(1.2);
 }
 .ai-title-input {
   background: transparent;
@@ -2656,11 +3016,16 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   transition: none;
   border-radius: 0;
   white-space: nowrap;
-  overflow: hidden;
+  overflow-x: auto;
+  scrollbar-width: none;
   text-overflow: ellipsis;
+}
+.ai-title-input::-webkit-scrollbar {
+  display: none;
 }
 .ai-title-input:hover,
 .ai-title-input:focus {
+  text-overflow: clip;
   background: transparent;
   padding-left: 0;
 }
@@ -2674,8 +3039,9 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   font-size: 1.2rem;
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px; /* Uniform 12px spacing for all header icons */
   position: relative;
+  flex-shrink: 0;
 }
 .ai-actions i {
   cursor: pointer;
@@ -2791,8 +3157,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   padding: 12px 18px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  align-items: center; gap: 10px;
   pointer-events: auto !important;
   border-radius: 12px;
 }
@@ -3104,8 +3469,9 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 }
 .ai-input-wrapper {
   display: flex;
-  gap: 12px;
+  flex-direction: row;
   align-items: stretch;
+  gap: 13px; /* 1.2: Increased by 5px from 8px */
   position: relative;
   z-index: 1;
 }
@@ -3145,6 +3511,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   font-size: 0.95rem;
   resize: none;
   height: 60px;
+  min-height: 60px;
   outline: none;
   transition: border-color 0.2s;
   box-sizing: border-box;
@@ -3164,7 +3531,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   opacity: 0.7;
 }
 .ai-chat-input-area.locked .ai-input-actions {
-  pointer-events: auto; /* Allow buttons to show disabled state/cursor if needed, or keep none */
+  pointer-events: auto;
 }
 .ai-chat-input-area.locked #ai-user-input {
   cursor: not-allowed;
@@ -3172,8 +3539,33 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .ai-input-actions {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch; /* 1.1: Buttons take full width */
+  gap: 8px;
+  flex-shrink: 0;
+  height: 60px; /* 1.1: Matches #ai-user-input height */
+}
+.ai-tags-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ai-tags-area::-webkit-scrollbar {
+  display: none;
+}
+.ai-chat-tags-container {
+  display: flex;
+  align-items: center;
   gap: 6px;
-  justify-content: flex-end;
+}
+.ai-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 #ai-send-btn,
 #ai-attach-btn {
@@ -3181,13 +3573,28 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   border: 1px solid var(--accent-color);
   color: var(--accent-color);
   width: 36px;
-  height: 27px;
+  height: 26px; /* 1.1: (60px - 8px gap) / 2 = 26px */
   border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+}
+#ai-send-btn:hover:not(:disabled),
+#ai-attach-btn:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.1);
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+#ai-send-btn:disabled,
+#ai-attach-btn:disabled {
+  opacity: 0.3 !important;
+  border-color: #94a3b8 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 #ai-send-btn:hover:not(:disabled),
 #ai-attach-btn:hover:not(:disabled) {
@@ -3360,6 +3767,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   color: #94a3b8;
   transition: all 0.3s ease;
 }
+.ai-refresh-icon.spin {
   pointer-events: none; 
 }
 #ai-check-btn:hover .ai-refresh-icon {

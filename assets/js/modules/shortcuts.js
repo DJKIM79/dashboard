@@ -2059,10 +2059,10 @@ const shortcutMod = {
     }
     if (window.shortcutSortable) window.shortcutSortable.destroy();
     window.shortcutSortable = new Sortable(c, {
-      animation: 150,
+      animation: 250, /* Increased from 150 for more noticeable movement */
+      easing: "cubic-bezier(0.4, 0, 0.2, 1)", /* Added smooth easing */
       ghostClass: "shortcut-ghost",
       chosenClass: "sortable-chosen",
-      forceFallback: false,
       onStart: () => {
         this.isDragging = true;
         c.classList.add("sorting-active");

@@ -262,5 +262,9 @@
   "msgRestoreDesc": "(既存のデータがバックアップデータに置き換えられます)",
   "btnConfirmReset": "初期化",
   "msgAiConnLost": "サーバーとの接続が切断されました。",
-  "btnClose": "閉じる"
+  "btnClose": "閉じる",
+  "btnAdd": "追加",
+  "tipAddTag": "タグを追加",
+  "tipSendMsg": "送信",
+  "aiNoTagFilter": "タグフィルターなし"
 }

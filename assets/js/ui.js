@@ -100,6 +100,7 @@ const ui = {
     if (type === "ai" && newState === true) {
       const input = document.getElementById("ai-user-input");
       if (input) input.value = "";
+      if (window.ai && typeof window.ai.cleanupEmptyShell === "function") window.ai.cleanupEmptyShell();
     }
     this.applyVisibility();
     if (type === "ai" && !newState) {
@@ -125,9 +126,10 @@ const ui = {
     if (delItem) delItem.style.display = "none";
     if (hideItem) hideItem.style.display = "block";
     if (type === "shortcut") {
-      if (editItem) editItem.style.display = "block";
-      if (delItem) delItem.style.display = "block";
-      if (hideItem) hideItem.style.display = "none";
+      if (addItem) addItem.style.display = "block";
+      if (editItem) editItem.style.display = id !== undefined ? "block" : "none";
+      if (delItem) delItem.style.display = id !== undefined ? "block" : "none";
+      if (hideItem) hideItem.style.display = "block";
     } else if (type === "weather") {
       if (addItem) addItem.style.display = "block";
       if (delItem) delItem.style.display = "block";
@@ -135,9 +137,9 @@ const ui = {
         editItem.style.display = "block";
       }
     } else if (["memo", "noti"].includes(type)) {
+      if (addItem) addItem.style.display = "block";
+      if (editItem) editItem.style.display = id ? "block" : "none";
       if (delItem) delItem.style.display = id ? "block" : "none";
-      if (addItem) addItem.style.display = "none";
-      if (editItem) editItem.style.display = "none";
     }
     menu.style.display = "block";
     let x = e.pageX || e.touches?.[0].pageX;

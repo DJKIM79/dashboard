@@ -259,5 +259,9 @@
   "msgRestoreDesc": "(Bestehende Daten werden durch das Backup ersetzt)",
   "btnConfirmReset": "Zurücksetzen",
   "msgAiConnLost": "Verbindung zum Server verloren.",
-  "btnClose": "Schließen"
+  "btnClose": "Schließen",
+  "btnAdd": "Hinzufügen",
+  "tipAddTag": "Tag hinzufügen",
+  "tipSendMsg": "Nachricht senden",
+  "aiNoTagFilter": "Kein Tag-Filter"
 }

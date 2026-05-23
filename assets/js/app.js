@@ -150,6 +150,12 @@ const app = {
         const input = document.getElementById("citySearchInput");
         if (input) input.focus();
       }, 100);
+    } else if (type === "memo") {
+      memo.openModal();
+    } else if (type === "noti") {
+      noti.openModal();
+    } else if (type === "shortcut") {
+      shortcutMod.openModal();
     }
   },
   editCurrentItem() {

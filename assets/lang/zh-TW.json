@@ -262,5 +262,9 @@
   "msgRestoreDesc": "(現有資料將被備份資料替換)",
   "btnConfirmReset": "重置",
   "msgAiConnLost": "與伺服器的連線已斷開。",
-  "btnClose": "關閉"
+  "btnClose": "關閉",
+  "btnAdd": "添加",
+  "tipAddTag": "新增標籤",
+  "tipSendMsg": "發送",
+  "aiNoTagFilter": "無標籤過濾"
 }
