@@ -50,14 +50,11 @@ const memo = {
     }
     
     const modalContent = document.querySelector("#memoModal .modal-content");
-    if (modalContent) {
-        modalContent.style.setProperty("transition", "none", "important");
-    }
     
     // Set individual size or default
     const defaultContentH = "350px";
     
-    let targetContentW = ""; // Default to empty (CSS 100% will take over)
+    let targetContentW = ""; // Default (will use CSS min-width)
     let targetContentH = defaultContentH;
 
     if (m && m.width && m.height) {
@@ -67,17 +64,18 @@ const memo = {
         if (!String(targetContentH).includes("px") && !String(targetContentH).includes("%")) targetContentH += "px";
     }
 
-    // Apply dimensions to the children so the parent (fit-content) follows them
+    // Apply dimensions to the children
     contentArea.style.width = targetContentW || "100%";
     contentArea.style.height = targetContentH;
     previewArea.style.width = targetContentW || "100%";
     previewArea.style.height = targetContentH;
     
-    // Clear any fixed width on the modal content to restore dynamic resizing behavior
+    // Clear parent width so fit-content takes over child's size instantly
     if (modalContent) {
         modalContent.style.width = "";
     }
     
+    // Force a reflow for safety
     if (modalContent) void modalContent.offsetWidth;
 
     const modalTitle = document.getElementById("memoModalTitle");
@@ -90,12 +88,6 @@ const memo = {
     if (d) d.style.display = id ? "block" : "none";
     utils.closeModal("settingModal");
     utils.openModal("memoModal");
-    
-    setTimeout(() => {
-        if (modalContent) {
-            modalContent.style.removeProperty("transition");
-        }
-    }, 500);
     
     this.initTablePicker();
     setTimeout(() => {

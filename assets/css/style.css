@@ -4090,7 +4090,7 @@ body.tutorial-closing .driver-active-element {
   border-radius: 20px;
   background: #1e293b;
   overflow: hidden;
-  transition: width 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 #memoTitle {
