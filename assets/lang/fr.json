@@ -285,5 +285,6 @@
   "tipViewPreview": "Basculer l'aperçu",
   "tipViewSource": "Basculer la vue source",
   "modalTableEditor": "Éditeur de tableau",
-  "btnInsertTable": "Insérer un tableau"
+  "btnInsertTable": "Insérer un tableau",
+  "lblSave": "Enregistrer"
 }

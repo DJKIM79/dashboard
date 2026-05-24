@@ -292,5 +292,6 @@
   "tipViewPreview": "Toggle Preview",
   "tipViewSource": "Toggle Source View",
   "modalTableEditor": "Table Editor",
-  "btnInsertTable": "Insert Table"
+  "btnInsertTable": "Insert Table",
+  "lblSave": "Save"
 }

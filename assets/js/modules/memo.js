@@ -84,7 +84,11 @@ const memo = {
     }
     
     const sBtn = document.getElementById("memoSaveBtn");
-    if (sBtn) sBtn.innerText = id ? (T.btnEdit || "수정") : (T.btnSaveMemo || "추가");
+    if (sBtn) {
+        sBtn.innerText = id ? (T.lblSave || "저장") : (T.btnSaveMemo || "추가");
+        // Hide button when editing, use real-time saving instead
+        sBtn.style.display = id ? "none" : "block";
+    }
     if (d) d.style.display = id ? "block" : "none";
     utils.closeModal("settingModal");
     utils.openModal("memoModal");
@@ -97,6 +101,48 @@ const memo = {
             document.getElementById("memoTitle").focus();
         }
     }, 50);
+
+    // Setup real-time saving for existing memo
+    if (id) {
+        const titleInput = document.getElementById("memoTitle");
+        const contentInput = document.getElementById("memoContent");
+        const saveHandler = () => this.autoSave();
+        titleInput.oninput = saveHandler;
+        contentInput.oninput = saveHandler;
+    } else {
+        document.getElementById("memoTitle").oninput = null;
+        document.getElementById("memoContent").oninput = (e) => this.handleInput(e);
+    }
+  },
+  autoSave() {
+    if (!window.currentEditMemoId) return;
+    const t = document.getElementById("memoTitle").value,
+      contentArea = document.getElementById("memoContent"),
+      previewArea = document.getElementById("memoPreview"),
+      c = contentArea.value;
+    
+    if (!t) return; // Don't save if title is empty
+    
+    const isPreview = previewArea.style.display === "block";
+    const w = isPreview ? previewArea.style.width : contentArea.style.width;
+    const h = isPreview ? previewArea.style.height : contentArea.style.height;
+
+    const idx = this.items.findIndex((x) => x.id == window.currentEditMemoId);
+    if (idx !== -1) {
+        this.items[idx] = {
+            ...this.items[idx],
+            title: t,
+            content: c,
+            width: w,
+            height: h
+        };
+        window.memos = this.items;
+        this.render();
+        utils.saveData();
+    }
+    
+    // Also update preview if active
+    this.handleInput();
   },
   add() {
     const t = document.getElementById("memoTitle").value,

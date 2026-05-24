@@ -1240,9 +1240,9 @@
           onkeypress="event.key === 'Enter' && addShortcut()"
         />
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
-          <div id="iconPreview" onclick="shortcutMod.toggleIconPicker()" data-i18n-title="tipIconList" title="아이콘 목록에서 선택">
+          <button id="iconPreview" class="icon-upload-btn" onclick="shortcutMod.toggleIconPicker()" data-i18n-title="tipIconList" title="아이콘 목록에서 선택">
             <i class="fas fa-icons"></i>
-          </div>
+          </button>
           <input
             type="text"
             id="siteIcon"
@@ -1490,9 +1490,9 @@
               <div class="memo-dropdown-item header-1" onclick="memo.applyFormat('# ')"><span data-i18n="lblHeader">제목</span> 1</div>
               <div class="memo-dropdown-item header-2" onclick="memo.applyFormat('## ')"><span data-i18n="lblHeader">제목</span> 2</div>
               <div class="memo-dropdown-item header-3" onclick="memo.applyFormat('### ')"><span data-i18n="lblHeader">제목</span> 3</div>
-              <div class="memo-dropdown-item" onclick="memo.applyFormat('#### ')"><span data-i18n="lblHeader">제목</span> 4</div>
-              <div class="memo-dropdown-item" onclick="memo.applyFormat('##### ')"><span data-i18n="lblHeader">제목</span> 5</div>
-              <div class="memo-dropdown-item" onclick="memo.applyFormat('###### ')"><span data-i18n="lblHeader">제목</span> 6</div>
+              <div class="memo-dropdown-item header-4" onclick="memo.applyFormat('#### ')"><span data-i18n="lblHeader">제목</span> 4</div>
+              <div class="memo-dropdown-item header-5" onclick="memo.applyFormat('##### ')"><span data-i18n="lblHeader">제목</span> 5</div>
+              <div class="memo-dropdown-item header-6" onclick="memo.applyFormat('###### ')"><span data-i18n="lblHeader">제목</span> 6</div>
             </div>
           </div>
           <div class="memo-toolbar-separator"></div>

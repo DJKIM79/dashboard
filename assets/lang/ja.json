@@ -288,5 +288,6 @@
   "tipViewPreview": "プレビューの切り替え",
   "tipViewSource": "ソース表示の切り替え",
   "modalTableEditor": "テーブルエディター",
-  "btnInsertTable": "テーブルを挿入"
+  "btnInsertTable": "テーブルを挿入",
+  "lblSave": "保存"
 }

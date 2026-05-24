@@ -285,5 +285,6 @@
   "tipViewPreview": "Vorschau umschalten",
   "tipViewSource": "Quellansicht umschalten",
   "modalTableEditor": "Tabellen-Editor",
-  "btnInsertTable": "Tabelle einfügen"
+  "btnInsertTable": "Tabelle einfügen",
+  "lblSave": "Speichern"
 }

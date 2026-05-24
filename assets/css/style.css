@@ -4085,7 +4085,7 @@ body.tutorial-closing .driver-active-element {
 /* Memo Modal Dimensions & Resizing */
 #memoModal .modal-content {
   width: fit-content;
-  min-width: 440px;
+  min-width: 500px;
   max-width: 95vw;
   border-radius: 20px;
   background: #1e293b;
@@ -4116,7 +4116,7 @@ body.tutorial-closing .driver-active-element {
 
 #memoContent, #memoPreview {
   width: 100%;
-  min-width: 400px;
+  min-width: 450px;
   height: 350px;
   min-height: 100px;
   padding: 15px;
@@ -4182,6 +4182,8 @@ body.tutorial-closing .driver-active-element {
   transition: all 0.2s;
   color: #94a3b8;
   font-size: 1.1rem;
+  padding: 0;
+  overflow: hidden;
 }
 #iconPreview:hover, .icon-upload-btn:hover {
   border-color: var(--accent-color);
@@ -4305,10 +4307,10 @@ body.tutorial-closing .driver-active-element {
 .memo-toolbar {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 3px; /* Reduced from 5px */
   margin-bottom: 10px;
   background: rgba(255, 255, 255, 0.05);
-  padding: 6px 10px;
+  padding: 5px 8px; /* Reduced padding */
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   width: 100%;
@@ -4318,7 +4320,7 @@ body.tutorial-closing .driver-active-element {
   background: transparent;
   border: none;
   color: #94a3b8;
-  padding: 6px 10px;
+  padding: 6px 8px; /* Reduced from 10px */
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -4480,3 +4482,43 @@ body.tutorial-closing .driver-active-element {
     gap: 10px;
     padding: 15px 30px 25px 30px;
 }
+
+/* Global Scrollbar Hiding */
+.ai-chat-messages,
+.ai-history-list,
+.ai-tags-area,
+.ai-chat-tags-container,
+#ai-user-input,
+.weather-popup,
+.city-results,
+.popup-list-area,
+#search-engine-popup,
+#ai-model-select-popup,
+#citySearchResults,
+.location-list {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.ai-chat-messages::-webkit-scrollbar,
+.ai-history-list::-webkit-scrollbar,
+.ai-tags-area::-webkit-scrollbar,
+.ai-chat-tags-container::-webkit-scrollbar,
+#ai-user-input::-webkit-scrollbar,
+.weather-popup::-webkit-scrollbar,
+.city-results::-webkit-scrollbar,
+.popup-list-area::-webkit-scrollbar,
+#search-engine-popup::-webkit-scrollbar,
+#ai-model-select-popup::-webkit-scrollbar,
+#citySearchResults::-webkit-scrollbar,
+.location-list::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Memo Header Preview Sizes in Dropdown */
+.memo-dropdown-item.header-1 { font-size: 1.4rem; font-weight: 800; color: #fff; }
+.memo-dropdown-item.header-2 { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; }
+.memo-dropdown-item.header-3 { font-size: 1.15rem; font-weight: 700; color: #e2e8f0; }
+.memo-dropdown-item.header-4 { font-size: 1.05rem; font-weight: 600; color: #cbd5e1; }
+.memo-dropdown-item.header-5 { font-size: 0.95rem; font-weight: 600; color: #94a3b8; }
+.memo-dropdown-item.header-6 { font-size: 0.85rem; font-weight: 600; color: #64748b; }

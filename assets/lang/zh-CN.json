@@ -288,5 +288,6 @@
   "tipViewPreview": "切换预览",
   "tipViewSource": "切换源码视图",
   "modalTableEditor": "表格编辑器",
-  "btnInsertTable": "插入表格"
+  "btnInsertTable": "插入表格",
+  "lblSave": "保存"
 }

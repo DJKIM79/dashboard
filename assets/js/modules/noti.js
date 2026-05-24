@@ -437,10 +437,94 @@ const noti = {
       ? T.modalNotiEdit
       : T.modalNotiAdd;
     sBtn.innerText = id ? T.btnEditNoti : T.btnAddNoti;
+    // Hide button when editing, use real-time saving instead
+    sBtn.style.display = id ? "none" : "block";
+    
     if (dBtn) dBtn.style.display = id ? "block" : "none";
     utils.closeModal("settingModal");
     utils.openModal("notiModal");
     setTimeout(() => document.getElementById("notiTitle").focus(), 50);
+
+    // Setup real-time saving for existing alarm
+    if (id) {
+        const inputs = [
+            document.getElementById("notiTitle"),
+            document.getElementById("notiDesc"),
+            document.getElementById("notiHour"),
+            document.getElementById("notiMin"),
+            document.getElementById("notiDate"),
+            document.getElementById("isRepeat"),
+            document.getElementById("repeatEndDate")
+        ];
+        const saveHandler = () => this.autoSave();
+        inputs.forEach(el => {
+            if (el.type === "checkbox") el.onchange = saveHandler;
+            else el.oninput = saveHandler;
+        });
+        
+        // Custom handling for checkboxes that don't trigger oninput
+        document.querySelectorAll('input[name="repeatMonth"], input[name="weekSpecific"], input[name="repeatDay"]').forEach(el => {
+            el.onchange = saveHandler;
+        });
+    } else {
+        // Clean up listeners for new alarm
+        const inputs = [
+            document.getElementById("notiTitle"),
+            document.getElementById("notiDesc"),
+            document.getElementById("notiHour"),
+            document.getElementById("notiMin"),
+            document.getElementById("notiDate"),
+            document.getElementById("isRepeat"),
+            document.getElementById("repeatEndDate")
+        ];
+        inputs.forEach(el => {
+            el.oninput = null;
+            el.onchange = null;
+        });
+        document.querySelectorAll('input[name="repeatMonth"], input[name="weekSpecific"], input[name="repeatDay"]').forEach(el => {
+            el.onchange = null;
+        });
+    }
+  },
+  autoSave() {
+    if (!window.currentEditNotiId) return;
+    const t = document.getElementById("notiTitle").value;
+    if (!t) return; // Don't save if title is empty
+    
+    const h = document.getElementById("notiHour").value,
+      m = document.getElementById("notiMin").value,
+      r = document.getElementById("isRepeat").checked,
+      dt = document.getElementById("notiDate").value;
+    const rawEndDate = document.getElementById("repeatEndDate").value;
+    
+    const repeatRule = {
+        years: this.selectedRepeatYears,
+        months: Array.from(document.querySelectorAll('input[name="repeatMonth"]:checked')).map(el => parseInt(el.value)),
+        weekSpecific: Array.from(document.querySelectorAll('input[name="weekSpecific"]:checked')).map(el => parseInt(el.value)),
+        days: Array.from(document.querySelectorAll('input[name="repeatDay"]:checked')).map(el => parseInt(el.value)),
+        endDate: (rawEndDate === "미지정" || rawEndDate === (window.i18n ? i18n.get("lblNotSet") : "미지정")) ? "" : rawEndDate
+    };
+    
+    const days = repeatRule.days.map(String);
+    const data = {
+        id: window.currentEditNotiId,
+        title: t,
+        desc: document.getElementById("notiDesc").value,
+        time: `${h}:${m}`,
+        isRepeat: r,
+        repeatRule: r ? repeatRule : null,
+        days: r ? days : [],
+        date: dt,
+        createdDate: this.items.find(x => x.id === window.currentEditNotiId)?.createdDate || dt
+    };
+
+    const idx = this.items.findIndex((x) => x.id == window.currentEditNotiId);
+    if (idx !== -1) {
+        this.items[idx] = data;
+        window.notifications = this.items;
+        this.render();
+        utils.saveData();
+    }
   },
   add() {
     this.updateSelectedRepeatYears();

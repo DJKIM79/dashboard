@@ -275,7 +275,7 @@
   "tipItalic": "傾斜",
   "tipStrike": "刪除線",
   "tipListFormat": "列表格式",
-  "tipBulletList": "項目符号列表",
+  "tipBulletList": "項目符號列表",
   "tipNumList": "編號列表",
   "tipChecklist": "核取方塊列表",
   "tipInsertFormat": "插入",
@@ -288,5 +288,6 @@
   "tipViewPreview": "切換預覽",
   "tipViewSource": "切換源碼視圖",
   "modalTableEditor": "表格編輯器",
-  "btnInsertTable": "插入表格"
+  "btnInsertTable": "插入表格",
+  "lblSave": "儲存"
 }
