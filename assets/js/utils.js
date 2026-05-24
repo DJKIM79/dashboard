@@ -170,8 +170,14 @@ const utils = {
     const wrap = document.getElementById("day-selector-wrap");
     const dateInput = document.getElementById("notiDate");
     if (wrap) {
-      if (s) wrap.classList.add("show");
-      else wrap.classList.remove("show");
+      if (!s) {
+        wrap.style.transition = "none";
+        wrap.classList.remove("show");
+        void wrap.offsetHeight; // force reflow
+        wrap.style.transition = "";
+      } else {
+        wrap.classList.add("show");
+      }
     }
     if (dateInput) {
       dateInput.style.opacity = s ? "0.3" : "1";
@@ -257,6 +263,74 @@ const utils = {
       document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
     }
     location.reload();
+  },
+  renderMarkdown(text) {
+    if (!text) return "";
+    let html = text.replace(/[<>]/g, (c) => (c === "<" ? "&lt;" : "&gt;"));
+
+    // Bold, Italic, Strikethrough
+    html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
+    html = html.replace(/~~(.*?)~~/g, "<del>$1</del>");
+
+    // Code
+    html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+
+    // Colors
+    html = html.replace(/\{color:(.*?)\}\((.*?)\)/g, "<span style=\"color:$1\">$2</span>");
+
+    // Headings
+    html = html.replace(/^###### (.*$)/gim, "<h6>$1</h6>");
+    html = html.replace(/^##### (.*$)/gim, "<h5>$1</h5>");
+    html = html.replace(/^#### (.*$)/gim, "<h4>$1</h4>");
+    html = html.replace(/^### (.*$)/gim, "<h3>$1</h3>");
+    html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
+    html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
+
+    // Links
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="md-link">$1</a>');
+
+    // Blockquotes (Matches escaped &gt; from earlier replacement, allows leading spaces)
+    html = html.replace(/^\s*&gt; ?(.*$)/gim, "<blockquote>$1</blockquote>");
+    html = html.replace(/<\/blockquote>(\r?\n)<blockquote>/g, "$1");
+
+    // HR
+    html = html.replace(/^\s*---$/gim, "<hr>");
+
+    // Checkboxes
+    html = html.replace(/^-\s+\[ \]\s+(.*$)/gim, '<li class="task-list-item"><input type="checkbox"> $1</li>');
+    html = html.replace(/^-\s+\[x\]\s+(.*$)/gim, '<li class="task-list-item"><input type="checkbox" checked> $1</li>');
+
+    // Unordered Lists
+    html = html.replace(/^\s*-\s+(?!\[)(.*$)/gim, "<ul><li>$1</li></ul>");
+    html = html.replace(/<\/ul>\n<ul>/g, "\n");
+
+    // Ordered Lists
+    html = html.replace(/^\s*\d+\.\s+(.*$)/gim, "<ol><li>$1</li></ol>");
+    html = html.replace(/<\/ol>\n<ol>/g, "\n");
+    
+    // Tables
+    const tableRegex = /^\|(?:.*\|)+\r?\n\|(?:[-: ]+[-| :]*)\|\r?\n(?:\|(?:.*\|)+(?:\r?\n|$))+/gm;
+    html = html.replace(tableRegex, (match) => {
+        const rows = match.trim().split(/\r?\n/);
+        const header = rows[0].split('|').slice(1, -1).map(cell => `<th>${cell.trim()}</th>`).join('');
+        
+        let body = '';
+        for (let i = 2; i < rows.length; i++) {
+            const cells = rows[i].split('|').slice(1, -1).map(cell => `<td>${cell.trim()}</td>`).join('');
+            body += `<tr>${cells}</tr>`;
+        }
+        
+        return `<div class="md-table-wrap"><table><thead><tr>${header}</tr></thead><tbody>${body}</tbody></table></div>`;
+    });
+
+    // Handle newlines but skip if already inside some block elements
+    html = html.split('\n').map(line => {
+      if (line.match(/^<(ul|ol|li|h|blockquote|div|table|thead|tbody|tr|th|td|hr)/i)) return line;
+      return line + "<br />";
+    }).join('\n');
+    
+    return html;
   },
 };
 window.utils = utils;

@@ -1240,27 +1240,26 @@
           onkeypress="event.key === 'Enter' && addShortcut()"
         />
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
-          <div id="iconPreview" style="width: 42px; height: 42px; background: rgba(255,255,255,0.05); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s;" onclick="shortcutMod.toggleIconPicker()" data-i18n-title="tipIconList" title="아이콘 목록에서 선택">
-            <i class="fas fa-icons" style="opacity: 0.7; font-size: 1.1rem;"></i>
+          <div id="iconPreview" onclick="shortcutMod.toggleIconPicker()" data-i18n-title="tipIconList" title="아이콘 목록에서 선택">
+            <i class="fas fa-icons"></i>
           </div>
           <input
             type="text"
             id="siteIcon"
             data-i18n-ph="lblIcon"
             placeholder="아이콘 (URL 또는 FontAwesome)"
-            style="margin-bottom: 0; flex: 1; height: 42px;"
             oninput="shortcutMod.updatePreview()"
             onkeypress="event.key === 'Enter' && addShortcut()"
           />
           <input type="file" id="iconUpload" style="display: none;" accept="image/*" onchange="shortcutMod.handleFileUpload(event)">
-          <button onclick="document.getElementById('iconUpload').click()" style="width: 42px; height: 42px; padding: 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" data-i18n-title="tipIconUpload" title="내 컴퓨터에서 이미지 업로드">
-            <i class="fas fa-image" style="font-size: 1.1rem; opacity: 0.7; color: #f1f5f9;"></i>
+          <button class="icon-upload-btn" onclick="document.getElementById('iconUpload').click()" data-i18n-title="tipIconUpload" title="내 컴퓨터에서 이미지 업로드">
+            <i class="fas fa-image"></i>
           </button>
         </div>
         <div id="iconPickerArea">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 0 5px;">
-            <i class="fas fa-search" style="font-size: 0.85rem; opacity: 0.4;"></i>
-            <input type="text" id="iconSearchInput" data-i18n-ph="iconSearchPh" placeholder="아이콘 검색..." oninput="shortcutMod.filterIcons(this.value)">
+          <div class="icon-search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="iconSearchInput" data-i18n-ph="iconSearchPh" placeholder="아이콘 검색..." oninput="shortcutMod.filterIcons(this.value)" />
           </div>
           <div id="iconGrid">
             <!-- Icons will be rendered here -->
@@ -1466,21 +1465,116 @@
     <div
       class="modal"
       id="memoModal"
-      onclick="event.target == this && closeModal('memoModal')"
+      onmousedown="this._shouldIgnoreClose = (event.target !== this)"
+      onclick="if(!this._shouldIgnoreClose && event.target === this) closeModal('memoModal')"
     >
       <div class="modal-content">
+        <div class="modal-header-actions">
+          <button class="header-action-btn" onclick="memo.exportToMd()" data-i18n-title="tipExportMd">
+            <i class="fas fa-file-export"></i>
+          </button>
+        </div>
         <h3 id="memoModalTitle" data-i18n="modalMemoAdd">메모 추가</h3>
         <input
           type="text"
           id="memoTitle"
           data-i18n-ph="memoTitle"
           placeholder="메모 제목"
-        /><textarea
+        />
+        <div class="memo-toolbar">
+          <div class="memo-toolbar-group">
+            <button class="memo-toolbar-btn" onclick="memo.toggleDropdown('headerDropdown', event)" data-i18n-title="tipHeading">
+              <i class="fas fa-heading"></i>
+            </button>
+            <div id="headerDropdown" class="memo-dropdown">
+              <div class="memo-dropdown-item header-1" onclick="memo.applyFormat('# ')"><span data-i18n="lblHeader">제목</span> 1</div>
+              <div class="memo-dropdown-item header-2" onclick="memo.applyFormat('## ')"><span data-i18n="lblHeader">제목</span> 2</div>
+              <div class="memo-dropdown-item header-3" onclick="memo.applyFormat('### ')"><span data-i18n="lblHeader">제목</span> 3</div>
+              <div class="memo-dropdown-item" onclick="memo.applyFormat('#### ')"><span data-i18n="lblHeader">제목</span> 4</div>
+              <div class="memo-dropdown-item" onclick="memo.applyFormat('##### ')"><span data-i18n="lblHeader">제목</span> 5</div>
+              <div class="memo-dropdown-item" onclick="memo.applyFormat('###### ')"><span data-i18n="lblHeader">제목</span> 6</div>
+            </div>
+          </div>
+          <div class="memo-toolbar-separator"></div>
+          <div class="memo-toolbar-group">
+            <button class="memo-toolbar-btn" onclick="memo.toggleDropdown('textDropdown', event)" data-i18n-title="tipTextFormat">
+              <i class="fas fa-bold"></i>
+            </button>
+            <div id="textDropdown" class="memo-dropdown">
+              <div class="memo-dropdown-item" onclick="memo.applyFormat('**', '**')"><i class="fas fa-bold"></i> <span data-i18n="tipBold">Bold</span></div>
+              <div class="memo-dropdown-item" onclick="memo.applyFormat('*', '*')"><i class="fas fa-italic"></i> <span data-i18n="tipItalic">Italic</span></div>
+              <div class="memo-dropdown-item" onclick="memo.applyFormat('~~', '~~')"><i class="fas fa-strikethrough"></i> <span data-i18n="tipStrike">Strike</span></div>
+            </div>
+          </div>
+          <div class="memo-toolbar-separator"></div>
+          <div class="memo-toolbar-group">
+            <button class="memo-toolbar-btn" onclick="memo.toggleDropdown('listDropdown', event)" data-i18n-title="tipListFormat">
+              <i class="fas fa-list-ul"></i>
+            </button>
+            <div id="listDropdown" class="memo-dropdown">
+              <div class="memo-dropdown-item" onclick="memo.applyFormat('- ')"><i class="fas fa-list-ul"></i> <span data-i18n="tipBulletList">Bullet List</span></div>
+              <div class="memo-dropdown-item" onclick="memo.applyFormat('1. ')"><i class="fas fa-list-ol"></i> <span data-i18n="tipNumList">Numbered List</span></div>
+              <div class="memo-dropdown-item" onclick="memo.applyFormat('- [ ] ')"><i class="fas fa-tasks"></i> <span data-i18n="tipChecklist">Checklist</span></div>
+            </div>
+          </div>
+          <div class="memo-toolbar-separator"></div>
+          <div class="memo-toolbar-group">
+            <button class="memo-toolbar-btn" onclick="memo.toggleDropdown('insertDropdown', event)" data-i18n-title="tipInsertFormat">
+              <i class="fas fa-quote-right"></i>
+            </button>
+            <div id="insertDropdown" class="memo-dropdown">
+              <div class="memo-dropdown-item" onclick="memo.addLink()"><i class="fas fa-link"></i> <span data-i18n="lblLink">Link</span></div>
+              <div class="memo-dropdown-item" onclick="memo.applyFormat('> ')"><i class="fas fa-quote-left"></i> <span data-i18n="tipQuote">Quote</span></div>
+              <div class="memo-dropdown-item" onclick="memo.applyFormat('`', '`')"><i class="fas fa-code"></i> <span data-i18n="tipCode">Code</span></div>
+            </div>
+          </div>
+          <div class="memo-toolbar-separator"></div>
+          <div class="memo-toolbar-group">
+            <button class="memo-toolbar-btn" onclick="memo.toggleDropdown('tableDropdown', event)" data-i18n-title="tipTable">
+              <i class="fas fa-table"></i>
+            </button>
+            <div id="tableDropdown" class="memo-dropdown" style="min-width: auto; padding: 10px;">
+              <div class="table-picker-info" id="tablePickerInfo">2 x 1</div>
+              <div id="tablePickerGrid" class="table-picker-grid" onmouseleave="memo.resetTablePicker()">
+                <!-- Grid items generated by JS -->
+              </div>
+            </div>
+          </div>
+          <div class="memo-toolbar-separator"></div>
+          <div class="memo-toolbar-group">
+            <button class="memo-toolbar-btn" onclick="memo.toggleDropdown('colorDropdown', event)" data-i18n-title="tipTextColor">
+              <i class="fas fa-palette"></i>
+            </button>
+            <div id="colorDropdown" class="memo-dropdown" style="min-width: 150px;">
+              <div class="color-grid">
+                <div class="color-swatch-btn" style="background: #ef4444;" onclick="memo.applyColor('#ef4444')" title="Red"></div>
+                <div class="color-swatch-btn" style="background: #f97316;" onclick="memo.applyColor('#f97316')" title="Orange"></div>
+                <div class="color-swatch-btn" style="background: #f59e0b;" onclick="memo.applyColor('#f59e0b')" title="Yellow"></div>
+                <div class="color-swatch-btn" style="background: #10b981;" onclick="memo.applyColor('#10b981')" title="Green"></div>
+                <div class="color-swatch-btn" style="background: #3b82f6;" onclick="memo.applyColor('#3b82f6')" title="Blue"></div>
+                <div class="color-swatch-btn" style="background: #6366f1;" onclick="memo.applyColor('#6366f1')" title="Indigo"></div>
+                <div class="color-swatch-btn" style="background: #8b5cf6;" onclick="memo.applyColor('#8b5cf6')" title="Purple"></div>
+                <div class="color-swatch-btn" style="background: #ec4899;" onclick="memo.applyColor('#ec4899')" title="Pink"></div>
+                <div class="color-swatch-btn" style="background: #94a3b8;" onclick="memo.applyColor('#94a3b8')" title="Gray"></div>
+                <div class="color-swatch-btn" style="background: #fff;" onclick="memo.applyColor('#fff')" title="White"></div>
+              </div>
+            </div>
+          </div>
+          <div class="memo-toolbar-separator"></div>
+          <button class="memo-toolbar-btn" onclick="memo.applyFormat('---\n')" data-i18n-title="tipHr"><i class="fas fa-minus"></i></button>
+          <div style="flex: 1;"></div>
+          <button id="memoToggleView" class="memo-toolbar-btn" onclick="memo.togglePreview()" data-i18n-title="tipViewPreview">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        <textarea
           id="memoContent"
           data-i18n-ph="memoContent"
           placeholder="메모 내용"
           rows="4"
+          oninput="memo.handleInput && memo.handleInput(event)"
         ></textarea>
+        <div id="memoPreview"></div>
         <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
           <button
             class="btn-save"
@@ -1532,6 +1626,32 @@
           <button class="intro-btn start" onclick="tutorial.startFromIntro()">
             <span data-i18n="introStart">튜토리얼 시작</span> <i class="fas fa-arrow-right"></i>
           </button>
+        </div>
+      </div>
+    </div>
+    <div id="tableEditorModal" class="modal" onmousedown="this._shouldIgnoreClose = (event.target !== this)" onclick="if(!this._shouldIgnoreClose && event.target === this) closeModal('tableEditorModal')">
+      <div class="modal-content table-editor-modal-content">
+        <div class="modal-header">
+          <h3 data-i18n="modalTableEditor">표 편집</h3>
+        </div>
+        <div class="table-editor-container">
+          <div style="width: 100%;">
+            <div id="tableEditorGrid" class="table-editor-grid"></div>
+          </div>
+        </div>
+        <div class="table-editor-actions">
+          <button class="btn-save" onclick="memo.insertTableFromEditor()" data-i18n="btnInsertTable">표 삽입</button>
+        </div>
+      </div>
+    </div>
+    <div id="customPromptModal" class="modal" onclick="event.target == this && closeModal('customPromptModal')">
+      <div class="modal-content" style="width: 350px; padding: 25px;">
+        <h3 id="customPromptTitle" style="text-align: center; color: var(--accent-color); margin-bottom: 20px;">링크 추가</h3>
+        <input type="text" id="customPromptInput1" placeholder="텍스트" style="width: 100%; box-sizing: border-box; margin-bottom: 10px;" />
+        <input type="text" id="customPromptInput2" placeholder="URL" style="width: 100%; box-sizing: border-box; margin-bottom: 15px;" />
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button class="btn-save" style="background: rgba(255,255,255,0.1); color: #fff; flex: 1;" onclick="closeModal('customPromptModal')">취소</button>
+          <button class="btn-save" id="customPromptConfirmBtn" style="flex: 1;">확인</button>
         </div>
       </div>
     </div>

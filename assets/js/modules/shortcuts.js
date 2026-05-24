@@ -2101,10 +2101,13 @@ const shortcutMod = {
     const dBtn = document.getElementById("linkDelBtn");
     if (dBtn) dBtn.style.display = isEdit ? "block" : "none";
     
-    // Reset picker
+    // Reset picker without animation
     const picker = document.getElementById("iconPickerArea");
     if (picker) {
+      picker.style.transition = "none";
       picker.classList.remove("show");
+      void picker.offsetHeight; // force reflow
+      picker.style.transition = "";
     }
     const searchInput = document.getElementById("iconSearchInput");
     if (searchInput) searchInput.value = "";
