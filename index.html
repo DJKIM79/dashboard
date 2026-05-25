@@ -1527,11 +1527,10 @@
               <i class="fas fa-quote-right"></i>
             </button>
             <div id="insertDropdown" class="memo-dropdown">
-              <div class="memo-dropdown-item" onclick="memo.addLink()"><i class="fas fa-link"></i> <span data-i18n="lblLink">Link</span></div>
               <div class="memo-dropdown-item" onclick="memo.applyFormat('> ')"><i class="fas fa-quote-left"></i> <span data-i18n="tipQuote">Quote</span></div>
               <div class="memo-dropdown-item" onclick="memo.applyFormat('`', '`')"><i class="fas fa-code"></i> <span data-i18n="tipCode">Code</span></div>
-            </div>
-          </div>
+              <div class="memo-dropdown-item" onclick="memo.addLink()"><i class="fas fa-link"></i> <span data-i18n="lblLink">Link</span></div>
+            </div>          </div>
           <div class="memo-toolbar-separator"></div>
           <div class="memo-toolbar-group">
             <button class="memo-toolbar-btn" onclick="memo.toggleDropdown('tableDropdown', event)" data-i18n-title="tipTable">
