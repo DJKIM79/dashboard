@@ -1737,6 +1737,7 @@ const ai = {
     
     div.dataset.id = chat.id;
     div.onclick = () => this.loadChat(chat.id);
+    div.oncontextmenu = (e) => ui.showContextMenu(e, "ai-chat", chat.id);
     
     // Add tooltip for last activity
     const lastTime = chat.updatedAt || chat.id;
@@ -1754,8 +1755,16 @@ const ai = {
     }
 
     const isDefaultTitle = this.isDefaultTitle(chat.title);
-    const trashIcon = isDefaultTitle ? "" : `<i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>`;
-    div.innerHTML = `<span>${this.getDisplayTitle(chat.title)}</span>${trashIcon}`;
+    const isLocked = chat.locked;
+    let icon = "";
+    if (!isDefaultTitle || isLocked) {
+      if (isLocked) {
+        icon = `<i class="fas fa-lock" onclick="ai.toggleLock(${chat.id}, event)"></i>`;
+      } else {
+        icon = `<i class="fas fa-trash-alt" onclick="ai.deleteChat(${chat.id}, event)"></i>`;
+      }
+    }
+    div.innerHTML = `<span>${this.getDisplayTitle(chat.title)}</span>${icon}`;
     return div;
   },
   renderHistory(searchTerm = "", updatedChatId = null) {
@@ -1837,6 +1846,26 @@ const ai = {
             existing.classList.toggle("other-model", isOther);
             existing.querySelector("span").innerText = this.getDisplayTitle(chat.title);
             
+            // Update icon if lock state changed or title state changed
+            const isDefaultTitle = this.isDefaultTitle(chat.title);
+            const isLocked = chat.locked;
+            let iconEl = existing.querySelector("i");
+            if (isDefaultTitle && !isLocked) {
+                if (iconEl) iconEl.remove();
+            } else {
+                if (!iconEl) {
+                    iconEl = document.createElement("i");
+                    existing.appendChild(iconEl);
+                }
+                if (isLocked) {
+                    iconEl.className = "fas fa-lock";
+                    iconEl.onclick = (e) => this.toggleLock(chat.id, e);
+                } else {
+                    iconEl.className = "fas fa-trash-alt";
+                    iconEl.onclick = (e) => this.deleteChat(chat.id, e);
+                }
+            }
+
             // Re-order if needed
             if (list.children[index] !== existing) {
                 list.insertBefore(existing, list.children[index]);
@@ -1999,6 +2028,78 @@ const ai = {
       }
     }
   },
+  toggleLock(id, e) {
+    if (e) e.stopPropagation();
+    const target = e ? e.target : null;
+    if (!target) {
+        // Fallback for context menu call
+        this.performToggleLock(id);
+        return;
+    }
+
+    const chat = this.chats.find(c => c.id === id) || (this._currentEmptyChat?.id === id ? this._currentEmptyChat : null);
+    if (!chat) return;
+
+    const isLocked = chat.locked;
+    const msg = isLocked ? "잠금 해제하시겠습니까?" : "잠금하시겠습니까?";
+    const btnText = isLocked ? "해제" : "잠금";
+
+    const html = `
+      <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; min-width: 120px;">
+        <span style="font-size: 0.85rem; white-space: nowrap; font-weight: 600; color: #f1f5f9;">${msg}</span>
+        <button class="btn-lock-confirm" onclick="ai.performToggleLock(${id})">${btnText}</button>
+      </div>
+    `;
+    utils.showValidationTip(target, html, "ai-lock-confirm", {
+      position: "right",
+      isHtml: true,
+      noAutoHide: true
+    });
+  },
+  performToggleLock(id) {
+    utils.hideValidationTip();
+    const chats = this.chats;
+    const chat = chats.find(c => c.id === id) || (this._currentEmptyChat?.id === id ? this._currentEmptyChat : null);
+    if (chat) {
+        chat.locked = !chat.locked;
+        this.chats = chats;
+        this.renderHistory();
+        this.updateModelDisplay();
+    }
+  },
+  exportChatFromCtx() {
+    const menu = document.getElementById("globalContextMenu");
+    const id = parseInt(menu.dataset.id);
+    if (id) this.exportChatToText(id);
+  },
+  toggleLockFromCtx() {
+    const menu = document.getElementById("globalContextMenu");
+    const id = parseInt(menu.dataset.id);
+    if (id) this.toggleLock(id);
+  },
+  addTagFromCtx() {
+    const menu = document.getElementById("globalContextMenu");
+    const id = parseInt(menu.dataset.id);
+    if (id) {
+        if (this.currentChatId !== id) {
+            this.loadChat(id);
+        }
+        this.openTagModal();
+    }
+  },
+  deleteChatFromCtx() {
+    const menu = document.getElementById("globalContextMenu");
+    const id = parseInt(menu.dataset.id);
+    if (id) {
+        const chat = this.chats.find(c => c.id === id);
+        if (chat && chat.locked) return;
+
+        const list = document.getElementById("ai-history-list");
+        const item = list?.querySelector(`.ai-history-item[data-id="${id}"]`);
+        const icon = item?.querySelector("i");
+        this.deleteChat(id, { target: icon || item, stopPropagation: () => {} });
+    }
+  },
   deleteChat(id, e) {
     if (e) e.stopPropagation();
     const target = e ? e.target : null;
@@ -2006,7 +2107,9 @@ const ai = {
 
     const chats = this.chats;
     const chat = chats.find(c => c.id === id) || (this._currentEmptyChat?.id === id ? this._currentEmptyChat : null);
-    
+
+    if (chat && chat.locked) return;
+
     const isDefaultTitle = chat ? this.isDefaultTitle(chat.title) : false;
     const hasRealMessages = chat ? chat.messages.some(m => m.role === "user" || m.role === "bot") : false;
 
@@ -2027,8 +2130,7 @@ const ai = {
       isHtml: true,
       noAutoHide: true
     });
-  },
-  performDeleteChat(id) {
+  },  performDeleteChat(id) {
     utils.hideValidationTip();
     const list = document.getElementById("ai-history-list");
     const item = list?.querySelector(`.ai-history-item[data-id="${id}"]`);

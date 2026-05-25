@@ -1,4 +1,4 @@
-<!-- 260525 Stable -->
+<!-- 260525 21:41 Stable -->
 <!doctype html>
 <html lang="ko">
   <head>
@@ -43,6 +43,14 @@
       
       <div id="ctx-hide" class="cm-hide" onclick="hideCurrentWidget()"><i class="fas fa-eye-slash cm-icon"></i><span data-i18n="cmHide">숨기기</span></div>
       <div id="ctx-del" class="cm-del" onclick="showDeleteConfirm()"><i class="fas fa-trash-alt cm-icon"></i><span data-i18n="cmDelete">삭제</span></div>
+
+      <!-- AI Chat Specific Items -->
+      <div id="ctx-ai-group" style="display: none;">
+        <div id="ctx-ai-export" class="cm-ai-export" onclick="ai.exportChatFromCtx()"><i class="fas fa-file-arrow-down cm-icon"></i><span data-i18n="cmAiExport">대화 내보내기</span></div>
+        <div id="ctx-ai-lock" class="cm-ai-lock" onclick="ai.toggleLockFromCtx()"><i class="fas fa-lock cm-icon"></i><span id="ctx-ai-lock-text" data-i18n="cmAiLock">대화 잠금</span></div>
+        <div id="ctx-ai-tag" class="cm-ai-tag" onclick="ai.addTagFromCtx()"><i class="fas fa-tag cm-icon"></i><span data-i18n="cmAiTag">태그 추가</span></div>
+        <div id="ctx-ai-del" class="cm-ai-del" onclick="ai.deleteChatFromCtx()"><i class="fas fa-trash-alt cm-icon"></i><span data-i18n="cmAiDelete">대화 삭제</span></div>
+      </div>
     </div>
     <div
       id="deleteConfirmModal"

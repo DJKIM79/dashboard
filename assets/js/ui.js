@@ -1,4 +1,4 @@
-// 260525 Stable
+// 260525 21:41 Stable
 const ui = {
   toggleFolder(id, event) {
     if (event) event.stopPropagation();
@@ -128,6 +128,7 @@ const ui = {
     const delColItem = document.getElementById("ctx-del-col");
     const rowGroup = document.getElementById("ctx-row-group");
     const colGroup = document.getElementById("ctx-col-group");
+    const aiGroup = document.getElementById("ctx-ai-group");
 
     if (addItem) addItem.style.display = "none";
     if (editItem) editItem.style.display = "none";
@@ -135,6 +136,7 @@ const ui = {
     if (hideItem) hideItem.style.display = "flex";
     if (rowGroup) rowGroup.style.display = "none";
     if (colGroup) colGroup.style.display = "none";
+    if (aiGroup) aiGroup.style.display = "none";
     if (addRowItem) addRowItem.style.display = "none";
     if (addColItem) addColItem.style.display = "none";
     if (delRowItem) delRowItem.style.display = "none";
@@ -187,6 +189,30 @@ const ui = {
 
         menu.dataset.r = id.r;
         menu.dataset.c = id.c;
+    } else if (type === "ai-chat") {
+      if (hideItem) hideItem.style.display = "none";
+      if (aiGroup) {
+        aiGroup.style.display = "block";
+        const chat = window.ai && ai.chats ? ai.chats.find(c => c.id === id) : null;
+        const isLocked = chat && chat.locked;
+        const lockIcon = document.querySelector("#ctx-ai-lock i");
+        const lockText = document.getElementById("ctx-ai-lock-text");
+        if (lockIcon) {
+          lockIcon.className = isLocked ? "fas fa-unlock cm-icon" : "fas fa-lock cm-icon";
+        }
+        if (lockText) {
+          const key = isLocked ? "cmAiUnlock" : "cmAiLock";
+          lockText.setAttribute("data-i18n", key);
+          if (window.i18n) lockText.innerText = i18n.get(key);
+          else lockText.innerText = isLocked ? "대화 잠금 해제" : "대화 잠금";
+        }
+        // Hide delete if locked
+        const delBtn = document.getElementById("ctx-ai-del");
+        if (delBtn) {
+          if (isLocked) delBtn.style.display = "none";
+          else delBtn.style.display = "flex";
+        }
+      }
     }    menu.style.display = "block";
     let x = e.pageX || e.touches?.[0].pageX;
     let y = e.pageY || e.touches?.[0].pageY;

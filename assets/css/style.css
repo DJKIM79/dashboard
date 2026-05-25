@@ -1,4 +1,4 @@
-/* 260525 Stable */
+/* 260525 21:41 Stable */
 @import url("https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&family=JetBrains+Mono:wght@500&display=swap");
 :root {
   --glass-bg: rgba(0, 0, 0, 0.45);
@@ -2719,13 +2719,23 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   display: none;
 }
 .ai-history-item.active i {
-  opacity: 0.6;
+  opacity: 0.8;
   pointer-events: auto;
 }
-.ai-history-item.active i:hover {
+.ai-history-item i:hover {
   opacity: 1 !important;
-  color: #ef4444 !important;
   transform: scale(1.1);
+}
+.ai-history-item i.fa-trash-alt:hover {
+  color: #ef4444 !important;
+}
+.ai-history-item i.fa-lock:hover,
+.ai-history-item i.fa-unlock:hover {
+  color: #60a5fa !important;
+}
+.ai-history-item i.fa-lock,
+.ai-history-item i.fa-unlock {
+  color: #3b82f6;
 }
 .ai-main-panel {
   flex: 1;
@@ -2946,7 +2956,8 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   --tip-bg: #22c55e; 
 }
 .ai-delete-confirm,
-.ai-file-delete-confirm {
+.ai-file-delete-confirm,
+.ai-lock-confirm {
   --tip-bg: #1e293b;
   background: var(--tip-bg);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -2958,7 +2969,8 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   border-radius: 12px;
 }
 .ai-delete-confirm .btn-del-confirm,
-.ai-file-delete-confirm .btn-del-confirm {
+.ai-file-delete-confirm .btn-del-confirm,
+.ai-lock-confirm .btn-lock-confirm {
   background: #ef4444;
   color: #fff;
   border: none;
@@ -2971,9 +2983,16 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   font-weight: 600;
   text-align: center;
 }
+.ai-lock-confirm .btn-lock-confirm {
+  background: #3b82f6;
+}
 .ai-delete-confirm .btn-del-confirm:hover,
 .ai-file-delete-confirm .btn-del-confirm:hover {
   background: #dc2626;
+  transform: scale(1.05);
+}
+.ai-lock-confirm .btn-lock-confirm:hover {
+  background: #2563eb;
   transform: scale(1.05);
 }
 .validation-tip.show {
@@ -3502,7 +3521,8 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   --tip-bg: #22c55e; 
 }
 .ai-delete-confirm,
-.ai-file-delete-confirm {
+.ai-file-delete-confirm,
+.ai-lock-confirm {
   --tip-bg: #334155;
   background: var(--tip-bg);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -4369,14 +4389,20 @@ body.tutorial-closing .driver-active-element {
   backdrop-filter: blur(15px);
   border: 1px solid var(--glass-border);
   border-radius: 12px;
-  padding: 0; /* Removed vertical padding so hover fills entire height */
+  padding: 0 1px; /* Added 1px horizontal padding */
   width: fit-content;
   min-width: auto; /* Allow complete dynamic shrinking */
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   overflow: hidden;
   white-space: nowrap;
-}.context-menu > div:not(.cm-group), .context-menu .cm-action {
-  padding: 10px 20px;
+}.context-menu > div:not(.cm-group):not(#ctx-ai-group), 
+.context-menu .cm-action,
+#ctx-ai-group > div {
+  padding: 10px 15px;
+  margin-left: -1px;
+  margin-right: -1px;
+  width: calc(100% + 2px);
+  box-sizing: border-box;
   font-size: 0.85rem;
   cursor: pointer;
   color: #fff;
@@ -4386,7 +4412,24 @@ body.tutorial-closing .driver-active-element {
   gap: 12px;
   font-weight: 500;
 }
-.context-menu > div:not(.cm-group):hover:not(.disabled), .context-menu .cm-action:hover:not(.disabled) { background: rgba(var(--accent-color-rgb, 56, 189, 248), 0.15) !important; color: var(--accent-color) !important; }
+#ctx-ai-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+.context-menu .cm-group {
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+  width: 100%;
+}
+.context-menu > div:not(.cm-group):not(#ctx-ai-group):hover:not(.disabled), 
+.context-menu .cm-action:hover:not(.disabled),
+#ctx-ai-group > div:hover:not(.disabled) { 
+  background: rgba(var(--accent-color-rgb, 56, 189, 248), 0.15) !important; 
+  color: var(--accent-color) !important; 
+}
 
 .cm-icon {
   width: 16px;
@@ -4406,6 +4449,9 @@ body.tutorial-closing .driver-active-element {
   flex: 1 1 auto; /* Allow items to scale naturally based on translated text length */
   justify-content: flex-start; /* Left align to keep icons in a vertical line */
   padding: 10px 15px; /* balanced for side-by-side */
+  margin-left: -1px;
+  margin-right: -1px;
+  width: calc(100% + 2px);
   white-space: nowrap; /* Ensure text dictates width */
 }
 .context-menu .disabled {  opacity: 0.3 !important;
@@ -4416,6 +4462,12 @@ body.tutorial-closing .driver-active-element {
 .cm-edit { color: #f59e0b !important; }
 .cm-hide { color: #3b82f6 !important; }
 .cm-del { color: #ef4444 !important; }
+
+/* AI Context Menu Colors */
+.cm-ai-export { color: #22c55e !important; }
+.cm-ai-lock { color: #3b82f6 !important; }
+.cm-ai-tag { color: #eab308 !important; }
+.cm-ai-del { color: #ef4444 !important; }
 
 .cm-table-icon {
   width: 20px;
