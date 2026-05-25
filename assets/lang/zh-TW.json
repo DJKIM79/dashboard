@@ -267,9 +267,10 @@
   "tipAddTag": "新增標籤",
   "tipSendMsg": "發送",
   "aiNoTagFilter": "無標籤過濾",
-  "tipExportMd": "匯出為 Markdown",
+  "tipExportMd": "匯出為 MD 檔案",
   "tipHeading": "標題樣式",
   "lblHeader": "標題",
+  "lblCell": "儲存格",
   "tipTextFormat": "文字格式",
   "tipBold": "加粗",
   "tipItalic": "傾斜",
@@ -289,5 +290,9 @@
   "tipViewSource": "切換源碼視圖",
   "modalTableEditor": "表格編輯器",
   "btnInsertTable": "插入表格",
-  "lblSave": "儲存"
+  "lblSave": "儲存",
+  "cmAddRow": "新增橫列",
+  "cmAddCol": "新增直行",
+  "cmDelRow": "刪除橫列",
+  "cmDelCol": "刪除直行"
 }

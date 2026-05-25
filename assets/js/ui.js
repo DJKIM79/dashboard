@@ -1,3 +1,4 @@
+// 260525 Stable
 const ui = {
   toggleFolder(id, event) {
     if (event) event.stopPropagation();
@@ -121,27 +122,72 @@ const ui = {
     const editItem = document.getElementById("ctx-edit");
     const delItem = document.getElementById("ctx-del");
     const hideItem = document.getElementById("ctx-hide");
+    const addRowItem = document.getElementById("ctx-add-row");
+    const addColItem = document.getElementById("ctx-add-col");
+    const delRowItem = document.getElementById("ctx-del-row");
+    const delColItem = document.getElementById("ctx-del-col");
+    const rowGroup = document.getElementById("ctx-row-group");
+    const colGroup = document.getElementById("ctx-col-group");
+
     if (addItem) addItem.style.display = "none";
     if (editItem) editItem.style.display = "none";
     if (delItem) delItem.style.display = "none";
-    if (hideItem) hideItem.style.display = "block";
+    if (hideItem) hideItem.style.display = "flex";
+    if (rowGroup) rowGroup.style.display = "none";
+    if (colGroup) colGroup.style.display = "none";
+    if (addRowItem) addRowItem.style.display = "none";
+    if (addColItem) addColItem.style.display = "none";
+    if (delRowItem) delRowItem.style.display = "none";
+    if (delColItem) delColItem.style.display = "none";
     if (type === "shortcut") {
-      if (addItem) addItem.style.display = "block";
-      if (editItem) editItem.style.display = id !== undefined ? "block" : "none";
-      if (delItem) delItem.style.display = id !== undefined ? "block" : "none";
-      if (hideItem) hideItem.style.display = "block";
+      if (addItem) addItem.style.display = "flex";
+      if (editItem) editItem.style.display = id !== undefined ? "flex" : "none";
+      if (delItem) delItem.style.display = id !== undefined ? "flex" : "none";
+      if (hideItem) hideItem.style.display = "flex";
     } else if (type === "weather") {
-      if (addItem) addItem.style.display = "block";
-      if (delItem) delItem.style.display = "block";
+      if (addItem) addItem.style.display = "flex";
+      if (delItem) delItem.style.display = "flex";
       if (id !== "current" && editItem) {
-        editItem.style.display = "block";
+        editItem.style.display = "flex";
       }
     } else if (["memo", "noti"].includes(type)) {
-      if (addItem) addItem.style.display = "block";
-      if (editItem) editItem.style.display = id ? "block" : "none";
-      if (delItem) delItem.style.display = id ? "block" : "none";
-    }
-    menu.style.display = "block";
+      if (addItem) addItem.style.display = "flex";
+      if (editItem) editItem.style.display = id ? "flex" : "none";
+      if (delItem) delItem.style.display = id ? "flex" : "none";
+    } else if (type === "table") {
+        if (hideItem) hideItem.style.display = "none";
+        const rowGroup = document.getElementById("ctx-row-group");
+        const colGroup = document.getElementById("ctx-col-group");
+        if (rowGroup) rowGroup.style.display = "flex";
+        if (colGroup) colGroup.style.display = "flex";
+
+        // Disable delete row if it's header or if only 2 rows remain (header + 1 data)
+        const rows = window.memo && memo.currentTableData ? memo.currentTableData.length : 0;
+        if (delRowItem) {
+            delRowItem.style.display = "flex";
+            if (id.r > 0 && rows > 2) {
+                delRowItem.classList.remove("disabled");
+            } else {
+                delRowItem.classList.add("disabled");
+            }
+        }
+        if (addRowItem) addRowItem.style.display = "flex";
+
+        // Disable delete column if only 1 column remains
+        const cols = window.memo && memo.currentTableData && memo.currentTableData[0] ? memo.currentTableData[0].length : 0;
+        if (delColItem) {
+            delColItem.style.display = "flex";
+            if (cols > 1) {
+                delColItem.classList.remove("disabled");
+            } else {
+                delColItem.classList.add("disabled");
+            }
+        }
+        if (addColItem) addColItem.style.display = "flex";
+
+        menu.dataset.r = id.r;
+        menu.dataset.c = id.c;
+    }    menu.style.display = "block";
     let x = e.pageX || e.touches?.[0].pageX;
     let y = e.pageY || e.touches?.[0].pageY;
     if (x + 130 > window.innerWidth) x = window.innerWidth - 140;
@@ -178,7 +224,10 @@ const ui = {
           .forEach((f) => f.classList.remove("open"));
       }
       const ctxMenu = document.getElementById("globalContextMenu");
-      if (ctxMenu) ctxMenu.style.display = "none";
+      // Do not close context menu if clicking on a disabled item
+      if (ctxMenu && !e.target.closest(".context-menu .disabled")) {
+          ctxMenu.style.display = "none";
+      }
       if (!e.target.closest(".weather-item")) {
         document
           .querySelectorAll(".forecast-window")

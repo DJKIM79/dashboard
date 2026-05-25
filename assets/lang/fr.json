@@ -264,9 +264,10 @@
   "tipAddTag": "Ajouter un tag",
   "tipSendMsg": "Envoyer",
   "aiNoTagFilter": "Aucun filtre",
-  "tipExportMd": "Exporter en Markdown",
+  "tipExportMd": "Exporter en fichier MD",
   "tipHeading": "Style d'en-tête",
   "lblHeader": "En-tête",
+  "lblCell": "Cellule",
   "tipTextFormat": "Format de texte",
   "tipBold": "Gras",
   "tipItalic": "Italique",
@@ -286,5 +287,9 @@
   "tipViewSource": "Basculer la vue source",
   "modalTableEditor": "Éditeur de tableau",
   "btnInsertTable": "Insérer un tableau",
-  "lblSave": "Enregistrer"
+  "lblSave": "Enregistrer",
+  "cmAddRow": "Ajouter une ligne",
+  "cmAddCol": "Ajouter une colonne",
+  "cmDelRow": "Supprimer la ligne",
+  "cmDelCol": "Supprimer la colonne"
 }

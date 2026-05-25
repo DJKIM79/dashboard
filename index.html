@@ -1,3 +1,4 @@
+<!-- 260525 Stable -->
 <!doctype html>
 <html lang="ko">
   <head>
@@ -26,26 +27,22 @@
   </head>
   <body onclick="requestNotiPermission()">
     <div id="globalContextMenu" class="context-menu">
-      <div id="ctx-add" class="cm-add" onclick="addCurrentItem()" data-i18n="cmAdd">추가</div>
-      <div id="ctx-edit" class="cm-edit" onclick="editCurrentItem()" data-i18n="cmEdit">
-        수정
+      <div id="ctx-add" class="cm-add" onclick="addCurrentItem()"><i class="fas fa-plus cm-icon"></i><span data-i18n="cmAdd">추가</span></div>
+      <div id="ctx-edit" class="cm-edit" onclick="editCurrentItem()"><i class="fas fa-pen cm-icon"></i><span data-i18n="cmEdit">수정</span></div>
+      
+      <!-- Table Specific Items (Shown only for tables) -->
+      <div id="ctx-row-group" class="cm-group">
+        <div id="ctx-add-row" class="cm-action cm-add" onclick="memo.addRow()"><span class="cm-table-icon row-bar add"></span> <span data-i18n="cmAddRow">행 추가</span></div>
+        <div id="ctx-del-row" class="cm-action cm-del" onclick="memo.delRow()"><span class="cm-table-icon delete-ban row-bar"></span> <span data-i18n="cmDelRow">행 삭제</span></div>
       </div>
-      <div
-        id="ctx-del"
-        class="cm-del"
-        onclick="showDeleteConfirm()"
-        data-i18n="cmDelete"
-      >
-        삭제
+      
+      <div id="ctx-col-group" class="cm-group" style="border-top: 1px solid rgba(255,255,255,0.08);">
+        <div id="ctx-add-col" class="cm-action cm-add" onclick="memo.addCol()"><span class="cm-table-icon col-bar add"></span> <span data-i18n="cmAddCol">열 추가</span></div>
+        <div id="ctx-del-col" class="cm-action cm-del" onclick="memo.delCol()"><span class="cm-table-icon delete-ban col-bar"></span> <span data-i18n="cmDelCol">열 삭제</span></div>
       </div>
-      <div
-        id="ctx-hide"
-        class="cm-hide"
-        onclick="hideCurrentWidget()"
-        data-i18n="cmHide"
-      >
-        숨기기
-      </div>
+      
+      <div id="ctx-hide" class="cm-hide" onclick="hideCurrentWidget()"><i class="fas fa-eye-slash cm-icon"></i><span data-i18n="cmHide">숨기기</span></div>
+      <div id="ctx-del" class="cm-del" onclick="showDeleteConfirm()"><i class="fas fa-trash-alt cm-icon"></i><span data-i18n="cmDelete">삭제</span></div>
     </div>
     <div
       id="deleteConfirmModal"
@@ -1470,11 +1467,10 @@
     >
       <div class="modal-content">
         <div class="modal-header-actions">
-          <button class="header-action-btn" onclick="memo.exportToMd()" data-i18n-title="tipExportMd">
+          <button id="memoExportBtn" class="header-action-btn" onclick="memo.exportToMd()" data-i18n-title="tipExportMd">
             <i class="fas fa-file-export"></i>
           </button>
-        </div>
-        <h3 id="memoModalTitle" data-i18n="modalMemoAdd">메모 추가</h3>
+        </div>        <h3 id="memoModalTitle" data-i18n="modalMemoAdd">메모 추가</h3>
         <input
           type="text"
           id="memoTitle"
@@ -1635,9 +1631,7 @@
           <h3 data-i18n="modalTableEditor">표 편집</h3>
         </div>
         <div class="table-editor-container">
-          <div style="width: 100%;">
-            <div id="tableEditorGrid" class="table-editor-grid"></div>
-          </div>
+          <div id="tableEditorGrid" class="table-editor-grid"></div>
         </div>
         <div class="table-editor-actions">
           <button class="btn-save" onclick="memo.insertTableFromEditor()" data-i18n="btnInsertTable">표 삽입</button>

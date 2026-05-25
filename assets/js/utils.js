@@ -1,4 +1,5 @@
 let sharedAudioCtx = null;
+// 260525 Stable
 const utils = {
   playBeep() {
     if (!sharedAudioCtx) {
@@ -190,9 +191,14 @@ const utils = {
   },
   closeModal(id) {
     const modal = document.getElementById(id);
-    if (modal) modal.classList.remove("show");
-  },
-  saveData() {
+    if (modal) {
+      modal.classList.remove("show");
+      // Trigger auto-save for memos to remember resized dimensions
+      if (id === "memoModal" && window.memo && typeof memo.autoSave === "function") {
+          memo.autoSave();
+      }
+    }
+  },  saveData() {
     if (window.shortcutMod)
       localStorage.setItem("dj_shortcuts", JSON.stringify(shortcutMod.items));
     if (window.noti)

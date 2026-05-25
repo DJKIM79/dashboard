@@ -1,3 +1,4 @@
+// 260525 Stable
 const memo = {
   items: JSON.parse(localStorage.getItem("dj_memos")) || [],
   init() {
@@ -34,6 +35,12 @@ const memo = {
     const previewArea = document.getElementById("memoPreview");
     contentArea.value = m ? m.content : "";
     
+    // Set initial export button state
+    const exportBtn = document.getElementById("memoExportBtn");
+    if (exportBtn) {
+        exportBtn.disabled = contentArea.value.trim() === "";
+    }
+
     // Reset preview state
     contentArea.style.display = "block";
     previewArea.style.display = "none";
@@ -52,22 +59,21 @@ const memo = {
     const modalContent = document.querySelector("#memoModal .modal-content");
     
     // Set individual size or default
-    const defaultContentH = "350px";
+    const defaultContentW = localStorage.getItem("dj_memo_default_w") || "450px"; 
+    const defaultContentH = localStorage.getItem("dj_memo_default_h") || "350px";
     
-    let targetContentW = ""; // Default (will use CSS min-width)
+    let targetContentW = defaultContentW;
     let targetContentH = defaultContentH;
 
     if (m && m.width && m.height) {
         targetContentW = m.width;
         targetContentH = m.height;
-        if (!String(targetContentW).includes("px") && !String(targetContentW).includes("%")) targetContentW += "px";
-        if (!String(targetContentH).includes("px") && !String(targetContentH).includes("%")) targetContentH += "px";
     }
 
-    // Apply dimensions to the children
-    contentArea.style.width = targetContentW || "100%";
+    // Apply dimensions to the children so the parent (fit-content) follows them
+    contentArea.style.width = targetContentW;
     contentArea.style.height = targetContentH;
-    previewArea.style.width = targetContentW || "100%";
+    previewArea.style.width = targetContentW;
     previewArea.style.height = targetContentH;
     
     // Clear parent width so fit-content takes over child's size instantly
@@ -115,30 +121,39 @@ const memo = {
     }
   },
   autoSave() {
-    if (!window.currentEditMemoId) return;
     const t = document.getElementById("memoTitle").value,
       contentArea = document.getElementById("memoContent"),
       previewArea = document.getElementById("memoPreview"),
       c = contentArea.value;
     
-    if (!t) return; // Don't save if title is empty
-    
-    const isPreview = previewArea.style.display === "block";
-    const w = isPreview ? previewArea.style.width : contentArea.style.width;
-    const h = isPreview ? previewArea.style.height : contentArea.style.height;
+    if (!contentArea || !previewArea) return;
 
-    const idx = this.items.findIndex((x) => x.id == window.currentEditMemoId);
-    if (idx !== -1) {
-        this.items[idx] = {
-            ...this.items[idx],
-            title: t,
-            content: c,
-            width: w,
-            height: h
-        };
-        window.memos = this.items;
-        this.render();
-        utils.saveData();
+    const isPreview = previewArea.style.display === "block";
+    // Capture actual current dimensions (offsetWidth is more reliable after manual resize)
+    const currentW = isPreview ? previewArea.offsetWidth : contentArea.offsetWidth;
+    const currentH = isPreview ? previewArea.offsetHeight : contentArea.offsetHeight;
+    const w = currentW + "px";
+    const h = currentH + "px";
+
+    if (window.currentEditMemoId) {
+        if (!t) return; // Don't auto-save if title is empty (prevents accidental data loss)
+        const idx = this.items.findIndex((x) => x.id == window.currentEditMemoId);
+        if (idx !== -1) {
+            this.items[idx] = {
+                ...this.items[idx],
+                title: t,
+                content: c,
+                width: w,
+                height: h
+            };
+            window.memos = this.items;
+            this.render();
+            utils.saveData();
+        }
+    } else {
+        // For new memos, remember the size as default for the next "Add"
+        localStorage.setItem("dj_memo_default_w", w);
+        localStorage.setItem("dj_memo_default_h", h);
     }
     
     // Also update preview if active
@@ -149,13 +164,14 @@ const memo = {
       contentArea = document.getElementById("memoContent"),
       previewArea = document.getElementById("memoPreview"),
       c = contentArea.value;
-    
+
     const isPreview = previewArea.style.display === "block";
-    const w = isPreview ? previewArea.style.width : contentArea.style.width;
-    const h = isPreview ? previewArea.style.height : contentArea.style.height;
-      
-    if (t) {
-      if (window.currentEditMemoId) {
+    const currentW = isPreview ? previewArea.offsetWidth : contentArea.offsetWidth;
+    const currentH = isPreview ? previewArea.offsetHeight : contentArea.offsetHeight;
+    const w = currentW + "px";
+    const h = currentH + "px";
+
+    if (t) {      if (window.currentEditMemoId) {
         const idx = this.items.findIndex(
           (x) => x.id == window.currentEditMemoId,
         );
@@ -179,6 +195,7 @@ const memo = {
   },
   applyFormat(prefix, suffix = "") {
     const el = document.getElementById("memoContent");
+    if (!el) return;
     const start = el.selectionStart;
     const end = el.selectionEnd;
     const text = el.value;
@@ -208,30 +225,36 @@ const memo = {
     }
     
     this.handleInput();
+    this.autoSave(); // Trigger auto-save for programmatic changes
     this.closeAllDropdowns();
   },
   toggleDropdown(id, e) {
     if (e) e.stopPropagation();
     const dropdown = document.getElementById(id);
-    const btn = e.currentTarget;
+    if (!dropdown) return;
+    
+    // Fallback for button identification
+    const btn = e ? (e.currentTarget || (e.target && e.target.closest(".memo-toolbar-btn"))) : null;
     const isShowing = dropdown.classList.contains("show");
     
     this.closeAllDropdowns();
     
     if (!isShowing) {
       dropdown.classList.add("show");
-      btn.classList.add("dropdown-active");
+      if (btn) btn.classList.add("dropdown-active");
       
       if (id === 'tableDropdown') {
-          this.updateTablePicker(2, 1); // Defaults to 2x1
+          this.updateTablePicker(2, 1);
       }
       
       const closeHandler = (ev) => {
-        if (!dropdown.contains(ev.target) && !btn.contains(ev.target)) {
+        // If the click is outside both the dropdown AND the button that opened it
+        if (!dropdown.contains(ev.target) && (!btn || !btn.contains(ev.target))) {
           this.closeAllDropdowns();
           document.removeEventListener("click", closeHandler);
         }
       };
+      // Short delay to avoid catching the current click event bubbling up
       setTimeout(() => document.addEventListener("click", closeHandler), 10);
     }
   },
@@ -244,6 +267,8 @@ const memo = {
     const previewArea = document.getElementById("memoPreview");
     const toolbar = document.querySelector(".memo-toolbar");
     const btn = document.getElementById("memoToggleView");
+    if (!contentArea || !previewArea) return;
+    
     const isPreview = previewArea.style.display === "block";
 
     if (isPreview) {
@@ -254,11 +279,13 @@ const memo = {
       previewArea.style.display = "none";
       contentArea.style.display = "block";
       contentArea.classList.remove("preview-active");
-      toolbar.classList.remove("disabled");
-      btn.classList.remove("active");
-      if (window.i18n) {
-          btn.title = i18n.get("tipViewPreview");
-          btn.setAttribute("data-i18n-title", "tipViewPreview");
+      if (toolbar) toolbar.classList.remove("disabled");
+      if (btn) {
+          btn.classList.remove("active");
+          if (window.i18n) {
+              btn.title = i18n.get("tipViewPreview");
+              btn.setAttribute("data-i18n-title", "tipViewPreview");
+          }
       }
       contentArea.focus();
     } else {
@@ -276,11 +303,13 @@ const memo = {
       contentArea.style.display = "none";
       previewArea.style.display = "block";
       contentArea.classList.add("preview-active");
-      toolbar.classList.add("disabled");
-      btn.classList.add("active");
-      if (window.i18n) {
-          btn.title = i18n.get("tipViewSource");
-          btn.setAttribute("data-i18n-title", "tipViewSource");
+      if (toolbar) toolbar.classList.add("disabled");
+      if (btn) {
+          btn.classList.add("active");
+          if (window.i18n) {
+              btn.title = i18n.get("tipViewSource");
+              btn.setAttribute("data-i18n-title", "tipViewSource");
+          }
       }
     }
   },
@@ -320,8 +349,15 @@ const memo = {
   },
   handleInput(e) {
     const previewArea = document.getElementById("memoPreview");
+    const contentArea = document.getElementById("memoContent");
+    const exportBtn = document.getElementById("memoExportBtn");
+    
+    if (exportBtn && contentArea) {
+        exportBtn.disabled = contentArea.value.trim() === "";
+    }
+    
     if (previewArea && previewArea.style.display === "block" && window.utils && utils.renderMarkdown) {
-      previewArea.innerHTML = utils.renderMarkdown(document.getElementById("memoContent").value);
+      previewArea.innerHTML = utils.renderMarkdown(contentArea.value);
     }
   },
   initTablePicker() {
@@ -412,113 +448,98 @@ const memo = {
   },
   renderTableEditorGrid() {
     const grid = document.getElementById("tableEditorGrid");
-    if (!grid) return;
+    const container = document.querySelector(".table-editor-container");
+    if (!grid || !container) return;
+    
+    // Record old size for animation
+    const oldW = container.offsetWidth;
+    const oldH = container.offsetHeight;
     
     const rows = this.currentTableData.length;
     const cols = this.currentTableData[0].length;
     
-    grid.style.gridTemplateColumns = `repeat(${cols}, 100px)`;
+    grid.style.gridTemplateColumns = `repeat(${cols}, 130px)`;
     grid.innerHTML = "";
 
-    // 1. Unified Background Panels for each side - Set to span correctly
-    const rowMinusPanel = document.createElement("div");
-    rowMinusPanel.className = "table-mgmt-row-minus";
-    rowMinusPanel.style.gridRow = `1 / span ${rows}`;
-    rowMinusPanel.style.left = "-70px";
-    
-    const rowPlusPanel = document.createElement("div");
-    rowPlusPanel.className = "table-mgmt-row-plus";
-    rowPlusPanel.style.gridRow = `1 / span ${rows}`;
-    rowPlusPanel.style.gridColumn = cols;
-    rowPlusPanel.style.right = "-70px";
-    
-    const colMinusPanel = document.createElement("div");
-    colMinusPanel.className = "table-mgmt-col-minus";
-    colMinusPanel.style.gridColumn = `1 / span ${cols}`;
-    colMinusPanel.style.top = "-70px";
-    
-    const colPlusPanel = document.createElement("div");
-    colPlusPanel.className = "table-mgmt-col-plus";
-    colPlusPanel.style.gridColumn = `1 / span ${cols}`;
-    colPlusPanel.style.gridRow = rows;
-    colPlusPanel.style.bottom = "-70px";
-
-    // 2. Add Row buttons to their respective panels
+    // Render inputs
     for (let r = 0; r < rows; r++) {
-        // Row Minus (Left)
-        const delBtn = document.createElement("button");
-        delBtn.className = "table-mgmt-btn delete";
-        delBtn.innerHTML = '<i class="fas fa-minus"></i>';
-        if (r === 0 || rows <= 2) delBtn.style.visibility = "hidden";
-        delBtn.onclick = () => {
-            if (r > 0 && this.currentTableData.length > 2) {
-                this.currentTableData.splice(r, 1);
-                this.renderTableEditorGrid();
-            }
-        };
-        rowMinusPanel.appendChild(delBtn);
-
-        // Row Plus (Right)
-        const addBtn = document.createElement("button");
-        addBtn.className = "table-mgmt-btn";
-        addBtn.innerHTML = '<i class="fas fa-plus"></i>';
-        addBtn.onclick = () => {
-            this.currentTableData.splice(r + 1, 0, Array(cols).fill(""));
-            this.renderTableEditorGrid();
-        };
-        rowPlusPanel.appendChild(addBtn);
-
-        // Render inputs
         for (let c = 0; c < cols; c++) {
             const input = document.createElement("input");
             input.type = "text";
             input.className = "table-editor-input" + (r === 0 ? " header-input" : "");
             input.value = this.currentTableData[r][c];
-            input.placeholder = r === 0 ? "Header" : "Cell";
+            input.placeholder = r === 0 ? (i18n.get("lblHeader") || "제목") : (i18n.get("lblCell") || "본문");
             input.oninput = (e) => { this.currentTableData[r][c] = e.target.value; };
+            // Set context menu for row/column management
+            input.oncontextmenu = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.showContextMenu) {
+                    showContextMenu(e, "table", { r, c });
+                }
+            };
             grid.appendChild(input);
         }
     }
-
-    // 3. Add Column buttons to their respective panels
-    for (let c = 0; c < cols; c++) {
-        // Col Minus (Top)
-        const delColBtn = document.createElement("button");
-        delColBtn.className = "table-mgmt-btn delete";
-        delColBtn.innerHTML = '<i class="fas fa-minus"></i>';
-        if (cols <= 1) delColBtn.style.visibility = "hidden";
-        delColBtn.onclick = () => {
-            if (this.currentTableData[0].length > 1) {
-                this.currentTableData.forEach(row => row.splice(c, 1));
-                this.renderTableEditorGrid();
-            }
-        };
-        colMinusPanel.appendChild(delColBtn);
-
-        // Col Plus (Bottom)
-        const addColBtn = document.createElement("button");
-        addColBtn.className = "table-mgmt-btn";
-        addColBtn.innerHTML = '<i class="fas fa-plus"></i>';
-        addColBtn.onclick = () => {
-            this.currentTableData.forEach(row => row.splice(c + 1, 0, ""));
-            this.renderTableEditorGrid();
-        };
-        colPlusPanel.appendChild(addColBtn);
+    
+    // Animate container size change
+    if (oldW > 0 && oldH > 0) {
+        // Temporarily lock to old size
+        container.style.width = oldW + "px";
+        container.style.height = oldH + "px";
+        container.style.overflow = "hidden";
+        
+        requestAnimationFrame(() => {
+            // Get new natural size (grid size dictates container size)
+            const newW = grid.offsetWidth; 
+            const newH = grid.offsetHeight;
+            
+            container.style.width = newW + "px";
+            container.style.height = newH + "px";
+            
+            setTimeout(() => {
+                container.style.width = "";
+                container.style.height = "";
+                container.style.overflow = "auto";
+            }, 300); // Matches CSS transition duration
+        });
     }
-
-    grid.appendChild(rowMinusPanel);
-    grid.appendChild(rowPlusPanel);
-    grid.appendChild(colMinusPanel);
-    grid.appendChild(colPlusPanel);
-
-    // Add the visual frame LAST to ensure it stays in background without displacing
-    const frame = document.createElement("div");
-    frame.className = "table-main-frame";
-    frame.style.gridColumn = `1 / span ${cols}`;
-    frame.style.gridRow = `1 / span ${rows}`;
-    grid.appendChild(frame);
   },
-  insertTableFromEditor() {
+  addRow() {
+    const menu = document.getElementById("globalContextMenu");
+    const r = parseInt(menu.dataset.r);
+    const cols = this.currentTableData[0].length;
+    this.currentTableData.splice(r + 1, 0, Array(cols).fill(""));
+    this.renderTableEditorGrid();
+  },
+  delRow() {
+    const menu = document.getElementById("globalContextMenu");
+    const r = parseInt(menu.dataset.r);
+    // Prevents deleting header (row 0) and ensures at least one data row remains (total length > 2)
+    if (r > 0 && this.currentTableData.length > 2) {
+        this.currentTableData.splice(r, 1);
+        this.renderTableEditorGrid();
+    }
+  },
+  addCol() {
+    const menu = document.getElementById("globalContextMenu");
+    const c = parseInt(menu.dataset.c);
+    this.currentTableData.forEach(row => {
+        row.splice(c + 1, 0, "");
+    });
+    this.renderTableEditorGrid();
+  },
+  delCol() {
+    const menu = document.getElementById("globalContextMenu");
+    const c = parseInt(menu.dataset.c);
+    // Enforce at least one column
+    if (this.currentTableData[0].length > 1) {
+        this.currentTableData.forEach(row => {
+            row.splice(c, 1);
+        });
+        this.renderTableEditorGrid();
+    }
+  },  insertTableFromEditor() {
     const data = this.currentTableData;
     if (!data || data.length === 0) return;
     

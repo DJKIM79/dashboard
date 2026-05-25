@@ -1,3 +1,4 @@
+// 260525 Stable
 const calendar = {
   currentDate: new Date(),
   isMonthSelectorOpen: false,
@@ -107,16 +108,27 @@ const calendar = {
     const firstDay = new Date(year, month, 1).getDay(),
       lastDate = new Date(year, month + 1, 0).getDate(),
       prevLastDate = new Date(year, month, 0).getDate();
+      
+    const todayObj = new Date();
+    todayObj.setHours(0, 0, 0, 0);
+
     for (let i = firstDay; i > 0; i--) {
       const div = document.createElement("div");
       div.className = "calendar-day other-month";
       const d = prevLastDate - i + 1;
       div.innerText = d;
       const prevMonthDate = new Date(year, month - 1, d);
-      div.onclick = (e) => {
-          e.stopPropagation();
-          this.addAlarmFromDate(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), prevMonthDate.getDate());
-      };
+      prevMonthDate.setHours(0, 0, 0, 0);
+      
+      if (prevMonthDate < todayObj) {
+          div.style.cursor = "not-allowed";
+          div.onclick = (e) => e.stopPropagation();
+      } else {
+          div.onclick = (e) => {
+              e.stopPropagation();
+              this.addAlarmFromDate(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), prevMonthDate.getDate());
+          };
+      }
       grid.appendChild(div);
     }
     for (let i = 1; i <= lastDate; i++) {
@@ -127,10 +139,19 @@ const calendar = {
       if (d === 0) div.classList.add("sun");
       if (d === 6) div.classList.add("sat");
       if (isCurrentMonth && i === today) div.classList.add("today");
-      div.onclick = (e) => {
-          e.stopPropagation();
-          this.addAlarmFromDate(year, month, i);
-      };
+      
+      const currentMonthDate = new Date(year, month, i);
+      currentMonthDate.setHours(0, 0, 0, 0);
+      
+      if (currentMonthDate < todayObj) {
+          div.style.cursor = "not-allowed";
+          div.onclick = (e) => e.stopPropagation();
+      } else {
+          div.onclick = (e) => {
+              e.stopPropagation();
+              this.addAlarmFromDate(year, month, i);
+          };
+      }
       grid.appendChild(div);
     }
     for (let i = 1; grid.children.length < 42; i++) {
@@ -138,10 +159,17 @@ const calendar = {
       div.className = "calendar-day other-month";
       div.innerText = i;
       const nextMonthDate = new Date(year, month + 1, i);
-      div.onclick = (e) => {
-          e.stopPropagation();
-          this.addAlarmFromDate(nextMonthDate.getFullYear(), nextMonthDate.getMonth(), nextMonthDate.getDate());
-      };
+      nextMonthDate.setHours(0, 0, 0, 0);
+      
+      if (nextMonthDate < todayObj) {
+          div.style.cursor = "not-allowed";
+          div.onclick = (e) => e.stopPropagation();
+      } else {
+          div.onclick = (e) => {
+              e.stopPropagation();
+              this.addAlarmFromDate(nextMonthDate.getFullYear(), nextMonthDate.getMonth(), nextMonthDate.getDate());
+          };
+      }
       grid.appendChild(div);
     }
   },

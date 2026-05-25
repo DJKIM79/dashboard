@@ -267,9 +267,10 @@
   "tipAddTag": "添加标签",
   "tipSendMsg": "发送",
   "aiNoTagFilter": "无标签过滤",
-  "tipExportMd": "导出为 Markdown",
+  "tipExportMd": "导出为 MD 文件",
   "tipHeading": "标题样式",
   "lblHeader": "标题",
+  "lblCell": "单元格",
   "tipTextFormat": "文本格式",
   "tipBold": "加粗",
   "tipItalic": "倾斜",
@@ -289,5 +290,9 @@
   "tipViewSource": "切换源码视图",
   "modalTableEditor": "表格编辑器",
   "btnInsertTable": "插入表格",
-  "lblSave": "保存"
+  "lblSave": "保存",
+  "cmAddRow": "添加行",
+  "cmAddCol": "添加列",
+  "cmDelRow": "删除行",
+  "cmDelCol": "删除列"
 }

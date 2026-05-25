@@ -267,9 +267,10 @@
   "tipAddTag": "タグを追加",
   "tipSendMsg": "送信",
   "aiNoTagFilter": "タグフィルターなし",
-  "tipExportMd": "Markdownとしてエクスポート",
+  "tipExportMd": "MDファイルとしてエクスポート",
   "tipHeading": "見出しスタイル",
   "lblHeader": "見出し",
+  "lblCell": "セル",
   "tipTextFormat": "テキスト形式",
   "tipBold": "太字",
   "tipItalic": "斜体",
@@ -289,5 +290,9 @@
   "tipViewSource": "ソース表示の切り替え",
   "modalTableEditor": "テーブルエディター",
   "btnInsertTable": "テーブルを挿入",
-  "lblSave": "保存"
+  "lblSave": "保存",
+  "cmAddRow": "行を追加",
+  "cmAddCol": "列を追加",
+  "cmDelRow": "行を削除",
+  "cmDelCol": "列を削除"
 }

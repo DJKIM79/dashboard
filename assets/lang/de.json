@@ -264,9 +264,10 @@
   "tipAddTag": "Tag hinzufügen",
   "tipSendMsg": "Nachricht senden",
   "aiNoTagFilter": "Kein Tag-Filter",
-  "tipExportMd": "Nach Markdown exportieren",
+  "tipExportMd": "Als MD-Datei exportieren",
   "tipHeading": "Überschrift-Stil",
   "lblHeader": "Überschrift",
+  "lblCell": "Zelle",
   "tipTextFormat": "Textformatierung",
   "tipBold": "Fett",
   "tipItalic": "Kursiv",
@@ -286,5 +287,9 @@
   "tipViewSource": "Quellansicht umschalten",
   "modalTableEditor": "Tabellen-Editor",
   "btnInsertTable": "Tabelle einfügen",
-  "lblSave": "Speichern"
+  "lblSave": "Speichern",
+  "cmAddRow": "Zeile hinzufügen",
+  "cmAddCol": "Spalte hinzufügen",
+  "cmDelRow": "Zeile löschen",
+  "cmDelCol": "Spalte löschen"
 }

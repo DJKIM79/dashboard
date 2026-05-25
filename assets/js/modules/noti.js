@@ -1,3 +1,4 @@
+// 260525 Stable
 const noti = {
   items: JSON.parse(localStorage.getItem("dj_notifications")) || [],
   calendarDate: new Date(),
@@ -99,6 +100,7 @@ const noti = {
         if (this.currentCalendarTarget === "repeatEndDate") {
             targetEl.style.color = "#fff";
         }
+        targetEl.dispatchEvent(new Event('change'));
     }
     document.getElementById("noti-calendar-popup").classList.remove("show");
   },
@@ -458,8 +460,8 @@ const noti = {
         ];
         const saveHandler = () => this.autoSave();
         inputs.forEach(el => {
-            if (el.type === "checkbox") el.onchange = saveHandler;
-            else el.oninput = saveHandler;
+            el.onchange = saveHandler;
+            el.oninput = saveHandler;
         });
         
         // Custom handling for checkboxes that don't trigger oninput
@@ -478,8 +480,13 @@ const noti = {
             document.getElementById("repeatEndDate")
         ];
         inputs.forEach(el => {
-            el.oninput = null;
-            el.onchange = null;
+            if (el.id !== "isRepeat") {
+                el.oninput = null;
+                el.onchange = null;
+            } else {
+                el.oninput = null;
+                // Keep the onchange handler for isRepeat as it's set in HTML for toggleDaySelector
+            }
         });
         document.querySelectorAll('input[name="repeatMonth"], input[name="weekSpecific"], input[name="repeatDay"]').forEach(el => {
             el.onchange = null;

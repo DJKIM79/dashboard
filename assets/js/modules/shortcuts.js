@@ -1,3 +1,4 @@
+// 260525 Stable
 const shortcutMod = {
   items: JSON.parse(localStorage.getItem("dj_shortcuts")) || [],
   isDragging: false,
@@ -2096,8 +2097,11 @@ const shortcutMod = {
       ? T.modalLinkEdit
       : T.modalLinkAdd;
     document.getElementById("linkSaveBtn").innerText = isEdit
-      ? T.btnEdit
-      : T.btnSave;
+      ? (T.lblSave || "저장")
+      : (T.btnSave || "추가");
+    // Hide button when editing, use real-time saving instead
+    document.getElementById("linkSaveBtn").style.display = isEdit ? "none" : "block";
+
     const dBtn = document.getElementById("linkDelBtn");
     if (dBtn) dBtn.style.display = isEdit ? "block" : "none";
     
@@ -2116,6 +2120,39 @@ const shortcutMod = {
     utils.closeModal("settingModal");
     utils.openModal("linkModal");
     setTimeout(() => document.getElementById("siteName").focus(), 50);
+
+    // Setup real-time saving for existing shortcut
+    if (isEdit) {
+        const inputs = [
+            document.getElementById("siteName"),
+            document.getElementById("siteUrl"),
+            document.getElementById("siteIcon")
+        ];
+        const saveHandler = () => this.autoSave();
+        inputs.forEach(el => el.oninput = saveHandler);
+    } else {
+        // Clean up listeners for new shortcut
+        document.getElementById("siteName").oninput = null;
+        document.getElementById("siteUrl").oninput = null;
+        document.getElementById("siteIcon").oninput = (e) => {
+            this.updatePreview();
+        };
+    }
+  },
+  autoSave() {
+    if (window.currentShortcutIndex === null) return;
+    const n = document.getElementById("siteName").value,
+      u = document.getElementById("siteUrl").value,
+      ic = document.getElementById("siteIcon").value;
+    
+    if (n && u) {
+      const item = { name: n, url: u, icon: ic };
+      this.items[window.currentShortcutIndex] = item;
+      window.shortcuts = this.items;
+      this.render();
+      utils.saveData();
+      this.updatePreview();
+    }
   },
   toggleIconPicker() {
     const area = document.getElementById("iconPickerArea");
