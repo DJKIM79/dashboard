@@ -86,11 +86,22 @@ body::before {
   box-shadow: var(--btn-shadow);
   transform: scale(1);
 }
+.fab-container .widget-btn {
+  color: var(--accent-color);
+}
 .widget-btn:hover {
   opacity: 1;
   border-color: var(--accent-color);
   color: var(--accent-color);
   transform: scale(1.1);
+}
+.fab-main.active {
+  opacity: 1;
+  background: var(--accent-color) !important;
+  color: var(--accent-contrast) !important;
+  border-color: var(--accent-color);
+  box-shadow: var(--btn-shadow);
+  transform: scale(1.05);
 }
 .fab-container {
   position: relative;

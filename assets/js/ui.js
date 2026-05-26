@@ -6,6 +6,9 @@ const ui = {
       .querySelectorAll(".fab-menu")
       .forEach((m) => m.classList.remove("active"));
     document
+      .querySelectorAll(".fab-main")
+      .forEach((b) => b.classList.remove("active"));
+    document
       .querySelectorAll(".smart-folder")
       .forEach((f) =>
         f.id !== id ? f.classList.remove("open") : f.classList.toggle("open"),
@@ -14,7 +17,14 @@ const ui = {
   toggleFab(id, event) {
     if (event) event.stopPropagation();
     document.querySelectorAll(".fab-menu").forEach((m) => {
-      if (m.id !== id) m.classList.remove("active");
+      if (m.id !== id) {
+        m.classList.remove("active");
+        const container = m.closest(".fab-container");
+        if (container) {
+          const mainBtn = container.querySelector(".fab-main");
+          if (mainBtn) mainBtn.classList.remove("active");
+        }
+      }
     });
     const searchMenu = document.getElementById("search-engine-menu");
     if (searchMenu) searchMenu.classList.remove("active");
@@ -22,7 +32,16 @@ const ui = {
       .querySelectorAll(".smart-folder")
       .forEach((f) => f.classList.remove("open"));
     const target = document.getElementById(id);
-    if (target) target.classList.toggle("active");
+    if (target) {
+      target.classList.toggle("active");
+      const container = target.closest(".fab-container");
+      if (container) {
+        const mainBtn = container.querySelector(".fab-main");
+        if (mainBtn) {
+          mainBtn.classList.toggle("active", target.classList.contains("active"));
+        }
+      }
+    }
   },
   applyVisibility() {
     const types = [
@@ -239,6 +258,9 @@ const ui = {
         document
           .querySelectorAll(".fab-menu")
           .forEach((m) => m.classList.remove("active"));
+        document
+          .querySelectorAll(".fab-main")
+          .forEach((b) => b.classList.remove("active"));
       }
       if (!e.target.closest(".search-engine-icon")) {
         const menu = document.getElementById("search-engine-menu");
