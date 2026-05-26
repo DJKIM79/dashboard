@@ -167,17 +167,22 @@ const utils = {
       list.scrollTop = itemTop - listHeight / 2 + itemHeight / 2;
     }
   },
-  toggleDaySelector(s) {
+  toggleDaySelector(s, skipAnim = false) {
     const wrap = document.getElementById("day-selector-wrap");
     const dateInput = document.getElementById("notiDate");
     if (wrap) {
-      if (!s) {
+      if (skipAnim) {
         wrap.style.transition = "none";
-        wrap.classList.remove("show");
+        if (s) wrap.classList.add("show");
+        else wrap.classList.remove("show");
         void wrap.offsetHeight; // force reflow
         wrap.style.transition = "";
       } else {
-        wrap.classList.add("show");
+        if (!s) {
+          wrap.classList.remove("show");
+        } else {
+          wrap.classList.add("show");
+        }
       }
     }
     if (dateInput) {

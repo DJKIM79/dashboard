@@ -414,7 +414,7 @@ const noti = {
     else if (specificDate) defaultDate = specificDate;
     document.getElementById("notiDate").value = defaultDate;
     document.getElementById("isRepeat").checked = n ? n.isRepeat : false;
-    if (window.toggleDaySelector) toggleDaySelector(n ? n.isRepeat : false);
+    if (window.toggleDaySelector) toggleDaySelector(n ? n.isRepeat : false, true);
     const rule = n && n.repeatRule ? n.repeatRule : {
         years: [],
         months: [],
