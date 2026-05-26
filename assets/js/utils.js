@@ -35,7 +35,7 @@ const utils = {
     const tags = keyword ? `${keyword},${sourceTag}` : sourceTag;
     const url = `https://loremflickr.com/1920/1080/${tags}?random=${seed}`;
     document.body.style.backgroundImage = `url('${url}')`;
-    document.body.style.backgroundColor = "transparent"; // Reset background color
+    document.body.style.backgroundColor = "#0f172a"; // Match 'none' background color to avoid white flash
   },
   changeBackgroundInstant() {
     const seed = Math.floor(Math.random() * 100000);

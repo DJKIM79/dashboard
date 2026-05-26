@@ -862,7 +862,8 @@ const settings = {
     swatches.forEach((s) => {
       s.classList.remove("active");
       const onclickAttr = s.getAttribute("onclick") || "";
-      if (onclickAttr.includes(`'${color}'`) || onclickAttr.includes(`"${color}"`)) {
+      const match = onclickAttr.match(/['"](#?[a-zA-Z0-9]+)['"]/);
+      if (match && expandHex(match[1]) === targetColor) {
         s.classList.add("active");
       }
     });
