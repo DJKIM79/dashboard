@@ -178,6 +178,7 @@ const ui = {
     const rowGroup = document.getElementById("ctx-row-group");
     const colGroup = document.getElementById("ctx-col-group");
     const aiGroup = document.getElementById("ctx-ai-group");
+    const stockSecretItem = document.getElementById("ctx-stock-secret");
 
     if (addItem) addItem.style.display = "none";
     if (editItem) editItem.style.display = "none";
@@ -190,6 +191,7 @@ const ui = {
     if (addColItem) addColItem.style.display = "none";
     if (delRowItem) delRowItem.style.display = "none";
     if (delColItem) delColItem.style.display = "none";
+    if (stockSecretItem) stockSecretItem.style.display = "none";
     if (type === "shortcut") {
       if (addItem) addItem.style.display = "flex";
       if (editItem) editItem.style.display = id !== undefined ? "flex" : "none";
@@ -205,6 +207,23 @@ const ui = {
       if (addItem) addItem.style.display = "flex";
       if (editItem) editItem.style.display = id ? "flex" : "none";
       if (delItem) delItem.style.display = id ? "flex" : "none";
+      
+      if (type === "stock") {
+        if (stockSecretItem) {
+          stockSecretItem.style.display = "flex";
+          const secretText = document.getElementById("ctx-stock-secret-text");
+          if (secretText) {
+            const isSecret = window.stock && window.stock.isSecretMode;
+            const key = isSecret ? "cmNormal" : "cmSecret";
+            secretText.setAttribute("data-i18n", key);
+            if (window.i18n) {
+              secretText.innerText = i18n.get(key);
+            } else {
+              secretText.innerText = isSecret ? "일반" : "비밀";
+            }
+          }
+        }
+      }
     } else if (type === "table") {
         if (hideItem) hideItem.style.display = "none";
         const rowGroup = document.getElementById("ctx-row-group");

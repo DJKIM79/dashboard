@@ -2962,6 +2962,15 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .validation-tip.success {
   --tip-bg: #22c55e; 
 }
+.validation-tip.up {
+  --tip-bg: #ef4444; 
+}
+.validation-tip.down {
+  --tip-bg: #3b82f6; 
+}
+.validation-tip.same {
+  --tip-bg: #94a3b8; 
+}
 .ai-delete-confirm,
 .ai-file-delete-confirm,
 .ai-lock-confirm {
@@ -4612,6 +4621,11 @@ body.tutorial-closing .driver-active-element {
   -ms-overflow-style: none;
   scrollbar-width: none;
   padding: 5px 0;
+  transition: opacity 0.2s ease;
+  opacity: 1;
+}
+.stock-list.fade-out-active {
+  opacity: 0;
 }
 .stock-list::-webkit-scrollbar {
   display: none;
@@ -4640,6 +4654,15 @@ body.tutorial-closing .driver-active-element {
   max-width: 140px;
   flex-shrink: 0;
   margin: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.stock-container .item-card.secret-up:hover {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+.stock-container .item-card.secret-down:hover {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
 }
 .stock-info {
   display: flex;

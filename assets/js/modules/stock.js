@@ -1,6 +1,7 @@
 // 260527 FINAL STABLE VERSION - FIXED CREATION LOGIC
 const stock = {
   items: JSON.parse(localStorage.getItem("dj_stocks")) || [],
+  isSecretMode: localStorage.getItem("dj_stock_secret_mode") === "true",
   updateInterval: parseInt(localStorage.getItem("dj_stock_interval") || 10) * 1000,
   intervalId: null,
   stockCodes: [], 
@@ -20,6 +21,18 @@ const stock = {
     if (this.isSupported()) {
       this.startInterval();
     }
+    
+    // Window active/focus event listeners to restore polling if needed
+    window.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && this.isSupported()) {
+        this.startInterval();
+      }
+    });
+    window.addEventListener("focus", () => {
+      if (this.isSupported()) {
+        this.startInterval();
+      }
+    });
     
     // Global click listener for closing
     window.addEventListener('click', (e) => {
@@ -50,6 +63,34 @@ const stock = {
     popup.dataset.currentId = '';
   },
   
+  toggleSecretMode() {
+    this.isSecretMode = !this.isSecretMode;
+    localStorage.setItem("dj_stock_secret_mode", String(this.isSecretMode));
+    
+    if (window.utils && utils.hideValidationTip) {
+      utils.hideValidationTip();
+    }
+    
+    const list = document.getElementById("stock-list");
+    if (!list) {
+      this.render();
+      return;
+    }
+
+    list.classList.add("fade-out-active");
+
+    setTimeout(() => {
+      this.render();
+      
+      setTimeout(() => {
+        const listAgain = document.getElementById("stock-list");
+        if (listAgain) {
+          listAgain.classList.remove("fade-out-active");
+        }
+      }, 50);
+    }, 200);
+  },
+  
   updateIntervalSetting(seconds) {
     this.updateInterval = seconds * 1000;
     this.startInterval();
@@ -59,7 +100,18 @@ const stock = {
     if (this.intervalId) clearInterval(this.intervalId);
     if (this.items.length === 0 || !this.isSupported()) return;
     this.updatePrices();
-    this.intervalId = setInterval(() => this.updatePrices(), this.updateInterval);
+    this.intervalId = setInterval(() => {
+      const hasOpenMarket = this.items.some(item => !item.marketStatus || item.marketStatus === 'OPEN');
+      if (hasOpenMarket) {
+        this.updatePrices();
+      } else {
+        console.log("All stock markets closed. Pausing background updates.");
+        if (this.intervalId) {
+          clearInterval(this.intervalId);
+          this.intervalId = null;
+        }
+      }
+    }, this.updateInterval);
   },
   
   async updatePrices() {
@@ -90,7 +142,7 @@ const stock = {
                 }
             });
             this.saveData();
-            this.render();
+            this.updateDOM();
 
             const popup = document.getElementById("global-stock-detail");
             if (popup && popup.style.display === 'block' && popup.dataset.currentId) {
@@ -100,6 +152,59 @@ const stock = {
     } catch (e) {
         console.error("Stock update error:", e);
     }
+  },
+  
+  updateDOM() {
+    const listContainer = document.getElementById("stock-list");
+    if (!listContainer) return;
+
+    const cards = listContainer.querySelectorAll(".stock-card");
+    if (cards.length !== this.items.length) {
+      this.render();
+      return;
+    }
+
+    this.items.forEach((n, idx) => {
+      const div = cards[idx];
+      if (!div || div.dataset.id !== String(n.id)) {
+        this.render();
+        return;
+      }
+
+      const chg = n.changePercent || 0;
+      const sign = chg >= 0 ? "+" : "";
+
+      div.classList.remove("secret-up", "secret-down");
+
+      if (this.isSecretMode) {
+        if (chg > 0) {
+          div.classList.add("secret-up");
+        } else if (chg < 0) {
+          div.classList.add("secret-down");
+        }
+
+        const changeValText = Math.abs(chg).toFixed(2);
+        const changeEl = div.querySelector(".stock-change");
+        if (changeEl) {
+          changeEl.innerText = changeValText;
+        }
+      } else {
+        const price = (n.currentPrice || n.basePrice || 0).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        const chgClass = chg > 0 ? "up" : chg < 0 ? "down" : "same";
+
+        const priceEl = div.querySelector(".stock-price");
+        if (priceEl) {
+          priceEl.className = `stock-price ${chgClass}`;
+          priceEl.innerText = price;
+        }
+
+        const changeEl = div.querySelector(".stock-change");
+        if (changeEl) {
+          changeEl.className = `remaining stock-change ${chgClass}`;
+          changeEl.innerText = `${sign}${chg.toFixed(2)}%`;
+        }
+      }
+    });
   },
   
   saveData() {
@@ -134,20 +239,56 @@ const stock = {
       div.className = "item-card stock-card";
       div.dataset.id = String(n.id);
       
-      const price = (n.currentPrice || n.basePrice || 0).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
       const chg = n.changePercent || 0;
-      const chgClass = chg > 0 ? "up" : chg < 0 ? "down" : "same";
       const sign = chg >= 0 ? "+" : "";
-      
-      div.innerHTML = `
-        <div class="title" style="color: var(--accent-color);">${n.name}</div>
-        <div class="noti-info stock-info">
-          <span class="stock-price ${chgClass}">${price}</span>
-          <span class="remaining stock-change ${chgClass}">${sign}${chg.toFixed(2)}%</span>
-        </div>
-      `;
+
+      div.classList.remove("secret-up", "secret-down");
+
+      if (this.isSecretMode) {
+        if (chg > 0) {
+          div.classList.add("secret-up");
+        } else if (chg < 0) {
+          div.classList.add("secret-down");
+        }
+
+        const changeValText = Math.abs(chg).toFixed(2);
+        const alignment = chg >= 0 ? "left" : "right";
+        
+        div.style.display = "flex";
+        div.style.justifyContent = alignment === "left" ? "flex-start" : "flex-end";
+        div.style.alignItems = "center";
+        div.style.minWidth = "60px";
+        div.style.maxWidth = "60px";
+        
+        div.innerHTML = `
+          <div class="noti-info stock-info" style="width: 100%; margin-top: 0; justify-content: ${alignment === "left" ? "flex-start" : "flex-end"};">
+            <span class="stock-change" style="color: #94a3b8; font-family: 'JetBrains Mono'; font-weight: bold;">${changeValText}</span>
+          </div>
+        `;
+      } else {
+        const price = (n.currentPrice || n.basePrice || 0).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        const chgClass = chg > 0 ? "up" : chg < 0 ? "down" : "same";
+        
+        div.style.display = "";
+        div.style.justifyContent = "";
+        div.style.alignItems = "";
+        div.style.minWidth = "";
+        div.style.maxWidth = "";
+
+        div.innerHTML = `
+          <div class="title" style="color: var(--accent-color);">${n.name}</div>
+          <div class="noti-info stock-info">
+            <span class="stock-price ${chgClass}">${price}</span>
+            <span class="remaining stock-change ${chgClass}">${sign}${chg.toFixed(2)}%</span>
+          </div>
+        `;
+      }
       
       div.onclick = (e) => {
+        if (this.isSecretMode) {
+          e.stopPropagation();
+          return;
+        }
         if (window.utils && utils.closeAllUIPopups) utils.closeAllUIPopups(true);
         e.stopPropagation();
         this.toggleDetail(String(n.id), div);
@@ -158,6 +299,19 @@ const stock = {
               e.preventDefault();
               showContextMenu(e, 'stock', n.id);
           }
+      };
+
+      div.onmouseenter = (e) => {
+        if (this.isSecretMode && window.utils && utils.showValidationTip) {
+          const type = chg > 0 ? "up" : chg < 0 ? "down" : "same";
+          utils.showValidationTip(div, n.name, type, { noAutoHide: true });
+        }
+      };
+
+      div.onmouseleave = (e) => {
+        if (window.utils && utils.hideValidationTip) {
+          utils.hideValidationTip();
+        }
       };
 
       listContainer.appendChild(div);
@@ -218,7 +372,7 @@ const stock = {
     const open = item.open ? item.open.toLocaleString() : "-";
     const high = item.high ? item.high.toLocaleString() : "-";
     const low = item.low ? item.low.toLocaleString() : "-";
-    const tradingVal = item.tradingValue ? this.formatTradingValue(item.tradingValue) : "-";
+    const tradingVal = item.tradingValue ? this.formatTradingValue(item.tradingValue, item) : "-";
     
     const ftwHigh = item.fiftyTwoWeekHigh ? item.fiftyTwoWeekHigh.toLocaleString() : "-";
     const ftwLow = item.fiftyTwoWeekLow ? item.fiftyTwoWeekLow.toLocaleString() : "-";
@@ -268,14 +422,53 @@ const stock = {
     this.fetchCandles(id);
   },
 
-  formatTradingValue(val) {
-    if (val >= 1e8) {
-      return Math.round(val / 1e8).toLocaleString() + "억";
+  formatTradingValue(val, item = null) {
+    const numVal = parseFloat(val);
+    if (isNaN(numVal) || numVal <= 0) return "-";
+
+    const lang = window.i18n ? i18n.userLang : "en";
+
+    const formatDecimal = (v, precision) => {
+      const formatted = v.toFixed(precision);
+      let clean = formatted;
+      if (clean.includes('.')) {
+        while (clean.endsWith('0')) {
+          clean = clean.slice(0, -1);
+        }
+        if (clean.endsWith('.')) {
+          clean = clean.slice(0, -1);
+        }
+      }
+      return clean;
+    };
+
+    if (lang === "ko") {
+      if (numVal >= 1e12) return formatDecimal(numVal / 1e12, 1) + "조";
+      if (numVal >= 1e8) return formatDecimal(numVal / 1e8, 1) + "억";
+      if (numVal >= 1e4) return formatDecimal(numVal / 1e4, 1) + "만";
+      return numVal.toLocaleString();
+    } else if (lang === "ja") {
+      if (numVal >= 1e12) return formatDecimal(numVal / 1e12, 1) + "兆";
+      if (numVal >= 1e8) return formatDecimal(numVal / 1e8, 1) + "億";
+      if (numVal >= 1e4) return formatDecimal(numVal / 1e4, 1) + "万";
+      return numVal.toLocaleString();
+    } else if (lang === "zh-CN") {
+      if (numVal >= 1e12) return formatDecimal(numVal / 1e12, 1) + "兆";
+      if (numVal >= 1e8) return formatDecimal(numVal / 1e8, 1) + "亿";
+      if (numVal >= 1e4) return formatDecimal(numVal / 1e4, 1) + "万";
+      return numVal.toLocaleString();
+    } else if (lang === "zh-TW") {
+      if (numVal >= 1e12) return formatDecimal(numVal / 1e12, 1) + "兆";
+      if (numVal >= 1e8) return formatDecimal(numVal / 1e8, 1) + "億";
+      if (numVal >= 1e4) return formatDecimal(numVal / 1e4, 1) + "萬";
+      return numVal.toLocaleString();
+    } else {
+      if (numVal >= 1e12) return formatDecimal(numVal / 1e12, 2) + "T";
+      if (numVal >= 1e9) return formatDecimal(numVal / 1e9, 2) + "B";
+      if (numVal >= 1e6) return formatDecimal(numVal / 1e6, 2) + "M";
+      if (numVal >= 1e3) return formatDecimal(numVal / 1e3, 2) + "K";
+      return numVal.toLocaleString();
     }
-    if (val >= 1e4) {
-      return Math.round(val / 1e4).toLocaleString() + "만";
-    }
-    return val.toLocaleString();
   },
 
   async fetchCandles(id) {
@@ -498,6 +691,7 @@ const stock = {
       if (idx !== -1) {
         this.items[idx].name = stockData.name;
         this.items[idx].code = stockData.code;
+        this.items[idx].nation = stockData.nation;
         this.items[idx].cachedCandles = null;
       }
     } else {
@@ -505,6 +699,7 @@ const stock = {
         id: Date.now(),
         name: stockData.name,
         code: stockData.code,
+        nation: stockData.nation,
       };
       this.items.push(newStock);
     }

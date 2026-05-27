@@ -2,6 +2,31 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
+function parse_korean_value($str) {
+    if (!$str || $str === '-') return null;
+    $str = str_replace([',', ' ', 'USD', 'JPY', 'KRW'], '', $str);
+    $total = 0.0;
+    // Match numbers with optional decimal point followed by 조, 억, 만
+    if (preg_match_all('/([\d.]+)(조|억|만)/u', $str, $matches, PREG_SET_ORDER)) {
+        foreach ($matches as $match) {
+            $num = (float)$match[1];
+            $unit = $match[2];
+            if ($unit === '조') {
+                $total += $num * 1000000000000;
+            } else if ($unit === '억') {
+                $total += $num * 100000000;
+            } else if ($unit === '만') {
+                $total += $num * 10000;
+            }
+            $str = str_replace($match[0], '', $str);
+        }
+    }
+    if (preg_match('/([\d.]+)/', $str, $m)) {
+        $total += (float)$m[1];
+    }
+    return $total > 0 ? $total : null;
+}
+
 function get_domestic_stock_data($codes) {
     $stocks = [];
     $codes_str = implode(',', $codes);
@@ -100,9 +125,7 @@ function get_extra_info(&$stock) {
                 if ($info['code'] === 'lowPrice') $stock['lowPrice'] = (float)str_replace(',', '', $info['value']);
                 if ($info['code'] === 'accumulatedTradingVolume') $stock['volume'] = (float)str_replace(',', '', $info['value']);
                 if ($info['code'] === 'accumulatedTradingValue') {
-                    // Extract numeric part from "149억 USD"
-                    preg_match('/([\d,]+)/', $info['value'], $m);
-                    if ($m) $stock['tradingValue'] = (float)str_replace(',', '', $m[1]) * 100000000; // Simplified to '억' unit
+                    $stock['tradingValue'] = parse_korean_value($info['value']);
                 }
             }
         }

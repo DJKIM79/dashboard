@@ -123,7 +123,7 @@
   "msgStockUnavailable": "ฟีเจอร์หุ้นไม่รองรับในภาษานี้",
   "marketOpen": "เปิดทำการ",
   "marketClosed": "ปิดทำการ",
-  "lblTradingValue": "มูลค่าการซื้อขาย",
+  "lblTradingValue": "Trade",
   "lbl52WeekHigh": "สูงสุดรอบ 52 สัปดาห์",
   "lbl52WeekLow": "ต่ำสุดรอบ 52 สัปดาห์",
   "lblOpenPrice": "ราคาเปิด",
