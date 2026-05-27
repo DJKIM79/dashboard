@@ -133,12 +133,11 @@ function get_extra_info(&$stock) {
         $url = "https://finance.naver.com/item/main.naver?code=" . $code;
         $html = @file_get_contents($url, false, $context);
         if ($html) {
-            $html_utf8 = iconv("EUC-KR", "UTF-8", $html);
-            if (preg_match('/52주 최고<\/span>\s*<em class="(?:up|same)">\s*([\d,]+)/', $html_utf8, $matches)) {
-                $stock['fiftyTwoWeekHigh'] = (int)str_replace(',', '', $matches[1]);
-            }
-            if (preg_match('/52주 최저<\/span>\s*<em class="(?:down|same)">\s*([\d,]+)/', $html_utf8, $matches)) {
-                $stock['fiftyTwoWeekLow'] = (int)str_replace(',', '', $matches[1]);
+            $html_utf8 = iconv("EUC-KR", "UTF-8//IGNORE", $html);
+            // New robust regex for 52-week high/low
+            if (preg_match('/<th[^>]*>52.*?<\/th>\s*<td[^>]*>\s*<em>([\d,]+)<\/em>.*?<em>([\d,]+)<\/em>/s', $html_utf8, $matches)) {
+                $stock['fiftyTwoWeekHigh'] = (float)str_replace(',', '', $matches[1]);
+                $stock['fiftyTwoWeekLow'] = (float)str_replace(',', '', $matches[2]);
             }
         }
     }
@@ -148,36 +147,30 @@ function get_candle_data($code) {
     $isInternational = strpos($code, '.') !== false;
     $options = [ "http" => [ "header" => "User-Agent: Mozilla/5.0\r\n" ] ];
     $context = stream_context_create($options);
+    $candles = [];
     
     if ($isInternational) {
-        $today = date('Ymd');
-        $url = "https://api.finance.naver.com/siseJson.naver?symbol=" . $code . "&requestType=1&startTime=20240101&endTime=" . $today . "&timeframe=day";
-    } else {
-        $url = "https://fchart.stock.naver.com/sise.nhn?symbol=" . $code . "&timeframe=day&count=40&requestType=0";
-    }
-
-    $response = @file_get_contents($url, false, $context);
-    if ($response === FALSE) return [];
-
-    $candles = [];
-    if ($isInternational) {
-        $response_utf8 = iconv("EUC-KR", "UTF-8", $response);
-        $data = json_decode(trim($response_utf8), true);
-        if (is_array($data)) {
-            array_shift($data); // header
-            $data = array_slice($data, -40); // last 40
-            foreach ($data as $item) {
+        $url = "https://api.stock.naver.com/chart/foreign/item/" . $code . "?periodType=dayCandle";
+        $response = @file_get_contents($url, false, $context);
+        if ($response === FALSE) return [];
+        $data = json_decode($response, true);
+        if (is_array($data) && isset($data['priceInfos']) && is_array($data['priceInfos'])) {
+            $priceInfos = array_slice($data['priceInfos'], -40); // last 40
+            foreach ($priceInfos as $item) {
                 $candles[] = [
-                    "time" => $item[0],
-                    "open" => (float)$item[1],
-                    "high" => (float)$item[2],
-                    "low" => (float)$item[3],
-                    "close" => (float)$item[4],
-                    "volume" => (float)$item[5]
+                    "time" => $item['localDate'],
+                    "open" => (float)$item['openPrice'],
+                    "high" => (float)$item['highPrice'],
+                    "low" => (float)$item['lowPrice'],
+                    "close" => (float)$item['closePrice'],
+                    "volume" => (float)$item['accumulatedTradingVolume']
                 ];
             }
         }
     } else {
+        $url = "https://fchart.stock.naver.com/sise.nhn?symbol=" . $code . "&timeframe=day&count=40&requestType=0";
+        $response = @file_get_contents($url, false, $context);
+        if ($response === FALSE) return [];
         $response_utf8 = iconv("EUC-KR", "UTF-8", $response);
         if (preg_match_all('/<item data="([^"]+)"\s*\/>/', $response_utf8, $matches)) {
             foreach ($matches[1] as $itemStr) {

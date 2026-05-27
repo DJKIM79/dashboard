@@ -4656,10 +4656,12 @@ body.tutorial-closing .driver-active-element {
   margin: 0;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+.stock-container .item-card.up:hover,
 .stock-container .item-card.secret-up:hover {
   border-color: #ef4444 !important;
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
 }
+.stock-container .item-card.down:hover,
 .stock-container .item-card.secret-down:hover {
   border-color: #3b82f6 !important;
   box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
