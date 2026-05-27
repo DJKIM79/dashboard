@@ -7,6 +7,8 @@
   "quoteAuthorDefault": "- Chris Grosser",
   "cmEdit": "แก้ไข",
   "cmDelete": "ลบ",
+  "cmSecret": "กะทัดรัด",
+  "cmNormal": "ขยาย",
   "cmHide": "ซ่อน",
   "cmAdd": "เพิ่ม",
   "cmAiExport": "ส่งออกการสนทนา",

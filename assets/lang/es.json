@@ -7,6 +7,8 @@
   "quoteAuthorDefault": "- Chris Grosser",
   "cmEdit": "Editar",
   "cmDelete": "Eliminar",
+  "cmSecret": "Compacto",
+  "cmNormal": "Expandir",
   "cmHide": "Ocultar",
   "cmAdd": "Añadir",
   "cmNewChat": "Nueva ventana de chat",

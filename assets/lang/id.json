@@ -7,6 +7,8 @@
   "quoteAuthorDefault": "- Chris Grosser",
   "cmEdit": "Ubah",
   "cmDelete": "Hapus",
+  "cmSecret": "Kompak",
+  "cmNormal": "Perluas",
   "cmHide": "Sembunyikan",
   "cmAdd": "Tambah",
   "cmAiExport": "Ekspor percakapan",

@@ -7,6 +7,8 @@
   "quoteAuthorDefault": "- Chris Grosser",
   "cmEdit": "编辑",
   "cmDelete": "删除",
+  "cmSecret": "缩小",
+  "cmNormal": "展开",
   "cmHide": "隐藏",
   "cmAdd": "添加",
   "cmNewChat": "新对话窗口",

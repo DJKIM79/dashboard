@@ -219,7 +219,7 @@ const ui = {
             if (window.i18n) {
               secretText.innerText = i18n.get(key);
             } else {
-              secretText.innerText = isSecret ? "일반" : "비밀";
+              secretText.innerText = isSecret ? "확대" : "축소";
             }
           }
         }

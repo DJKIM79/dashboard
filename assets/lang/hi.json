@@ -7,6 +7,8 @@
   "quoteAuthorDefault": "- Chris Grosser",
   "cmEdit": "संपादित करें",
   "cmDelete": "हटाएं",
+  "cmSecret": "कॉम्पैक्ट",
+  "cmNormal": "विस्तार",
   "cmHide": "छिपाएं",
   "cmAdd": "जोड़ें",
   "cmAiExport": "चैट निर्यात करें",
