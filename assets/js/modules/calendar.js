@@ -121,7 +121,7 @@ const calendar = {
       prevMonthDate.setHours(0, 0, 0, 0);
       
       if (prevMonthDate < todayObj) {
-          div.style.cursor = "not-allowed";
+          div.classList.add("cursor-not-allowed");
           div.onclick = (e) => e.stopPropagation();
       } else {
           div.onclick = (e) => {
@@ -144,7 +144,7 @@ const calendar = {
       currentMonthDate.setHours(0, 0, 0, 0);
       
       if (currentMonthDate < todayObj) {
-          div.style.cursor = "not-allowed";
+          div.classList.add("cursor-not-allowed");
           div.onclick = (e) => e.stopPropagation();
       } else {
           div.onclick = (e) => {
@@ -162,7 +162,7 @@ const calendar = {
       nextMonthDate.setHours(0, 0, 0, 0);
       
       if (nextMonthDate < todayObj) {
-          div.style.cursor = "not-allowed";
+          div.classList.add("cursor-not-allowed");
           div.onclick = (e) => e.stopPropagation();
       } else {
           div.onclick = (e) => {

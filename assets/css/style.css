@@ -1017,11 +1017,13 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .fa-caret-right {
   right: 0;
 }
-#cal-month-year {
+#cal-month-year,
+#noti-cal-month-year {
   cursor: pointer;
   transition: 0.2s;
 }
-#cal-month-year:hover {
+#cal-month-year:hover,
+#noti-cal-month-year:hover {
   color: var(--accent-color);
   transform: scale(1.05);
 }
@@ -1080,7 +1082,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   transition: background 0.2s;
   cursor: pointer;
 }
-.calendar-day:hover {
+.calendar-day:not(.cursor-not-allowed):hover {
   background: var(--accent-color);
   color: var(--accent-contrast) !important;
 }
@@ -1153,7 +1155,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   transition: 0.2s;
   font-size: 0.75rem;
 }
-.month-item:hover {
+.month-item:not(.cursor-not-allowed):hover {
   background: var(--accent-color);
   color: var(--accent-contrast) !important;
 }
@@ -1161,7 +1163,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   color: var(--accent-color);
   border: 1px solid var(--accent-color);
 }
-.month-item.current:hover {
+.month-item.current:hover:not(.cursor-not-allowed) {
   color: var(--accent-contrast) !important;
 }
 .sun {
@@ -1170,10 +1172,10 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .sat {
   color: #60a5fa !important;
 }
-.calendar-day:hover.sun,
-.calendar-day:hover.sat,
-.month-item:hover.sun,
-.month-item:hover.sat {
+.calendar-day:not(.cursor-not-allowed):hover.sun,
+.calendar-day:not(.cursor-not-allowed):hover.sat,
+.month-item:not(.cursor-not-allowed):hover.sun,
+.month-item:not(.cursor-not-allowed):hover.sat {
   color: var(--accent-contrast) !important;
 }
 .setting-row {
@@ -1283,19 +1285,18 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   cursor: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='4.93' y1='4.93' x2='19.07' y2='19.07'%3E%3C/line%3E%3C/svg%3E") 12 12, not-allowed !important;
 }
 
+.calendar-day.cursor-not-allowed,
+.month-item.cursor-not-allowed,
+.cal-nav.cursor-not-allowed,
+.month-selector-year-header i.cursor-not-allowed {
+  cursor: pointer !important;
+}
+
 .cal-nav.cursor-not-allowed:hover {
   background: transparent !important;
   color: inherit !important;
   opacity: 0.1 !important;
   transform: translateY(-50%) !important;
-}
-
-.month-item.cursor-not-allowed:hover,
-.calendar-day.cursor-not-allowed:hover {
-  background: transparent !important;
-  color: inherit !important;
-  opacity: 0.15 !important;
-  transform: none !important;
 }
 
 .modal {
