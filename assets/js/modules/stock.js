@@ -609,9 +609,7 @@ const stock = {
       el.innerHTML = "";
     }
   },
-  
-  async loadStockCodes(forceRefresh = false) {
-  },
+
 
   scroll(dir) {
     const list = document.getElementById("stock-list");
