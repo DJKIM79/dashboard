@@ -16,21 +16,25 @@ const search = {
     const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
     return [...defaultEngines, ...customEngines];
   },
+  getFaviconUrl(engine) {
+    if (!engine) return "";
+    if (engine.isDefault) {
+      return `https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}`;
+    }
+    try {
+      const domain = new URL(engine.url).hostname;
+      return `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+    } catch (e) {
+      return "";
+    }
+  },
   updateIcon() {
     const engineId = this.currentEngine;
     const iconEl = document.getElementById("search-engine-current");
     if (!iconEl) return;
     const allEngines = this.getAllEngines();
     const engine = allEngines.find(e => e.id === engineId) || allEngines[0];
-    let faviconUrl = "";
-    if (engine.isDefault) {
-      faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}`;
-    } else {
-      try {
-        const domain = new URL(engine.url).hostname;
-        faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
-      } catch (e) { faviconUrl = ""; }
-    }
+    const faviconUrl = this.getFaviconUrl(engine);
     if (faviconUrl) {
       iconEl.innerHTML = `<img src="${faviconUrl}" alt="${engine.name}">`;
     } else {
@@ -47,15 +51,7 @@ const search = {
       const div = document.createElement("div");
       div.className = "engine-option";
       div.onclick = (e) => this.quickSelect(engine.id, e);
-      let faviconUrl = "";
-      if (engine.isDefault) {
-        faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}`;
-      } else {
-        try {
-          const domain = new URL(engine.url).hostname;
-          faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
-        } catch (e) { faviconUrl = ""; }
-      }
+      const faviconUrl = this.getFaviconUrl(engine);
       if (faviconUrl) {
         div.innerHTML = `<img src="${faviconUrl}" alt="${engine.name}">`;
       } else {
@@ -79,7 +75,12 @@ const search = {
   quickSelect(engineId, e) {
     if (e) e.stopPropagation();
     this.currentEngine = engineId;
+    localStorage.setItem("dj_search_engine", engineId);
     this.updateIcon();
+    if (window.settings && typeof settings.updateSearchEngineTriggerUI === "function") {
+      settings.updateSearchEngineTriggerUI();
+      settings.renderSearchEngineList();
+    }
     const menu = document.getElementById("search-engine-menu");
     if (menu) menu.classList.remove("active");
     const input = document.getElementById("searchInput");

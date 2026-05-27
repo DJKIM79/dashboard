@@ -256,6 +256,8 @@ const utils = {
         "dj_weather_locations",
         JSON.stringify(weather.locations),
       );
+    if (window.stock)
+      localStorage.setItem("dj_stocks", JSON.stringify(stock.items));
   },
   showValidationTip(elementId, message, type = "error", options = {}) {
     const btn = typeof elementId === "string" ? document.getElementById(elementId) : elementId;

@@ -127,26 +127,13 @@ const settings = {
     const triggerName = document.getElementById("trigger-name");
     if (!triggerFavicon && !triggerName) return;
     const currentEngineId = localStorage.getItem("dj_search_engine") || "google";
-    const defaultEngines = [
-      { id: "google", name: "Google", domain: "google.com", isDefault: true },
-      { id: "naver", name: "Naver", domain: "naver.com", isDefault: true }
-    ];
-    const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
-    const allEngines = [...defaultEngines, ...customEngines];
-    const engine = allEngines.find(e => e.id === currentEngineId) || defaultEngines[0];
-    let faviconUrl = "";
-    if (engine.isDefault) {
-      faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}`;
-    } else {
-      try {
-        const domain = new URL(engine.url).hostname;
-        faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
-      } catch (e) { faviconUrl = ""; }
-    }
+    const allEngines = window.search ? search.getAllEngines() : [];
+    const engine = allEngines.find(e => e.id === currentEngineId) || allEngines[0];
+    const faviconUrl = window.search && engine ? search.getFaviconUrl(engine) : "";
     if (triggerFavicon) {
       triggerFavicon.innerHTML = faviconUrl ? `<img src="${faviconUrl}" alt="icon">` : '<i class="fas fa-search"></i>';
     }
-    if (triggerName) {
+    if (triggerName && engine) {
       triggerName.innerText = engine.name;
     }
   },
@@ -193,24 +180,11 @@ const settings = {
     listArea.style.maxHeight = "300px";
     listArea.style.overflowY = "auto";
     const currentEngine = localStorage.getItem("dj_search_engine") || "google";
-    const customEngines = JSON.parse(localStorage.getItem("dj_search_engines_custom") || "[]");
-    const defaultEngines = [
-      { id: "google", name: "Google", domain: "google.com", isDefault: true },
-      { id: "naver", name: "Naver", domain: "naver.com", isDefault: true }
-    ];
-    const allEngines = [...defaultEngines, ...customEngines];
+    const allEngines = window.search ? search.getAllEngines() : [];
     allEngines.forEach(engine => {
       const item = document.createElement("div");
       item.className = `engine-item ${engine.id === currentEngine ? "active" : ""}`;
-      let faviconUrl = "";
-      if (engine.isDefault) {
-        faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${engine.domain}`;
-      } else {
-        try {
-          const domain = new URL(engine.url).hostname;
-          faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
-        } catch(e) { faviconUrl = ""; }
-      }
+      const faviconUrl = window.search ? search.getFaviconUrl(engine) : "";
       item.onclick = (e) => {
           e.stopPropagation();
           this.updateSearchEngine(engine.id);
