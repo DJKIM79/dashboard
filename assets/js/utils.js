@@ -203,6 +203,47 @@ const utils = {
           memo.autoSave();
       }
     }
+  },
+
+  closeAllUIPopups(skipStock = false) {
+    // 1. FAB Menus
+    document.querySelectorAll(".fab-menu").forEach(m => m.classList.remove("active"));
+    document.querySelectorAll(".fab-main").forEach(b => b.classList.remove("active"));
+
+    // 2. Smart Folders
+    document.querySelectorAll(".smart-folder").forEach(f => f.classList.remove("open"));
+
+    // 3. Settings/Engine Popups
+    if (window.settings && settings.closeAllPopups) {
+      settings.closeAllPopups();
+    }
+
+    // 4. Search Menu
+    const searchMenu = document.getElementById("search-engine-menu");
+    if (searchMenu) searchMenu.classList.remove("active");
+
+    // 5. Weather Forecast
+    document.querySelectorAll(".forecast-window").forEach(w => w.classList.remove("active"));
+
+    // 6. Stock Detail
+    if (!skipStock) {
+      if (window.stock && typeof stock.closeDetailPopup === "function") {
+          stock.closeDetailPopup();
+      } else {
+          const stockPopup = document.getElementById("global-stock-detail");
+          if (stockPopup && stockPopup.classList.contains("show")) {
+              stockPopup.classList.remove("show");
+              stockPopup.dataset.currentId = '';
+              setTimeout(() => {
+                if (!stockPopup.classList.contains("show")) {
+                    stockPopup.style.display = 'none';
+                    stockPopup.style.opacity = '';
+                    stockPopup.style.visibility = '';
+                }
+              }, 250);
+          }
+      }
+    }
   },  saveData() {
     if (window.shortcutMod)
       localStorage.setItem("dj_shortcuts", JSON.stringify(shortcutMod.items));

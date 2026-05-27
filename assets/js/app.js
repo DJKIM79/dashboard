@@ -63,6 +63,7 @@ const app = {
     ai.init();
     shortcutMod.init();
     noti.init();
+    if (window.stock) stock.init();
     memo.init();
     calendar.render();
     ui.applyVisibility();
@@ -142,8 +143,9 @@ const app = {
   },
   addCurrentItem() {
     const menu = document.getElementById("globalContextMenu");
-    const type = menu ? menu.dataset.type : null;
-    if (menu) menu.style.display = "none";
+    if (!menu) return;
+    const type = menu.dataset.type;
+    menu.style.display = "none";
     if (type === "weather") {
       settings.openModal();
       setTimeout(() => {
@@ -156,18 +158,21 @@ const app = {
       noti.openModal();
     } else if (type === "shortcut") {
       shortcutMod.openModal();
+    } else if (type === "stock") {
+      if (window.stock) stock.openModal();
     }
   },
   editCurrentItem() {
-    const menu = document.getElementById("globalContextMenu");
-    if (!menu) return;
-    const type = menu.dataset.type;
-    const id = menu.dataset.id;
-    menu.style.display = "none";
-    if (type === "shortcut") shortcutMod.openModal(id);
-    else if (type === "memo") memo.openModal(id);
-    else if (type === "noti") noti.openModal(id);
-    else if (type === "weather") {
+      const menu = document.getElementById("globalContextMenu");
+      if (!menu) return;
+      const type = menu.dataset.type;
+      const id = menu.dataset.id;
+      menu.style.display = "none";
+      if (type === "shortcut") shortcutMod.openModal(id);
+      else if (type === "memo") memo.openModal(id);
+      else if (type === "noti") noti.openModal(id);
+      else if (type === "stock") { if (window.stock) stock.openModal(Number(id)); }
+      else if (type === "weather") {
       settings.openModal();
       setTimeout(() => {
         const input = document.getElementById("citySearchInput");
@@ -187,6 +192,8 @@ const app = {
       memo.delete(id);
     } else if (type === "noti") {
       noti.delete(id);
+    } else if (type === "stock") {
+      if (window.stock) stock.deleteItem(Number(id));
     } else if (type === "weather") {
       if (id === "current") {
         if (window.settings && typeof settings.updateShowWeather === "function") {

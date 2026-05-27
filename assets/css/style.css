@@ -562,7 +562,7 @@ body::before {
   gap: 10px;
   pointer-events: none; 
   position: relative;
-  z-index: 100;
+  z-index: 500;
   transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(var(--widget-scale)) translateZ(0);
   transform-origin: bottom left;
@@ -577,7 +577,7 @@ body::before {
   flex-direction: column-reverse;
   pointer-events: none; 
   position: relative;
-  z-index: 100;
+  z-index: 500;
   transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(var(--widget-scale)) translateZ(0);
   transform-origin: bottom right;
@@ -744,26 +744,19 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #noti-folder {
   transform-origin: right bottom;
 }
-#memo-folder {
+#memo-folder,
+#stock-container {
   transform-origin: left bottom;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
 }
 .widget-hidden {
   opacity: 0 !important;
   visibility: hidden !important;
-  transform: scale(0.9) translateY(20px) !important;
+  transform: scale(0.9) translateY(40px) !important;
   pointer-events: none !important;
-  max-height: 0 !important;
-  min-height: 0 !important;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  overflow: hidden !important;
-  border-width: 0 !important;
-  backface-visibility: hidden;
 }
 #top-right-widgets.widget-hidden {
-  transform: scale(0.9) translateY(-20px) !important;
+  transform: scale(0.9) translateY(-40px) !important;
 }
 #calendar-container.widget-hidden,
 #clock-container.widget-hidden,
@@ -772,8 +765,11 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   filter: blur(15px);
   opacity: 0 !important;
 }
-#memo-folder.widget-hidden {
-  transform: scale(0.9) translateX(-20px) !important;
+#memo-folder.widget-hidden,
+#stock-container.widget-hidden {
+  transform: scale(0.8) translateY(40px) !important;
+  filter: blur(15px);
+  opacity: 0 !important;
 }
 #quote-section.widget-hidden,
 #search-section.widget-hidden,
@@ -1848,7 +1844,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 .engine-popup.show {
   display: flex !important;
   flex-direction: column;
-  animation: fadeIn 0.2s ease;
 }
 #search-engine-popup,
 #ai-provider-popup,
@@ -4064,6 +4059,9 @@ body.tutorial-closing .driver-active-element {
 }
 
 /* Memo Modal */
+#stockModal .modal-content {
+  overflow: visible;
+}
 #memoModal .modal-content {
   width: fit-content;
   min-width: 500px;
@@ -4590,3 +4588,82 @@ body.tutorial-closing .driver-active-element {
 .memo-dropdown-item.header-6 { font-size: 0.85rem; font-weight: 600; color: #64748b; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Stock Widget */
+.stock-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 500px);
+  flex: 1;
+  justify-content: flex-start;
+  margin: 0 20px;
+  position: relative;
+  pointer-events: auto;
+  z-index: 400;
+  transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(var(--widget-scale));
+}
+.stock-list {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  padding: 5px 0;
+}
+.stock-list::-webkit-scrollbar {
+  display: none;
+}
+.stock-scroll-btn {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  color: var(--accent-color);
+  font-size: 1.2rem;
+  padding: 10px;
+  display: none;
+}
+.stock-scroll-btn.show {
+  display: block;
+}
+.stock-scroll-btn:hover {
+  opacity: 1;
+}
+.stock-scroll-btn.disabled {
+  opacity: 0.1;
+  cursor: not-allowed;
+}
+.stock-container .item-card {
+  min-width: 140px;
+  max-width: 140px;
+  flex-shrink: 0;
+  margin: 0;
+}
+.stock-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+.stock-detail-window {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  visibility: hidden;
+  max-height: none !important;
+}
+.stock-detail-window.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  visibility: visible;
+  display: block !important;
+}
+.stock-price.up, .stock-change.up { color: #ef4444; }
+.stock-price.down, .stock-change.down { color: #3b82f6; }
+.stock-price.same, .stock-change.same { color: #94a3b8; }

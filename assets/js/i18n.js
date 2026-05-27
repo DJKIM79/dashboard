@@ -7,6 +7,12 @@ const i18n = {
     if (lang.startsWith("zh")) return "zh-CN";
     if (lang.startsWith("fr")) return "fr";
     if (lang.startsWith("de")) return "de";
+    if (lang.startsWith("es")) return "es";
+    if (lang.startsWith("hi")) return "hi";
+    if (lang.startsWith("ar")) return "ar";
+    if (lang.startsWith("pt")) return "pt";
+    if (lang.startsWith("id")) return "id";
+    if (lang.startsWith("th")) return "th";
     return "en";
   },
   get userLang() {

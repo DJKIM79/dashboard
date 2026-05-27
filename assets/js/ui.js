@@ -55,6 +55,7 @@ const ui = {
       "calendar",
       "clock",
       "fileMgmt",
+      "stock",
     ];
     const widgetMap = {
       weather: "top-right-widgets",
@@ -67,6 +68,7 @@ const ui = {
       calendar: "calendar-container",
       clock: "clock-container",
       fileMgmt: "top-left-widgets",
+      stock: "stock-container",
     };
     types.forEach((type) => {
       let isHidden = localStorage.getItem(`dj_hide_${type}`) === "true";
@@ -74,6 +76,17 @@ const ui = {
         if (type === "ai") isHidden = true;
         else isHidden = false;
       }
+
+      // Language check for stock widget
+      if (type === "stock") {
+        const lang = localStorage.getItem("dj_language") || "auto";
+        const actualLang = (lang === "auto") ? (window.i18n ? i18n.userLang : "en") : lang;
+        const supported = ["ko", "en", "ja", "zh-CN", "zh-TW"];
+        if (!supported.includes(actualLang)) {
+           isHidden = true;
+        }
+      }
+
       const targets = Array.isArray(widgetMap[type])
         ? widgetMap[type]
         : [widgetMap[type]];
@@ -93,7 +106,21 @@ const ui = {
         }
       });
       const sideIcon = document.getElementById(`side-${type}`);
-      if (sideIcon) sideIcon.classList.toggle("active", !isHidden);
+      if (sideIcon) {
+        sideIcon.classList.toggle("active", !isHidden);
+        
+        // Language check for stock icon visibility in sidebar
+        if (type === "stock") {
+          const lang = localStorage.getItem("dj_language") || "auto";
+          const actualLang = (lang === "auto") ? (window.i18n ? i18n.userLang : "en") : lang;
+          const supported = ["ko", "en", "ja", "zh-CN", "zh-TW"];
+          if (!supported.includes(actualLang)) {
+             sideIcon.style.display = 'none';
+          } else {
+             sideIcon.style.display = '';
+          }
+        }
+      }
     });
     if (window.shortcutMod) {
        shortcutMod.checkLayout();
@@ -101,6 +128,9 @@ const ui = {
     }
   },
   toggleWidget(type) {
+    if (type === "stock") {
+      if (window.stock && !stock.isSupported()) return;
+    }
     if (type === "ai") {
       if (!window.ai || !ai.isConnected) {
         utils.closeModal("settingModal"); // Ensure any existing modal is closed
@@ -171,7 +201,7 @@ const ui = {
       if (id !== "current" && editItem) {
         editItem.style.display = "flex";
       }
-    } else if (["memo", "noti"].includes(type)) {
+    } else if (["memo", "noti", "stock"].includes(type)) {
       if (addItem) addItem.style.display = "flex";
       if (editItem) editItem.style.display = id ? "flex" : "none";
       if (delItem) delItem.style.display = id ? "flex" : "none";

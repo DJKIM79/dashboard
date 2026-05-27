@@ -217,8 +217,18 @@ const tutorial = {
           popover: {
             title: window.i18n ? window.i18n.get("tutClockTitle") : "⏰ 시계 위젯",
             description: window.i18n ? window.i18n.get("tutClockDesc") : "현재 시간과 날짜를 한눈에 확인하고, 클릭하여 12/24시간 포맷을 변경할 수 있습니다.",
-            side: "top",
-            align: "center",
+            side: "left",
+            align: "end",
+          },
+          onHighlightStarted: () => syncDummyData('none')
+        },
+        {
+          element: "#stock-container",
+          popover: {
+            title: window.i18n ? window.i18n.get("tutStockTitle") : "📈 주식 위젯",
+            description: window.i18n ? window.i18n.get("tutStockDesc") : "국내 및 해외 주식 정보를 실시간으로 확인하세요. 클릭하여 상세 차트와 52주 최고/최저가 등을 볼 수 있습니다.",
+            side: "left",
+            align: "end",
           },
           onHighlightStarted: () => syncDummyData('none')
         },

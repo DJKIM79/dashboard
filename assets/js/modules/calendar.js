@@ -12,6 +12,7 @@ const calendar = {
     });
   },
   changeMonth(val) {
+    if (window.utils && utils.closeAllUIPopups) utils.closeAllUIPopups();
     const grid = document.getElementById("calendar-grid");
     if (grid) {
       grid.classList.remove("slide-left", "slide-right", "pop-in");
@@ -22,10 +23,12 @@ const calendar = {
     this.render();
   },
   changeYear(val) {
+    if (window.utils && utils.closeAllUIPopups) utils.closeAllUIPopups();
     this.currentDate.setFullYear(this.currentDate.getFullYear() + val);
     this.render();
   },
   resetToToday() {
+    if (window.utils && utils.closeAllUIPopups) utils.closeAllUIPopups();
     const grid = document.getElementById("calendar-grid");
     if (grid) {
       grid.classList.remove("slide-left", "slide-right", "pop-in");
@@ -37,6 +40,7 @@ const calendar = {
     this.render();
   },
   handleWidgetClick(e) {
+    if (window.utils && utils.closeAllUIPopups) utils.closeAllUIPopups();
     if (this.isMonthSelectorOpen) {
       this.isMonthSelectorOpen = false;
       this.render();

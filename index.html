@@ -316,6 +316,15 @@
       >
         <i class="fas fa-link"></i>
       </div>
+      
+      <div
+        class="sidebar-icon"
+        id="side-stock"
+        onclick="toggleWidget('stock')"
+        data-i18n-title="sideStock"
+      >
+        <i class="fas fa-chart-line"></i>
+      </div>
       <div
         class="sidebar-icon"
         id="side-memo"
@@ -521,6 +530,14 @@
             >
               <i class="fas fa-sliders-h"></i>
             </div>
+            
+            <div
+              class="widget-btn"
+              data-i18n-title="tipStockAdd"
+              onclick="if(window.stock) stock.openModal()"
+            >
+              <i class="fas fa-chart-line"></i>
+            </div>
             <div
               class="widget-btn"
               data-i18n-title="tipNoti"
@@ -544,6 +561,12 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <div id="stock-container" class="stock-container" oncontextmenu="if(window.showContextMenu) showContextMenu(event, 'stock')">
+        <i class="fas fa-chevron-left stock-scroll-btn left" id="stock-scroll-left" onclick="stock.scroll(-1)"></i>
+        <div id="stock-list" class="stock-list"></div>
+        <i class="fas fa-chevron-right stock-scroll-btn right" id="stock-scroll-right" onclick="stock.scroll(1)"></i>
       </div>
       <div class="right-area">
         <div
@@ -800,6 +823,30 @@
                     <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
                   </div>
                   <div id="lang-popup" class="ai-model-popup"></div>
+                </div>
+              </div>
+              <div
+                class="setting-row"
+                style="margin-top: 5px; width: 98%; margin-left: 1%; justify-content: space-between;"
+              >
+                <span
+                  style="
+                    font-size: 0.85rem;
+                    color: #94a3b8;
+                    white-space: nowrap;
+                    margin: 0;
+                    display: flex;
+                    align-items: center;
+                  "
+                  data-i18n="lblStock"
+                  >주식</span
+                >
+                <div id="stock-interval-wrap" style="position: relative; width: 180px;">
+                  <div id="stock-interval-trigger" class="weather-custom-select" data-outside-ignore onclick="if(window.settings) settings.toggleCustomSelect('stock-interval-popup', event)">
+                    <span id="stock-interval-text" style="font-size: 0.85rem;" data-i18n="optStock10s">10초 갱신 주기</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
+                  </div>
+                  <div id="stock-interval-popup" class="engine-popup"></div>
                 </div>
               </div>
             </div>
@@ -1600,6 +1647,44 @@
         </div>
       </div>
     </div>
+    
+    <div
+      class="modal"
+      id="stockModal"
+      onclick="event.target == this && window.closeModal && closeModal('stockModal')"
+    >
+      <div class="modal-content">
+        <div style="position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; min-height: 30px;">
+          <h3 id="stockModalTitle" data-i18n="modalStockAdd" style="margin: 0; text-align: center; width: 100%;">종목 추가/편집</h3>
+          <div style="position: absolute; right: 0; display: flex; gap: 15px; align-items: center;">
+            <button class="btn-save" style="background: transparent; color: var(--accent-color); padding: 5px; font-size: 1.2rem; width: auto; box-shadow: none;" onclick="if(window.stock) stock.loadStockCodes(true)" data-i18n-title="btnLoadStocks" title="종목 갱신하기"><i class="fas fa-chart-line"></i></button>
+          </div>
+        </div>
+        <div style="position: relative; margin-bottom: 15px;">
+          <input
+            type="text"
+            id="stockSearchInput"
+            data-i18n-ph="stockSearchPh"
+            placeholder="종목 이름 또는 코드를 입력하세요"
+            autocomplete="off"
+            oninput="if(window.stock) stock.handleSearchInput(this.value)"
+            style="width: 100%; box-sizing: border-box; margin-bottom: 0;"
+          />
+          <div id="stockSearchResults" class="engine-popup" style="position: absolute; top: 100%; left: 0; width: 100%; max-height: 300px; overflow-y: auto; display: none; z-index: 100;"></div>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+          <button
+            class="btn-save"
+            id="stockDelBtn"
+            style="display: none; background: #ef4444; color: #fff; width: auto; min-width: 100px;"
+            onclick="if(window.showDeleteConfirm) showDeleteConfirm('stock', window.currentEditStockId)"
+            data-i18n="btnDelete"
+          >
+            삭제
+          </button>
+        </div>
+      </div>
+    </div>
     <div id="introScreen" class="intro-overlay" style="display: none;">
       <div class="intro-card">
         <div class="intro-header">
@@ -1670,6 +1755,7 @@
     <script src="assets/js/modules/settings.js?v=1.0.3"></script>
     <script src="assets/js/modules/ai.js?v=1.0.7"></script>
     <script src="assets/js/modules/files.js"></script>
+    <script src="assets/js/modules/stock.js"></script>
     <script src="assets/js/modules/tutorial.js"></script>
     <script src="assets/js/app.js?v=1.0.1"></script>
   </body>

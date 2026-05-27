@@ -60,6 +60,37 @@ const settings = {
       }
       if (el("aiOutputAtOnceCheck"))
         el("aiOutputAtOnceCheck").checked = aiOutputAtOnce;
+      
+      const stockIntervalText = el("stock-interval-text");
+      const stockIntervalTrigger = el("stock-interval-trigger");
+      if (stockIntervalText) {
+          const lang = localStorage.getItem("dj_language") || "auto";
+          const actualLang = (lang === "auto") ? (window.i18n ? i18n.userLang : "en") : lang;
+          
+          const supported = ["ko", "en", "ja", "zh-CN", "zh-TW"];
+          
+          if (!supported.includes(actualLang)) {
+            stockIntervalText.setAttribute("data-i18n", "msgStockUnavailable");
+            if (window.i18n) stockIntervalText.innerText = i18n.get("msgStockUnavailable");
+            if (stockIntervalTrigger) {
+              stockIntervalTrigger.style.opacity = "0.5";
+              stockIntervalTrigger.style.pointerEvents = "none";
+              stockIntervalTrigger.style.cursor = "not-allowed";
+            }
+          } else {
+            const interval = localStorage.getItem("dj_stock_interval") || 10;
+            const sizeMap = { 5: "optStock5s", 10: "optStock10s", 30: "optStock30s", 60: "optStock1m" };
+            const labelKey = sizeMap[interval] || "optStock10s";
+            stockIntervalText.setAttribute("data-i18n", labelKey);
+            if (window.i18n) stockIntervalText.innerText = i18n.get(labelKey);
+            if (stockIntervalTrigger) {
+              stockIntervalTrigger.style.opacity = "";
+              stockIntervalTrigger.style.pointerEvents = "";
+              stockIntervalTrigger.style.cursor = "";
+            }
+          }
+      }
+
       this.onAIProviderChange();
       if (window.ai && typeof ai.updateStatusUI === "function")
         ai.updateStatusUI();
@@ -934,6 +965,38 @@ const settings = {
   renderCustomSelectOptions(popupId) {
     const popup = document.getElementById(popupId);
     if (!popup) return;
+    
+    if (popupId === "stock-interval-popup") {
+      const currentValue = parseInt(localStorage.getItem("dj_stock_interval") || 10);
+      const options = [
+        { value: 5, label: "optStock5s", defaultText: "5초 갱신 주기" },
+        { value: 10, label: "optStock10s", defaultText: "10초 갱신 주기" },
+        { value: 30, label: "optStock30s", defaultText: "30초 갱신 주기" },
+        { value: 60, label: "optStock1m", defaultText: "1분 갱신 주기" }
+      ];
+      popup.innerHTML = "";
+      options.forEach((opt) => {
+        const item = document.createElement("div");
+        const isActive = opt.value === currentValue;
+        item.className = `engine-item ${isActive ? "active" : ""}`;
+        item.style.paddingLeft = "5px";
+        const labelText = window.i18n ? i18n.get(opt.label) : opt.defaultText;
+        item.innerHTML = `
+          <div class="engine-name" data-i18n="${opt.label}">${labelText}</div>
+          <div class="engine-status">
+            ${isActive ? '<i class="fas fa-check-circle engine-active-icon"></i>' : ''}
+          </div>
+        `;
+        item.onclick = (e) => {
+          e.stopPropagation();
+          this.selectCustomOption("stock", opt.value);
+          this.toggleCustomSelect(popupId, e);
+        };
+        popup.appendChild(item);
+      });
+      return;
+    }
+    
     const type = popupId.includes("quote") ? "quote" : "widget";
     const currentValue = localStorage.getItem(type === "quote" ? "dj_quote_font_size" : "dj_widget_size") || "medium";
     const options = [
@@ -957,6 +1020,15 @@ const settings = {
   selectCustomOption(type, value) {
     if (type === "quote") {
       this.setQuoteFontSize(value);
+    } else if (type === "stock") {
+      localStorage.setItem("dj_stock_interval", value);
+      const textEl = document.getElementById("stock-interval-text");
+      if (textEl) {
+         const sizeMap = { 5: "optStock5s", 10: "optStock10s", 30: "optStock30s", 60: "optStock1m" };
+         textEl.setAttribute("data-i18n", sizeMap[value]);
+         if (window.i18n) textEl.innerText = i18n.get(sizeMap[value]);
+      }
+      if (window.stock) stock.updateIntervalSetting(value);
     } else {
       this.setWidgetSize(value);
     }
@@ -1061,19 +1133,60 @@ const settings = {
     const popupEl = document.getElementById("lang-popup");
     if (!popupEl) return;
     popupEl.innerHTML = "";
-    const currentLang = localStorage.getItem("dj_user_lang") || "auto";
-    const mandatory = [
-        { id: "auto", label: "optAuto" },
+    const currentLangSetting = localStorage.getItem("dj_user_lang") || "auto";
+    const uiLang = window.i18n ? i18n.userLang : "en";
+    
+    const allLangs = [
         { id: "ko", label: "optKo" },
         { id: "en", label: "optEn" },
         { id: "ja", label: "optJa" },
         { id: "zh-CN", label: "optZhCn" },
         { id: "zh-TW", label: "optZhTw" },
         { id: "fr", label: "optFr" },
-        { id: "de", label: "optDe" }
+        { id: "de", label: "optDe" },
+        { id: "es", label: "optEs" },
+        { id: "hi", label: "optHi" },
+        { id: "ar", label: "optAr" },
+        { id: "pt", label: "optPt" },
+        { id: "id", label: "optId" },
+        { id: "th", label: "optTh" }
     ];
-    mandatory.forEach(lang => {
-      const item = this.createLangItem(lang, currentLang);
+
+    // Get localized names for sorting
+    const localized = allLangs.map(l => ({
+        ...l,
+        name: window.i18n ? i18n.get(l.label) : l.id
+    }));
+
+    let prioritized = [];
+    let others = [];
+
+    if (uiLang === "ko") {
+        // Korean sorting: Auto -> Ko -> En -> Rest (가나다)
+        prioritized = [
+            { id: "auto", label: "optAuto", name: window.i18n ? i18n.get("optAuto") : "Auto" },
+            localized.find(l => l.id === "ko"),
+            localized.find(l => l.id === "en")
+        ];
+        others = localized.filter(l => l.id !== "ko" && l.id !== "en");
+    } else {
+        // Other languages sorting: Auto -> En -> Ko -> Rest (Alphabetical)
+        prioritized = [
+            { id: "auto", label: "optAuto", name: window.i18n ? i18n.get("optAuto") : "Auto" },
+            localized.find(l => l.id === "en"),
+            localized.find(l => l.id === "ko")
+        ];
+        others = localized.filter(l => l.id !== "en" && l.id !== "ko");
+    }
+
+    // Sort the 'others' list based on the localized name
+    others.sort((a, b) => a.name.localeCompare(b.name, uiLang));
+
+    const finalOrder = [...prioritized, ...others];
+
+    finalOrder.forEach(lang => {
+      if (!lang) return;
+      const item = this.createLangItem(lang, currentLangSetting);
       popupEl.appendChild(item);
     });
   },
@@ -1098,7 +1211,11 @@ const settings = {
     const triggerText = document.getElementById("lang-trigger-text");
     if (triggerText) {
         const currentLang = localStorage.getItem("dj_user_lang") || "auto";
-        const langMap = { auto: "optAuto", ko: "optKo", en: "optEn", ja: "optJa", "zh-CN": "optZhCn", "zh-TW": "optZhTw", fr: "optFr", de: "optDe" };
+        const langMap = { 
+          auto: "optAuto", ko: "optKo", en: "optEn", ja: "optJa", 
+          "zh-CN": "optZhCn", "zh-TW": "optZhTw", fr: "optFr", de: "optDe",
+          es: "optEs", hi: "optHi", ar: "optAr", pt: "optPt", id: "optId", th: "optTh"
+        };
         const labelKey = langMap[currentLang] || "optAuto";
         triggerText.setAttribute("data-i18n", labelKey);
         if (window.i18n) triggerText.innerText = i18n.get(labelKey);
