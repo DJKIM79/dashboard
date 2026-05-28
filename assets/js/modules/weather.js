@@ -114,10 +114,11 @@ const weather = {
       };
       container.oncontextmenu = (e) => showContextMenu(e, "weather", id);
       const icon = this.getIcon(current.weather_code);
+      const iconColor = this.getIconColor(current.weather_code);
       container.innerHTML = `
         <div class="weather-loc">${locName}</div>
         <div class="weather-main">
-          <i class="fas ${icon}"></i>
+          <i class="fas ${icon}" style="color: ${iconColor}"></i>
           <span>${Math.round(current.temperature_2m)}</span>°
         </div>
         <div class="weather-hl">
@@ -168,6 +169,17 @@ const weather = {
     if ([95, 96, 99].includes(code)) return "fa-bolt";
     return "fa-cloud";
   },
+  getIconColor(code) {
+    if (code === 0) return "#ff7a00"; // 맑음 (Orange)
+    if (code <= 3) return "#dfab84";  // 약간 흐림 (Muted Orange-Gray)
+    if ([45, 48].includes(code)) return "#a0aec0"; // 안개 (Muted Gray)
+    if ([51, 53, 55].includes(code)) return "#60a5fa"; // 가랑비 (Sky Blue)
+    if ([61, 63, 65, 80, 81, 82].includes(code))
+      return "#3b82f6"; // 비/소나기 (Blue)
+    if ([71, 73, 75].includes(code)) return "#ffffff"; // 눈 (White)
+    if ([95, 96, 99].includes(code)) return "#ffd32a"; // 번개 (Gold/Yellow)
+    return "#cbd5e1"; // 흐림/기타 (Light Gray)
+  },
   toggleForecast(id, daily) {
     const el = document.getElementById(`forecast-${id}`);
     const isActive = el.classList.contains("active");
@@ -190,6 +202,7 @@ const weather = {
       const dayName = i === 0 ? i18n.get("today") : days[day];
       const dayClass = day === 0 ? "sun" : day === 6 ? "sat" : "";
       const icon = this.getIcon(daily.weather_code[i]);
+      const iconColor = this.getIconColor(daily.weather_code[i]);
       const max = Math.round(daily.temperature_2m_max[i]);
       const min = Math.round(daily.temperature_2m_min[i]);
       const maxColor = this.getTempColor(max);
@@ -198,7 +211,7 @@ const weather = {
       item.className = "forecast-item";
       item.innerHTML = `
         <div class="forecast-day ${dayClass}">${dayName}</div>
-        <div class="forecast-icon"><i class="fas ${icon}"></i></div>
+        <div class="forecast-icon"><i class="fas ${icon}" style="color: ${iconColor}"></i></div>
         <div class="forecast-temp" style="font-weight: 700;">
           <span style="color: ${maxColor}">${max}°</span> / 
           <span style="color: ${minColor}">${min}°</span>
