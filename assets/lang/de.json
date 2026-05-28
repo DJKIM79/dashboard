@@ -305,10 +305,10 @@
   "cmDelCol": "Spalte löschen",
   "sideStock": "Aktien",
   "lblStock": "Aktien",
-  "optStock5s": "Aktualisierung alle 5 Sek.",
-  "optStock10s": "Aktualisierung alle 10 Sek.",
-  "optStock30s": "Aktualisierung alle 30 Sek.",
-  "optStock1m": "Aktualisierung alle 1 Min.",
+  "optStock5s": "Alle 5 Sek.",
+  "optStock10s": "Alle 10 Sek.",
+  "optStock30s": "Alle 30 Sek.",
+  "optStock1m": "Alle 1 Min.",
   "tipStockAdd": "Aktie hinzufügen",
   "modalStockAdd": "Aktie hinzufügen",
   "modalStockEdit": "Aktie bearbeiten",
@@ -332,5 +332,6 @@
   "optId": "Indonesisch",
   "optTh": "Thailändisch",
   "tutStockTitle": "📈 Aktien-Widget",
-  "tutStockDesc": "Überwachen Sie nationale und internationale Aktien in Echtzeit. Klicken Sie hier, um detaillierte Charts und 52-Wochen-Hochs/Tiefs anzuzeigen."
+  "tutStockDesc": "Überwachen Sie nationale und internationale Aktien in Echtzeit. Klicken Sie hier, um detaillierte Charts und 52-Wochen-Hochs/Tiefs anzuzeigen.",
+  "lblOthers": "Sonstiges"
 }

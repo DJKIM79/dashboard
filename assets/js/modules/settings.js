@@ -943,10 +943,10 @@ const settings = {
     if (popupId === "stock-interval-popup") {
       const currentValue = parseInt(localStorage.getItem("dj_stock_interval") || 10);
       const options = [
-        { value: 5, label: "optStock5s", defaultText: "5초 갱신 주기" },
-        { value: 10, label: "optStock10s", defaultText: "10초 갱신 주기" },
-        { value: 30, label: "optStock30s", defaultText: "30초 갱신 주기" },
-        { value: 60, label: "optStock1m", defaultText: "1분 갱신 주기" }
+        { value: 5, label: "optStock5s", defaultText: "5초 주기" },
+        { value: 10, label: "optStock10s", defaultText: "10초 주기" },
+        { value: 30, label: "optStock30s", defaultText: "30초 주기" },
+        { value: 60, label: "optStock1m", defaultText: "1분 주기" }
       ];
       popup.innerHTML = "";
       options.forEach((opt) => {

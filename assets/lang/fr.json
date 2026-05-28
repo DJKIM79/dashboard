@@ -305,10 +305,10 @@
   "cmDelCol": "Supprimer la colonne",
   "sideStock": "Actions",
   "lblStock": "Actions",
-  "optStock5s": "Mise à jour toutes les 5s",
-  "optStock10s": "Mise à jour toutes les 10s",
-  "optStock30s": "Mise à jour toutes les 30s",
-  "optStock1m": "Mise à jour toutes les 1m",
+  "optStock5s": "Toutes les 5s",
+  "optStock10s": "Toutes les 10s",
+  "optStock30s": "Toutes les 30s",
+  "optStock1m": "Toutes les 1m",
   "tipStockAdd": "Ajouter une action",
   "modalStockAdd": "Ajouter une action",
   "modalStockEdit": "Modifier l'action",
@@ -332,5 +332,6 @@
   "optId": "Indonésien",
   "optTh": "Thaï",
   "tutStockTitle": "📈 Widget Actions",
-  "tutStockDesc": "Surveillez les actions nationales et internationales en temps réel. Cliquez pour voir les graphiques détaillés et les plus hauts/bas de 52 semaines."
+  "tutStockDesc": "Surveillez les actions nationales et internationales en temps réel. Cliquez pour voir les graphiques détaillés et les plus hauts/bas de 52 semaines.",
+  "lblOthers": "Autres"
 }

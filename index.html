@@ -804,56 +804,6 @@
                 style="width: 98%; margin-left: 1%; margin-bottom: 5px;"
               />
               <div
-                class="setting-row"
-                style="margin-top: 5px; width: 98%; margin-left: 1%; justify-content: space-between;"
-              >
-                <span
-                  style="
-                    font-size: 0.85rem;
-                    color: #94a3b8;
-                    white-space: nowrap;
-                    margin: 0;
-                    display: flex;
-                    align-items: center;
-                  "
-                  data-i18n="lblLanguage"
-                  >언어</span
-                >
-                <div id="lang-select-wrap" style="position: relative; width: 180px;">
-                  <div id="lang-trigger" class="weather-custom-select" data-outside-ignore onclick="settings.toggleLangPopup(event)">
-                    <span id="lang-trigger-text" style="font-size: 0.85rem;">자동</span>
-                    <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
-                  </div>
-                  <div id="lang-popup" class="ai-model-popup"></div>
-                </div>
-              </div>
-              <div
-                class="setting-row"
-                style="margin-top: 5px; width: 98%; margin-left: 1%; justify-content: space-between;"
-              >
-                <span
-                  style="
-                    font-size: 0.85rem;
-                    color: #94a3b8;
-                    white-space: nowrap;
-                    margin: 0;
-                    display: flex;
-                    align-items: center;
-                  "
-                  data-i18n="lblStock"
-                  >주식</span
-                >
-                <div id="stock-interval-wrap" style="position: relative; width: 180px;">
-                  <div id="stock-interval-trigger" class="weather-custom-select" data-outside-ignore onclick="if(window.settings) settings.toggleCustomSelect('stock-interval-popup', event)">
-                    <span id="stock-interval-text" style="font-size: 0.85rem;" data-i18n="optStock10s">10초 갱신 주기</span>
-                    <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
-                  </div>
-                  <div id="stock-interval-popup" class="engine-popup"></div>
-                </div>
-              </div>
-            </div>
-            <div class="setting-column">
-              <div
                 class="setting-group-title"
                 style="
                   display: flex;
@@ -939,6 +889,8 @@
                   </div>
                 </div>
               </div>
+            </div>
+            <div class="setting-column">
               <div
                 class="setting-group-title"
                 style="display: flex; justify-content: space-between"
@@ -985,6 +937,7 @@
                   display: flex;
                   justify-content: space-between;
                   align-items: center;
+                  margin-top: -5px;
                 "
               >
                 <span data-i18n="lblSearchEngine">검색 엔진</span>
@@ -1046,6 +999,65 @@
                       </button>
                     </div>
                   </div>
+                </div>
+              </div>
+              <div
+                class="setting-group-title"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-top: 0px;
+                "
+              >
+                <span data-i18n="lblOthers">기타</span>
+              </div>
+              <div
+                class="setting-row"
+                style="margin-top: 5px; width: 98%; margin-left: 1%; justify-content: space-between;"
+              >
+                <span
+                  style="
+                    font-size: 0.85rem;
+                    color: #94a3b8;
+                    white-space: nowrap;
+                    margin: 0;
+                    display: flex;
+                    align-items: center;
+                  "
+                  data-i18n="lblLanguage"
+                  >언어</span
+                >
+                <div id="lang-select-wrap" style="position: relative; width: 180px;">
+                  <div id="lang-trigger" class="weather-custom-select" data-outside-ignore onclick="settings.toggleLangPopup(event)">
+                    <span id="lang-trigger-text" style="font-size: 0.85rem;">자동</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
+                  </div>
+                  <div id="lang-popup" class="ai-model-popup"></div>
+                </div>
+              </div>
+              <div
+                class="setting-row"
+                style="margin-top: -10px; width: 98%; margin-left: 1%; justify-content: space-between;"
+              >
+                <span
+                  style="
+                    font-size: 0.85rem;
+                    color: #94a3b8;
+                    white-space: nowrap;
+                    margin: 0;
+                    display: flex;
+                    align-items: center;
+                  "
+                  data-i18n="lblStock"
+                  >주식</span
+                >
+                <div id="stock-interval-wrap" style="position: relative; width: 180px;">
+                  <div id="stock-interval-trigger" class="weather-custom-select" data-outside-ignore onclick="if(window.settings) settings.toggleCustomSelect('stock-interval-popup', event)">
+                    <span id="stock-interval-text" style="font-size: 0.85rem;" data-i18n="optStock10s">10초 주기</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
+                  </div>
+                  <div id="stock-interval-popup" class="engine-popup"></div>
                 </div>
               </div>
             </div>

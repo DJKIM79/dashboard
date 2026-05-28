@@ -223,7 +223,7 @@ const stock = {
       const chg = n.changePercent || 0;
       const sign = chg >= 0 ? "+" : "";
 
-      div.classList.remove("up", "down", "same", "secret-up", "secret-down");
+      div.classList.remove("up", "down", "same", "secret-up", "secret-down", "secret-same");
 
       const chgClass = chg > 0 ? "up" : chg < 0 ? "down" : "same";
       if (this.isSecretMode) {
@@ -231,6 +231,8 @@ const stock = {
           div.classList.add("secret-up");
         } else if (chg < 0) {
           div.classList.add("secret-down");
+        } else {
+          div.classList.add("secret-same");
         }
 
         const changeValText = Math.abs(chg).toFixed(2);
@@ -291,7 +293,7 @@ const stock = {
       const chg = n.changePercent || 0;
       const sign = chg >= 0 ? "+" : "";
 
-      div.classList.remove("up", "down", "same", "secret-up", "secret-down");
+      div.classList.remove("up", "down", "same", "secret-up", "secret-down", "secret-same");
 
       const chgClass = chg > 0 ? "up" : chg < 0 ? "down" : "same";
       if (this.isSecretMode) {
@@ -299,6 +301,8 @@ const stock = {
           div.classList.add("secret-up");
         } else if (chg < 0) {
           div.classList.add("secret-down");
+        } else {
+          div.classList.add("secret-same");
         }
 
         const changeValText = Math.abs(chg).toFixed(2);
@@ -332,6 +336,7 @@ const stock = {
             <span class="remaining stock-change ${chgClass}">${sign}${chg.toFixed(2)}%</span>
           </div>
         `;
+        div.classList.add(chgClass);
       }
       
       div.onclick = (e) => {

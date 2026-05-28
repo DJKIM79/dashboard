@@ -88,7 +88,15 @@
   "modalNotiAdd": "Adicionar alerta",
   "notiTitle": "Título do alerta",
   "today": "Hoje",
-  "days": ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+  "days": [
+    "Dom",
+    "Seg",
+    "Ter",
+    "Qua",
+    "Qui",
+    "Sex",
+    "Sáb"
+  ],
   "btnAddNoti": "Adicionar",
   "btnDelete": "Excluir",
   "btnCancel": "Cancelar",
@@ -113,10 +121,10 @@
   "lblSave": "Salvar",
   "sideStock": "Ações",
   "lblStock": "Ações",
-  "optStock5s": "Atualizar a cada 5s",
-  "optStock10s": "Atualizar a cada 10s",
-  "optStock30s": "Atualizar a cada 30s",
-  "optStock1m": "Atualizar a cada 1m",
+  "optStock5s": "A cada 5s",
+  "optStock10s": "A cada 10s",
+  "optStock30s": "A cada 30s",
+  "optStock1m": "A cada 1m",
   "tipStockAdd": "Adicionar ação",
   "modalStockAdd": "Adicionar ação",
   "modalStockEdit": "Editar ação",
@@ -134,5 +142,6 @@
   "lblLowPrice": "Mínimo",
   "lblDailyChart": "Gráfico diário",
   "tutStockTitle": "📈 Widget de Ações",
-  "tutStockDesc": "Monitore ações nacionais e internacionais em tempo real. Clique para ver gráficos detalhados e máximos/mínimos de 52 semanas."
+  "tutStockDesc": "Monitore ações nacionais e internacionais em tempo real. Clique para ver gráficos detalhados e máximos/mínimos de 52 semanas.",
+  "lblOthers": "Outros"
 }

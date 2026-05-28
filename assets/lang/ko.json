@@ -310,10 +310,10 @@
   "lblSave": "저장",
   "sideStock": "주식",
   "lblStock": "주식",
-  "optStock5s": "5초 갱신 주기",
-  "optStock10s": "10초 갱신 주기",
-  "optStock30s": "30초 갱신 주기",
-  "optStock1m": "1분 갱신 주기",
+  "optStock5s": "5초 주기",
+  "optStock10s": "10초 주기",
+  "optStock30s": "30초 주기",
+  "optStock1m": "1분 주기",
   "tipStockAdd": "주식 추가",
   "modalStockAdd": "종목 추가",
   "modalStockEdit": "종목 수정",
@@ -339,5 +339,6 @@
   "optId": "인도네시아어",
   "optTh": "태국어",
   "tutStockTitle": "📈 주식 위젯",
-  "tutStockDesc": "국내 및 해외 주식 정보를 실시간으로 확인하세요. 클릭하여 상세 차트와 52주 최고/최저가 등을 볼 수 있습니다."
+  "tutStockDesc": "국내 및 해외 주식 정보를 실시간으로 확인하세요. 클릭하여 상세 차트와 52주 최고/최저가 등을 볼 수 있습니다.",
+  "lblOthers": "기타"
 }

@@ -88,7 +88,15 @@
   "modalNotiAdd": "Tambah peringatan",
   "notiTitle": "Judul peringatan",
   "today": "Hari ini",
-  "days": ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+  "days": [
+    "Min",
+    "Sen",
+    "Sel",
+    "Rab",
+    "Kam",
+    "Jum",
+    "Sab"
+  ],
   "btnAddNoti": "Tambah",
   "btnDelete": "Hapus",
   "btnCancel": "Batal",
@@ -113,10 +121,10 @@
   "lblSave": "Simpan",
   "sideStock": "Saham",
   "lblStock": "Saham",
-  "optStock5s": "Perbarui setiap 5 detik",
-  "optStock10s": "Perbarui setiap 10 detik",
-  "optStock30s": "Perbarui setiap 30 detik",
-  "optStock1m": "Perbarui setiap 1 menit",
+  "optStock5s": "Setiap 5s",
+  "optStock10s": "Setiap 10s",
+  "optStock30s": "Setiap 30s",
+  "optStock1m": "Setiap 1m",
   "tipStockAdd": "Tambah saham",
   "modalStockAdd": "Tambah saham",
   "modalStockEdit": "Ubah saham",
@@ -134,5 +142,6 @@
   "lblLowPrice": "Terendah",
   "lblDailyChart": "Grafik harian",
   "tutStockTitle": "📈 Widget Saham",
-  "tutStockDesc": "Pantau saham domestik dan internasional secara real-time. Klik untuk melihat grafik terperinci dan harga tertinggi/terendah 52 minggu."
+  "tutStockDesc": "Pantau saham domestik dan internasional secara real-time. Klik untuk melihat grafik terperinci dan harga tertinggi/terendah 52 minggu.",
+  "lblOthers": "Lainnya"
 }

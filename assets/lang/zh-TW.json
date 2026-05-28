@@ -308,10 +308,10 @@
   "cmDelCol": "刪除直行",
   "sideStock": "股票",
   "lblStock": "股票",
-  "optStock5s": "每5秒更新一次",
-  "optStock10s": "每10秒更新一次",
-  "optStock30s": "每30秒更新一次",
-  "optStock1m": "每1分鐘更新一次",
+  "optStock5s": "5秒週期",
+  "optStock10s": "10秒週期",
+  "optStock30s": "30秒週期",
+  "optStock1m": "1分鐘週期",
   "tipStockAdd": "新增股票",
   "modalStockAdd": "新增股票",
   "modalStockEdit": "編輯股票",
@@ -335,5 +335,6 @@
   "optId": "印尼語",
   "optTh": "泰語",
   "tutStockTitle": "📈 股票小工具",
-  "tutStockDesc": "實時監控國內和國際股票。點擊查看詳細圖表和52週最高/最低價。"
+  "tutStockDesc": "實時監控國內和國際股票。點擊查看詳細圖表和52週最高/最低價。",
+  "lblOthers": "其他"
 }

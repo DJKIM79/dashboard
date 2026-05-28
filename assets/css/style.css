@@ -1861,9 +1861,9 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   max-height: 280px;
 }
 #lang-popup {
-  width: 100% !important;
+  width: max-content !important;
   max-height: 220px;
-  min-width: 0 !important;
+  min-width: 100% !important;
   left: 0 !important;
   box-sizing: border-box !important;
   top: auto !important;
@@ -1871,6 +1871,13 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   margin-top: 0 !important;
   margin-bottom: 5px !important;
   overflow-y: auto;
+}
+#stock-interval-popup {
+  width: max-content !important;
+  min-width: 100% !important;
+  left: 0 !important;
+  top: 100% !important;
+  margin-top: 5px !important;
 }
 #protocol-popup {
   width: 100% !important;
@@ -1880,6 +1887,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   box-sizing: border-box !important;
 }
 #lang-popup *,
+#stock-interval-popup *,
 #protocol-popup * {
   box-sizing: border-box;
 }
@@ -4665,6 +4673,11 @@ body.tutorial-closing .driver-active-element {
 .stock-container .item-card.secret-down:hover {
   border-color: #3b82f6 !important;
   box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+}
+.stock-container .item-card.same:hover,
+.stock-container .item-card.secret-same:hover {
+  border-color: #94a3b8 !important;
+  box-shadow: 0 0 8px rgba(148, 163, 184, 0.4);
 }
 .stock-info {
   display: flex;

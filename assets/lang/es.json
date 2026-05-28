@@ -119,8 +119,23 @@
   "lblRepeatEndDate": "Fecha de finalización",
   "lblNotSet": "No establecido",
   "today": "Hoy",
-  "days": ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
-  "weeks": ["1ra", "2da", "3ra", "4ta", "5ta", "Últ"],
+  "days": [
+    "Dom",
+    "Lun",
+    "Mar",
+    "Mié",
+    "Jue",
+    "Vie",
+    "Sáb"
+  ],
+  "weeks": [
+    "1ra",
+    "2da",
+    "3ra",
+    "4ta",
+    "5ta",
+    "Últ"
+  ],
   "btnAddNoti": "Añadir alerta",
   "btnEditNoti": "Actualizar alerta",
   "btnSelectAll": "Seleccionar todo",
@@ -273,10 +288,10 @@
   "lblSave": "Guardar",
   "sideStock": "Acciones",
   "lblStock": "Acciones",
-  "optStock5s": "Actualizar cada 5s",
-  "optStock10s": "Actualizar cada 10s",
-  "optStock30s": "Actualizar cada 30s",
-  "optStock1m": "Actualizar cada 1m",
+  "optStock5s": "Cada 5s",
+  "optStock10s": "Cada 10s",
+  "optStock30s": "Cada 30s",
+  "optStock1m": "Cada 1m",
   "tipStockAdd": "Añadir acción",
   "modalStockAdd": "Añadir acción",
   "modalStockEdit": "Editar acción",
@@ -294,5 +309,6 @@
   "lblLowPrice": "Mínimo",
   "lblDailyChart": "Gráfico diario",
   "tutStockTitle": "📈 Widget de acciones",
-  "tutStockDesc": "Monitoree acciones nacionales e internacionales en tiempo real. Haga clic para ver gráficos detallados y máximos/mínimos de 52 semanas."
+  "tutStockDesc": "Monitoree acciones nacionales e internacionales en tiempo real. Haga clic para ver gráficos detallados y máximos/mínimos de 52 semanas.",
+  "lblOthers": "Otros"
 }

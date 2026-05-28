@@ -308,10 +308,10 @@
   "cmDelCol": "列を削除",
   "sideStock": "株価",
   "lblStock": "株価",
-  "optStock5s": "5秒ごとに更新",
-  "optStock10s": "10秒ごとに更新",
-  "optStock30s": "30秒ごとに更新",
-  "optStock1m": "1分ごとに更新",
+  "optStock5s": "5秒周期",
+  "optStock10s": "10秒周期",
+  "optStock30s": "30秒周期",
+  "optStock1m": "1分周期",
   "tipStockAdd": "銘柄を追加",
   "modalStockAdd": "銘柄の追加",
   "modalStockEdit": "銘柄の編集",
@@ -335,5 +335,6 @@
   "optId": "インドネシア語",
   "optTh": "タイ語",
   "tutStockTitle": "📈 株式ウィジェット",
-  "tutStockDesc": "国内および海外の株式情報をリアルタイムで確認できます。クリックすると詳細なチャートや52週最高/最低値などが表示されます。"
+  "tutStockDesc": "国内および海外の株式情報をリアルタイムで確認できます。クリックすると詳細なチャートや52週最高/最低値などが表示されます。",
+  "lblOthers": "その他"
 }

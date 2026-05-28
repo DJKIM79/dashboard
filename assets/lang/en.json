@@ -308,10 +308,10 @@
   "lblSave": "Save",
   "sideStock": "Stocks",
   "lblStock": "Stocks",
-  "optStock5s": "Update every 5s",
-  "optStock10s": "Update every 10s",
-  "optStock30s": "Update every 30s",
-  "optStock1m": "Update every 1m",
+  "optStock5s": "Update 5s",
+  "optStock10s": "Update 10s",
+  "optStock30s": "Update 30s",
+  "optStock1m": "Update 1m",
   "tipStockAdd": "Add Stock",
   "modalStockAdd": "Add Stock",
   "modalStockEdit": "Edit Stock",
@@ -337,5 +337,6 @@
   "optId": "Indonesian",
   "optTh": "Thai",
   "tutStockTitle": "📈 Stock Widget",
-  "tutStockDesc": "Monitor domestic and international stocks in real-time. Click to view detailed charts and 52-week highs/lows."
+  "tutStockDesc": "Monitor domestic and international stocks in real-time. Click to view detailed charts and 52-week highs/lows.",
+  "lblOthers": "Others"
 }
