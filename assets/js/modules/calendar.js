@@ -2,6 +2,7 @@
 const calendar = {
   currentDate: new Date(),
   isMonthSelectorOpen: false,
+  _wheelCooldown: false,
   init() {
     window.addEventListener('click', (e) => {
       const container = document.getElementById("calendar-container");
@@ -10,6 +11,22 @@ const calendar = {
         this.render();
       }
     });
+
+    // Mouse wheel scroll to change month (up = prev, down = next)
+    const container = document.getElementById("calendar-container");
+    if (container) {
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        if (this._wheelCooldown) return;
+        this._wheelCooldown = true;
+        if (e.deltaY < 0) {
+          this.changeMonth(-1); // scroll up → previous month
+        } else if (e.deltaY > 0) {
+          this.changeMonth(1);  // scroll down → next month
+        }
+        setTimeout(() => { this._wheelCooldown = false; }, 400);
+      }, { passive: false });
+    }
   },
   changeMonth(val) {
     if (window.utils && utils.closeAllUIPopups) utils.closeAllUIPopups();

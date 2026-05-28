@@ -232,12 +232,50 @@ body::before {
 }
 .forecast-day {
   font-size: 0.85rem;
-  width: 40px;
+  width: 80px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.forecast-date {
+  width: 20px;
+  text-align: right;
+  font-weight: 500;
+  color: #94a3b8;
+}
+.forecast-date.sun {
+  color: #ef4444;
+}
+.forecast-date.sat {
+  color: #3b82f6;
+}
+.forecast-badge {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 800;
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #94a3b8;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 34px;
+}
+.forecast-badge.sun {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+}
+.forecast-badge.sat {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  color: #3b82f6;
 }
 .forecast-icon {
   font-size: 1rem;
   color: var(--accent-color);
-  width: 30px;
+  width: 20px;
   text-align: center;
 }
 .forecast-temp {

@@ -199,7 +199,8 @@ const weather = {
       const date = new Date(now);
       date.setDate(now.getDate() + i);
       const day = date.getDay();
-      const dayName = i === 0 ? i18n.get("today") : days[day];
+      const dateNum = date.getDate();
+      const dayText = i === 0 ? i18n.get("today") : days[day];
       const dayClass = day === 0 ? "sun" : day === 6 ? "sat" : "";
       const icon = this.getIcon(daily.weather_code[i]);
       const iconColor = this.getIconColor(daily.weather_code[i]);
@@ -210,7 +211,10 @@ const weather = {
       const item = document.createElement("div");
       item.className = "forecast-item";
       item.innerHTML = `
-        <div class="forecast-day ${dayClass}">${dayName}</div>
+        <div class="forecast-day">
+          <span class="forecast-date ${dayClass}">${dateNum}</span>
+          <span class="forecast-badge ${dayClass}">${dayText}</span>
+        </div>
         <div class="forecast-icon"><i class="fas ${icon}" style="color: ${iconColor}"></i></div>
         <div class="forecast-temp" style="font-weight: 700;">
           <span style="color: ${maxColor}">${max}°</span> / 
