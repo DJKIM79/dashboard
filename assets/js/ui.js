@@ -302,6 +302,21 @@ const ui = {
     }
   },
   init() {
+    // Close context menu when clicking/right-clicking anywhere outside of it, bypassing stopPropagation on widgets
+    document.addEventListener("click", (e) => {
+      const ctxMenu = document.getElementById("globalContextMenu");
+      if (ctxMenu && ctxMenu.style.display === "block" && !ctxMenu.contains(e.target)) {
+        ctxMenu.style.display = "none";
+      }
+    }, true);
+
+    document.addEventListener("contextmenu", (e) => {
+      const ctxMenu = document.getElementById("globalContextMenu");
+      if (ctxMenu && ctxMenu.style.display === "block" && !ctxMenu.contains(e.target)) {
+        ctxMenu.style.display = "none";
+      }
+    }, true);
+
     document.addEventListener("click", (e) => {
       if (!e.target.closest(".fab-container")) {
         document

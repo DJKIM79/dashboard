@@ -587,8 +587,8 @@ const stock = {
       
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 15px; font-size: 0.75rem; color: #94a3b8; margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;">
         <div style="display: flex; justify-content: space-between;"><span>${labelOpen}</span><span class="detail-open-val" style="color: #fff;">${open}</span></div>
-        <div style="display: flex; justify-content: space-between;"><span>${labelHigh}</span><span class="detail-high-val" style="color: #ef4444;">${high}</span></div>
         <div style="display: flex; justify-content: space-between;"><span>${labelTrade}</span><span class="detail-trade-val" style="color: #fff;">${tradingVal}</span></div>
+        <div style="display: flex; justify-content: space-between;"><span>${labelHigh}</span><span class="detail-high-val" style="color: #ef4444;">${high}</span></div>
         <div style="display: flex; justify-content: space-between;"><span>${labelLow}</span><span class="detail-low-val" style="color: #3b82f6;">${low}</span></div>
         ${ftwHighHTML}
         ${ftwLowHTML}
