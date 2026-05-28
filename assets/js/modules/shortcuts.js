@@ -2229,6 +2229,7 @@ const shortcutMod = {
   selectIcon(icon) {
     document.getElementById("siteIcon").value = icon;
     this.updatePreview();
+    if (window.currentShortcutIndex !== null) this.autoSave();
     const area = document.getElementById("iconPickerArea");
     if (area) {
       area.classList.remove("show");
@@ -2283,6 +2284,7 @@ const shortcutMod = {
     reader.onload = (event) => {
       document.getElementById("siteIcon").value = event.target.result;
       this.updatePreview();
+      if (window.currentShortcutIndex !== null) this.autoSave();
     };
     reader.readAsDataURL(file);
   },

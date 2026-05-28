@@ -403,7 +403,7 @@ const stock = {
 
             this.tooltipHideTimeout = setTimeout(() => {
               if (window.utils && utils.hideValidationTip) utils.hideValidationTip();
-            }, 1000);
+            }, 1500);
           }, 1000);
         }
       };
