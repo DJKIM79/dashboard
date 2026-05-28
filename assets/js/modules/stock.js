@@ -237,7 +237,10 @@ const stock = {
           div.classList.add("secret-same");
         }
 
-        const changeValText = Math.abs(chg).toFixed(2);
+        const isShowVal = n.secretDisplayType === "val";
+        const changeValText = isShowVal 
+          ? this.formatPrice(Math.abs(n.change || 0), n)
+          : Math.abs(chg).toFixed(2);
         const changeEl = div.querySelector(".stock-change");
         if (changeEl) {
           changeEl.innerText = changeValText;
@@ -307,17 +310,19 @@ const stock = {
           div.classList.add("secret-same");
         }
 
-        const changeValText = Math.abs(chg).toFixed(2);
-        const alignment = chg >= 0 ? "left" : "right";
+        const isShowVal = n.secretDisplayType === "val";
+        const changeValText = isShowVal 
+          ? this.formatPrice(Math.abs(n.change || 0), n)
+          : Math.abs(chg).toFixed(2);
         
         div.style.display = "flex";
-        div.style.justifyContent = alignment === "left" ? "flex-start" : "flex-end";
+        div.style.justifyContent = "center";
         div.style.alignItems = "center";
         div.style.minWidth = "60px";
         div.style.maxWidth = "60px";
         
         div.innerHTML = `
-          <div class="noti-info stock-info" style="width: 100%; margin-top: 0; justify-content: ${alignment === "left" ? "flex-start" : "flex-end"};">
+          <div class="noti-info stock-info" style="width: 100%; margin-top: 0; justify-content: center;">
             <span class="stock-change" style="color: #94a3b8; font-family: 'JetBrains Mono'; font-weight: bold;">${changeValText}</span>
           </div>
         `;
@@ -349,6 +354,9 @@ const stock = {
         }
         if (this.isSecretMode) {
           e.stopPropagation();
+          n.secretDisplayType = n.secretDisplayType === "val" ? "percent" : "val";
+          this.saveData();
+          this.render();
           return;
         }
         if (window.utils && utils.closeAllUIPopups) utils.closeAllUIPopups(true);
