@@ -794,14 +794,14 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   visibility: hidden;
   transform: scale(0.9) translateY(40px);
   pointer-events: none !important;
-  max-height: 0;
-  min-height: 0;
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  overflow: hidden;
-  border-width: 0;
+  max-height: 0 !important;
+  min-height: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+  border-width: 0 !important;
   backface-visibility: hidden;
 }
 #top-right-widgets.widget-hidden {
