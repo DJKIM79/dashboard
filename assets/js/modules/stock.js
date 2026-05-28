@@ -395,7 +395,7 @@ const stock = {
               unit = this.getCurrencySymbol(currency);
             }
             
-            const unitHtml = `<span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 6px; font-weight: 800; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; margin-left: 6px; display: inline-block; line-height: 1; vertical-align: middle;">${unit}</span>`;
+            const unitHtml = `<span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 6px; font-weight: 800; background: rgba(255, 255, 255, 0.35); border: 1px solid rgba(255, 255, 255, 0.45); color: #fff; margin-left: 6px; display: inline-block; line-height: 1; vertical-align: middle;">${unit}</span>`;
             const name = currentItem ? currentItem.name : n.name;
             const message = `${name}${unitHtml}`;
 
