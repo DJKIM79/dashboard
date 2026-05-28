@@ -831,8 +831,14 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   max-height: none !important;
   min-height: unset !important;
 }
-#quote-section.widget-hidden,
-#search-section.widget-hidden,
+#quote-section.widget-hidden {
+  transform: scale(0.9) translateY(20px);
+  margin-bottom: 15px !important;
+}
+#search-section.widget-hidden {
+  transform: scale(0.9) translateY(20px);
+  margin-bottom: 15px !important;
+}
 #shortcut-container.widget-hidden {
   transform: scale(0.9) translateY(20px);
 }
