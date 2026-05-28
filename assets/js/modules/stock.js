@@ -362,8 +362,10 @@ const stock = {
           if (this.tooltipHideTimeout) clearTimeout(this.tooltipHideTimeout);
 
           this.tooltipTimeout = setTimeout(() => {
-            const type = chg > 0 ? "up" : chg < 0 ? "down" : "same";
-            utils.showValidationTip(div, n.name, type, { noAutoHide: true });
+            const currentItem = this.items.find(item => String(item.id) === div.dataset.id);
+            const currentChg = currentItem ? (currentItem.changePercent || 0) : 0;
+            const type = currentChg > 0 ? "up" : currentChg < 0 ? "down" : "same";
+            utils.showValidationTip(div, currentItem ? currentItem.name : n.name, type, { noAutoHide: true });
 
             this.tooltipHideTimeout = setTimeout(() => {
               if (window.utils && utils.hideValidationTip) utils.hideValidationTip();
