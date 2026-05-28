@@ -164,7 +164,7 @@ body::before {
   border: 1px solid transparent;
 }
 .weather-item:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   border-color: var(--accent-color);
 }
 .weather-loc {
@@ -203,7 +203,7 @@ body::before {
   position: absolute;
   top: 100%;
   right: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   border-radius: 18px;

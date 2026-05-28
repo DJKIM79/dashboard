@@ -93,7 +93,7 @@ const stock = {
           this.closeDetailPopup();
         }
       }
-    });
+    }, true);
     
     window.addEventListener("resize", () => {
       this.updateScrollArrows();
