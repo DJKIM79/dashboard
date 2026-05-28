@@ -10,6 +10,8 @@ const stock = {
   searchAbortController: null,
   tooltipTimeout: null,
   tooltipHideTimeout: null,
+  isDragging: false,
+  sortableInstance: null,
   
   isSupported() {
     const lang = localStorage.getItem("dj_language") || "auto";
@@ -340,6 +342,11 @@ const stock = {
       }
       
       div.onclick = (e) => {
+        if (this.isDragging) {
+          this.isDragging = false;
+          e.stopPropagation();
+          return;
+        }
         if (this.isSecretMode) {
           e.stopPropagation();
           return;
@@ -357,11 +364,13 @@ const stock = {
       };
 
       div.onmouseenter = (e) => {
+        if (this.isDragging) return;
         if (this.isSecretMode && window.utils && utils.showValidationTip) {
           if (this.tooltipTimeout) clearTimeout(this.tooltipTimeout);
           if (this.tooltipHideTimeout) clearTimeout(this.tooltipHideTimeout);
 
           this.tooltipTimeout = setTimeout(() => {
+            if (this.isDragging) return;
             const currentItem = this.items.find(item => String(item.id) === div.dataset.id);
             const currentChg = currentItem ? (currentItem.changePercent || 0) : 0;
             const type = currentChg > 0 ? "up" : currentChg < 0 ? "down" : "same";
@@ -384,6 +393,37 @@ const stock = {
 
       listContainer.appendChild(div);
     });
+
+    if (window.Sortable && listContainer) {
+      if (this.sortableInstance) {
+        this.sortableInstance.destroy();
+      }
+      this.sortableInstance = new Sortable(listContainer, {
+        animation: 250,
+        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+        ghostClass: "stock-ghost",
+        chosenClass: "sortable-chosen",
+        onStart: () => {
+          this.isDragging = true;
+          listContainer.classList.add("sorting-active");
+          if (this.tooltipTimeout) clearTimeout(this.tooltipTimeout);
+          if (this.tooltipHideTimeout) clearTimeout(this.tooltipHideTimeout);
+          if (window.utils && utils.hideValidationTip) {
+            utils.hideValidationTip();
+          }
+        },
+        onEnd: (evt) => {
+          setTimeout(() => (this.isDragging = false), 100);
+          listContainer.classList.remove("sorting-active");
+          if (evt.oldIndex !== evt.newIndex) {
+            const item = this.items.splice(evt.oldIndex, 1)[0];
+            this.items.splice(evt.newIndex, 0, item);
+            this.saveData();
+            this.render();
+          }
+        },
+      });
+    }
     
     setTimeout(() => this.updateScrollArrows(), 150);
   },
