@@ -75,12 +75,7 @@ const search = {
   quickSelect(engineId, e) {
     if (e) e.stopPropagation();
     this.currentEngine = engineId;
-    localStorage.setItem("dj_search_engine", engineId);
     this.updateIcon();
-    if (window.settings && typeof settings.updateSearchEngineTriggerUI === "function") {
-      settings.updateSearchEngineTriggerUI();
-      settings.renderSearchEngineList();
-    }
     const menu = document.getElementById("search-engine-menu");
     if (menu) menu.classList.remove("active");
     const input = document.getElementById("searchInput");
