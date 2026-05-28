@@ -567,6 +567,7 @@ body::before {
   transform: scale(var(--widget-scale)) translateZ(0);
   transform-origin: bottom left;
   width: max-content;
+  flex-shrink: 0;
 }
 .left-area > * {
   pointer-events: auto; 
@@ -582,6 +583,7 @@ body::before {
   transform: scale(var(--widget-scale)) translateZ(0);
   transform-origin: bottom right;
   width: max-content;
+  flex-shrink: 0;
 }
 .right-area > * {
   pointer-events: auto; 
@@ -750,31 +752,51 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
 }
 .widget-hidden {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  transform: scale(0.9) translateY(40px) !important;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.9) translateY(40px);
   pointer-events: none !important;
+  max-height: 0;
+  min-height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+  border-width: 0;
+  backface-visibility: hidden;
 }
 #top-right-widgets.widget-hidden {
-  transform: scale(0.9) translateY(-40px) !important;
+  transform: scale(0.9) translateY(-40px);
 }
 #calendar-container.widget-hidden,
 #clock-container.widget-hidden,
 #noti-folder.widget-hidden {
-  transform: scale(0.8) translateY(60px) !important;
+  transform: scale(0.8) translateY(60px);
   filter: blur(15px);
-  opacity: 0 !important;
+  opacity: 0;
 }
-#memo-folder.widget-hidden,
-#stock-container.widget-hidden {
-  transform: scale(0.8) translateY(40px) !important;
+#memo-folder.widget-hidden {
+  transform: scale(0.8) translateY(40px);
   filter: blur(15px);
-  opacity: 0 !important;
+  opacity: 0;
+}
+#stock-container.widget-hidden {
+  transform: scale(0.8) translateY(40px);
+  filter: blur(15px);
+  opacity: 0;
+  max-width: 0;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0;
+  overflow: hidden;
+  max-height: none !important;
+  min-height: unset !important;
 }
 #quote-section.widget-hidden,
 #search-section.widget-hidden,
 #shortcut-container.widget-hidden {
-  transform: scale(0.9) translateY(20px) !important;
+  transform: scale(0.9) translateY(20px);
 }
 .smart-folder {
   display: none;
@@ -4611,14 +4633,16 @@ body.tutorial-closing .driver-active-element {
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: calc(100vw - 500px);
+  max-width: calc(100% - 520px);
+  min-width: 0;
   flex: 1;
-  justify-content: flex-start;
-  margin: 0 20px;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
   position: relative;
   pointer-events: auto;
   z-index: 400;
-  transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(var(--widget-scale));
 }
 .stock-list {
@@ -4631,6 +4655,8 @@ body.tutorial-closing .driver-active-element {
   padding: 5px 0;
   transition: opacity 0.2s ease;
   opacity: 1;
+  flex: 1;
+  min-width: 0;
 }
 .stock-list.fade-out-active {
   opacity: 0;
@@ -4646,6 +4672,7 @@ body.tutorial-closing .driver-active-element {
   font-size: 1.2rem;
   padding: 10px;
   display: none;
+  flex-shrink: 0;
 }
 .stock-scroll-btn.show {
   display: block;
@@ -4655,7 +4682,8 @@ body.tutorial-closing .driver-active-element {
 }
 .stock-scroll-btn.disabled {
   opacity: 0.1;
-  cursor: not-allowed;
+  cursor: default;
+  pointer-events: none;
 }
 .stock-container .item-card {
   min-width: 140px;

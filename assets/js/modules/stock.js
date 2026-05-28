@@ -354,6 +354,11 @@ const stock = {
         }
         if (this.isSecretMode) {
           e.stopPropagation();
+          if (this.tooltipTimeout) clearTimeout(this.tooltipTimeout);
+          if (this.tooltipHideTimeout) clearTimeout(this.tooltipHideTimeout);
+          if (window.utils && utils.hideValidationTip) {
+            utils.hideValidationTip();
+          }
           n.secretDisplayType = n.secretDisplayType === "val" ? "percent" : "val";
           this.saveData();
           this.render();
@@ -382,7 +387,19 @@ const stock = {
             const currentItem = this.items.find(item => String(item.id) === div.dataset.id);
             const currentChg = currentItem ? (currentItem.changePercent || 0) : 0;
             const type = currentChg > 0 ? "up" : currentChg < 0 ? "down" : "same";
-            utils.showValidationTip(div, currentItem ? currentItem.name : n.name, type, { noAutoHide: true });
+            
+            const isShowVal = currentItem ? (currentItem.secretDisplayType === "val") : (n.secretDisplayType === "val");
+            let unit = "%";
+            if (isShowVal) {
+              const currency = this.getCurrency(currentItem || n);
+              unit = this.getCurrencySymbol(currency);
+            }
+            
+            const unitHtml = `<span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 6px; font-weight: 800; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; margin-left: 6px; display: inline-block; line-height: 1; vertical-align: middle;">${unit}</span>`;
+            const name = currentItem ? currentItem.name : n.name;
+            const message = `${name}${unitHtml}`;
+
+            utils.showValidationTip(div, message, type, { noAutoHide: true, isHtml: true });
 
             this.tooltipHideTimeout = setTimeout(() => {
               if (window.utils && utils.hideValidationTip) utils.hideValidationTip();
