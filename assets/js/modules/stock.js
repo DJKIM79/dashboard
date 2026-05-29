@@ -619,12 +619,12 @@ const stock = {
         statusEl.style.cssText = `font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; font-weight: 600; ${marketStatus.style}`;
       }
       
-      const openValEl = container.querySelector(".detail-open-val");
+      const prevValEl = container.querySelector(".detail-prev-val");
       const highValEl = container.querySelector(".detail-high-val");
       const lowValEl = container.querySelector(".detail-low-val");
       const tradeValEl = container.querySelector(".detail-trade-val");
 
-      if (openValEl) openValEl.innerText = item.open ? this.formatPrice(item.open, item) : "-";
+      if (prevValEl) prevValEl.innerText = item.basePrice ? this.formatPrice(item.basePrice, item) : "-";
       if (highValEl) {
         highValEl.innerText = item.high ? this.formatPrice(item.high, item) : "-";
         highValEl.style.color = item.high ? "#ef4444" : "#fff";
@@ -635,6 +635,8 @@ const stock = {
       }
       if (tradeValEl) tradeValEl.innerText = item.tradingValue ? this.formatTradingValue(item.tradingValue, item) : "-";
 
+      // Also refresh candles if needed (fetchCandles has its own 30m check)
+      this.fetchCandles(id);
       return;
     }
 
@@ -648,7 +650,7 @@ const stock = {
     `;
 
     const code = item.code || "N/A";
-    const open = item.open ? this.formatPrice(item.open, item) : "-";
+    const prevClose = item.basePrice ? this.formatPrice(item.basePrice, item) : "-";
     const high = item.high ? this.formatPrice(item.high, item) : "-";
     const low = item.low ? this.formatPrice(item.low, item) : "-";
     const tradingVal = item.tradingValue ? this.formatTradingValue(item.tradingValue, item) : "-";
@@ -658,10 +660,10 @@ const stock = {
 
     const label52H = window.i18n ? i18n.get("lbl52WeekHighShort") : "52주 ▲";
     const label52L = window.i18n ? i18n.get("lbl52WeekLowShort") : "52주 ▼";
-    const labelOpen = window.i18n ? i18n.get("lblOpenPrice") : "시가";
+    const labelPrev = "전일";
     const labelHigh = window.i18n ? i18n.get("lblHighPrice") : "고가";
     const labelLow = window.i18n ? i18n.get("lblLowPrice") : "저가";
-    const labelTrade = window.i18n ? i18n.get("lblTradingValue") : "거래대금";
+    const labelTrade = "거래";
     const labelChart = window.i18n ? i18n.get("lblDailyChart") : "일봉 차트";
 
     const ftwHighHTML = item.fiftyTwoWeekHigh ? `<div style="display: flex; justify-content: space-between;"><span>${label52H}</span><span style="color: #ef4444;">${ftwHigh}</span></div>` : '';
@@ -683,7 +685,7 @@ const stock = {
       </div>
       
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 15px; font-size: 0.75rem; color: #94a3b8; margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;">
-        <div style="display: flex; justify-content: space-between;"><span>${labelOpen}</span><span class="detail-open-val" style="color: #fff;">${open}</span></div>
+        <div style="display: flex; justify-content: space-between;"><span>${labelPrev}</span><span class="detail-prev-val" style="color: #fff;">${prevClose}</span></div>
         <div style="display: flex; justify-content: space-between;"><span>${labelTrade}</span><span class="detail-trade-val" style="color: #fff;">${tradingVal}</span></div>
         <div style="display: flex; justify-content: space-between;"><span>${labelHigh}</span><span class="detail-high-val" style="color: #ef4444;">${high}</span></div>
         <div style="display: flex; justify-content: space-between;"><span>${labelLow}</span><span class="detail-low-val" style="color: #3b82f6;">${low}</span></div>
@@ -756,16 +758,18 @@ const stock = {
 
     const now = Date.now();
     const hasCache = item.cachedCandles && item.cachedCandles.length > 0;
-    const isClosed = item.marketStatus === 'CLOSE';
     
     // Check if 30 minutes (1800000ms) have elapsed
     const lastFetch = item.lastCandlesFetchTime || 0;
     const isWithin30Mins = (now - lastFetch) < 1800000;
 
-    // Skip network request and use cache if:
-    // 1. Market is closed and cache exists (no updates will occur anyway)
-    // 2. Cache exists and 30 minutes haven't passed
-    if (hasCache && (isClosed || isWithin30Mins)) {
+    // Skip network request and use cache if 30 minutes haven't passed
+    if (hasCache && isWithin30Mins) {
+        const chartId = `stock-chart-${id}`;
+        const container = document.getElementById(chartId);
+        // If already rendered, skip to avoid flicker
+        if (container && container.children.length > 0) return;
+        
         this.renderChart(id, item.cachedCandles);
         return;
     }

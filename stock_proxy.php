@@ -37,7 +37,7 @@ function get_domestic_stock_data($codes) {
     $polling_json = @file_get_contents($polling_url, false, $context);
 
     if ($polling_json) {
-        $polling_json_utf8 = iconv("EUC-KR", "UTF-8", $polling_json);
+        $polling_json_utf8 = iconv("EUC-KR", "UTF-8//IGNORE", $polling_json);
         $polling_data = json_decode($polling_json_utf8, true);
 
         if ($polling_data && $polling_data['resultCode'] === 'success' && !empty($polling_data['result']['areas'][0]['datas'])) {
@@ -171,8 +171,8 @@ function get_candle_data($code) {
         $url = "https://fchart.stock.naver.com/sise.nhn?symbol=" . $code . "&timeframe=day&count=40&requestType=0";
         $response = @file_get_contents($url, false, $context);
         if ($response === FALSE) return [];
-        $response_utf8 = iconv("EUC-KR", "UTF-8", $response);
-        if (preg_match_all('/<item data="([^"]+)"\s*\/>/', $response_utf8, $matches)) {
+        $response_utf8 = iconv("EUC-KR", "UTF-8//IGNORE", $response);
+        if (preg_match_all('/<item data="([^"]+)"\s*\/?>/', $response_utf8, $matches)) {
             foreach ($matches[1] as $itemStr) {
                 $parts = explode('|', $itemStr);
                 if (count($parts) >= 5) {
