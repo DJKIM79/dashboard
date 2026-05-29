@@ -4,6 +4,7 @@ const stock = {
   isSecretMode: localStorage.getItem("dj_stock_secret_mode") === "true",
   updateInterval: parseInt(localStorage.getItem("dj_stock_interval") || 10) * 1000,
   intervalId: null,
+  nextOpenTimeoutId: null,
   stockCodes: [], 
   isLoadingCodes: false,
   searchTimeout: null,
@@ -147,22 +148,118 @@ const stock = {
     this.startInterval();
   },
   
+  isMarketOpenNow(item, now = new Date()) {
+    const day = now.getDay();
+    if (day === 0 || day === 6) return false; // Weekend closed
+
+    const currency = this.getCurrency(item);
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const timeNum = hours * 100 + minutes;
+
+    if (currency === "KRW") {
+      return timeNum >= 900 && timeNum <= 1530;
+    }
+    if (currency === "JPY") {
+      return timeNum >= 900 && timeNum <= 1500;
+    }
+    if (currency === "CNY" || currency === "HKD" || currency === "TWD") {
+      return timeNum >= 1000 && timeNum <= 1700;
+    }
+    if (currency === "USD") {
+      return timeNum >= 2200 || timeNum <= 600;
+    }
+    return false;
+  },
+
+  getNextMarketOpenMs(item, now = new Date()) {
+    const currency = this.getCurrency(item);
+    let targetDay = new Date(now);
+    
+    let targetHour = 9;
+    let targetMin = 0;
+
+    if (currency === "KRW" || currency === "JPY") {
+      targetHour = 9;
+      targetMin = 0;
+    } else if (currency === "CNY" || currency === "HKD" || currency === "TWD") {
+      targetHour = 10;
+      targetMin = 0;
+    } else if (currency === "USD") {
+      targetHour = 22;
+      targetMin = 0;
+    }
+
+    targetDay.setHours(targetHour, targetMin, 0, 0);
+
+    if (targetDay.getTime() <= now.getTime()) {
+      targetDay.setDate(targetDay.getDate() + 1);
+    }
+
+    while (targetDay.getDay() === 0 || targetDay.getDay() === 6) {
+      targetDay.setDate(targetDay.getDate() + 1);
+    }
+
+    return targetDay.getTime() - now.getTime();
+  },
+
   startInterval() {
-    if (this.intervalId) clearInterval(this.intervalId);
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+    if (this.nextOpenTimeoutId) {
+      clearTimeout(this.nextOpenTimeoutId);
+      this.nextOpenTimeoutId = null;
+    }
     if (this.items.length === 0 || !this.isSupported()) return;
+
     this.updatePrices();
-    this.intervalId = setInterval(() => {
-      const hasOpenMarket = this.items.some(item => !item.marketStatus || item.marketStatus === 'OPEN');
-      if (hasOpenMarket) {
-        this.updatePrices();
-      } else {
-        console.log("All stock markets closed. Pausing background updates.");
-        if (this.intervalId) {
-          clearInterval(this.intervalId);
-          this.intervalId = null;
-        }
+
+    const scheduleNext = () => {
+      if (this.intervalId) {
+        clearInterval(this.intervalId);
       }
-    }, this.updateInterval);
+      if (this.nextOpenTimeoutId) {
+        clearTimeout(this.nextOpenTimeoutId);
+        this.nextOpenTimeoutId = null;
+      }
+      
+      const now = new Date();
+      const hasOpenMarket = this.items.some(item => this.isMarketOpenNow(item, now));
+
+      if (hasOpenMarket) {
+        this.intervalId = setInterval(async () => {
+          const prevHasOpenMarket = this.items.some(item => this.isMarketOpenNow(item));
+          await this.updatePrices();
+          const nextHasOpenMarket = this.items.some(item => this.isMarketOpenNow(item));
+
+          if (prevHasOpenMarket !== nextHasOpenMarket) {
+            scheduleNext();
+          }
+        }, this.updateInterval);
+      } else {
+        console.log("All stock markets closed. Scheduling next open time and running slow sync (30m).");
+
+        this.intervalId = setInterval(() => {
+          this.updatePrices().then(() => {
+            const currentHasOpenMarket = this.items.some(item => this.isMarketOpenNow(item));
+            if (currentHasOpenMarket) {
+              scheduleNext();
+            }
+          });
+        }, 1800000); // 30 minutes
+
+        const delays = this.items.map(item => this.getNextMarketOpenMs(item, now));
+        const nextOpenDelay = Math.min(...delays);
+
+        this.nextOpenTimeoutId = setTimeout(() => {
+          this.startInterval();
+        }, nextOpenDelay);
+      }
+    };
+
+    scheduleNext();
   },
   
   async updatePrices() {
@@ -911,7 +1008,16 @@ const stock = {
     this.items = this.items.filter(i => String(i.id) !== String(id));
     this.saveData();
     this.render();
-    if (this.items.length === 0 && this.intervalId) clearInterval(this.intervalId);
+    if (this.items.length === 0) {
+      if (this.intervalId) {
+        clearInterval(this.intervalId);
+        this.intervalId = null;
+      }
+      if (this.nextOpenTimeoutId) {
+        clearTimeout(this.nextOpenTimeoutId);
+        this.nextOpenTimeoutId = null;
+      }
+    }
     if (window.utils && utils.closeModal) {
       utils.closeModal('stockModal');
     } else if (window.openModal) {
