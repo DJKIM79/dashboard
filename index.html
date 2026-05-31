@@ -23,7 +23,42 @@
       crossorigin
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
     />
-    <link rel="stylesheet" href="assets/css/style.css?v=1.3.6" />
+    <link rel="stylesheet" href="assets/css/style.css?v=1.3.7" />
+    <script>
+      (function() {
+        try {
+          const size = localStorage.getItem('dj_widget_size') || 'medium';
+          document.documentElement.style.setProperty('--widget-scale', 'var(--widget-scale-' + size + ')');
+          
+          const quoteSize = localStorage.getItem('dj_quote_font_size') || 'medium';
+          document.documentElement.style.setProperty('--quote-font-size', 'var(--quote-size-' + quoteSize + ')');
+          document.documentElement.style.setProperty('--quote-author-font-size', 'var(--quote-author-size-' + quoteSize + ')');
+          
+          const theme = localStorage.getItem('dj_theme_color');
+          const adj = localStorage.getItem('dj_theme_adjustment') || 'none';
+          if (theme) {
+            let finalColor = theme;
+            if (adj !== 'none') {
+               // We don't have adjustColor here, so we skip complex adjustment 
+               // but we can still set the base theme to reduce flash.
+            }
+            document.documentElement.style.setProperty('--accent-color', finalColor);
+            
+            const expandHex = (hex) => {
+              if (hex.length === 4) return "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+              return hex;
+            };
+            const expanded = expandHex(finalColor);
+            const r = parseInt(expanded.slice(1, 3), 16);
+            const g = parseInt(expanded.slice(3, 5), 16);
+            const b = parseInt(expanded.slice(5, 7), 16);
+            const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+            const contrast = yiq >= 128 ? "#0f172a" : "#ffffff";
+            document.documentElement.style.setProperty('--accent-contrast', contrast);
+          }
+        } catch(e) {}
+      })();
+    </script>
   </head>
   <body onclick="requestNotiPermission()">
     <div id="globalContextMenu" class="context-menu">
@@ -1060,6 +1095,30 @@
                   <div id="stock-interval-popup" class="engine-popup"></div>
                 </div>
               </div>
+              <div
+                class="setting-row"
+                style="margin-top: -10px; width: 98%; margin-left: 1%; justify-content: space-between;"
+              >
+                <span
+                  style="
+                    font-size: 0.85rem;
+                    color: #94a3b8;
+                    white-space: nowrap;
+                    margin: 0;
+                    display: flex;
+                    align-items: center;
+                  "
+                  data-i18n="lblSync"
+                  >동기화</span
+                >
+                <div id="sync-select-wrap" style="position: relative; width: 180px;">
+                  <div id="sync-trigger" class="weather-custom-select" data-outside-ignore onclick="settings.toggleSyncPopup(event)">
+                    <span id="sync-trigger-text" style="font-size: 0.85rem;" data-i18n="optLocal">로컬</span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.6rem; opacity: 0.5;"></i>
+                  </div>
+                  <div id="sync-popup" class="ai-model-popup"></div>
+                </div>
+              </div>
             </div>
             <div class="setting-column" style="grid-column: 1 / span 2">
               <div
@@ -1283,6 +1342,22 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+    <div id="syncModal" class="modal" onclick="event.target == this && closeModal('syncModal')">
+      <div class="modal-content" style="width: 340px; padding: 25px;">
+        <h3 data-i18n="modalSyncTitle" style="text-align: center; color: var(--accent-color); margin-bottom: 20px;">서버 동기화 설정</h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+          <input type="text" id="syncIdInput" data-i18n-ph="lblUserId" placeholder="아이디" style="flex: 1; margin-bottom: 0; min-width: 0;" onkeypress="if(event.key === 'Enter') document.getElementById('syncKeyInput').focus()" />
+          <input type="password" id="syncKeyInput" data-i18n-ph="lblAuthKey" placeholder="암호" style="flex: 1; margin-bottom: 0; min-width: 0;" onkeypress="if(event.key === 'Enter') settings.enableServerSync()" />
+        </div>
+        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
+          <i class="fas fa-exclamation-triangle" style="color: #ef4444; font-size: 0.85rem;"></i>
+          <span style="font-size: 0.72rem; color: #ef4444; font-weight: 600; line-height: 1.4;" data-i18n="msgSyncWarn">현재 설정이 서버 설정으로 강제 변경됩니다!</span>
+        </div>
+        <div style="display: flex; justify-content: flex-end;">
+          <button id="syncConnectBtn" class="btn-save" style="width: auto; min-width: 100px; height: 38px;" onclick="settings.enableServerSync()" data-i18n="btnConnect">연결</button>
         </div>
       </div>
     </div>
@@ -1765,7 +1840,7 @@
     <script src="assets/js/modules/memo.js"></script>
     <script src="assets/js/modules/noti.js?v=1.0.1"></script>
     <script src="assets/js/modules/quote.js"></script>
-    <script src="assets/js/modules/settings.js?v=1.0.3"></script>
+    <script src="assets/js/modules/settings.js?v=1.1.0"></script>
     <script src="assets/js/modules/ai.js?v=1.0.7"></script>
     <script src="assets/js/modules/files.js"></script>
     <script src="assets/js/modules/stock.js"></script>

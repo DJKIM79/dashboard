@@ -136,6 +136,7 @@
   "btnConfirmDelete": "削除",
   "btnResetAll": "すべて初期化",
   "btnOk": "OK",
+  "btnConnect": "接続",
   "introTitle": "OnTo へようこそ",
   "introSubtitle": "オールインワン個人用ダッシュボード & AI アシスタント",
   "introDesc": "OnTo は時計、天気、予定、メモ、クイックショートカット、AI チャットボットを一つにまとめた個人用ダッシュボードです。日常をよりスマートに管理しましょう。",
@@ -336,5 +337,17 @@
   "optTh": "タイ語",
   "tutStockTitle": "📈 株式ウィジェット",
   "tutStockDesc": "国内および海外の株式情報をリアルタイムで確認できます。クリックすると詳細なチャートや52週最高/最低値などが表示されます。",
-  "lblOthers": "その他"
-}
+  "lblOthers": "その他",
+  "lblSync": "同期",
+  "optLocal": "ローカル",
+  "optServer": "サーバー",
+  "optSyncing": "サーバー同期中",
+  "modalSyncTitle": "サーバー同期設定",
+  "lblUserId": "ID",
+  "lblAuthKey": "パスワード",
+  "msgSyncSuccess": "同期が有効になりました。",
+  "msgSyncError": "同期設定中にエラーが発生しました。",
+  "msgInvalidAuth": "IDまたはパスワードが正しくありません。",
+  "msgSyncDisconnected": "接続が解除されました。",
+  "msgSyncWarn": "現在の設定がサーバーの設定に強制的に変更されます！"
+  }

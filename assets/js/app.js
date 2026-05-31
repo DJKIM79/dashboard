@@ -68,6 +68,9 @@ const app = {
     calendar.render();
     ui.applyVisibility();
     search.init();
+    if (window.settings && typeof settings.startAutoSync === "function") {
+      settings.startAutoSync();
+    }
   },
   clearTutorialData() {
     let dataChanged = false;

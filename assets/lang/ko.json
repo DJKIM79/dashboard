@@ -136,6 +136,7 @@
   "btnConfirmDelete": "삭제",
   "btnResetAll": "전체 초기화",
   "btnOk": "확인",
+  "btnConnect": "연결",
   "modalTagAdd": "태그 추가",
   "modalTagManage": "태그 관리",
   "tagInputPh": "태그를 입력하여 주세요",
@@ -340,5 +341,17 @@
   "optTh": "태국어",
   "tutStockTitle": "📈 주식 위젯",
   "tutStockDesc": "국내 및 해외 주식 정보를 실시간으로 확인하세요. 클릭하여 상세 차트와 52주 최고/최저가 등을 볼 수 있습니다.",
-  "lblOthers": "기타"
+  "lblOthers": "기타",
+  "lblSync": "동기화",
+  "optLocal": "로컬",
+  "optServer": "서버",
+  "optSyncing": "서버 동기화 중",
+  "modalSyncTitle": "서버 동기화 설정",
+  "lblUserId": "아이디",
+  "lblAuthKey": "암호",
+  "msgSyncSuccess": "동기화가 설정되었습니다.",
+  "msgSyncError": "동기화 설정 중 오류가 발생했습니다.",
+  "msgInvalidAuth": "아이디 또는 암호가 올바르지 않습니다.",
+  "msgSyncDisconnected": "연결이 해제되었습니다.",
+  "msgSyncWarn": "현재 설정이 서버 설정으로 강제 변경됩니다!"
 }

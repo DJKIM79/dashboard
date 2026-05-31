@@ -109,10 +109,17 @@ const stock = {
 
   closeDetailPopup() {
     const popup = document.getElementById("global-stock-detail");
-    if (!popup) return;
-    popup.style.display = 'none';
+    if (!popup || popup.style.display === 'none') return;
+    
     popup.classList.remove('show');
-    popup.dataset.currentId = '';
+    
+    // Wait for transition to finish (0.25s as defined in CSS)
+    setTimeout(() => {
+      if (!popup.classList.contains('show')) {
+        popup.style.display = 'none';
+        popup.dataset.currentId = '';
+      }
+    }, 250);
   },
   
   toggleSecretMode() {
@@ -571,11 +578,31 @@ const stock = {
     
     const rect = targetEl.getBoundingClientRect();
     
-    // Show instantly
-    popup.style.display = 'block';
-    const h = popup.offsetHeight;
-    popup.style.left = (rect.left + rect.width / 2 - 125) + "px";
-    popup.style.top = (rect.top - h - 10) + "px";
+    // Position calculation
+    const popupWidth = 250; // Defined in CSS/init
+    const left = (rect.left + rect.width / 2 - popupWidth / 2);
+    
+    // If popup is already showing, just move it (keeps the transition animation)
+    // If popup is hidden, move it instantly without transition before showing
+    if (!isShowing) {
+        popup.style.transition = 'none';
+        popup.style.display = 'block';
+        popup.style.left = left + "px";
+        
+        // Use a small timeout or force reflow to get correct height
+        const h = popup.offsetHeight;
+        popup.style.top = (rect.top - h - 10) + "px";
+        
+        // Force reflow to apply 'transition: none' and position
+        popup.offsetHeight;
+        
+        // Restore transition and show
+        popup.style.transition = '';
+    } else {
+        popup.style.left = left + "px";
+        const h = popup.offsetHeight;
+        popup.style.top = (rect.top - h - 10) + "px";
+    }
     
     popup.classList.add('show');
     this.updatePrices();

@@ -1195,6 +1195,190 @@ const settings = {
         if (window.i18n) triggerText.innerText = i18n.get(labelKey);
     }
   },
+  toggleSyncPopup(e) {
+    if (e) e.stopPropagation();
+    const popup = document.getElementById("sync-popup");
+    if (!popup) return;
+    const isShowing = popup.classList.contains("show");
+    if (!isShowing) {
+        this.closeAllPopups("sync-popup");
+        this.renderSyncList();
+        popup.style.display = "block";
+        popup.classList.add("show");
+    } else {
+        this.closeSyncPopup();
+    }
+  },
+  closeSyncPopup() {
+    const popup = document.getElementById("sync-popup");
+    if (popup) {
+        popup.classList.remove("show");
+        setTimeout(() => {
+            if (!popup.classList.contains("show")) popup.style.display = "none";
+        }, 200);
+    }
+  },
+  renderSyncList() {
+    const popupEl = document.getElementById("sync-popup");
+    if (!popupEl) return;
+    popupEl.innerHTML = "";
+    const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
+    
+    const options = [
+        { id: "local", label: "optLocal" },
+        { id: "server", label: "optServer" }
+    ];
+
+    options.forEach(opt => {
+      const item = document.createElement("div");
+      const isActive = (opt.id === "server" && isSyncEnabled) || (opt.id === "local" && !isSyncEnabled);
+      item.className = `engine-item ${isActive ? "active" : ""}`;
+      item.onclick = (e) => {
+          e.stopPropagation();
+          this.closeSyncPopup();
+          if (opt.id === "server") {
+              const idInput = document.getElementById("syncIdInput");
+              const keyInput = document.getElementById("syncKeyInput");
+              if (idInput) idInput.value = localStorage.getItem("dj_sync_id") || "";
+              if (keyInput) keyInput.value = localStorage.getItem("dj_sync_key") || "";
+              utils.openModal("syncModal");
+              setTimeout(() => { if(idInput) idInput.focus(); }, 100);
+          } else {
+              if (isSyncEnabled) this.disableServerSync();
+          }
+      };
+      const label = window.i18n ? i18n.get(opt.label) : opt.id;
+      item.innerHTML = `
+        <div class="engine-name" style="padding-left: 5px;">${label}</div>
+        <div class="engine-status">
+          ${isActive ? '<i class="fas fa-check-circle engine-active-icon"></i>' : ''}
+        </div>
+      `;
+      popupEl.appendChild(item);
+    });
+  },
+  updateSyncUI() {
+    const triggerText = document.getElementById("sync-trigger-text");
+    if (triggerText) {
+        const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
+        const labelKey = isSyncEnabled ? "optSyncing" : "optLocal";
+        triggerText.setAttribute("data-i18n", labelKey);
+        if (window.i18n) triggerText.innerText = i18n.get(labelKey);
+        
+        if (isSyncEnabled) {
+            triggerText.style.color = "#10b981"; // AI connected green color
+            triggerText.style.fontWeight = "bold";
+        } else {
+            triggerText.style.color = "";
+            triggerText.style.fontWeight = "";
+        }
+    }
+  },
+  async enableServerSync() {
+    const id = document.getElementById("syncIdInput").value.trim();
+    const authKey = document.getElementById("syncKeyInput").value.trim();
+    if (!id || !authKey) return;
+
+    try {
+        const res = await fetch(`sync.php?action=load&id=${id}&authKey=${authKey}`);
+        const result = await res.json();
+        
+        if (result.success) {
+            if (result.data) {
+                const serverTime = parseInt(result.data.dj_last_updated || 0);
+                const localTime = parseInt(localStorage.getItem("dj_last_updated") || 0);
+
+                // If server data is newer, ask to restore
+                if (serverTime > localTime) {
+                    if (confirm(window.i18n ? i18n.get("restoreConfirmTitle") : "Load newer data from server?")) {
+                        for (const key in result.data) {
+                            localStorage.setItem(key, result.data[key]);
+                        }
+                        localStorage.setItem("dj_sync_enabled", "true");
+                        localStorage.setItem("dj_sync_id", id);
+                        localStorage.setItem("dj_sync_key", authKey);
+                        location.reload();
+                        return;
+                    }
+                }
+            }
+            
+            localStorage.setItem("dj_sync_enabled", "true");
+            localStorage.setItem("dj_sync_id", id);
+            localStorage.setItem("dj_sync_key", authKey);
+            
+            // Upload current data (it's either newer or we declined server data)
+            await this.syncToServer();
+            utils.closeModal("syncModal");
+            this.updateSyncUI();
+            this.startAutoSync();
+        } else {
+            const btn = document.getElementById("syncConnectBtn");
+            if (btn && window.utils) {
+                utils.showValidationTip(btn, window.i18n ? i18n.get("msgInvalidAuth") : result.message, "error");
+            }
+        }
+    } catch (e) {
+        console.error("Sync error:", e);
+        const btn = document.getElementById("syncConnectBtn");
+        if (btn && window.utils) {
+            utils.showValidationTip(btn, window.i18n ? i18n.get("msgSyncError") : "Sync failed", "error");
+        }
+    }
+  },
+  disableServerSync() {
+    localStorage.removeItem("dj_sync_enabled");
+    localStorage.removeItem("dj_sync_id");
+    localStorage.removeItem("dj_sync_key");
+    this.stopAutoSync();
+    this.updateSyncUI();
+
+    const trigger = document.getElementById("sync-trigger");
+    if (trigger && window.utils) {
+        utils.showValidationTip(trigger, window.i18n ? i18n.get("msgSyncDisconnected") : "Disconnected", "error");
+    }
+  },
+  async syncToServer() {
+    const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
+    if (!isSyncEnabled) return;
+    
+    const id = localStorage.getItem("dj_sync_id");
+    const authKey = localStorage.getItem("dj_sync_key");
+    if (!id || !authKey) return;
+
+    // Update local timestamp before syncing
+    localStorage.setItem("dj_last_updated", Date.now().toString());
+
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("dj_")) {
+            data[key] = localStorage.getItem(key);
+        }
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append("action", "save");
+        formData.append("id", id);
+        formData.append("authKey", authKey);
+        formData.append("data", JSON.stringify(data));
+        
+        await fetch("sync.php", {
+            method: "POST",
+            body: formData
+        });
+    } catch (e) {
+        console.error("Auto sync failed:", e);
+    }
+  },
+  startAutoSync() {
+    if (this.syncInterval) clearInterval(this.syncInterval);
+    this.syncInterval = setInterval(() => this.syncToServer(), 60000); // Every minute
+  },
+  stopAutoSync() {
+    if (this.syncInterval) clearInterval(this.syncInterval);
+  }
 };
 document.addEventListener("click", (e) => {
     const activePopups = document.querySelectorAll(".ai-model-popup.show, .engine-popup.show, .weather-popup.show");
@@ -1230,3 +1414,6 @@ window.updateAiProvider = settings.updateAiProvider.bind(settings);
 window.updateAiApiKey = settings.updateAiApiKey.bind(settings);
 window.updateAiModel = settings.updateAiModel.bind(settings);
 window.updateLangUI = settings.updateLangUI.bind(settings);
+window.toggleSyncPopup = settings.toggleSyncPopup.bind(settings);
+window.enableServerSync = settings.enableServerSync.bind(settings);
+window.disableServerSync = settings.disableServerSync.bind(settings);

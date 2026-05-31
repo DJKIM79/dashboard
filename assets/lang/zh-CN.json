@@ -136,6 +136,7 @@
   "btnConfirmDelete": "删除",
   "btnResetAll": "全部重置",
   "btnOk": "确定",
+  "btnConnect": "连接",
   "introTitle": "欢迎使用 OnTo",
   "introSubtitle": "全能个人仪表板 & AI 助手",
   "introDesc": "OnTo 是一个集成了时钟、天气、日程、备忘录、快速快捷方式和 AI 聊天机器人的个人仪表板。开始更智能地管理您的日常生活吧。",
@@ -336,5 +337,17 @@
   "optTh": "泰语",
   "tutStockTitle": "📈 股票组件",
   "tutStockDesc": "实时监控国内和国际股票。点击查看详细图表和52周最高/最低价。",
-  "lblOthers": "其他"
-}
+  "lblOthers": "其他",
+  "lblSync": "同步",
+  "optLocal": "本地",
+  "optServer": "服务器",
+  "optSyncing": "服务器同步中",
+  "modalSyncTitle": "服务器同步设置",
+  "lblUserId": "ID",
+  "lblAuthKey": "密码",
+  "msgSyncSuccess": "同步已启用。",
+  "msgSyncError": "启用同步时出错。",
+  "msgInvalidAuth": "ID或密码错误。",
+  "msgSyncDisconnected": "连接已断开。",
+  "msgSyncWarn": "当前设置将被强制更改为服务器设置！"
+  }

@@ -134,6 +134,7 @@
   "btnConfirmDelete": "Delete",
   "btnResetAll": "Reset All",
   "btnOk": "OK",
+  "btnConnect": "Connect",
   "modalTagAdd": "Add Tag",
   "modalTagManage": "Manage Tags",
   "tagInputPh": "Please enter tag",
@@ -338,5 +339,17 @@
   "optTh": "Thai",
   "tutStockTitle": "📈 Stock Widget",
   "tutStockDesc": "Monitor domestic and international stocks in real-time. Click to view detailed charts and 52-week highs/lows.",
-  "lblOthers": "Others"
+  "lblOthers": "Others",
+  "lblSync": "Sync",
+  "optLocal": "Local",
+  "optServer": "Server",
+  "optSyncing": "Server Syncing",
+  "modalSyncTitle": "Sync Settings",
+  "lblUserId": "ID",
+  "lblAuthKey": "Password",
+  "msgSyncSuccess": "Sync enabled.",
+  "msgSyncError": "Error enabling sync.",
+  "msgInvalidAuth": "Invalid ID or Password.",
+  "msgSyncDisconnected": "Disconnected.",
+  "msgSyncWarn": "Current settings will be forced to sync with the server!"
 }

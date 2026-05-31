@@ -559,7 +559,6 @@ body::before {
 }
 .sortable-chosen {
   border-color: var(--accent-color) !important;
-  background: rgba(255, 255, 255, 0.1) !important;
   box-shadow: none !important; 
   transform: none !important; 
   transition: none !important; /* Chosen item follows mouse instantly without lag */
@@ -769,7 +768,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 @keyframes widgetFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-20px) scale(1);
+    transform: translateY(-20px) scale(calc(var(--widget-scale) * 0.95));
   }
   to {
     opacity: 1;
@@ -1383,6 +1382,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #alertModal,
 #deleteConfirmModal,
 #resetConfirmModal,
+#syncModal,
 #aiTagModal {
   z-index: 10000 !important;
 }
@@ -1926,16 +1926,17 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   max-width: 450px;
   max-height: 280px;
 }
-#lang-popup {
+#lang-popup,
+#sync-popup {
   width: max-content !important;
   max-height: 220px;
   min-width: 100% !important;
   left: 0 !important;
   box-sizing: border-box !important;
-  top: auto !important;
-  bottom: 100% !important;
-  margin-top: 0 !important;
-  margin-bottom: 5px !important;
+  top: 100% !important;
+  bottom: auto !important;
+  margin-top: 5px !important;
+  margin-bottom: 0 !important;
   overflow-y: auto;
 }
 #stock-interval-popup {
@@ -2028,6 +2029,10 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   padding: 8px 12px;
   cursor: pointer;
   transition: 0.2s;
+  margin-bottom: 2px;
+}
+.engine-item:last-child {
+  margin-bottom: 0;
 }
 .engine-item:hover {
   border-color: var(--accent-color) !important;
@@ -4489,7 +4494,10 @@ body.tutorial-closing .driver-active-element {
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   overflow: hidden;
   white-space: nowrap;
-}.context-menu > div:not(.cm-group):not(#ctx-ai-group), 
+  transform: scale(var(--widget-scale));
+  transform-origin: top left;
+}
+.context-menu > div:not(.cm-group):not(#ctx-ai-group), 
 .context-menu .cm-action,
 #ctx-ai-group > div {
   padding: 10px 15px;
@@ -4736,6 +4744,7 @@ body.tutorial-closing .driver-active-element {
   flex-shrink: 0;
   margin: 0;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 .stock-list.sorting-active .item-card {
   transition: none !important;

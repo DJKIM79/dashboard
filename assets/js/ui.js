@@ -281,7 +281,8 @@ const ui = {
           else delBtn.style.display = "flex";
         }
       }
-    }    menu.style.display = "block";
+    }    menu.style.visibility = "hidden";
+    menu.style.display = "block";
     let x = e.pageX || e.touches?.[0].pageX;
     let y = e.pageY || e.touches?.[0].pageY;
     if (x + 130 > window.innerWidth) x = window.innerWidth - 140;
@@ -291,6 +292,7 @@ const ui = {
     }
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
+    menu.style.visibility = "visible";
   },
   hideCurrentWidget() {
     const menu = document.getElementById("globalContextMenu");

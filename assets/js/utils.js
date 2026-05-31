@@ -258,6 +258,10 @@ const utils = {
       );
     if (window.stock)
       localStorage.setItem("dj_stocks", JSON.stringify(stock.items));
+      
+    if (window.settings && typeof settings.syncToServer === "function") {
+      settings.syncToServer();
+    }
   },
   showValidationTip(elementId, message, type = "error", options = {}) {
     const btn = typeof elementId === "string" ? document.getElementById(elementId) : elementId;
