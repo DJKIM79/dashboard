@@ -39,6 +39,9 @@ const clock = {
     setTimeout(() => {
       this.is24Hour = !this.is24Hour;
       localStorage.setItem("dj_clock_24h", this.is24Hour);
+      if (window.settings && typeof settings.syncToServer === "function") {
+        settings.syncToServer();
+      }
       this.update(true);
       setTimeout(() => {
         if (timeEl) timeEl.classList.remove("animating");

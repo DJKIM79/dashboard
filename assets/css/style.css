@@ -21,6 +21,9 @@
   --widget-scale-small: 0.85;
   --widget-scale: var(--widget-scale-medium);
 }
+.preload * {
+  transition: none !important;
+}
 html,
 body {
   margin: 0;
@@ -1379,12 +1382,16 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   opacity: 1;
   pointer-events: auto;
 }
-#alertModal,
-#deleteConfirmModal,
-#resetConfirmModal,
 #syncModal,
 #aiTagModal {
   z-index: 10000 !important;
+}
+#alertModal,
+#deleteConfirmModal,
+#resetConfirmModal,
+#commonConfirmModal,
+#customPromptModal {
+  z-index: 11000 !important;
 }
 .modal-content {
   background: #1e293b;
@@ -4800,3 +4807,19 @@ body.tutorial-closing .driver-active-element {
 .stock-price.up, .stock-change.up { color: #ef4444; }
 .stock-price.down, .stock-change.down { color: #3b82f6; }
 .stock-price.same, .stock-change.same { color: #94a3b8; }
+
+/* Memory Book Crossover Animation */
+@keyframes iconCrossover {
+  0% { 
+    transform: perspective(200px) rotateY(90deg) scale(0.8);
+    opacity: 0.5;
+  }
+  100% { 
+    transform: perspective(200px) rotateY(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.icon-crossover {
+  animation: iconCrossover 0.3s ease-out forwards !important;
+}

@@ -351,5 +351,10 @@
   "msgSyncError": "Error enabling sync.",
   "msgInvalidAuth": "Invalid ID or Password.",
   "msgSyncDisconnected": "Disconnected.",
-  "msgSyncWarn": "Current settings will be forced to sync with the server!"
+  "msgInputId": "Please enter your ID.",
+  "msgInputPassword": "Please enter your password.",
+  "msgSyncWarn": "Current settings will be forced to sync with the server!",
+  "msgSyncNewSettings": "New settings detected from another device. Refresh the page to apply?",
+  "msgSyncRestoreConfirm": "A newer configuration exists on the server. Do you want to load the server configuration? (Clicking Cancel will abort enabling sync.)",
+  "msgSyncConflictConfirm": "Other device has newer settings. Load server settings first and merge your change? (Cancelling will skip saving to server.)"
 }

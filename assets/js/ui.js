@@ -122,6 +122,9 @@ const ui = {
         }
       }
     });
+    const initStyle = document.getElementById("initial-hide-style");
+    if (initStyle) initStyle.remove();
+    
     if (window.shortcutMod) {
        shortcutMod.checkLayout();
        setTimeout(() => shortcutMod.checkLayout(), 550);
@@ -147,6 +150,9 @@ const ui = {
     }
     const newState = !isCurrentlyHidden;
     localStorage.setItem(key, newState);
+    if (window.settings && typeof settings.syncToServer === "function") {
+      settings.syncToServer();
+    }
     if (type === "ai" && newState === true) {
       const input = document.getElementById("ai-user-input");
       if (input) input.value = "";

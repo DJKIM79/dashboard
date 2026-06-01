@@ -23,10 +23,42 @@
       crossorigin
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
     />
-    <link rel="stylesheet" href="assets/css/style.css?v=1.3.7" />
+    <link rel="stylesheet" href="assets/css/style.css?v=2.0.0" />
     <script>
       (function() {
         try {
+          // Intercept localStorage.setItem to track local modifications and trigger debounced sync
+          const originalSetItem = Storage.prototype.setItem;
+          let syncTimeout = null;
+          const excludeKeys = [
+            "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated",
+            "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model",
+            "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai",
+            "dj_bg_seed", "dj_stock_codes_cache", "dj_tutorial_done"
+          ];
+          Storage.prototype.setItem = function(key, value) {
+            if (!window.isApplyingSyncData && !window.isInitializing && key.startsWith("dj_")) {
+              const shouldSkip = excludeKeys.includes(key) || key.startsWith("dj_ai_chats_");
+              if (!shouldSkip) {
+                // Track the last manual modification key and value for conflict merging
+                window.lastModifiedKey = key;
+                window.lastModifiedValue = value;
+
+                originalSetItem.call(this, "dj_last_updated", Date.now().toString());
+                
+                if (localStorage.getItem("dj_sync_enabled") === "true") {
+                  if (syncTimeout) clearTimeout(syncTimeout);
+                  syncTimeout = setTimeout(() => {
+                    if (window.settings && typeof settings.syncToServer === "function") {
+                      settings.syncToServer(true);
+                    }
+                  }, 1500);
+                }
+              }
+            }
+            originalSetItem.call(this, key, value);
+          };
+
           const size = localStorage.getItem('dj_widget_size') || 'medium';
           document.documentElement.style.setProperty('--widget-scale', 'var(--widget-scale-' + size + ')');
           
@@ -56,11 +88,33 @@
             const contrast = yiq >= 128 ? "#0f172a" : "#ffffff";
             document.documentElement.style.setProperty('--accent-contrast', contrast);
           }
+          
+          let hideCss = "";
+          const widgetTypes = ["weather", "quote", "search", "shortcut", "ai", "memo", "noti", "calendar", "clock", "fileMgmt", "stock"];
+          const wMap = { weather: "top-right-widgets", quote: "quote-section", search: "search-section", shortcut: "shortcut-container", ai: ["ai-chatbot-container", "ai-overlay"], memo: "memo-folder", noti: "noti-folder", calendar: "calendar-container", clock: "clock-container", fileMgmt: "top-left-widgets", stock: "stock-container" };
+          widgetTypes.forEach(type => {
+            let isHidden = localStorage.getItem('dj_hide_' + type) === "true";
+            if (localStorage.getItem('dj_hide_' + type) === null) {
+              if (type === "ai") isHidden = true;
+            }
+            if (isHidden) {
+              const targets = Array.isArray(wMap[type]) ? wMap[type] : [wMap[type]];
+              targets.forEach(id => {
+                hideCss += '#' + id + ' { display: none !important; }\n';
+              });
+            }
+          });
+          if (hideCss) {
+            const style = document.createElement("style");
+            style.id = "initial-hide-style";
+            style.textContent = hideCss;
+            document.head.appendChild(style);
+          }
         } catch(e) {}
       })();
     </script>
   </head>
-  <body onclick="requestNotiPermission()">
+  <body class="preload" onclick="requestNotiPermission()">
     <div id="globalContextMenu" class="context-menu">
       <div id="ctx-add" class="cm-add" onclick="addCurrentItem()"><i class="fas fa-plus cm-icon"></i><span data-i18n="cmAdd">추가</span></div>
       <div id="ctx-edit" class="cm-edit" onclick="editCurrentItem()"><i class="fas fa-pen cm-icon"></i><span data-i18n="cmEdit">수정</span></div>
@@ -491,7 +545,9 @@
       </div>
       <div class="ai-main-panel">
         <div class="ai-chat-header">
-          <div class="ai-status" id="ai-status">
+          <div class="ai-status" id="ai-status" style="display: flex; align-items: center;">
+            <i id="ai-btn-memory-on" class="fas fa-book-open fa-fw" onclick="ai.toggleMemory(false)" title="기억 유지 모드 켜짐 (대화 문맥 포함)" style="font-size: 1rem; cursor: pointer; margin-right: 8px; color: var(--accent-color);"></i>
+            <i id="ai-btn-memory-off" class="fas fa-book fa-fw" onclick="ai.toggleMemory(true)" title="기억 유지 모드 꺼짐 (개별 질문으로 처리)" style="font-size: 1rem; cursor: pointer; margin-right: 8px; color: #888; opacity: 0.5; display: none;"></i>
             <input
               type="text"
               id="ai-chat-title-input"
@@ -1829,22 +1885,37 @@
         </div>
       </div>
     </div>
-    <script src="assets/js/utils.js"></script>
-    <script src="assets/js/i18n.js"></script>
-    <script src="assets/js/ui.js?v=1.0.2"></script>
-    <script src="assets/js/modules/clock.js"></script>
-    <script src="assets/js/modules/calendar.js"></script>
-    <script src="assets/js/modules/search.js"></script>
-    <script src="assets/js/modules/weather.js?v=1.0.1"></script>
-    <script src="assets/js/modules/shortcuts.js"></script>
-    <script src="assets/js/modules/memo.js"></script>
-    <script src="assets/js/modules/noti.js?v=1.0.1"></script>
-    <script src="assets/js/modules/quote.js"></script>
-    <script src="assets/js/modules/settings.js?v=1.1.0"></script>
-    <script src="assets/js/modules/ai.js?v=1.0.7"></script>
-    <script src="assets/js/modules/files.js"></script>
-    <script src="assets/js/modules/stock.js"></script>
-    <script src="assets/js/modules/tutorial.js"></script>
-    <script src="assets/js/app.js?v=1.0.1"></script>
+    <div id="commonConfirmModal" class="modal" onclick="event.target == this && (window._confirmResolve && window._confirmResolve(false))">
+      <div class="modal-content confirm-modal" style="width: 380px; padding: 25px; border-radius: 16px; background: rgba(30, 41, 59, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.25);">
+        <div style="text-align: center; margin-bottom: 18px;">
+          <div style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: rgba(59, 130, 246, 0.15); color: #3b82f6; font-size: 1.6rem;">
+            <i id="commonConfirmIcon" class="fas fa-sync-alt animate-spin-slow"></i>
+          </div>
+        </div>
+        <h3 id="commonConfirmTitle" style="text-align: center; color: #f8fafc; font-size: 1.15rem; font-weight: 600; margin-bottom: 12px; font-family: 'Outfit', sans-serif;">알림</h3>
+        <p id="commonConfirmMessage" style="text-align: center; color: #94a3b8; font-size: 0.88rem; line-height: 1.55; margin-bottom: 24px; white-space: pre-wrap; font-family: 'Inter', sans-serif; word-break: keep-all;"></p>
+        <div style="display: flex; gap: 12px;">
+          <button id="commonConfirmCancelBtn" class="btn-save" style="background: rgba(255, 255, 255, 0.05); color: #cbd5e1; flex: 1; border: 1px solid rgba(255, 255, 255, 0.05); font-weight: 500;" onclick="window._confirmResolve && window._confirmResolve(false)">취소</button>
+          <button id="commonConfirmOkBtn" class="btn-save" style="background: #3b82f6; color: #fff; flex: 1; font-weight: 500; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);" onclick="window._confirmResolve && window._confirmResolve(true)">확인</button>
+        </div>
+      </div>
+    </div>
+    <script src="assets/js/utils.js?v=2.0.0"></script>
+    <script src="assets/js/i18n.js?v=2.0.0"></script>
+    <script src="assets/js/ui.js?v=2.0.0"></script>
+    <script src="assets/js/modules/clock.js?v=2.0.0"></script>
+    <script src="assets/js/modules/calendar.js?v=2.0.0"></script>
+    <script src="assets/js/modules/search.js?v=2.0.0"></script>
+    <script src="assets/js/modules/weather.js?v=2.0.0"></script>
+    <script src="assets/js/modules/shortcuts.js?v=2.0.0"></script>
+    <script src="assets/js/modules/memo.js?v=2.0.0"></script>
+    <script src="assets/js/modules/noti.js?v=2.0.0"></script>
+    <script src="assets/js/modules/quote.js?v=2.0.0"></script>
+    <script src="assets/js/modules/settings.js?v=2.0.0"></script>
+    <script src="assets/js/modules/ai.js?v=2.0.0"></script>
+    <script src="assets/js/modules/files.js?v=2.0.0"></script>
+    <script src="assets/js/modules/stock.js?v=2.0.0"></script>
+    <script src="assets/js/modules/tutorial.js?v=2.0.0"></script>
+    <script src="assets/js/app.js?v=2.0.0"></script>
   </body>
 </html>

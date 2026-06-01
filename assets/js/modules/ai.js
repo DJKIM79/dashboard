@@ -266,27 +266,15 @@ const ai = {
   },
   set chats(val) {
     if (!val) return;
-    const allProviders = ["openai", "gemini"];
-    const custom = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
-    custom.forEach(p => allProviders.push(p.id));
+    const p = this.provider;
+    if (!p || p === "none") return;
 
-    const byProvider = {};
-    allProviders.forEach(p => byProvider[p] = []);
-
-    val.forEach(c => {
+    const validChats = val.filter(c => {
       // Don't save chats with no messages
-      const hasRealMessages = c.messages && c.messages.some(m => m.role === "user" || m.role === "bot");
-      if (!hasRealMessages) return;
-
-      const p = c.provider || this.provider;
-      if (p === "none") return;
-      if (!byProvider[p]) byProvider[p] = [];
-      byProvider[p].push(c);
+      return c.messages && c.messages.some(m => m.role === "user" || m.role === "bot");
     });
 
-    Object.keys(byProvider).forEach(p => {
-      localStorage.setItem(`dj_ai_chats_${p}`, JSON.stringify(byProvider[p]));
-    });
+    localStorage.setItem(`dj_ai_chats_${p}`, JSON.stringify(validChats));
   },
   init() {
     this.resetUI();
@@ -420,7 +408,72 @@ const ai = {
   getCurrentChat() {
     return this.chats.find((c) => c.id === this.currentChatId) || this._currentEmptyChat;
   },
+  toggleMemory(state) {
+    const chat = this.getCurrentChat();
+    if (!chat) return;
+    if (typeof state === 'boolean') {
+        chat.memoryMode = state;
+    } else {
+        chat.memoryMode = chat.memoryMode === false ? true : false;
+    }
+    
+    const chats = this.chats;
+    const c = chats.find(x => x.id === chat.id);
+    if (c) {
+        c.memoryMode = chat.memoryMode;
+        this.chats = chats;
+    } else if (this._currentEmptyChat?.id === chat.id) {
+        this._currentEmptyChat.memoryMode = chat.memoryMode;
+    }
+    this.updateMemoryUI(true);
+  },
+  updateMemoryUI(animate = false) {
+    const chat = this.getCurrentChat();
+    const isMemoryOn = chat ? chat.memoryMode !== false : true;
+    const btnOn = document.getElementById("ai-btn-memory-on");
+    const btnOff = document.getElementById("ai-btn-memory-off");
+    if (btnOn && btnOff) {
+      if (isMemoryOn) {
+          btnOn.style.display = "inline-block";
+          btnOff.style.display = "none";
+          if (animate) {
+              btnOn.classList.remove("icon-crossover");
+              void btnOn.offsetWidth; // force reflow
+              btnOn.classList.add("icon-crossover");
+          }
+      } else {
+          btnOn.style.display = "none";
+          btnOff.style.display = "inline-block";
+          if (animate) {
+              btnOff.classList.remove("icon-crossover");
+              void btnOff.offsetWidth; // force reflow
+              btnOff.classList.add("icon-crossover");
+          }
+      }
+    }
+  },
+  getChatContext(chat) {
+    if (chat.memoryMode === false) return [];
+    
+    let lastSummaryIdx = -1;
+    for (let i = chat.messages.length - 1; i >= 0; i--) {
+      if (chat.messages[i].isSummary) {
+        lastSummaryIdx = i;
+        break;
+      }
+    }
+    
+    if (lastSummaryIdx !== -1) {
+        let sliced = chat.messages.slice(lastSummaryIdx);
+        if (sliced.length > 0 && sliced[0].role === "bot") {
+            sliced.unshift({ role: "user", content: "이전 대화 맥락을 요약해서 알려줄래?" });
+        }
+        return sliced;
+    }
+    return chat.messages;
+  },
   updateModelDisplay() {
+    this.updateMemoryUI();
     const titleInput = document.getElementById("ai-chat-title-input");
     const historyTitleEl = document.getElementById("ai-history-model-name");
     const chat = this.getCurrentChat();
@@ -1271,6 +1324,7 @@ const ai = {
         if (!isImage) {
           try {
             const content = await this.readFileContent(file);
+            file.textContent = content;
             attachmentInfo += `\n[Content of ${file.name}]:\n${content}\n---`;
           } catch (e) {
             console.error(`Failed to read file ${file.name}`, e);
@@ -1298,20 +1352,103 @@ const ai = {
     
     let info = "";
     if (activeAttachments.length > 0) {
-      info += `\n\n(Session Metadata - Active Files: ${activeAttachments.length})`;
+      info += `\n\n[CONTEXT: The user has uploaded ${activeAttachments.length} active file(s)]`;
       activeAttachments.forEach(a => {
-        info += `\n- ${a.name} (${a.type && a.type.startsWith("image/") ? "Image" : "File"})`;
+        const isImage = a.type && a.type.startsWith("image/");
+        info += `\n- File Name: ${a.name} (Type: ${isImage ? "Image" : "Document"})`;
+        if (a.textContent) {
+           info += `\n[Content of ${a.name}]:\n${a.textContent}\n---`;
+        }
       });
     }
     
     if (deletedAttachments.length > 0) {
-      info += `\n\n(Session Metadata - Deleted Files: ${deletedAttachments.length})`;
+      info += `\n\n[CONTEXT: The following files were attached but have been DELETED. You cannot access their contents, but you should know they were part of this message]:`;
       deletedAttachments.forEach(a => {
         info += `\n- ${a.name} (Status: DELETED)`;
       });
     }
     
-    return content + info;
+    return info ? info + "\n\n" + content : content;
+  },
+  async buildChatContextPayload(chat, protocol) {
+    const contextMsgs = this.getChatContext(chat).filter(m => m.role !== "system");
+    const payload = [];
+
+    let allFiles = [];
+    try {
+       allFiles = await this.getFilesByChatId(chat.id);
+    } catch(e) {}
+    const fileMap = {};
+    allFiles.forEach(f => fileMap[f.id] = f.file || f.data);
+
+    for (const m of contextMsgs) {
+      const role = m.role === "bot" ? (protocol === "gemini" ? "model" : "assistant") : "user";
+      const textContent = this.formatMessageContent(m); 
+      const activeAttachments = (m.attachments || []).filter(a => !a.deleted);
+      const images = activeAttachments.filter(a => a.type && a.type.startsWith("image/"));
+
+      if (images.length > 0) {
+         if (protocol === "gemini") {
+             const parts = [{ text: textContent }];
+             for (const img of images) {
+                 const fileBlob = fileMap[img.id];
+                 if (fileBlob) {
+                     try {
+                         const base64 = await this.fileToBase64(fileBlob);
+                         parts.push({ inline_data: { mime_type: img.type, data: base64 } });
+                     } catch(e) {}
+                 }
+             }
+             payload.push({ role, parts });
+         } else if (protocol === "anthropic") {
+             const content = [{ type: "text", text: textContent }];
+             for (const img of images) {
+                 const fileBlob = fileMap[img.id];
+                 if (fileBlob) {
+                     try {
+                         const base64 = await this.fileToBase64(fileBlob);
+                         content.push({ type: "image", source: { type: "base64", media_type: img.type, data: base64 } });
+                     } catch(e) {}
+                 }
+             }
+             payload.push({ role: m.role === "bot" ? "assistant" : "user", content });
+         } else if (protocol === "ollama") {
+             const msgObj = { role, content: textContent, images: [] };
+             for (const img of images) {
+                 const fileBlob = fileMap[img.id];
+                 if (fileBlob) {
+                     try {
+                         const base64 = await this.fileToBase64(fileBlob);
+                         msgObj.images.push(base64);
+                     } catch(e) {}
+                 }
+             }
+             payload.push(msgObj);
+         } else {
+             const content = [{ type: "text", text: textContent }];
+             for (const img of images) {
+                 const fileBlob = fileMap[img.id];
+                 if (fileBlob) {
+                     try {
+                         const base64 = await this.fileToBase64(fileBlob);
+                         content.push({ type: "image_url", image_url: { url: `data:${img.type};base64,${base64}` } });
+                     } catch(e) {}
+                 }
+             }
+             payload.push({ role, content });
+         }
+      } else {
+         if (protocol === "gemini") {
+             payload.push({ role, parts: [{ text: textContent }] });
+         } else if (protocol === "anthropic") {
+             payload.push({ role: m.role === "bot" ? "assistant" : "user", content: textContent });
+         } else {
+             payload.push({ role, content: textContent });
+         }
+      }
+    }
+    return payload;
   },
   async callLocalAI(originalPrompt, msgDiv, chat, model, attachments = []) {
     const isStream = !this.outputAtOnce;
@@ -1346,12 +1483,11 @@ const ai = {
         const existingSystem = chat.messages.find(m => m.role === "system");
         if (existingSystem) systemMsg += "\n\n" + existingSystem.content.replace(/<[^>]*>/g, '');
 
+        const pastMessages = await this.buildChatContextPayload(chat, "ollama");
         body = {
             model: model,
             messages: [{ role: "system", content: systemMsg }]
-              .concat(chat.messages
-                .filter(m => m.role !== "system")
-                .map((m) => ({ role: m.role, content: this.formatMessageContent(m) })))
+              .concat(pastMessages)
               .concat([userMsg]),
             stream: isStream,
         };
@@ -1380,12 +1516,11 @@ const ai = {
         const existingSystem = chat.messages.find(m => m.role === "system");
         if (existingSystem) systemText += "\n\n" + existingSystem.content.replace(/<[^>]*>/g, '');
 
+        const pastMessages = await this.buildChatContextPayload(chat, "anthropic");
         body = {
             model: model,
             system: systemText,
-            messages: chat.messages
-              .filter(m => m.role !== "system")
-              .map((m) => ({ role: m.role === "bot" ? "assistant" : "user", content: this.formatMessageContent(m) }))
+            messages: pastMessages
               .concat([{ role: "user", content: userContent }]),
             max_tokens: 4096,
             stream: isStream,
@@ -1408,12 +1543,7 @@ const ai = {
             }
         }
         url = `${this.serverUrl}/v1beta/models/${model}:generateContent`;
-        const history = chat.messages
-            .filter(m => m.role !== "system")
-            .map(m => ({
-                role: m.role === "bot" ? "model" : "user",
-                parts: [{ text: this.formatMessageContent(m) }]
-            }));
+        const history = await this.buildChatContextPayload(chat, "gemini");
         
         let systemText = this.getSystemBasePrompt();
         const existingSystem = chat.messages.find(m => m.role === "system");
@@ -1449,12 +1579,11 @@ const ai = {
         const existingSystem = chat.messages.find(m => m.role === "system");
         if (existingSystem) systemMsg += "\n\n" + existingSystem.content.replace(/<[^>]*>/g, '');
 
+        const pastMessages = await this.buildChatContextPayload(chat, protocol);
         body = {
             model: model,
             messages: [{ role: "system", content: systemMsg }]
-              .concat(chat.messages
-                .filter(m => m.role !== "system")
-                .map((m) => ({ role: m.role === "bot" ? "assistant" : m.role, content: this.formatMessageContent(m) })))
+              .concat(pastMessages)
               .concat([{ role: "user", content: userContent }]),
             stream: isStream,
         };
@@ -1565,6 +1694,7 @@ const ai = {
       }
     }
 
+    const pastMessages = await this.buildChatContextPayload(chat, "openai");
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -1574,8 +1704,7 @@ const ai = {
       body: JSON.stringify({
         model: model,
         messages: [{ role: "system", content: this.getSystemBasePrompt() }]
-          .concat(chat.messages
-            .map((m) => ({ role: m.role === "bot" ? "assistant" : m.role, content: this.formatMessageContent(m) })))
+          .concat(pastMessages)
           .concat([{ role: "user", content: content }]),
       }),
     });
@@ -1614,12 +1743,7 @@ const ai = {
       }
     }
 
-    const history = chat.messages
-      .filter(m => m.role !== "system")
-      .map(m => ({
-          role: m.role === "bot" ? "model" : "user",
-          parts: [{ text: this.formatMessageContent(m) }]
-      }));
+    const history = await this.buildChatContextPayload(chat, "gemini");
 
     let systemText = this.getSystemBasePrompt();
     const systemMsg = chat.messages.find(m => m.role === "system");
@@ -1660,16 +1784,21 @@ const ai = {
     if (c) {
       const now = Date.now();
       const userMsg = { role: "user", content: userPrompt, timestamp: now };
+      if (c.memoryMode === false) userMsg.memoryOff = true;
       if (attachments && attachments.length > 0) {
         userMsg.attachments = attachments.map(a => ({
           id: a.id,
           name: a.name,
           type: a.type,
-          size: a.size
+          size: a.size,
+          textContent: a.textContent
         }));
       }
       c.messages.push(userMsg);
-      c.messages.push({ role: "bot", content: botResponse, timestamp: now });
+      
+      const botMsg = { role: "bot", content: botResponse, timestamp: now };
+      if (c.memoryMode === false) botMsg.memoryOff = true;
+      c.messages.push(botMsg);
 
       // Auto title for new chats
       if (this.isDefaultTitle(c.title)) {
@@ -1706,6 +1835,131 @@ const ai = {
       }
       this.renderHistory("", chatId); // Pass chatId to trigger animation
       this.updateModelDisplay();
+      
+      // Check if we need to summarize
+      if (c.memoryMode !== false) {
+          let lastSummaryIdx = -1;
+          for (let i = c.messages.length - 1; i >= 0; i--) {
+            if (c.messages[i].isSummary) {
+              lastSummaryIdx = i;
+              break;
+            }
+          }
+          const msgsAfterSummary = lastSummaryIdx !== -1 ? c.messages.slice(lastSummaryIdx + 1) : c.messages;
+          const pairCount = Math.floor(msgsAfterSummary.filter(m => m.role === "user" || m.role === "bot").length / 2);
+          if (pairCount >= 10) {
+              this.summarizeChat(chatId);
+          }
+      }
+    }
+  },
+  async summarizeChat(chatId) {
+    const chats = this.chats;
+    const chat = chats.find(c => c.id === chatId);
+    if (!chat) return;
+    
+    let lastSummaryIdx = -1;
+    for (let i = chat.messages.length - 1; i >= 0; i--) {
+      if (chat.messages[i].isSummary) {
+        lastSummaryIdx = i;
+        break;
+      }
+    }
+    const msgsToSummarize = lastSummaryIdx !== -1 ? chat.messages.slice(lastSummaryIdx + 1) : chat.messages;
+    
+    let conversationText = "";
+    msgsToSummarize.forEach(m => {
+        let prefix = m.memoryOff ? "[단순/독립 질문] " : "";
+        if (m.role === "user") conversationText += `User: ${prefix}${m.content}\n\n`;
+        else if (m.role === "bot") conversationText += `AI: ${prefix}${m.content}\n\n`;
+    });
+    
+    const prompt = `다음 대화 내용을 전체적으로 간략하게 요약해줘. [단순/독립 질문] 표시는 이전 대화 맥락과 무관하게 개별적으로 질문한 내용이니, 이 점을 고려해서 전체 흐름과 문맥을 정리해줘. 다음 대화에 배경 지식(컨텍스트)으로 사용할 수 있도록 핵심만 포함해서 하나의 문단으로 작성해줘:\n\n${conversationText}`;
+    const model = chat.model || this.settingsModel;
+    const provider = chat.provider || this.provider;
+    let summaryText = "";
+    
+    try {
+        if (provider === "gemini" || (provider.startsWith("custom_") && JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]").find(a => a.id === provider)?.protocol === "gemini")) {
+            const url = provider.startsWith("custom_") ? `${this.serverUrl}/v1beta/models/${model}:generateContent` : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`;
+            const res = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] })
+            });
+            if (res.ok) {
+                const json = await res.json();
+                summaryText = json.candidates[0].content.parts[0].text;
+            }
+        } else if (provider === "anthropic" || (provider.startsWith("custom_") && JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]").find(a => a.id === provider)?.protocol === "anthropic")) {
+            const url = provider.startsWith("custom_") ? `${this.serverUrl}/v1/messages` : `https://api.anthropic.com/v1/messages`;
+            const headers = { "Content-Type": "application/json" };
+            if (!provider.startsWith("custom_") && this.apiKey) {
+                headers["x-api-key"] = this.apiKey;
+                headers["anthropic-version"] = "2023-06-01";
+            }
+            const res = await fetch(url, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify({ model: model, max_tokens: 1024, messages: [{ role: "user", content: prompt }] })
+            });
+            if (res.ok) {
+                const json = await res.json();
+                summaryText = json.content[0].text;
+            }
+        } else {
+            const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+            const currentCustom = customAis.find(a => a.id === provider);
+            const protocol = currentCustom ? currentCustom.protocol : "openai";
+            let url = provider.startsWith("custom_") ? (protocol === "ollama" ? `${this.serverUrl}/api/chat` : `${this.serverUrl}/v1/chat/completions`) : "https://api.openai.com/v1/chat/completions";
+            if (url.endsWith('/')) url = url.slice(0, -1);
+            if (provider.startsWith("custom_") && protocol !== "ollama" && !url.endsWith("/chat/completions")) {
+                const baseUrl = url.endsWith("/v1") ? url.slice(0, -3) : url;
+                url = `${baseUrl}/v1/chat/completions`;
+            }
+
+            const headers = { "Content-Type": "application/json" };
+            if (this.apiKey) headers["Authorization"] = `Bearer ${this.apiKey}`;
+            
+            const body = protocol === "ollama" ? 
+                { model: model, messages: [{ role: "user", content: prompt }], stream: false } :
+                { model: model, messages: [{ role: "user", content: prompt }] };
+                
+            const res = await fetch(url, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(body)
+            });
+            
+            if (res.ok) {
+                if (protocol === "ollama") {
+                    const text = await res.text();
+                    try { summaryText = JSON.parse(text).message.content; } catch(e) {}
+                } else {
+                    const json = await res.json();
+                    summaryText = json.choices[0].message.content;
+                }
+            }
+        }
+        
+        if (summaryText) {
+            const freshChats = this.chats;
+            const c = freshChats.find(x => x.id === chatId);
+            if (c) {
+                c.messages.push({
+                    role: "bot",
+                    content: "이전 10개의 대화가 요약되었습니다.\n\n[요약 내용]\n" + summaryText,
+                    isSummary: true,
+                    timestamp: Date.now()
+                });
+                this.chats = freshChats;
+                if (this.currentChatId === chatId) {
+                    this.appendMessage("system", "대화 10개가 누적되어 이전 컨텍스트가 요약되었습니다.", false, true);
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Failed to summarize chat", e);
     }
   },
   handleKeyDown(e) {

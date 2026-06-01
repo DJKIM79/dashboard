@@ -296,7 +296,9 @@ const stock = {
                     item.marketStatus = stockData.marketStatus;
                 }
             });
+            window.isApplyingSyncData = true;
             this.saveData();
+            window.isApplyingSyncData = false;
             this.updateDOM();
 
             const popup = document.getElementById("global-stock-detail");
@@ -369,6 +371,9 @@ const stock = {
   
   saveData() {
     localStorage.setItem("dj_stocks", JSON.stringify(this.items));
+    if (window.settings && typeof settings.syncToServer === "function") {
+      settings.syncToServer();
+    }
   },
   
   render() {
@@ -807,7 +812,9 @@ const stock = {
         if (data.success && data.candles && data.candles.length > 0) {
             item.cachedCandles = data.candles;
             item.lastCandlesFetchTime = now;
+            window.isApplyingSyncData = true;
             this.saveData();
+            window.isApplyingSyncData = false;
             this.renderChart(id, data.candles);
         } else {
             this.renderAlternativeInfo(id);

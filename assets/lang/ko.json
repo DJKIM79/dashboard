@@ -353,5 +353,10 @@
   "msgSyncError": "동기화 설정 중 오류가 발생했습니다.",
   "msgInvalidAuth": "아이디 또는 암호가 올바르지 않습니다.",
   "msgSyncDisconnected": "연결이 해제되었습니다.",
-  "msgSyncWarn": "현재 설정이 서버 설정으로 강제 변경됩니다!"
+  "msgInputId": "아이디를 입력해 주세요.",
+  "msgInputPassword": "암호를 입력해 주세요.",
+  "msgSyncWarn": "현재 설정이 서버 설정으로 강제 변경됩니다!",
+  "msgSyncNewSettings": "다른 기기에서 변경된 설정이 있습니다. 페이지를 새로고침하여 적용하시겠습니까?",
+  "msgSyncRestoreConfirm": "서버에 기존 설정 데이터가 존재합니다. 서버 설정을 불러오시겠습니까? (취소 시 동기화 연결이 취소됩니다.)",
+  "msgSyncConflictConfirm": "다른 기기에서 변경된 최신 설정이 존재합니다. 서버 설정을 불러온 후 현재 변경사항을 합쳐서 저장하시겠습니까? (취소 시 저장이 보류됩니다.)"
 }

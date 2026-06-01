@@ -1040,6 +1040,11 @@ const settings = {
     if (localStorage.getItem("dj_image_engine") === "none" && window.utils) {
       utils.changeBackgroundInstant();
     }
+
+    // Trigger instant forced sync on theme change to prevent timing issues
+    if (window.settings && typeof settings.syncToServer === "function") {
+      settings.syncToServer(false, true);
+    }
   },
   adjustColor(hex, percent) {
     const expandHex = (h) => {
@@ -1275,31 +1280,66 @@ const settings = {
     }
   },
   async enableServerSync() {
-    const id = document.getElementById("syncIdInput").value.trim();
-    const authKey = document.getElementById("syncKeyInput").value.trim();
-    if (!id || !authKey) return;
+    const idInput = document.getElementById("syncIdInput");
+    const keyInput = document.getElementById("syncKeyInput");
+    const id = idInput ? idInput.value.trim() : "";
+    const authKey = keyInput ? keyInput.value.trim() : "";
+    
+    if (!id) {
+        if (idInput && window.utils) {
+            utils.showValidationTip(idInput, window.i18n ? i18n.get("msgInputId") || "아이디를 입력해 주세요." : "Please enter your ID.", "error");
+        }
+        return;
+    }
+    if (!authKey) {
+        if (keyInput && window.utils) {
+            utils.showValidationTip(keyInput, window.i18n ? i18n.get("msgInputPassword") || "암호를 입력해 주세요." : "Please enter your password.", "error");
+        }
+        return;
+    }
 
     try {
-        const res = await fetch(`sync.php?action=load&id=${id}&authKey=${authKey}`);
+        const res = await fetch(`sync.php?action=load&id=${encodeURIComponent(id)}&authKey=${encodeURIComponent(authKey)}`);
         const result = await res.json();
         
         if (result.success) {
             if (result.data) {
-                const serverTime = parseInt(result.data.dj_last_updated || 0);
-                const localTime = parseInt(localStorage.getItem("dj_last_updated") || 0);
-
-                // If server data is newer, ask to restore
-                if (serverTime > localTime) {
-                    if (confirm(window.i18n ? i18n.get("restoreConfirmTitle") : "Load newer data from server?")) {
-                        for (const key in result.data) {
-                            localStorage.setItem(key, result.data[key]);
+                const confirmMsg = window.i18n && i18n.get("msgSyncRestoreConfirm") 
+                    ? i18n.get("msgSyncRestoreConfirm") 
+                    : "A configuration exists on the server. Do you want to load the server configuration? (Clicking Cancel will abort enabling sync.)";
+                let isConfirmed = true;
+                if (localStorage.getItem("dj_sync_warned") !== "true") {
+                    isConfirmed = window.utils && typeof utils.confirm === "function"
+                        ? await utils.confirm(window.i18n ? i18n.get("lblSync") : "Sync", confirmMsg, "fa-sync-alt")
+                        : confirm(confirmMsg);
+                    localStorage.setItem("dj_sync_warned", "true");
+                }
+                if (isConfirmed) {
+                    window.isApplyingSyncData = true;
+                    
+                    // Clear old local dj_ keys first (except sync meta)
+                    const keepKeys = ["dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_warned", "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"];
+                    const keysToRemove = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && key.startsWith("dj_") && !keepKeys.includes(key) && !key.startsWith("dj_ai_chats_")) {
+                            keysToRemove.push(key);
                         }
-                        localStorage.setItem("dj_sync_enabled", "true");
-                        localStorage.setItem("dj_sync_id", id);
-                        localStorage.setItem("dj_sync_key", authKey);
-                        location.reload();
-                        return;
                     }
+                    keysToRemove.forEach(key => localStorage.removeItem(key));
+
+                    for (const key in result.data) {
+                        localStorage.setItem(key, result.data[key]);
+                    }
+                    localStorage.setItem("dj_sync_enabled", "true");
+                    localStorage.setItem("dj_sync_id", id);
+                    localStorage.setItem("dj_sync_key", authKey);
+                    window.isReloading = true;
+                    location.reload();
+                    return;
+                } else {
+                    // User cancelled the load of server data. We should abort enabling sync.
+                    return;
                 }
             }
             
@@ -1308,7 +1348,7 @@ const settings = {
             localStorage.setItem("dj_sync_key", authKey);
             
             // Upload current data (it's either newer or we declined server data)
-            await this.syncToServer();
+            await this.syncToServer(false, true);
             utils.closeModal("syncModal");
             this.updateSyncUI();
             this.startAutoSync();
@@ -1338,7 +1378,134 @@ const settings = {
         utils.showValidationTip(trigger, window.i18n ? i18n.get("msgSyncDisconnected") : "Disconnected", "error");
     }
   },
-  async syncToServer() {
+  applyLoadedDataToMemory() {
+    if (window.shortcutMod) {
+        shortcutMod.items = JSON.parse(localStorage.getItem("dj_shortcuts")) || [];
+    }
+    if (window.noti) {
+        noti.items = JSON.parse(localStorage.getItem("dj_notifications")) || [];
+    }
+    if (window.memo) {
+        memo.items = JSON.parse(localStorage.getItem("dj_memos")) || [];
+    }
+    if (window.weather) {
+        weather.locations = JSON.parse(localStorage.getItem("dj_weather_locations")) || [];
+    }
+    if (window.stock) {
+        stock.items = JSON.parse(localStorage.getItem("dj_stocks")) || [];
+        stock.isSecretMode = localStorage.getItem("dj_stock_secret_mode") === "true";
+        stock.updateInterval = parseInt(localStorage.getItem("dj_stock_interval") || 10) * 1000;
+    }
+  },
+  renderAllModules() {
+    try {
+        const themeColor = localStorage.getItem("dj_theme_color");
+        if (themeColor) {
+            document.documentElement.style.setProperty('--accent-color', themeColor);
+            const expandHex = (hex) => {
+              if (hex.length === 4) return "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+              return hex;
+            };
+            const expanded = expandHex(themeColor);
+            const r = parseInt(expanded.slice(1, 3), 16);
+            const g = parseInt(expanded.slice(3, 5), 16);
+            const b = parseInt(expanded.slice(5, 7), 16);
+            const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+            const contrast = yiq >= 128 ? "#0f172a" : "#ffffff";
+            document.documentElement.style.setProperty('--accent-contrast', contrast);
+            
+            const activeColorBtn = document.querySelector(`.theme-color-option[data-color="${themeColor}"]`);
+            if (activeColorBtn) {
+                document.querySelectorAll(".theme-color-option").forEach(o => o.classList.remove("active"));
+                activeColorBtn.classList.add("active");
+            }
+        }
+        const size = localStorage.getItem("dj_widget_size") || "medium";
+        document.documentElement.style.setProperty('--widget-scale', 'var(--widget-scale-' + size + ')');
+        if (window.ui && typeof ui.applyVisibility === "function") {
+            ui.applyVisibility();
+        }
+        if (window.memo && typeof memo.render === "function") {
+            memo.render();
+        }
+        if (window.shortcutMod && typeof shortcutMod.render === "function") {
+            shortcutMod.render();
+        }
+        if (window.noti && typeof noti.render === "function") {
+            noti.render();
+        }
+        if (window.stock && typeof stock.render === "function") {
+            stock.render();
+        }
+        if (window.weather && typeof weather.renderLocationList === "function") {
+            weather.renderLocationList();
+            weather.fetch();
+        }
+        if (window.calendar && typeof calendar.render === "function") {
+            calendar.render();
+        }
+    } catch (e) {
+        console.error("Failed to render modules after sync:", e);
+    }
+  },
+  async loadFromServerOnStartup() {
+    const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
+    if (!isSyncEnabled) {
+        window.lastSyncedTime = parseInt(localStorage.getItem("dj_last_updated") || 0);
+        return;
+    }
+    const id = localStorage.getItem("dj_sync_id");
+    const authKey = localStorage.getItem("dj_sync_key");
+    if (!id || !authKey) return;
+
+    try {
+        const res = await fetch(`sync.php?action=load&id=${encodeURIComponent(id)}&authKey=${encodeURIComponent(authKey)}`);
+        const result = await res.json();
+        
+        if (result.success) {
+            if (result.data) {
+                const serverTime = parseInt(result.data.dj_last_updated || 0);
+                const localTime = parseInt(localStorage.getItem("dj_last_updated") || 0);
+
+                if (serverTime > localTime) {
+                    console.log("Loading newer configuration from server. Server time:", serverTime, ", Local time:", localTime);
+                    window.isApplyingSyncData = true;
+                    
+                    const keepKeys = ["dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_warned", "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"];
+                    const keysToRemove = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && key.startsWith("dj_") && !keepKeys.includes(key) && !key.startsWith("dj_ai_chats_")) {
+                            keysToRemove.push(key);
+                        }
+                    }
+                    keysToRemove.forEach(key => localStorage.removeItem(key));
+
+                    for (const key in result.data) {
+                        localStorage.setItem(key, result.data[key]);
+                    }
+                    localStorage.setItem("dj_last_updated", serverTime.toString());
+                    this.applyLoadedDataToMemory();
+                    window.isApplyingSyncData = false;
+                    window.lastSyncedTime = serverTime;
+                    
+                    this.renderAllModules();
+                } else if (localTime > serverTime) {
+                    console.log("Local configuration is newer. Syncing to server. Server time:", serverTime, ", Local time:", localTime);
+                    await this.syncToServer(true);
+                } else {
+                    window.lastSyncedTime = serverTime;
+                }
+            } else {
+                console.log("New user/no server data. Syncing local configuration to server.");
+                await this.syncToServer(true);
+            }
+        }
+    } catch (e) {
+        console.error("Failed to load settings from server:", e);
+    }
+  },
+  async syncToServer(bypassTimestampUpdate = false, force = false) {
     const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
     if (!isSyncEnabled) return;
     
@@ -1346,13 +1513,107 @@ const settings = {
     const authKey = localStorage.getItem("dj_sync_key");
     if (!id || !authKey) return;
 
-    // Update local timestamp before syncing
-    localStorage.setItem("dj_last_updated", Date.now().toString());
+    let localTime = parseInt(localStorage.getItem("dj_last_updated") || 0);
+
+    if (!force && window.lastSyncedTime && localTime <= window.lastSyncedTime) {
+        return;
+    }
+
+    if (!force && window.lastSyncedTime) {
+        try {
+            const checkRes = await fetch(`sync.php?action=load&id=${encodeURIComponent(id)}&authKey=${encodeURIComponent(authKey)}`);
+            const checkResult = await checkRes.json();
+            if (checkResult.success && checkResult.data) {
+                const serverTime = parseInt(checkResult.data.dj_last_updated || 0);
+                if (serverTime > window.lastSyncedTime) {
+                    window.isApplyingSyncData = true;
+                    
+                    const keepKeys = ["dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_warned", "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"];
+                    const keysToRemove = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && key.startsWith("dj_") && !keepKeys.includes(key) && !key.startsWith("dj_ai_chats_")) {
+                            keysToRemove.push(key);
+                        }
+                    }
+                    keysToRemove.forEach(key => localStorage.removeItem(key));
+                    
+                    for (const key in checkResult.data) {
+                        localStorage.setItem(key, checkResult.data[key]);
+                    }
+                    
+                    if (window.shortcutMod && shortcutMod.items)
+                        localStorage.setItem("dj_shortcuts", JSON.stringify(shortcutMod.items));
+                    if (window.noti && noti.items)
+                        localStorage.setItem("dj_notifications", JSON.stringify(noti.items));
+                    if (window.memo && memo.items)
+                        localStorage.setItem("dj_memos", JSON.stringify(memo.items));
+                    if (window.weather && weather.locations)
+                        localStorage.setItem("dj_weather_locations", JSON.stringify(weather.locations));
+                    if (window.stock && stock.items)
+                        localStorage.setItem("dj_stocks", JSON.stringify(stock.items));
+                        
+                    if (window.lastModifiedKey && window.lastModifiedValue) {
+                        localStorage.setItem(window.lastModifiedKey, window.lastModifiedValue);
+                    }
+                    
+                    this.applyLoadedDataToMemory();
+                    window.isApplyingSyncData = false;
+                    
+                    localTime = Date.now();
+                    localStorage.setItem("dj_last_updated", localTime.toString());
+                    bypassTimestampUpdate = true;
+                    
+                    setTimeout(() => this.renderAllModules(), 100);
+                }
+            }
+        } catch (e) {
+            console.error("Conflict check failed:", e);
+        }
+    }
+
+    if (!bypassTimestampUpdate) {
+        localTime = Date.now();
+        localStorage.setItem("dj_last_updated", localTime.toString());
+    }
+
+    const excludeKeys = [
+        "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model",
+        "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_sync_warned", "dj_ai_server_url", "dj_ai_api_key_ollama"
+    ];
 
     const data = {};
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key.startsWith("dj_")) {
+        if (key && key.startsWith("dj_")) {
+            if (key === "dj_sync_enabled" || key === "dj_sync_id" || key === "dj_sync_key" || key === "dj_last_updated") {
+                continue;
+            }
+            if (excludeKeys.includes(key) || key.startsWith("dj_ai_chats_")) {
+                continue;
+            }
+            
+            if (key === "dj_ai_server_url") {
+                const url = localStorage.getItem(key) || "";
+                if (url.includes("localhost") || url.includes("127.0.0.1") || url.includes("0.0.0.0")) {
+                    continue;
+                }
+            }
+            
+            if (key === "dj_ai_custom_providers") {
+                try {
+                    const customAis = JSON.parse(localStorage.getItem(key) || "[]");
+                    const filteredAis = customAis.filter(item => {
+                        const url = (item.url || "").toLowerCase();
+                        return !(url.includes("localhost") || url.includes("127.0.0.1") || url.includes("0.0.0.0"));
+                    });
+                    data[key] = JSON.stringify(filteredAis);
+                    continue;
+                } catch (e) {
+                    console.error("Failed to parse custom providers during sync:", e);
+                }
+            }
+            
             data[key] = localStorage.getItem(key);
         }
     }
@@ -1364,20 +1625,34 @@ const settings = {
         formData.append("authKey", authKey);
         formData.append("data", JSON.stringify(data));
         
-        await fetch("sync.php", {
+        const res = await fetch("sync.php", {
             method: "POST",
             body: formData
         });
+        const result = await res.json();
+        if (result.success && result.server_time) {
+            const serverTimeStr = result.server_time.toString();
+            window.isApplyingSyncData = true;
+            localStorage.setItem("dj_last_updated", serverTimeStr);
+            window.isApplyingSyncData = false;
+            window.lastSyncedTime = result.server_time;
+        }
     } catch (e) {
         console.error("Auto sync failed:", e);
     }
   },
   startAutoSync() {
-    if (this.syncInterval) clearInterval(this.syncInterval);
-    this.syncInterval = setInterval(() => this.syncToServer(), 60000); // Every minute
+    this.updateSyncUI();
+    if (this.syncInterval) {
+        clearInterval(this.syncInterval);
+        this.syncInterval = null;
+    }
   },
   stopAutoSync() {
-    if (this.syncInterval) clearInterval(this.syncInterval);
+    if (this.syncInterval) {
+        clearInterval(this.syncInterval);
+        this.syncInterval = null;
+    }
   }
 };
 document.addEventListener("click", (e) => {

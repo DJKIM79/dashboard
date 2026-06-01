@@ -33,7 +33,7 @@ if ($authKey !== $allowedUsers[$id]) {
     exit;
 }
 
-$userDir = __DIR__ . '/users/' . $id;
+$userDir = __DIR__ . '/user/' . $id;
 $configFile = $userDir . '/config.json';
 
 if ($action === 'save') {
@@ -42,6 +42,15 @@ if ($action === 'save') {
         echo json_encode(['success' => false, 'message' => 'No data provided']);
         exit;
     }
+
+    $decoded = json_decode($data, true);
+    if (!is_array($decoded)) {
+        $decoded = [];
+    }
+    // Set absolute server timestamp in milliseconds
+    $serverTimeMs = round(microtime(true) * 1000);
+    $decoded['dj_last_updated'] = (string)$serverTimeMs;
+    $data = json_encode($decoded);
 
     if (!is_dir($userDir)) {
         if (!mkdir($userDir, 0755, true)) {
@@ -55,7 +64,7 @@ if ($action === 'save') {
         exit;
     }
 
-    echo json_encode(['success' => true]);
+    echo json_encode(['success' => true, 'server_time' => $serverTimeMs]);
 } elseif ($action === 'load') {
     if (!file_exists($configFile)) {
         echo json_encode(['success' => true, 'data' => null]); // New user

@@ -3,12 +3,35 @@ window.currentEditMemoId = null;
 window.currentShortcutIndex = null;
 const app = {
   async init() {
+    window.isApplyingSyncData = true;
     this.initDefaults();
+    window.isApplyingSyncData = false;
+
+    if (window.settings && typeof settings.loadFromServerOnStartup === "function") {
+      await settings.loadFromServerOnStartup();
+    }
     await i18n.init();
     this.initModules();
     this.clearTutorialData();
     this.setupIntervals();
     this.checkTutorial();
+    
+    // Remove preload class to enable transitions after initial render
+    setTimeout(() => {
+      document.body.classList.remove("preload");
+    }, 100);
+    
+    // Check for updates when the user returns/switches back to this tab
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
+        if (isSyncEnabled && window.settings && typeof settings.loadFromServerOnStartup === "function") {
+          settings.loadFromServerOnStartup();
+        }
+      }
+    });
+
+    window.appInitialized = true;
   },
   initDefaults() {
     const defaults = {
@@ -32,7 +55,9 @@ const app = {
       localStorage.setItem("dj_ai_provider", "none");
       localStorage.setItem("dj_ai_disabled", "true");
     }
-    localStorage.setItem("dj_hide_ai", "true");
+    if (localStorage.getItem("dj_hide_ai") === null) {
+      localStorage.setItem("dj_hide_ai", "true");
+    }
     if (localStorage.getItem("dj_search_engines_custom") === null) {
       const initialCustomEngines = [
         { id: "custom_chatgpt", name: "ChatGPT", url: "https://chatgpt.com/?q=", domain: "chatgpt.com", isDefault: false },

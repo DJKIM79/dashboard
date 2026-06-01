@@ -198,9 +198,22 @@ const utils = {
     const modal = document.getElementById(id);
     if (modal) {
       modal.classList.remove("show");
+      
+      // Resolve common confirm modal to false if closed via general means (Esc, overlay click)
+      if (id === "commonConfirmModal" && window._confirmResolve) {
+          const resolveFn = window._confirmResolve;
+          window._confirmResolve = null; // Clear first to prevent infinite recursion
+          resolveFn(false);
+      }
+
       // Trigger auto-save for memos to remember resized dimensions
       if (id === "memoModal" && window.memo && typeof memo.autoSave === "function") {
           memo.autoSave();
+      }
+
+      // Force server sync when the settings modal is closed to update themes, widget sizes, etc.
+      if (id === "settingModal" && window.settings && typeof settings.syncToServer === "function") {
+          settings.syncToServer(false, true);
       }
     }
   },
@@ -390,6 +403,50 @@ const utils = {
     
     return html;
   },
+  confirm(title, message, iconClass = "fa-sync-alt") {
+    return new Promise((resolve) => {
+      const modal = document.getElementById("commonConfirmModal");
+      const titleEl = document.getElementById("commonConfirmTitle");
+      const msgEl = document.getElementById("commonConfirmMessage");
+      const iconEl = document.getElementById("commonConfirmIcon");
+      const cancelBtn = document.getElementById("commonConfirmCancelBtn");
+      const okBtn = document.getElementById("commonConfirmOkBtn");
+      
+      if (!modal || !titleEl || !msgEl) {
+        // Fallback to native confirm if elements not found
+        resolve(window.confirm(message));
+        return;
+      }
+      
+      titleEl.innerText = title;
+      msgEl.innerHTML = message;
+      if (iconEl) {
+        iconEl.className = `fas ${iconClass}`;
+        // Add rotation animation for sync icon
+        if (iconClass === "fa-sync-alt") {
+            iconEl.style.animation = "fa-spin 8s linear infinite";
+        } else {
+            iconEl.style.animation = "";
+        }
+      }
+      
+      // Custom localized button names if available
+      if (cancelBtn) {
+          cancelBtn.innerText = window.i18n ? window.i18n.get("btnCancel") : "취소";
+      }
+      if (okBtn) {
+          okBtn.innerText = window.i18n ? window.i18n.get("btnOk") : "확인";
+      }
+      
+      window._confirmResolve = (value) => {
+        window._confirmResolve = null; // Clear first to prevent infinite recursion
+        utils.closeModal("commonConfirmModal");
+        resolve(value);
+      };
+      
+      utils.openModal("commonConfirmModal");
+    });
+  }
 };
 window.utils = utils;
 window.openModal = utils.openModal;
