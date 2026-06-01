@@ -785,9 +785,11 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #noti-folder {
   transform-origin: right bottom;
 }
-#memo-folder,
-#stock-container {
+#memo-folder {
   transform-origin: left bottom;
+}
+#stock-container {
+  transform-origin: center bottom;
 }
 .widget-hidden {
   opacity: 0;
