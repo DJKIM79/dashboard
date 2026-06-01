@@ -141,6 +141,7 @@ const settings = {
     const popups = document.querySelectorAll(
       ".ai-model-popup, .engine-popup, .weather-popup",
     );
+    document.querySelectorAll(".modal-content.dropdown-open").forEach(mc => mc.classList.remove("dropdown-open"));
     popups.forEach((p) => {
       if (p.id && p.id === exceptId) return;
       if (exceptId) {
@@ -1381,6 +1382,11 @@ const settings = {
   applyLoadedDataToMemory() {
     if (window.shortcutMod) {
         shortcutMod.items = JSON.parse(localStorage.getItem("dj_shortcuts")) || [];
+        
+        let cats = JSON.parse(localStorage.getItem("dj_shortcut_categories")) || ["미지정", "업무용 사이트", "개인용 사이트", "기타 사이트"];
+        if (!cats.includes("미지정")) cats.unshift("미지정");
+        shortcutMod.categories = cats;
+        shortcutMod.collapsedCategories = JSON.parse(localStorage.getItem("dj_shortcut_collapsed")) || {};
     }
     if (window.noti) {
         noti.items = JSON.parse(localStorage.getItem("dj_notifications")) || [];

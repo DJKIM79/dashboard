@@ -198,6 +198,8 @@ const utils = {
     const modal = document.getElementById(id);
     if (modal) {
       modal.classList.remove("show");
+      const mc = modal.querySelector(".modal-content");
+      if (mc) mc.classList.remove("dropdown-open");
       
       // Resolve common confirm modal to false if closed via general means (Esc, overlay click)
       if (id === "commonConfirmModal" && window._confirmResolve) {
@@ -403,7 +405,7 @@ const utils = {
     
     return html;
   },
-  confirm(title, message, iconClass = "fa-sync-alt") {
+  confirm(title, message, iconClass = "fa-sync-alt", isDestructive = false) {
     return new Promise((resolve) => {
       const modal = document.getElementById("commonConfirmModal");
       const titleEl = document.getElementById("commonConfirmTitle");
@@ -430,12 +432,32 @@ const utils = {
         }
       }
       
+      // Determine if it should be styled in red (destructive theme)
+      const isRed = isDestructive || iconClass === "fa-trash" || iconClass === "fa-trash-alt";
+      const iconContainer = iconEl ? iconEl.parentElement : null;
+      if (iconContainer) {
+        if (isRed) {
+          iconContainer.style.background = "rgba(239, 68, 68, 0.15)";
+          iconContainer.style.color = "#ef4444";
+        } else {
+          iconContainer.style.background = "rgba(59, 130, 246, 0.15)";
+          iconContainer.style.color = "#3b82f6";
+        }
+      }
+      
       // Custom localized button names if available
       if (cancelBtn) {
           cancelBtn.innerText = window.i18n ? window.i18n.get("btnCancel") : "취소";
       }
       if (okBtn) {
           okBtn.innerText = window.i18n ? window.i18n.get("btnOk") : "확인";
+          if (isRed) {
+              okBtn.style.background = "#ef4444";
+              okBtn.style.boxShadow = "0 4px 12px rgba(239, 68, 68, 0.3)";
+          } else {
+              okBtn.style.background = "#3b82f6";
+              okBtn.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.3)";
+          }
       }
       
       window._confirmResolve = (value) => {
@@ -446,6 +468,17 @@ const utils = {
       
       utils.openModal("commonConfirmModal");
     });
+  },
+  alert(message) {
+    const modal = document.getElementById("alertModal");
+    const msgEl = document.getElementById("alertModalMsg");
+    if (modal && msgEl) {
+      msgEl.innerText = message;
+      msgEl.removeAttribute("data-i18n");
+      utils.openModal("alertModal");
+    } else {
+      window.alert(message);
+    }
   }
 };
 window.utils = utils;

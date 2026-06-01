@@ -1417,26 +1417,54 @@
         </div>
       </div>
     </div>
+    <div class="modal" id="categoryManagerModal" style="z-index: 4000;" onclick="event.target == this && closeModal('categoryManagerModal')">
+      <div class="modal-content">
+        <div style="position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; min-height: 30px;">
+          <h3 data-i18n="modalCategory" style="margin: 0; text-align: center; width: 100%;">카테고리 설정</h3>
+        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+          <input type="text" id="newCategoryName" data-i18n-ph="newCategoryPh" placeholder="새 카테고리 이름" onkeypress="event.key === 'Enter' && shortcutMod.addCategory()" style="flex: 1; margin-bottom: 0;" />
+          <button class="btn-save" style="width: auto; padding: 0 15px;" onclick="shortcutMod.addCategory()" data-i18n="btnAdd">추가</button>
+        </div>
+        <div id="categoryList" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 5px;">
+        </div>
+      </div>
+    </div>
+
     <div
       class="modal"
       id="linkModal"
       onclick="event.target == this && closeModal('linkModal')"
     >
       <div class="modal-content">
-        <h3 id="linkModalTitle" data-i18n="modalLinkAdd">바로가기 추가</h3>
-        <input
-          type="text"
-          id="siteName"
-          data-i18n-ph="linkName"
-          placeholder="이름"
-          onkeypress="event.key === 'Enter' && addShortcut()"
-        />
+        <div style="position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; min-height: 30px;">
+          <h3 id="linkModalTitle" data-i18n="modalLinkAdd" style="margin: 0; text-align: center; width: 100%;">바로가기 추가</h3>
+          <i class="fas fa-cog" style="cursor: pointer; color: #94a3b8; position: absolute; right: 0; padding: 5px; font-size: 1.1rem; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'" onclick="shortcutMod.openCategoryManager()" title="카테고리 설정"></i>
+        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; position: relative; z-index: 100;">
+          <input
+            type="text"
+            id="siteName"
+            data-i18n-ph="linkName"
+            placeholder="이름"
+            onkeypress="event.key === 'Enter' && addShortcut()"
+            style="flex: 1; margin-bottom: 0;"
+          />
+          <div id="category-select-wrap" style="position: relative; width: 140px;">
+            <div id="category-trigger" class="weather-custom-select" data-outside-ignore onclick="if(window.shortcutMod) shortcutMod.toggleCategoryPopup(event)" style="margin-bottom: 0; height: 100%; box-sizing: border-box; justify-content: space-between; padding: 0 15px;">
+              <span id="category-current">기본</span>
+              <i class="fas fa-chevron-down" style="font-size: 0.8rem; color: #94a3b8;"></i>
+            </div>
+            <div id="category-popup" class="engine-popup" style="top: 100%; margin-top: 5px;"></div>
+          </div>
+        </div>
         <input
           type="text"
           id="siteUrl"
           data-i18n-ph="linkUrl"
           placeholder="URL (example.com)"
           onkeypress="event.key === 'Enter' && addShortcut()"
+          style="margin-bottom: 15px;"
         />
         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
           <button id="iconPreview" class="icon-upload-btn" onclick="shortcutMod.toggleIconPicker()" data-i18n-title="tipIconList" title="아이콘 목록에서 선택">

@@ -1,6 +1,13 @@
 // 260525 21:41 Stable
 const shortcutMod = {
   items: JSON.parse(localStorage.getItem("dj_shortcuts")) || [],
+  categories: (() => {
+    let cats = JSON.parse(localStorage.getItem("dj_shortcut_categories")) || ["미지정", "업무용 사이트", "개인용 사이트", "기타 사이트"];
+    if (!cats.includes("미지정")) cats.unshift("미지정");
+    return cats;
+  })(),
+  collapsedCategories: JSON.parse(localStorage.getItem("dj_shortcut_collapsed")) || {},
+  currentCategory: "미지정",
   isDragging: false,
   resizeListenerAdded: false,
   popularIcons: [
@@ -1965,30 +1972,33 @@ const shortcutMod = {
     if (!c || c.classList.contains("widget-hidden")) return;
     requestAnimationFrame(() => {
       setTimeout(() => {
-        const itemCount = this.items.length;
-        if (itemCount === 0) {
+        if (this.items.length === 0) {
           c.classList.remove("shortcut-list-view");
           return;
         }
+        
+        // Temporarily remove to measure the natural (grid/square) state height
+        const wasList = c.classList.contains("shortcut-list-view");
+        if (wasList) {
+          c.classList.remove("shortcut-list-view");
+        }
+        
+        // Use actual height instead of item count estimation because categories add varying overhead
+        const actualHeight = c.offsetHeight;
         const rect = c.getBoundingClientRect();
         const containerTop = rect.top + window.scrollY;
-        const containerWidth = rect.width || (window.innerWidth - 100);
-        const style = window.getComputedStyle(c);
-        const paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) || 100;
-        const availableWidth = containerWidth - paddingX;
-        const itemWidth = 140;
-        const gap = 15;
-        const itemsPerRow = Math.max(1, Math.floor((availableWidth + gap) / (itemWidth + gap)));
-        const rowCount = Math.ceil(itemCount / itemsPerRow);
-        const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--widget-scale')) || 1;
-        const squareGridHeight = (rowCount * 84 + (rowCount - 1) * gap) * scale;
-        const absoluteBottom = containerTop + squareGridHeight;
+        
+        // Threshold: bottom of screen - 100px buffer
         const threshold = window.innerHeight - 100;
+        const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--widget-scale')) || 1;
+        const absoluteBottom = containerTop + (actualHeight * scale);
+        
         const needsListView = absoluteBottom > threshold || window.innerHeight < 450;
-        const isCurrentlyList = c.classList.contains("shortcut-list-view");
-        if (needsListView !== isCurrentlyList) {
-          if (needsListView) c.classList.add("shortcut-list-view");
-          else c.classList.remove("shortcut-list-view");
+        
+        if (needsListView) {
+          c.classList.add("shortcut-list-view");
+        } else {
+          c.classList.remove("shortcut-list-view");
         }
       }, 50);
     });
@@ -1996,32 +2006,131 @@ const shortcutMod = {
   render() {
     const c = document.getElementById("shortcut-container");
     if (!c) return;
-    c.classList.add("grid-layout");
+    
+    // Force c to be a flex column container for categories, immune to .grid-layout class overrides
+    c.style.setProperty('display', 'flex', 'important');
+    c.style.setProperty('flex-direction', 'column', 'important');
+    c.style.setProperty('gap', '10px', 'important');
+    
     this.checkLayout();
+    
+    // Check if we are animating a collapse/expand to avoid full re-render if possible.
+    // Actually, full re-render is fine if we preserve transitions, but it interrupts animations.
+    // Instead of full innerHTML wipe on collapse toggle, we should build it once and just toggle classes,
+    // OR we just use the existing re-render but apply the correct height immediately.
     c.innerHTML = "";
-    this.items.forEach((s, i) => {
-      let hostname = "";
-      const finalUrl = s.url.startsWith("http") ? s.url : `http://${s.url}`;
-      try {
-        hostname = new URL(finalUrl).hostname;
-      } catch (e) {
-        hostname = s.url;
-      }
-      const div = document.createElement("a");
-      div.className = "shortcut-item";
-      div.onclick = (e) =>
-        this.isDragging
-          ? (e.preventDefault(), (this.isDragging = false))
-          : window.open(finalUrl, "_blank");
-      div.oncontextmenu = (e) => showContextMenu(e, "shortcut", i);
 
-      let iconHtml = "";
-      if (s.icon) {
-        if (s.icon.startsWith("http") || s.icon.startsWith("data:")) {
-          iconHtml = `<img src="${s.icon}" class="shortcut-img">`;
-        } else if (s.icon.startsWith("fa-") || s.icon.startsWith("fas ") || s.icon.startsWith("fab ") || s.icon.startsWith("far ")) {
-          const iconClass = s.icon.includes("fa-") && !s.icon.includes(" ") ? `fas ${s.icon}` : s.icon;
-          iconHtml = `<div class="shortcut-default-icon" style="display: flex;"><i class="${iconClass}"></i></div>`;
+    const grouped = {};
+    const activeCategories = [];
+    const defaultCat = "미지정";
+    
+    // Ensure "미지정" always exists internally if items use it
+    if (!this.categories.includes(defaultCat)) {
+      this.categories.unshift(defaultCat);
+      this.saveCategories();
+    }
+
+    this.items.forEach((s, i) => {
+      const cat = s.category && this.categories.includes(s.category) ? s.category : defaultCat;
+      if (!grouped[cat]) {
+        grouped[cat] = [];
+        activeCategories.push(cat);
+      }
+      grouped[cat].push({ s, i });
+    });
+
+    // Sort activeCategories to match the order in this.categories
+    activeCategories.sort((a, b) => this.categories.indexOf(a) - this.categories.indexOf(b));
+
+    const showHeaders = activeCategories.length > 1;
+
+    for (const cat of activeCategories) {
+      const isCollapsed = this.collapsedCategories[cat];
+      
+      const wrapper = document.createElement("div");
+      wrapper.className = "shortcut-category-wrapper";
+      wrapper.dataset.category = cat;
+      wrapper.style.display = "flex";
+      wrapper.style.flexDirection = "column";
+      wrapper.style.marginBottom = showHeaders ? "10px" : "0";
+
+      const header = document.createElement("div");
+      header.className = "shortcut-category-header";
+      header.style.cssText = "display: flex; justify-content: flex-start; align-items: center; gap: 8px; padding: 5px 10px; color: #f1f5f9; font-weight: 500; cursor: pointer; user-select: none; font-size: 0.75rem;";
+      header.innerHTML = `
+        <span>${cat}</span>
+        <i class="fas fa-chevron-${isCollapsed ? 'down' : 'up'}" style="transition: transform 0.3s; color: #94a3b8;"></i>
+      `;
+      
+      if (!showHeaders) {
+        header.style.display = "none";
+      }
+
+      const catContainer = document.createElement("div");
+      catContainer.className = "shortcut-category-container";
+      catContainer.id = "shortcut-cat-" + cat;
+      // Grid wrapper for smooth height animation using 0fr -> 1fr
+      catContainer.style.cssText = `display: grid; grid-template-rows: ${isCollapsed && showHeaders ? '0fr' : '1fr'}; transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1); width: 100%;`;
+      
+      const catContent = document.createElement("div");
+      catContent.style.cssText = `display: grid; grid-template-columns: repeat(auto-fit, 140px); justify-content: center; gap: 15px; padding: 10px 0; overflow: hidden; transition: opacity 0.4s ease, transform 0.4s ease; opacity: ${isCollapsed && showHeaders ? '0' : '1'}; transform: translateY(${isCollapsed && showHeaders ? '-10px' : '0'});`;
+      catContainer.appendChild(catContent);
+
+      header.onclick = () => {
+        const currentlyCollapsed = this.collapsedCategories[cat];
+        this.collapsedCategories[cat] = !currentlyCollapsed;
+        localStorage.setItem("dj_shortcut_collapsed", JSON.stringify(this.collapsedCategories));
+        
+        const icon = header.querySelector("i");
+        if (!currentlyCollapsed) {
+          icon.className = "fas fa-chevron-down";
+          catContainer.style.gridTemplateRows = "0fr";
+          catContent.style.opacity = "0";
+          catContent.style.transform = "translateY(-10px)";
+        } else {
+          icon.className = "fas fa-chevron-up";
+          catContainer.style.gridTemplateRows = "1fr";
+          catContent.style.opacity = "1";
+          catContent.style.transform = "translateY(0)";
+        }
+
+        if (window.settings && typeof settings.syncToServer === "function") {
+          settings.syncToServer();
+        }
+      };
+
+      grouped[cat].forEach(({ s, i }) => {
+        let hostname = "";
+        const finalUrl = s.url.startsWith("http") ? s.url : `http://${s.url}`;
+        try {
+          hostname = new URL(finalUrl).hostname;
+        } catch (e) {
+          hostname = s.url;
+        }
+        const div = document.createElement("a");
+        div.className = "shortcut-item";
+        div.dataset.index = i;
+        div.onclick = (e) =>
+          this.isDragging
+            ? (e.preventDefault(), (this.isDragging = false))
+            : window.open(finalUrl, "_blank");
+        div.oncontextmenu = (e) => showContextMenu(e, "shortcut", i);
+
+        let iconHtml = "";
+        if (s.icon) {
+          if (s.icon.startsWith("http") || s.icon.startsWith("data:")) {
+            iconHtml = `<img src="${s.icon}" class="shortcut-img">`;
+          } else if (s.icon.startsWith("fa-") || s.icon.startsWith("fas ") || s.icon.startsWith("fab ") || s.icon.startsWith("far ")) {
+            const iconClass = s.icon.includes("fa-") && !s.icon.includes(" ") ? `fas ${s.icon}` : s.icon;
+            iconHtml = `<div class="shortcut-default-icon" style="display: flex;"><i class="${iconClass}"></i></div>`;
+          } else {
+            iconHtml = `
+              <img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" 
+                   class="shortcut-img"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>
+            `;
+          }
         } else {
           iconHtml = `
             <img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" 
@@ -2030,23 +2139,30 @@ const shortcutMod = {
             <div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>
           `;
         }
-      } else {
-        iconHtml = `
-          <img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" 
-               class="shortcut-img"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>
+
+        div.innerHTML = `
+          <div class="shortcut-icon-wrapper">
+            ${iconHtml}
+          </div>
+          <span>${s.name}</span>
         `;
+        catContent.appendChild(div);
+      });
+      
+      // If a category has no items we need to provide a drop target for Sortable
+      if (grouped[cat].length === 0) {
+        catContent.style.minHeight = isCollapsed ? "0px" : "40px";
+        if (!isCollapsed) {
+           catContent.style.background = "rgba(255,255,255,0.02)";
+           catContent.style.borderRadius = "8px";
+        }
       }
 
-      div.innerHTML = `
-        <div class="shortcut-icon-wrapper">
-          ${iconHtml}
-        </div>
-        <span>${s.name}</span>
-      `;
-      c.appendChild(div);
-    });
+      wrapper.appendChild(header);
+      wrapper.appendChild(catContainer);
+      c.appendChild(wrapper);
+    }
+
     if (!this.resizeListenerAdded) {
       window.addEventListener("resize", () => {
         if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
@@ -2058,32 +2174,299 @@ const shortcutMod = {
       });
       this.resizeListenerAdded = true;
     }
-    if (window.shortcutSortable) window.shortcutSortable.destroy();
-    window.shortcutSortable = new Sortable(c, {
-      animation: 250, /* Increased from 150 for more noticeable movement */
-      easing: "cubic-bezier(0.4, 0, 0.2, 1)", /* Added smooth easing */
-      ghostClass: "shortcut-ghost",
-      chosenClass: "sortable-chosen",
+    
+    // Sortable for items within and across categories
+    if (window.shortcutSortables) {
+      window.shortcutSortables.forEach(s => s.destroy());
+    }
+    window.shortcutSortables = [];
+    
+    document.querySelectorAll('.shortcut-category-container > div').forEach(container => {
+      window.shortcutSortables.push(new Sortable(container, {
+        group: 'shortcuts',
+        animation: 250,
+        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+        ghostClass: "shortcut-ghost",
+        chosenClass: "sortable-chosen",
+        onStart: () => {
+          this.isDragging = true;
+          c.classList.add("sorting-active");
+        },
+        onEnd: (evt) => {
+          setTimeout(() => (this.isDragging = false), 100);
+          c.classList.remove("sorting-active");
+          this.updateItemsFromDOM();
+        },
+      }));
+    });
+
+    // Sortable for the categories themselves
+    if (window.categorySortable) window.categorySortable.destroy();
+    window.categorySortable = new Sortable(c, {
+      animation: 250,
+      easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+      handle: ".shortcut-category-header",
       onStart: () => {
         this.isDragging = true;
-        c.classList.add("sorting-active");
       },
       onEnd: (evt) => {
         setTimeout(() => (this.isDragging = false), 100);
-        c.classList.remove("sorting-active");
-        if (evt.oldIndex !== evt.newIndex) {
-          const item = this.items.splice(evt.oldIndex, 1)[0];
-          this.items.splice(evt.newIndex, 0, item);
-          utils.saveData();
-          this.checkLayout();
-        }
+        this.updateCategoriesFromDOM();
       },
     });
+  },
+  updateItemsFromDOM() {
+    const newItems = [];
+    document.querySelectorAll('.shortcut-category-container > div').forEach(container => {
+      const cat = container.parentElement.id.replace('shortcut-cat-', '');
+      container.querySelectorAll('.shortcut-item').forEach(el => {
+        const oldIndex = parseInt(el.dataset.index);
+        if (!isNaN(oldIndex) && this.items[oldIndex]) {
+          const item = { ...this.items[oldIndex] };
+          item.category = cat;
+          newItems.push(item);
+        }
+      });
+    });
+    if (newItems.length === this.items.length) {
+      this.items = newItems;
+      window.shortcuts = this.items;
+      utils.saveData();
+      this.render(); // Re-render to update indexes
+    }
+  },
+  updateCategoriesFromDOM() {
+    const newCats = [];
+    document.querySelectorAll('.shortcut-category-wrapper').forEach(wrapper => {
+      if (wrapper.dataset.category) {
+        newCats.push(wrapper.dataset.category);
+      }
+    });
+    if (newCats.length === this.categories.length) {
+      this.categories = newCats;
+      this.saveCategories();
+    }
+  },
+  toggleCategoryCollapse(cat) {
+    // Moved to inline click handler in render for better animation control
+  },
+  openCategoryManager() {
+    const cList = document.getElementById("categoryList");
+    cList.innerHTML = "";
+    
+    this.categories.forEach((cat, i) => {
+      const div = document.createElement("div");
+      div.className = "category-manager-item";
+      div.dataset.category = cat;
+      div.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px; cursor: grab; transition: background 0.2s;";
+      div.onmouseover = () => div.style.background = "rgba(255,255,255,0.1)";
+      div.onmouseout = () => div.style.background = "rgba(255,255,255,0.05)";
+      
+      const isDefault = cat === "미지정";
+      
+      const nameSpan = document.createElement("span");
+      nameSpan.innerText = cat;
+      nameSpan.style.cssText = "flex: 1; cursor: pointer; color: #f1f5f9; font-weight: 500;";
+      
+      if (!isDefault) {
+        nameSpan.onclick = () => {
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = cat;
+          input.style.cssText = "flex: 1; margin: 0; padding: 4px 8px; border-radius: 4px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); color: #fff;";
+          
+          const saveEdit = () => {
+            const newVal = input.value.trim();
+            if (newVal && newVal !== cat && !this.categories.includes(newVal)) {
+              // Rename category in array
+              const idx = this.categories.indexOf(cat);
+              if (idx !== -1) {
+                this.categories[idx] = newVal;
+                // Update items
+                this.items.forEach(item => {
+                  if (item.category === cat) item.category = newVal;
+                });
+                // Update collapsed state
+                if (this.collapsedCategories[cat] !== undefined) {
+                  this.collapsedCategories[newVal] = this.collapsedCategories[cat];
+                  delete this.collapsedCategories[cat];
+                  localStorage.setItem("dj_shortcut_collapsed", JSON.stringify(this.collapsedCategories));
+                }
+                utils.saveData();
+                this.saveCategories();
+                this.render();
+              }
+            }
+            this.openCategoryManager();
+          };
+          
+          input.onblur = saveEdit;
+          input.onkeypress = (e) => { if(e.key === 'Enter') saveEdit(); };
+          
+          div.insertBefore(input, nameSpan);
+          div.removeChild(nameSpan);
+          input.focus();
+        };
+      }
+      
+      div.appendChild(nameSpan);
+      
+      const actions = document.createElement("div");
+      actions.style.display = "flex";
+      actions.style.alignItems = "center";
+      actions.style.gap = "10px";
+      
+      if (!isDefault) {
+        actions.innerHTML = `
+          <button class="btn-save" style="background: transparent; color: #ef4444; width: auto; padding: 5px; min-width: 0; box-shadow: none;" onclick="shortcutMod.deleteCategory('${cat}')" title="삭제">
+            <i class="fas fa-trash"></i>
+          </button>
+        `;
+      }
+      
+      actions.innerHTML += `<i class="fas fa-grip-lines" style="color: #64748b; cursor: grab;"></i>`;
+      div.appendChild(actions);
+      
+      cList.appendChild(div);
+    });
+    
+    document.getElementById("newCategoryName").value = "";
+    
+    if (window.categoryManagerSortable) window.categoryManagerSortable.destroy();
+    window.categoryManagerSortable = new Sortable(cList, {
+      animation: 150,
+      handle: ".fa-grip-lines",
+      onEnd: () => {
+        const newCats = [];
+        cList.querySelectorAll('.category-manager-item').forEach(el => {
+          if (el.dataset.category) newCats.push(el.dataset.category);
+        });
+        if (newCats.length === this.categories.length) {
+          this.categories = newCats;
+          this.saveCategories();
+          this.render();
+        }
+      }
+    });
+
+    utils.openModal("categoryManagerModal");
+  },
+  addCategory() {
+    const input = document.getElementById("newCategoryName");
+    const val = input.value.trim();
+    if (val && !this.categories.includes(val)) {
+      this.categories.push(val);
+      this.saveCategories();
+      this.openCategoryManager();
+      this.render();
+    }
+    input.value = "";
+  },
+  saveCategories() {
+    localStorage.setItem("dj_shortcut_categories", JSON.stringify(this.categories));
+    if (window.settings && typeof settings.syncToServer === "function") {
+      settings.syncToServer();
+    }
+  },
+  async deleteCategory(cat) {
+    if (cat === "미지정") {
+      utils.alert("기본 카테고리는 삭제할 수 없습니다.");
+      return;
+    }
+    if (this.categories.length <= 1) {
+      utils.alert("최소 한 개의 카테고리가 필요합니다.");
+      return;
+    }
+    const isConfirmed = await utils.confirm(
+      "카테고리 삭제",
+      `'${cat}' 카테고리를 삭제하시겠습니까?<br><span style="font-size: 0.8rem; color: #94a3b8;">(포함된 바로가기는 미지정 카테고리로 이동됩니다)</span>`,
+      "fa-trash"
+    );
+    if (isConfirmed) {
+      this.categories = this.categories.filter(c => c !== cat);
+      const defaultCat = "미지정";
+      if (!this.categories.includes(defaultCat)) {
+        this.categories.unshift(defaultCat);
+      }
+      this.items.forEach(item => {
+        if (item.category === cat) {
+          item.category = defaultCat;
+        }
+      });
+      utils.saveData();
+      this.saveCategories();
+      this.render();
+      this.openCategoryManager();
+    }
+  },
+  toggleCategoryPopup(e) {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    const popup = document.getElementById("category-popup");
+    if (!popup) return;
+    
+    const modalContent = popup.closest(".modal-content");
+    
+    if (popup.classList.contains("show")) {
+      popup.classList.remove("show");
+      setTimeout(() => { if (!popup.classList.contains("show")) popup.style.display = "none"; }, 200);
+      if (modalContent) modalContent.classList.remove("dropdown-open");
+      return;
+    }
+    
+    if (window.settings && settings.closeAllPopups) {
+      settings.closeAllPopups();
+    }
+    document.querySelectorAll(".engine-popup").forEach(p => {
+      if (p !== popup) {
+        p.classList.remove("show");
+        p.style.display = "none";
+      }
+    });
+    
+    popup.innerHTML = "";
+    this.categories.forEach(cat => {
+      const item = document.createElement("div");
+      item.className = "engine-item" + (this.currentCategory === cat ? " active" : "");
+      item.innerHTML = `<span>${cat}</span>`;
+      item.onclick = (evt) => {
+        evt.stopPropagation();
+        this.setCategory(cat);
+        popup.classList.remove("show");
+        popup.style.display = "none";
+        if (modalContent) modalContent.classList.remove("dropdown-open");
+      };
+      popup.appendChild(item);
+    });
+    
+    popup.style.display = "block";
+    void popup.offsetHeight; // force reflow
+    popup.classList.add("show");
+    if (modalContent) modalContent.classList.add("dropdown-open");
+  },
+  setCategory(cat) {
+    this.currentCategory = cat;
+    document.getElementById("category-current").innerText = cat;
+    if (window.currentShortcutIndex !== null) this.autoSave();
   },
   openModal(index = null) {
     window.currentShortcutIndex = index;
     const T = i18n.langData,
       isEdit = index !== null;
+      
+    // Close category popup if open
+    const catPopup = document.getElementById("category-popup");
+    if (catPopup) {
+      catPopup.classList.remove("show");
+      catPopup.style.display = "none";
+    }
+    const modalContent = catPopup ? catPopup.closest(".modal-content") : null;
+    if (modalContent) {
+      modalContent.classList.remove("dropdown-open");
+    }
+      
     document.getElementById("siteName").value = isEdit
       ? this.items[index].name
       : "";
@@ -2093,6 +2476,11 @@ const shortcutMod = {
     document.getElementById("siteIcon").value = isEdit
       ? (this.items[index].icon || "")
       : "";
+       
+    // Set Category
+    this.currentCategory = isEdit && this.items[index].category && this.categories.includes(this.items[index].category) ? this.items[index].category : (this.categories[0] || "기본");
+    document.getElementById("category-current").innerText = this.currentCategory;
+
     document.getElementById("linkModalTitle").innerText = isEdit
       ? T.modalLinkEdit
       : T.modalLinkAdd;
@@ -2146,7 +2534,7 @@ const shortcutMod = {
       ic = document.getElementById("siteIcon").value;
     
     if (n && u) {
-      const item = { name: n, url: u, icon: ic };
+      const item = { name: n, url: u, icon: ic, category: this.currentCategory };
       this.items[window.currentShortcutIndex] = item;
       window.shortcuts = this.items;
       this.render();
@@ -2240,7 +2628,7 @@ const shortcutMod = {
       u = document.getElementById("siteUrl").value,
       ic = document.getElementById("siteIcon").value;
     if (n && u) {
-      const item = { name: n, url: u, icon: ic };
+      const item = { name: n, url: u, icon: ic, category: this.currentCategory };
       if (window.currentShortcutIndex !== null)
         this.items[window.currentShortcutIndex] = item;
       else this.items.push(item);

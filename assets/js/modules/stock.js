@@ -129,7 +129,11 @@ const stock = {
     if (window.utils && utils.hideValidationTip) {
       utils.hideValidationTip();
     }
-    
+
+    if (window.settings && typeof settings.syncToServer === "function") {
+      settings.syncToServer();
+    }
+
     const list = document.getElementById("stock-list");
     if (!list) {
       this.render();
@@ -427,12 +431,14 @@ const stock = {
         div.style.display = "flex";
         div.style.justifyContent = "center";
         div.style.alignItems = "center";
-        div.style.minWidth = "60px";
-        div.style.maxWidth = "60px";
+        div.style.minWidth = "70px";
+        div.style.maxWidth = "70px";
+        div.style.paddingLeft = "2px";
+        div.style.paddingRight = "2px";
         
         div.innerHTML = `
           <div class="noti-info stock-info" style="width: 100%; margin-top: 0; justify-content: center;">
-            <span class="stock-change" style="color: #94a3b8; font-family: 'JetBrains Mono'; font-weight: bold;">${changeValText}</span>
+            <span class="stock-change" style="color: #94a3b8; font-family: 'JetBrains Mono'; font-weight: bold; font-size: 0.65rem;">${changeValText}</span>
           </div>
         `;
       } else {

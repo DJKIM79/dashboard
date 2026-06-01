@@ -504,7 +504,6 @@ body::before {
   border-color: var(--accent-color) !important;
   background: rgba(255, 255, 255, 0.15) !important;
   box-shadow: 0 0 12px var(--accent-color);
-  transform: translateY(-2px);
 }
 .shortcut-item:active {
   transform: scale(0.95);
@@ -546,9 +545,6 @@ body::before {
   font-size: 0.9rem;
   background: transparent;
   transition: all 0.3s ease;
-}
-.shortcut-item:hover .shortcut-default-icon {
-  transform: translateY(-2px);
 }
 #shortcut-container.sorting-active .shortcut-item {
   /* Clear default transitions to let Sortable.js handle transform animations via inline styles */
@@ -765,7 +761,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
     border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: center;
+  transform-origin: center top;
   max-height: 1000px; 
 }
 @keyframes widgetFadeIn {
@@ -1410,6 +1406,9 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   pointer-events: auto;
   opacity: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.modal-content.dropdown-open {
+  overflow: visible !important;
 }
 .modal.show .modal-content {
   transform: translate(-50%, -50%) scale(1);
