@@ -18,6 +18,7 @@ const app = {
     
     // Remove preload class to enable transitions after initial render
     setTimeout(() => {
+      void document.body.offsetHeight; // Force reflow to commit settings changes without transitions
       document.body.classList.remove("preload");
     }, 100);
     
