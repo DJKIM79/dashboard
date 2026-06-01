@@ -258,7 +258,17 @@ const ai = {
       }
     }
 
-    return allChats.sort((a, b) => {
+    // Deduplicate by chat.id to clean up any corrupted state
+    const uniqueChats = [];
+    const seenIds = new Set();
+    allChats.forEach(c => {
+        if (!seenIds.has(c.id)) {
+            seenIds.add(c.id);
+            uniqueChats.push(c);
+        }
+    });
+
+    return uniqueChats.sort((a, b) => {
         const timeA = a.updatedAt || a.id || 0;
         const timeB = b.updatedAt || b.id || 0;
         return timeB - timeA;
@@ -266,15 +276,35 @@ const ai = {
   },
   set chats(val) {
     if (!val) return;
-    const p = this.provider;
-    if (!p || p === "none") return;
 
-    const validChats = val.filter(c => {
-      // Don't save chats with no messages
-      return c.messages && c.messages.some(m => m.role === "user" || m.role === "bot");
+    const allProviders = ["openai", "gemini"];
+    const custom = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+    custom.forEach(p => allProviders.push(p.id));
+
+    // Group chats by provider
+    const grouped = {};
+    allProviders.forEach(p => {
+        grouped[p] = [];
     });
 
-    localStorage.setItem(`dj_ai_chats_${p}`, JSON.stringify(validChats));
+    val.forEach(c => {
+        const provider = c.provider || this.provider;
+        if (provider && provider !== "none") {
+            if (!grouped[provider]) {
+                grouped[provider] = [];
+            }
+            c.provider = provider;
+            grouped[provider].push(c);
+        }
+    });
+
+    // Save each provider's chats
+    Object.keys(grouped).forEach(p => {
+        const validChats = grouped[p].filter(c => {
+            return c.messages && c.messages.some(m => m.role === "user" || m.role === "bot");
+        });
+        localStorage.setItem(`dj_ai_chats_${p}`, JSON.stringify(validChats));
+    });
   },
   init() {
     this.resetUI();
@@ -2384,7 +2414,8 @@ const ai = {
       isHtml: true,
       noAutoHide: true
     });
-  },  performDeleteChat(id) {
+  },
+  performDeleteChat(id) {
     utils.hideValidationTip();
     const list = document.getElementById("ai-history-list");
     const item = list?.querySelector(`.ai-history-item[data-id="${id}"]`);
@@ -2397,6 +2428,10 @@ const ai = {
         const chats = this.chats.filter((c) => c.id !== id);
         this.chats = chats;
         this.deleteFilesByChatId(id).catch(console.error);
+
+        // Remove from DOM immediately to prevent any leftovers
+        const el = list?.querySelector(`.ai-history-item[data-id="${id}"]`);
+        if (el) el.remove();
         
         if (this.chats.filter(c => c.messages && c.messages.some(m => m.role === "user" || m.role === "bot")).length === 0 && !this._currentEmptyChat) {
             this.createNewChat();
