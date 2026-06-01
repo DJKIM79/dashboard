@@ -733,7 +733,7 @@ const stock = {
       
       <div style="margin-top: 8px; font-size: 0.7rem; color: #94a3b8; text-align: center; margin-bottom: 8px;">${labelChart}</div>
       <div style="display: flex; height: 120px; gap: 5px; position: relative; padding-left: 45px;">
-        <div id="chart-y-axis" style="position: absolute; left: 0; top: 5px; bottom: 5px; width: 40px; display: flex; flex-direction: column; justify-content: space-between; font-size: 0.6rem; color: #64748b; border-right: 1px solid rgba(255,255,255,0.05); padding-right: 5px; text-align: right;"></div>
+        <div id="chart-y-axis" style="position: absolute; left: 0; top: 5px; bottom: 5px; width: 40px; display: flex; flex-direction: column; justify-content: space-between; font-size: 0.6rem; color: #ffffff; border-right: 1px solid rgba(255,255,255,0.05); padding-right: 5px; text-align: right;"></div>
         <div id="${chartId}" style="flex: 1; background: rgba(255,255,255,0.02); border-radius: 4px; display: flex; align-items: flex-end; padding: 5px; gap: 2px; position: relative;"></div>
       </div>
     `;
@@ -850,7 +850,7 @@ const stock = {
         const item = this.items.find(i => String(i.id) === String(id));
         yAxis.innerHTML = `
             <span>${this.formatPrice(max, item)}</span>
-            <span style="opacity:0.5">${this.formatPrice(min + range/2, item)}</span>
+            <span style="opacity:0.8">${this.formatPrice(min + range/2, item)}</span>
             <span>${this.formatPrice(min, item)}</span>
         `;
     }
