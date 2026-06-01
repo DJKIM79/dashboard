@@ -822,16 +822,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
   opacity: 0;
 }
 #stock-container.widget-hidden {
-  transform: scale(0.8) translateY(40px);
-  filter: blur(15px);
-  opacity: 0;
-  max-width: 0;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0;
-  overflow: hidden;
-  max-height: none !important;
-  min-height: unset !important;
+  transform: scale(0.9) translateY(20px);
 }
 #quote-section.widget-hidden {
   transform: scale(0.9) translateY(20px);
