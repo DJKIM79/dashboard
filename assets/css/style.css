@@ -745,7 +745,9 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #clock-container,
 #noti-folder,
 #top-right-widgets,
+#top-left-widgets,
 #memo-folder,
+#stock-container,
 #quote-section,
 #search-section,
 #shortcut-container {
@@ -754,11 +756,16 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
     transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     filter 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    margin 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    border-width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: center top;
-  max-height: 1000px; 
+  max-height: 1000px;
 }
 @keyframes widgetFadeIn {
   from {
@@ -781,7 +788,6 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #memo-folder,
 #stock-container {
   transform-origin: left bottom;
-  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
 }
 .widget-hidden {
   opacity: 0;
