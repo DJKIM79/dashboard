@@ -138,7 +138,7 @@ body::before {
   top: 30px;
   left: 30px;
   z-index: 500;
-  transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(var(--widget-scale));
   transform-origin: top left;
 }
@@ -151,7 +151,7 @@ body::before {
   flex-direction: row;
   gap: 20px;
   align-items: flex-start;
-  transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(var(--widget-scale));
   transform-origin: top right;
 }
@@ -215,7 +215,7 @@ body::before {
   z-index: 2400;
   margin-top: 10px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .forecast-window.active {
   opacity: 1;
@@ -599,7 +599,7 @@ body::before {
   pointer-events: none; 
   position: relative;
   z-index: 500;
-  transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(var(--widget-scale)) translateZ(0);
   transform-origin: bottom left;
   width: max-content;
@@ -615,7 +615,7 @@ body::before {
   pointer-events: none; 
   position: relative;
   z-index: 500;
-  transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(var(--widget-scale)) translateZ(0);
   transform-origin: bottom right;
   width: max-content;
@@ -751,12 +751,8 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #shortcut-container {
   transition:
     visibility 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    margin 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     filter 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -785,7 +781,7 @@ body:has(.widget-sidebar:hover) .sidebar-hint {
 #memo-folder,
 #stock-container {
   transform-origin: left bottom;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
 }
 .widget-hidden {
   opacity: 0;
@@ -4514,7 +4510,7 @@ body.tutorial-closing .driver-active-element {
   font-size: 0.85rem;
   cursor: pointer;
   color: #fff;
-  transition: 0.2s;
+  transition: background-color 0.2s, color 0.2s;
   display: flex;
   align-items: center;
   gap: 12px;
