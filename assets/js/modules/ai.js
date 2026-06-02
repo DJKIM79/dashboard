@@ -305,6 +305,10 @@ const ai = {
         });
         localStorage.setItem(`dj_ai_chats_${p}`, JSON.stringify(validChats));
     });
+
+    if (!window.isApplyingSyncData && window.settings && typeof settings.syncToServer === "function") {
+        settings.syncToServer();
+    }
   },
   init() {
     this.resetUI();

@@ -1450,9 +1450,98 @@ const settings = {
         if (window.calendar && typeof calendar.render === "function") {
             calendar.render();
         }
+        if (window.ai && typeof ai.renderHistory === "function") {
+            ai.renderHistory();
+            if (typeof ai.loadChat === "function") {
+                ai.loadChat(ai.currentChatId);
+            }
+        }
     } catch (e) {
         console.error("Failed to render modules after sync:", e);
     }
+  },
+  applySyncData(serverData) {
+    window.isApplyingSyncData = true;
+    
+    // 1. Extract local AI provider IDs
+    const localProviderIds = [];
+    const localCustomStr = localStorage.getItem("dj_ai_custom_providers") || "[]";
+    try {
+        const localCustom = JSON.parse(localCustomStr);
+        localCustom.forEach(item => {
+            const url = (item.url || "").toLowerCase();
+            if (url.includes("localhost") || url.includes("127.0.0.1") || url.includes("0.0.0.0")) {
+                localProviderIds.push(item.id);
+            }
+        });
+    } catch(e) {
+        console.error("Failed to parse local custom providers:", e);
+    }
+
+    const keepKeys = [
+        "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_warned", 
+        "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", 
+        "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"
+    ];
+
+    // 2. Determine keys to remove from local storage
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("dj_")) {
+            if (keepKeys.includes(key)) continue;
+            if (key === "dj_ai_custom_providers") continue; // Merged manually below
+            
+            // Check for chat data
+            if (key.startsWith("dj_ai_chats_")) {
+                const provider = key.replace("dj_ai_chats_", "");
+                if (localProviderIds.includes(provider)) {
+                    continue; // Keep local AI chats
+                }
+                keysToRemove.push(key);
+                continue;
+            }
+
+            keysToRemove.push(key);
+        }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+
+    // 3. Apply server data and merge custom providers
+    for (const key in serverData) {
+        if (key === "dj_ai_custom_providers") {
+            try {
+                const serverCustom = JSON.parse(serverData[key] || "[]");
+                
+                let localCustom = [];
+                try {
+                    localCustom = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+                } catch(e) {}
+                const localOnly = localCustom.filter(item => {
+                    const url = (item.url || "").toLowerCase();
+                    return url.includes("localhost") || url.includes("127.0.0.1") || url.includes("0.0.0.0");
+                });
+
+                // Merge server and local-only custom providers (prevent duplicates)
+                const merged = [...localOnly];
+                serverCustom.forEach(srvItem => {
+                    if (!merged.some(locItem => locItem.id === srvItem.id)) {
+                        merged.push(srvItem);
+                    }
+                });
+
+                localStorage.setItem("dj_ai_custom_providers", JSON.stringify(merged));
+            } catch(e) {
+                console.error("Error merging custom providers:", e);
+                localStorage.setItem("dj_ai_custom_providers", serverData[key]);
+            }
+        } else {
+            localStorage.setItem(key, serverData[key]);
+        }
+    }
+
+    this.applyLoadedDataToMemory();
+    window.isApplyingSyncData = false;
   },
   async loadFromServerOnStartup() {
     const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
@@ -1475,26 +1564,9 @@ const settings = {
 
                 if (serverTime > localTime) {
                     console.log("Loading newer configuration from server. Server time:", serverTime, ", Local time:", localTime);
-                    window.isApplyingSyncData = true;
-                    
-                    const keepKeys = ["dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_warned", "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"];
-                    const keysToRemove = [];
-                    for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        if (key && key.startsWith("dj_") && !keepKeys.includes(key) && !key.startsWith("dj_ai_chats_")) {
-                            keysToRemove.push(key);
-                        }
-                    }
-                    keysToRemove.forEach(key => localStorage.removeItem(key));
-
-                    for (const key in result.data) {
-                        localStorage.setItem(key, result.data[key]);
-                    }
+                    this.applySyncData(result.data);
                     localStorage.setItem("dj_last_updated", serverTime.toString());
-                    this.applyLoadedDataToMemory();
-                    window.isApplyingSyncData = false;
                     window.lastSyncedTime = serverTime;
-                    
                     this.renderAllModules();
                 } else if (localTime > serverTime) {
                     console.log("Local configuration is newer. Syncing to server. Server time:", serverTime, ", Local time:", localTime);
@@ -1512,6 +1584,7 @@ const settings = {
     }
   },
   async syncToServer(bypassTimestampUpdate = false, force = false) {
+    if (window.isApplyingSyncData) return;
     const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
     if (!isSyncEnabled) return;
     
@@ -1532,39 +1605,7 @@ const settings = {
             if (checkResult.success && checkResult.data) {
                 const serverTime = parseInt(checkResult.data.dj_last_updated || 0);
                 if (serverTime > window.lastSyncedTime) {
-                    window.isApplyingSyncData = true;
-                    
-                    const keepKeys = ["dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_warned", "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"];
-                    const keysToRemove = [];
-                    for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        if (key && key.startsWith("dj_") && !keepKeys.includes(key) && !key.startsWith("dj_ai_chats_")) {
-                            keysToRemove.push(key);
-                        }
-                    }
-                    keysToRemove.forEach(key => localStorage.removeItem(key));
-                    
-                    for (const key in checkResult.data) {
-                        localStorage.setItem(key, checkResult.data[key]);
-                    }
-                    
-                    if (window.shortcutMod && shortcutMod.items)
-                        localStorage.setItem("dj_shortcuts", JSON.stringify(shortcutMod.items));
-                    if (window.noti && noti.items)
-                        localStorage.setItem("dj_notifications", JSON.stringify(noti.items));
-                    if (window.memo && memo.items)
-                        localStorage.setItem("dj_memos", JSON.stringify(memo.items));
-                    if (window.weather && weather.locations)
-                        localStorage.setItem("dj_weather_locations", JSON.stringify(weather.locations));
-                    if (window.stock && stock.items)
-                        localStorage.setItem("dj_stocks", JSON.stringify(stock.items));
-                        
-                    if (window.lastModifiedKey && window.lastModifiedValue) {
-                        localStorage.setItem(window.lastModifiedKey, window.lastModifiedValue);
-                    }
-                    
-                    this.applyLoadedDataToMemory();
-                    window.isApplyingSyncData = false;
+                    this.applySyncData(checkResult.data);
                     
                     localTime = Date.now();
                     localStorage.setItem("dj_last_updated", localTime.toString());
@@ -1583,9 +1624,23 @@ const settings = {
         localStorage.setItem("dj_last_updated", localTime.toString());
     }
 
+    // Extract local AI provider IDs to exclude from remote save
+    const localProviderIds = [];
+    try {
+        const customAis = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+        customAis.forEach(item => {
+            const url = (item.url || "").toLowerCase();
+            if (url.includes("localhost") || url.includes("127.0.0.1") || url.includes("0.0.0.0")) {
+                localProviderIds.push(item.id);
+            }
+        });
+    } catch(e) {
+        console.error("Failed to parse local custom providers:", e);
+    }
+
     const excludeKeys = [
         "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model",
-        "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_sync_warned", "dj_ai_server_url", "dj_ai_api_key_ollama"
+        "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"
     ];
 
     const data = {};
@@ -1595,8 +1650,16 @@ const settings = {
             if (key === "dj_sync_enabled" || key === "dj_sync_id" || key === "dj_sync_key" || key === "dj_last_updated") {
                 continue;
             }
-            if (excludeKeys.includes(key) || key.startsWith("dj_ai_chats_")) {
+            if (excludeKeys.includes(key)) {
                 continue;
+            }
+            
+            // Exclude local AI chat histories
+            if (key.startsWith("dj_ai_chats_")) {
+                const provider = key.replace("dj_ai_chats_", "");
+                if (localProviderIds.includes(provider)) {
+                    continue;
+                }
             }
             
             if (key === "dj_ai_server_url") {
