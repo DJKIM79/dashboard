@@ -1969,39 +1969,19 @@ const shortcutMod = {
   },
   checkLayout() {
     const c = document.getElementById("shortcut-container");
-    if (!c || c.classList.contains("widget-hidden")) return;
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        if (this.items.length === 0) {
-          c.classList.remove("shortcut-list-view");
-          return;
-        }
-        
-        // Temporarily remove to measure the natural (grid/square) state height
-        const wasList = c.classList.contains("shortcut-list-view");
-        if (wasList) {
-          c.classList.remove("shortcut-list-view");
-        }
-        
-        // Use actual height instead of item count estimation because categories add varying overhead
-        const actualHeight = c.offsetHeight;
-        const rect = c.getBoundingClientRect();
-        const containerTop = rect.top + window.scrollY;
-        
-        // Threshold: bottom of screen - 100px buffer
-        const threshold = window.innerHeight - 100;
-        const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--widget-scale')) || 1;
-        const absoluteBottom = containerTop + (actualHeight * scale);
-        
-        const needsListView = absoluteBottom > threshold || window.innerHeight < 450;
-        
-        if (needsListView) {
-          c.classList.add("shortcut-list-view");
-        } else {
-          c.classList.remove("shortcut-list-view");
-        }
-      }, 50);
-    });
+    if (c) c.classList.remove("shortcut-list-view");
+  },
+  toggleShortcutSize(idx) {
+    const menu = document.getElementById("globalContextMenu");
+    if (idx === undefined && menu && menu.dataset.type === "shortcut") {
+      idx = parseInt(menu.dataset.id);
+    }
+    if (idx !== undefined && !isNaN(idx) && this.items[idx]) {
+      const item = this.items[idx];
+      item.collapsed = !item.collapsed;
+      utils.saveData();
+      this.render();
+    }
   },
   render() {
     const c = document.getElementById("shortcut-container");
@@ -2073,7 +2053,7 @@ const shortcutMod = {
       catContainer.style.cssText = `display: grid; grid-template-rows: ${isCollapsed && showHeaders ? '0fr' : '1fr'}; transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1); width: 100%;`;
       
       const catContent = document.createElement("div");
-      catContent.style.cssText = `display: grid; grid-template-columns: repeat(auto-fit, 140px); justify-content: center; gap: 15px; padding: 10px 0; overflow: hidden; transition: opacity 0.4s ease, transform 0.4s ease; opacity: ${isCollapsed && showHeaders ? '0' : '1'}; transform: translateY(${isCollapsed && showHeaders ? '-10px' : '0'});`;
+      catContent.style.cssText = `display: grid; grid-template-columns: repeat(auto-fill, 140px); justify-content: flex-start; gap: 15px; padding: 10px 0; overflow: hidden; transition: opacity 0.4s ease, transform 0.4s ease; opacity: ${isCollapsed && showHeaders ? '0' : '1'}; transform: translateY(${isCollapsed && showHeaders ? '-10px' : '0'});`;
       catContainer.appendChild(catContent);
 
       header.onclick = () => {
@@ -2099,30 +2079,72 @@ const shortcutMod = {
         }
       };
 
-      grouped[cat].forEach(({ s, i }) => {
-        let hostname = "";
-        const finalUrl = s.url.startsWith("http") ? s.url : `http://${s.url}`;
-        try {
-          hostname = new URL(finalUrl).hostname;
-        } catch (e) {
-          hostname = s.url;
-        }
-        const div = document.createElement("a");
-        div.className = "shortcut-item";
-        div.dataset.index = i;
-        div.onclick = (e) =>
-          this.isDragging
-            ? (e.preventDefault(), (this.isDragging = false))
-            : window.open(finalUrl, "_blank");
-        div.oncontextmenu = (e) => showContextMenu(e, "shortcut", i);
+      const columns = [];
+      let currentColumn = null;
 
-        let iconHtml = "";
-        if (s.icon) {
-          if (s.icon.startsWith("http") || s.icon.startsWith("data:")) {
-            iconHtml = `<img src="${s.icon}" class="shortcut-img">`;
-          } else if (s.icon.startsWith("fa-") || s.icon.startsWith("fas ") || s.icon.startsWith("fab ") || s.icon.startsWith("far ")) {
-            const iconClass = s.icon.includes("fa-") && !s.icon.includes(" ") ? `fas ${s.icon}` : s.icon;
-            iconHtml = `<div class="shortcut-default-icon" style="display: flex;"><i class="${iconClass}"></i></div>`;
+      grouped[cat].forEach(({ s, i }) => {
+        const isCollapsed = !!s.collapsed;
+        if (isCollapsed) {
+          if (currentColumn && currentColumn.type === "collapsed" && currentColumn.items.length < 2) {
+            currentColumn.items.push({ s, i });
+          } else {
+            currentColumn = {
+              type: "collapsed",
+              items: [{ s, i }]
+            };
+            columns.push(currentColumn);
+          }
+        } else {
+          currentColumn = {
+            type: "expanded",
+            items: [{ s, i }]
+          };
+          columns.push(currentColumn);
+        }
+      });
+
+      columns.forEach(col => {
+        const colDiv = document.createElement("div");
+        colDiv.className = "shortcut-column";
+        colDiv.style.cssText = "display: flex; flex-direction: column; gap: 15px; width: 140px;";
+
+        col.items.forEach(({ s, i }) => {
+          let hostname = "";
+          const finalUrl = s.url.startsWith("http") ? s.url : `http://${s.url}`;
+          try {
+            hostname = new URL(finalUrl).hostname;
+          } catch (e) {
+            hostname = s.url;
+          }
+          const div = document.createElement("a");
+          div.className = "shortcut-item";
+          if (s.collapsed) {
+            div.classList.add("collapsed");
+          } else {
+            div.classList.add("expanded");
+          }
+          div.dataset.index = i;
+          div.onclick = (e) =>
+            this.isDragging
+              ? (e.preventDefault(), (this.isDragging = false))
+              : window.open(finalUrl, "_blank");
+          div.oncontextmenu = (e) => showContextMenu(e, "shortcut", i);
+
+          let iconHtml = "";
+          if (s.icon) {
+            if (s.icon.startsWith("http") || s.icon.startsWith("data:")) {
+              iconHtml = `<img src="${s.icon}" class="shortcut-img">`;
+            } else if (s.icon.startsWith("fa-") || s.icon.startsWith("fas ") || s.icon.startsWith("fab ") || s.icon.startsWith("far ")) {
+              const iconClass = s.icon.includes("fa-") && !s.icon.includes(" ") ? `fas ${s.icon}` : s.icon;
+              iconHtml = `<div class="shortcut-default-icon" style="display: flex;"><i class="${iconClass}"></i></div>`;
+            } else {
+              iconHtml = `
+                <img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" 
+                     class="shortcut-img"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>
+              `;
+            }
           } else {
             iconHtml = `
               <img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" 
@@ -2131,22 +2153,17 @@ const shortcutMod = {
               <div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>
             `;
           }
-        } else {
-          iconHtml = `
-            <img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" 
-                 class="shortcut-img"
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>
-          `;
-        }
 
-        div.innerHTML = `
-          <div class="shortcut-icon-wrapper">
-            ${iconHtml}
-          </div>
-          <span>${s.name}</span>
-        `;
-        catContent.appendChild(div);
+          div.innerHTML = `
+            <div class="shortcut-icon-wrapper">
+              ${iconHtml}
+            </div>
+            <span>${s.name}</span>
+          `;
+          colDiv.appendChild(div);
+        });
+
+        catContent.appendChild(colDiv);
       });
       
       // If a category has no items we need to provide a drop target for Sortable

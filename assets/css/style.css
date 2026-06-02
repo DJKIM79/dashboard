@@ -444,8 +444,8 @@ body::before {
 }
 .grid-layout,
 .shortcut-list-view {
-  grid-template-columns: repeat(auto-fit, 140px);
-  justify-content: center;
+  grid-template-columns: repeat(auto-fill, 140px);
+  justify-content: flex-start;
   display: grid;
   max-width: 930px;
   margin: 0 auto;
@@ -545,6 +545,44 @@ body::before {
   font-size: 0.9rem;
   background: transparent;
   transition: all 0.3s ease;
+}
+.shortcut-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 140px;
+}
+.shortcut-item.collapsed {
+  flex-direction: row !important;
+  padding: 8px 12px !important;
+  border-radius: 12px !important;
+  gap: 12px !important;
+  text-align: left !important;
+  width: 140px !important;
+  min-width: 140px !important;
+  height: 40px !important;
+  justify-content: flex-start !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+.shortcut-item.collapsed .shortcut-icon-wrapper,
+.shortcut-item.collapsed img,
+.shortcut-item.collapsed .shortcut-default-icon {
+  width: 16px !important;
+  height: 16px !important;
+  margin-bottom: 0 !important;
+  font-size: 0.75rem !important;
+  border-radius: 4px !important;
+}
+.shortcut-item.collapsed span {
+  font-size: 0.75rem !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.shortcut-item.expanded {
+  height: 95px !important;
 }
 #shortcut-container.sorting-active .shortcut-item {
   /* Clear default transitions to let Sortable.js handle transform animations via inline styles */

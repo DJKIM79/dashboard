@@ -123,15 +123,25 @@ const stock = {
   },
   
   toggleSecretMode() {
-    this.isSecretMode = !this.isSecretMode;
-    localStorage.setItem("dj_stock_secret_mode", String(this.isSecretMode));
+    const menu = document.getElementById("globalContextMenu");
+    let id = undefined;
+    if (menu && menu.dataset.type === "stock") {
+      id = menu.dataset.id;
+    }
+
+    if (id) {
+      const item = this.items.find(x => String(x.id) === String(id));
+      if (item) {
+        const currentMode = item.isSecretMode !== undefined ? item.isSecretMode : this.isSecretMode;
+        item.isSecretMode = !currentMode;
+      }
+      this.saveData();
+    } else {
+      return;
+    }
     
     if (window.utils && utils.hideValidationTip) {
       utils.hideValidationTip();
-    }
-
-    if (window.settings && typeof settings.syncToServer === "function") {
-      settings.syncToServer();
     }
 
     const list = document.getElementById("stock-list");
@@ -325,20 +335,32 @@ const stock = {
       return;
     }
 
-    this.items.forEach((n, idx) => {
+    // Mismatch detection
+    for (let idx = 0; idx < this.items.length; idx++) {
+      const n = this.items[idx];
       const div = cards[idx];
       if (!div || div.dataset.id !== String(n.id)) {
         this.render();
         return;
       }
+      const isItemSecretMode = n.isSecretMode !== undefined ? n.isSecretMode : this.isSecretMode;
+      const hasTitle = !!div.querySelector(".title");
+      if ((isItemSecretMode && hasTitle) || (!isItemSecretMode && !hasTitle)) {
+        this.render();
+        return;
+      }
+    }
 
+    this.items.forEach((n, idx) => {
+      const div = cards[idx];
       const chg = n.changePercent || 0;
       const sign = chg >= 0 ? "+" : "";
 
       div.classList.remove("up", "down", "same", "secret-up", "secret-down", "secret-same");
 
       const chgClass = chg > 0 ? "up" : chg < 0 ? "down" : "same";
-      if (this.isSecretMode) {
+      const isItemSecretMode = n.isSecretMode !== undefined ? n.isSecretMode : this.isSecretMode;
+      if (isItemSecretMode) {
         if (chg > 0) {
           div.classList.add("secret-up");
         } else if (chg < 0) {
@@ -414,7 +436,8 @@ const stock = {
       div.classList.remove("up", "down", "same", "secret-up", "secret-down", "secret-same");
 
       const chgClass = chg > 0 ? "up" : chg < 0 ? "down" : "same";
-      if (this.isSecretMode) {
+      const isItemSecretMode = n.isSecretMode !== undefined ? n.isSecretMode : this.isSecretMode;
+      if (isItemSecretMode) {
         if (chg > 0) {
           div.classList.add("secret-up");
         } else if (chg < 0) {
@@ -435,6 +458,7 @@ const stock = {
         div.style.maxWidth = "70px";
         div.style.paddingLeft = "2px";
         div.style.paddingRight = "2px";
+        div.style.alignSelf = "center";
         
         div.innerHTML = `
           <div class="noti-info stock-info" style="width: 100%; margin-top: 0; justify-content: center;">
@@ -450,6 +474,7 @@ const stock = {
         div.style.alignItems = "";
         div.style.minWidth = "";
         div.style.maxWidth = "";
+        div.style.alignSelf = "";
 
         div.innerHTML = `
           <div class="title" style="color: var(--accent-color);">${n.name}</div>
@@ -467,7 +492,8 @@ const stock = {
           e.stopPropagation();
           return;
         }
-        if (this.isSecretMode) {
+        const isItemSecretMode = n.isSecretMode !== undefined ? n.isSecretMode : this.isSecretMode;
+        if (isItemSecretMode) {
           e.stopPropagation();
           if (this.tooltipTimeout) clearTimeout(this.tooltipTimeout);
           if (this.tooltipHideTimeout) clearTimeout(this.tooltipHideTimeout);
@@ -493,7 +519,8 @@ const stock = {
 
       div.onmouseenter = (e) => {
         if (this.isDragging) return;
-        if (this.isSecretMode && window.utils && utils.showValidationTip) {
+        const isItemSecretMode = n.isSecretMode !== undefined ? n.isSecretMode : this.isSecretMode;
+        if (isItemSecretMode && window.utils && utils.showValidationTip) {
           if (this.tooltipTimeout) clearTimeout(this.tooltipTimeout);
           if (this.tooltipHideTimeout) clearTimeout(this.tooltipHideTimeout);
 

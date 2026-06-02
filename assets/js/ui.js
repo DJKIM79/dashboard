@@ -185,6 +185,7 @@ const ui = {
     const colGroup = document.getElementById("ctx-col-group");
     const aiGroup = document.getElementById("ctx-ai-group");
     const stockSecretItem = document.getElementById("ctx-stock-secret");
+    const shortcutToggleItem = document.getElementById("ctx-shortcut-toggle");
 
     if (addItem) addItem.style.display = "none";
     if (editItem) editItem.style.display = "none";
@@ -198,11 +199,32 @@ const ui = {
     if (delRowItem) delRowItem.style.display = "none";
     if (delColItem) delColItem.style.display = "none";
     if (stockSecretItem) stockSecretItem.style.display = "none";
+    if (shortcutToggleItem) shortcutToggleItem.style.display = "none";
+
     if (type === "shortcut") {
       if (addItem) addItem.style.display = "flex";
       if (editItem) editItem.style.display = id !== undefined ? "flex" : "none";
       if (delItem) delItem.style.display = id !== undefined ? "flex" : "none";
       if (hideItem) hideItem.style.display = "flex";
+      if (shortcutToggleItem && id !== undefined && id !== "") {
+        shortcutToggleItem.style.display = "flex";
+        const toggleText = document.getElementById("ctx-shortcut-toggle-text");
+        if (toggleText) {
+          const item = window.shortcutMod && window.shortcutMod.items[id];
+          const isCollapsed = item ? !!item.collapsed : false;
+          const key = isCollapsed ? "cmNormal" : "cmSecret";
+          const icon = shortcutToggleItem.querySelector("i");
+          if (icon) {
+            icon.className = isCollapsed ? "fas fa-expand-alt cm-icon" : "fas fa-compress-alt cm-icon";
+          }
+          toggleText.setAttribute("data-i18n", key);
+          if (window.i18n) {
+            toggleText.innerText = i18n.get(key);
+          } else {
+            toggleText.innerText = isCollapsed ? "확대" : "축소";
+          }
+        }
+      }
     } else if (type === "weather") {
       if (addItem) addItem.style.display = "flex";
       if (delItem) delItem.style.display = "flex";
@@ -216,17 +238,27 @@ const ui = {
       
       if (type === "stock") {
         if (stockSecretItem) {
-          stockSecretItem.style.display = "flex";
-          const secretText = document.getElementById("ctx-stock-secret-text");
-          if (secretText) {
-            const isSecret = window.stock && window.stock.isSecretMode;
-            const key = isSecret ? "cmNormal" : "cmSecret";
-            secretText.setAttribute("data-i18n", key);
-            if (window.i18n) {
-              secretText.innerText = i18n.get(key);
-            } else {
-              secretText.innerText = isSecret ? "확대" : "축소";
+          if (id) {
+            stockSecretItem.style.display = "flex";
+            const secretText = document.getElementById("ctx-stock-secret-text");
+            if (secretText) {
+              let isSecret = window.stock && window.stock.isSecretMode;
+              if (window.stock) {
+                const item = window.stock.items.find(x => String(x.id) === String(id));
+                if (item && item.isSecretMode !== undefined) {
+                  isSecret = item.isSecretMode;
+                }
+              }
+              const key = isSecret ? "cmNormal" : "cmSecret";
+              secretText.setAttribute("data-i18n", key);
+              if (window.i18n) {
+                secretText.innerText = i18n.get(key);
+              } else {
+                secretText.innerText = isSecret ? "확대" : "축소";
+              }
             }
+          } else {
+            stockSecretItem.style.display = "none";
           }
         }
       }
