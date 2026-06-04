@@ -2214,6 +2214,8 @@ const shortcutMod = {
         onStart: () => {
           this.isDragging = true;
           c.classList.add("sorting-active");
+          const ctxMenu = document.getElementById("globalContextMenu");
+          if (ctxMenu) ctxMenu.style.display = "none";
         },
         onEnd: (evt) => {
           setTimeout(() => (this.isDragging = false), 100);
@@ -2231,6 +2233,8 @@ const shortcutMod = {
       handle: ".shortcut-category-header",
       onStart: () => {
         this.isDragging = true;
+        const ctxMenu = document.getElementById("globalContextMenu");
+        if (ctxMenu) ctxMenu.style.display = "none";
       },
       onEnd: (evt) => {
         setTimeout(() => (this.isDragging = false), 100);

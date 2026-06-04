@@ -540,6 +540,8 @@ const stock = {
         onStart: () => {
           this.isDragging = true;
           listContainer.classList.add("sorting-active");
+          const ctxMenu = document.getElementById("globalContextMenu");
+          if (ctxMenu) ctxMenu.style.display = "none";
           if (this.tooltipTimeout) clearTimeout(this.tooltipTimeout);
           if (this.tooltipHideTimeout) clearTimeout(this.tooltipHideTimeout);
           if (window.utils && utils.hideValidationTip) {
