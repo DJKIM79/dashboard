@@ -129,39 +129,33 @@ const stock = {
       id = menu.dataset.id;
     }
 
-    if (id) {
-      const item = this.items.find(x => String(x.id) === String(id));
-      if (item) {
-        const currentMode = item.isSecretMode !== undefined ? item.isSecretMode : this.isSecretMode;
-        item.isSecretMode = !currentMode;
-      }
-      this.saveData();
-    } else {
-      return;
-    }
-    
+    if (!id) return;
+
+    const item = this.items.find(x => String(x.id) === String(id));
+    if (!item) return;
+
+    const currentMode = item.isSecretMode !== undefined ? item.isSecretMode : this.isSecretMode;
+    item.isSecretMode = !currentMode;
+    this.saveData();
+
     if (window.utils && utils.hideValidationTip) {
       utils.hideValidationTip();
     }
 
     const list = document.getElementById("stock-list");
-    if (!list) {
+    if (!list) return;
+
+    const card = list.querySelector(`.stock-card[data-id="${id}"]`);
+    if (card) {
+      if (item.isSecretMode) {
+        card.classList.add("secret");
+      } else {
+        card.classList.remove("secret");
+      }
+      this.updateDOM();
+    } else {
       this.render();
-      return;
     }
-
-    list.classList.add("fade-out-active");
-
-    setTimeout(() => {
-      this.render();
-      
-      setTimeout(() => {
-        const listAgain = document.getElementById("stock-list");
-        if (listAgain) {
-          listAgain.classList.remove("fade-out-active");
-        }
-      }, 50);
-    }, 200);
   },
   
   updateIntervalSetting(seconds) {
@@ -335,17 +329,11 @@ const stock = {
       return;
     }
 
-    // Mismatch detection
+    // Mismatch detection (excluding secret mode check as it's now a class)
     for (let idx = 0; idx < this.items.length; idx++) {
       const n = this.items[idx];
       const div = cards[idx];
       if (!div || div.dataset.id !== String(n.id)) {
-        this.render();
-        return;
-      }
-      const isItemSecretMode = n.isSecretMode !== undefined ? n.isSecretMode : this.isSecretMode;
-      const hasTitle = !!div.querySelector(".title");
-      if ((isItemSecretMode && hasTitle) || (!isItemSecretMode && !hasTitle)) {
         this.render();
         return;
       }
@@ -355,42 +343,41 @@ const stock = {
       const div = cards[idx];
       const chg = n.changePercent || 0;
       const sign = chg >= 0 ? "+" : "";
+      const chgClass = chg > 0 ? "up" : chg < 0 ? "down" : "same";
 
       div.classList.remove("up", "down", "same", "secret-up", "secret-down", "secret-same");
 
-      const chgClass = chg > 0 ? "up" : chg < 0 ? "down" : "same";
       const isItemSecretMode = n.isSecretMode !== undefined ? n.isSecretMode : this.isSecretMode;
       if (isItemSecretMode) {
-        if (chg > 0) {
-          div.classList.add("secret-up");
-        } else if (chg < 0) {
-          div.classList.add("secret-down");
-        } else {
-          div.classList.add("secret-same");
-        }
+        div.classList.add(`secret-${chgClass}`);
+        div.classList.add("secret");
+      } else {
+        div.classList.add(chgClass);
+        div.classList.remove("secret");
+      }
 
+      // Update Secret View
+      const secretChangeEl = div.querySelector(".stock-secret-view .stock-change");
+      if (secretChangeEl) {
         const isShowVal = n.secretDisplayType === "val";
         const changeValText = isShowVal 
           ? this.formatPrice(Math.abs(n.change || 0), n)
           : Math.abs(chg).toFixed(2);
-        const changeEl = div.querySelector(".stock-change");
-        if (changeEl) {
-          changeEl.innerText = changeValText;
-        }
-      } else {
-        const price = this.formatPrice(n.currentPrice || n.basePrice || 0, n);
-        const priceEl = div.querySelector(".stock-price");
-        if (priceEl) {
-          priceEl.className = `stock-price ${chgClass}`;
-          priceEl.innerText = price;
-        }
+        secretChangeEl.innerText = changeValText;
+      }
 
-        const changeEl = div.querySelector(".stock-change");
-        if (changeEl) {
-          changeEl.className = `remaining stock-change ${chgClass}`;
-          changeEl.innerText = `${sign}${chg.toFixed(2)}%`;
-        }
-        div.classList.add(chgClass);
+      // Update Expanded View
+      const price = this.formatPrice(n.currentPrice || n.basePrice || 0, n);
+      const priceEl = div.querySelector(".stock-expanded-view .stock-price");
+      if (priceEl) {
+        priceEl.className = `stock-price ${chgClass}`;
+        priceEl.innerText = price;
+      }
+
+      const expandedChangeEl = div.querySelector(".stock-expanded-view .stock-change");
+      if (expandedChangeEl) {
+        expandedChangeEl.className = `remaining stock-change ${chgClass}`;
+        expandedChangeEl.innerText = `${sign}${chg.toFixed(2)}%`;
       }
     });
   },
@@ -432,59 +419,36 @@ const stock = {
       
       const chg = n.changePercent || 0;
       const sign = chg >= 0 ? "+" : "";
-
-      div.classList.remove("up", "down", "same", "secret-up", "secret-down", "secret-same");
-
       const chgClass = chg > 0 ? "up" : chg < 0 ? "down" : "same";
+
       const isItemSecretMode = n.isSecretMode !== undefined ? n.isSecretMode : this.isSecretMode;
       if (isItemSecretMode) {
-        if (chg > 0) {
-          div.classList.add("secret-up");
-        } else if (chg < 0) {
-          div.classList.add("secret-down");
-        } else {
-          div.classList.add("secret-same");
-        }
-
-        const isShowVal = n.secretDisplayType === "val";
-        const changeValText = isShowVal 
-          ? this.formatPrice(Math.abs(n.change || 0), n)
-          : Math.abs(chg).toFixed(2);
-        
-        div.style.display = "flex";
-        div.style.justifyContent = "center";
-        div.style.alignItems = "center";
-        div.style.minWidth = "70px";
-        div.style.maxWidth = "70px";
-        div.style.paddingLeft = "2px";
-        div.style.paddingRight = "2px";
-        div.style.alignSelf = "center";
-        
-        div.innerHTML = `
-          <div class="noti-info stock-info" style="width: 100%; margin-top: 0; justify-content: center;">
-            <span class="stock-change" style="color: #94a3b8; font-family: 'JetBrains Mono'; font-weight: bold; font-size: 0.65rem;">${changeValText}</span>
-          </div>
-        `;
+        div.classList.add("secret");
+        div.classList.add(`secret-${chgClass}`);
       } else {
-        const price = this.formatPrice(n.currentPrice || n.basePrice || 0, n);
-        const chgClass = chg > 0 ? "up" : chg < 0 ? "down" : "same";
-        
-        div.style.display = "";
-        div.style.justifyContent = "";
-        div.style.alignItems = "";
-        div.style.minWidth = "";
-        div.style.maxWidth = "";
-        div.style.alignSelf = "";
+        div.classList.add(chgClass);
+      }
 
-        div.innerHTML = `
+      const price = this.formatPrice(n.currentPrice || n.basePrice || 0, n);
+      const isShowVal = n.secretDisplayType === "val";
+      const changeValText = isShowVal 
+        ? this.formatPrice(Math.abs(n.change || 0), n)
+        : Math.abs(chg).toFixed(2);
+
+      div.innerHTML = `
+        <div class="stock-expanded-view">
           <div class="title" style="color: var(--accent-color);">${n.name}</div>
           <div class="noti-info stock-info">
             <span class="stock-price ${chgClass}">${price}</span>
             <span class="remaining stock-change ${chgClass}">${sign}${chg.toFixed(2)}%</span>
           </div>
-        `;
-        div.classList.add(chgClass);
-      }
+        </div>
+        <div class="stock-secret-view">
+          <div class="noti-info stock-info" style="width: 100%; margin-top: 0; justify-content: center;">
+            <span class="stock-change" style="color: #94a3b8; font-family: 'JetBrains Mono'; font-weight: bold; font-size: 0.65rem;">${changeValText}</span>
+          </div>
+        </div>
+      `;
       
       div.onclick = (e) => {
         if (this.isDragging) {
@@ -502,7 +466,7 @@ const stock = {
           }
           n.secretDisplayType = n.secretDisplayType === "val" ? "percent" : "val";
           this.saveData();
-          this.render();
+          this.updateDOM();
           return;
         }
         if (window.utils && utils.closeAllUIPopups) utils.closeAllUIPopups(true);
