@@ -507,6 +507,7 @@ body::before {
 }
 .shortcut-item:active {
   transform: scale(0.95);
+  box-shadow: none !important;
 }
 .shortcut-item span {
   width: 100%;
