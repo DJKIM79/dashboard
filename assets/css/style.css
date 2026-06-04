@@ -595,6 +595,7 @@ body::before {
   box-shadow: none !important;
   transform: none !important;
 }
+#shortcut-container.sorting-active .shortcut-item.sortable-chosen,
 .sortable-chosen {
   border-color: var(--accent-color) !important;
   box-shadow: none !important; 
