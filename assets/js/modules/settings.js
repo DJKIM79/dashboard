@@ -1462,86 +1462,85 @@ const settings = {
   },
   applySyncData(serverData) {
     window.isApplyingSyncData = true;
-    
-    // 1. Extract local AI provider IDs
-    const localProviderIds = [];
-    const localCustomStr = localStorage.getItem("dj_ai_custom_providers") || "[]";
     try {
-        const localCustom = JSON.parse(localCustomStr);
-        localCustom.forEach(item => {
-            const url = (item.url || "").toLowerCase();
-            if (url.includes("localhost") || url.includes("127.0.0.1") || url.includes("0.0.0.0")) {
-                localProviderIds.push(item.id);
-            }
-        });
-    } catch(e) {
-        console.error("Failed to parse local custom providers:", e);
-    }
+        // 1. Extract local AI provider IDs
+        const localProviderIds = [];
+        const localCustomStr = localStorage.getItem("dj_ai_custom_providers") || "[]";
+        try {
+            const localCustom = JSON.parse(localCustomStr);
+            localCustom.forEach(item => {
+                const url = (item.url || "").toLowerCase();
+                if (url.includes("localhost") || url.includes("127.0.0.1") || url.includes("0.0.0.0")) {
+                    localProviderIds.push(item.id);
+                }
+            });
+        } catch(e) {
+            console.error("Failed to parse local custom providers:", e);
+        }
 
-    const keepKeys = [
-        "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty", "dj_sync_warned", 
-        "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", 
-        "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"
-    ];
+        const keepKeys = [
+            "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty", "dj_sync_warned", 
+            "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", 
+            "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"
+        ];
 
-    // 2. Determine keys to remove from local storage
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith("dj_")) {
-            if (keepKeys.includes(key)) continue;
-            if (key === "dj_ai_custom_providers") continue; // Merged manually below
-            
-            // Check for chat data
-            if (key.startsWith("dj_ai_chats_")) {
-                const provider = key.replace("dj_ai_chats_", "");
-                if (localProviderIds.includes(provider)) {
-                    continue; // Keep local AI chats
+        // 2. Determine keys to remove from local storage
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith("dj_")) {
+                if (keepKeys.includes(key)) continue;
+                if (key === "dj_ai_custom_providers") continue; // Merged manually below
+                
+                // Check for chat data
+                if (key.startsWith("dj_ai_chats_")) {
+                    const provider = key.replace("dj_ai_chats_", "");
+                    if (localProviderIds.includes(provider)) {
+                        continue; // Keep local AI chats
+                    }
                 }
                 keysToRemove.push(key);
-                continue;
             }
-
-            keysToRemove.push(key);
         }
-    }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
+        keysToRemove.forEach(key => localStorage.removeItem(key));
 
-    // 3. Apply server data and merge custom providers
-    for (const key in serverData) {
-        if (key === "dj_ai_custom_providers") {
-            try {
-                const serverCustom = JSON.parse(serverData[key] || "[]");
-                
-                let localCustom = [];
+        // 3. Apply server data and merge custom providers
+        for (const key in serverData) {
+            if (key === "dj_ai_custom_providers") {
                 try {
-                    localCustom = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
-                } catch(e) {}
-                const localOnly = localCustom.filter(item => {
-                    const url = (item.url || "").toLowerCase();
-                    return url.includes("localhost") || url.includes("127.0.0.1") || url.includes("0.0.0.0");
-                });
+                    const serverCustom = JSON.parse(serverData[key] || "[]");
+                    
+                    let localCustom = [];
+                    try {
+                        localCustom = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
+                    } catch(e) {}
+                    const localOnly = localCustom.filter(item => {
+                        const url = (item.url || "").toLowerCase();
+                        return url.includes("localhost") || url.includes("127.0.0.1") || url.includes("0.0.0.0");
+                    });
 
-                // Merge server and local-only custom providers (prevent duplicates)
-                const merged = [...localOnly];
-                serverCustom.forEach(srvItem => {
-                    if (!merged.some(locItem => locItem.id === srvItem.id)) {
-                        merged.push(srvItem);
-                    }
-                });
+                    // Merge server and local-only custom providers (prevent duplicates)
+                    const merged = [...localOnly];
+                    serverCustom.forEach(srvItem => {
+                        if (!merged.some(locItem => locItem.id === srvItem.id)) {
+                            merged.push(srvItem);
+                        }
+                    });
 
-                localStorage.setItem("dj_ai_custom_providers", JSON.stringify(merged));
-            } catch(e) {
-                console.error("Error merging custom providers:", e);
-                localStorage.setItem("dj_ai_custom_providers", serverData[key]);
+                    localStorage.setItem("dj_ai_custom_providers", JSON.stringify(merged));
+                } catch(e) {
+                    console.error("Error merging custom providers:", e);
+                    localStorage.setItem("dj_ai_custom_providers", serverData[key]);
+                }
+            } else {
+                localStorage.setItem(key, serverData[key]);
             }
-        } else {
-            localStorage.setItem(key, serverData[key]);
         }
-    }
 
-    this.applyLoadedDataToMemory();
-    window.isApplyingSyncData = false;
+        this.applyLoadedDataToMemory();
+    } finally {
+        window.isApplyingSyncData = false;
+    }
   },
   async loadFromServerOnStartup() {
     const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
@@ -1579,6 +1578,11 @@ const settings = {
             } else {
                 console.log("New user/no server data. Syncing local configuration to server.");
                 await this.syncToServer(false, true);
+            }
+        } else {
+            console.warn("Sync load failed on startup. Server returned success=false:", result.message);
+            if (result.message === "Invalid ID" || result.message === "Invalid Password" || result.message === "Invalid auth") {
+                this.disableServerSync();
             }
         }
     } catch (e) {
@@ -1708,6 +1712,10 @@ const settings = {
             window.lastSyncedTime = result.server_time;
         } else {
             localStorage.setItem("dj_sync_dirty", "true");
+            if (result.message === "Invalid ID" || result.message === "Invalid Password" || result.message === "Invalid auth") {
+                console.warn("Sync save failed due to auth error:", result.message);
+                this.disableServerSync();
+            }
         }
     } catch (e) {
         console.error("Auto sync failed:", e);
@@ -1719,6 +1727,28 @@ const settings = {
     if (this.syncInterval) {
         clearInterval(this.syncInterval);
         this.syncInterval = null;
+    }
+    
+    // 30초마다 백그라운드 더티 체크를 수행하여 자동 저장 시도
+    this.syncInterval = setInterval(() => {
+        const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
+        const isDirty = localStorage.getItem("dj_sync_dirty") === "true";
+        if (isSyncEnabled && isDirty) {
+            console.log("Background check: Local data is dirty. Attempting to sync to server...");
+            this.syncToServer(false, false);
+        }
+    }, 30000);
+    
+    // 네트워크 복구(온라인) 시 자동 동기화 연결 재시도
+    if (!window.hasSyncOnlineListener) {
+        window.addEventListener("online", () => {
+            const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
+            if (isSyncEnabled) {
+                console.log("Network online detected. Retrying server sync...");
+                this.loadFromServerOnStartup();
+            }
+        });
+        window.hasSyncOnlineListener = true;
     }
   },
   stopAutoSync() {
