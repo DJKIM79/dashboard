@@ -31,7 +31,7 @@
           const originalSetItem = Storage.prototype.setItem;
           let syncTimeout = null;
           const excludeKeys = [
-            "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated",
+            "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty",
             "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model",
             "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai",
             "dj_bg_seed", "dj_stock_codes_cache", "dj_tutorial_done"
@@ -44,13 +44,13 @@
                 window.lastModifiedKey = key;
                 window.lastModifiedValue = value;
 
-                originalSetItem.call(this, "dj_last_updated", Date.now().toString());
+                originalSetItem.call(this, "dj_sync_dirty", "true");
                 
                 if (localStorage.getItem("dj_sync_enabled") === "true") {
                   if (syncTimeout) clearTimeout(syncTimeout);
                   syncTimeout = setTimeout(() => {
                     if (window.settings && typeof settings.syncToServer === "function") {
-                      settings.syncToServer(true);
+                      settings.syncToServer(false); // Do not bypass since we want to clear the dirty flag on success
                     }
                   }, 1500);
                 }

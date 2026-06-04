@@ -4744,7 +4744,8 @@ body.tutorial-closing .driver-active-element {
   scroll-behavior: smooth;
   -ms-overflow-style: none;
   scrollbar-width: none;
-  padding: 5px 0;
+  padding: 10px 12px;
+  margin: -10px -12px;
   transition: opacity 0.2s ease;
   opacity: 1;
   flex: 1;

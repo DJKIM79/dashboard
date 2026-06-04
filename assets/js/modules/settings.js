@@ -1319,7 +1319,7 @@ const settings = {
                     window.isApplyingSyncData = true;
                     
                     // Clear old local dj_ keys first (except sync meta)
-                    const keepKeys = ["dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_warned", "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"];
+                    const keepKeys = ["dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty", "dj_sync_warned", "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"];
                     const keysToRemove = [];
                     for (let i = 0; i < localStorage.length; i++) {
                         const key = localStorage.key(i);
@@ -1479,7 +1479,7 @@ const settings = {
     }
 
     const keepKeys = [
-        "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_warned", 
+        "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty", "dj_sync_warned", 
         "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", 
         "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"
     ];
@@ -1561,22 +1561,24 @@ const settings = {
             if (result.data) {
                 const serverTime = parseInt(result.data.dj_last_updated || 0);
                 const localTime = parseInt(localStorage.getItem("dj_last_updated") || 0);
+                const isDirty = localStorage.getItem("dj_sync_dirty") === "true";
 
                 if (serverTime > localTime) {
                     console.log("Loading newer configuration from server. Server time:", serverTime, ", Local time:", localTime);
                     this.applySyncData(result.data);
                     localStorage.setItem("dj_last_updated", serverTime.toString());
+                    localStorage.setItem("dj_sync_dirty", "false");
                     window.lastSyncedTime = serverTime;
                     this.renderAllModules();
-                } else if (localTime > serverTime) {
+                } else if (isDirty) {
                     console.log("Local configuration is newer. Syncing to server. Server time:", serverTime, ", Local time:", localTime);
-                    await this.syncToServer(true);
+                    await this.syncToServer(false, true);
                 } else {
                     window.lastSyncedTime = serverTime;
                 }
             } else {
                 console.log("New user/no server data. Syncing local configuration to server.");
-                await this.syncToServer(true);
+                await this.syncToServer(false, true);
             }
         }
     } catch (e) {
@@ -1592,9 +1594,8 @@ const settings = {
     const authKey = localStorage.getItem("dj_sync_key");
     if (!id || !authKey) return;
 
-    let localTime = parseInt(localStorage.getItem("dj_last_updated") || 0);
-
-    if (!force && window.lastSyncedTime && localTime <= window.lastSyncedTime) {
+    const isDirty = localStorage.getItem("dj_sync_dirty") === "true";
+    if (!force && !isDirty) {
         return;
     }
 
@@ -1605,13 +1606,15 @@ const settings = {
             if (checkResult.success && checkResult.data) {
                 const serverTime = parseInt(checkResult.data.dj_last_updated || 0);
                 if (serverTime > window.lastSyncedTime) {
+                    console.log("Conflict detected during syncToServer. Server time:", serverTime, "lastSyncedTime:", window.lastSyncedTime);
                     this.applySyncData(checkResult.data);
                     
-                    localTime = Date.now();
-                    localStorage.setItem("dj_last_updated", localTime.toString());
-                    bypassTimestampUpdate = true;
+                    localStorage.setItem("dj_last_updated", serverTime.toString());
+                    localStorage.setItem("dj_sync_dirty", "false");
+                    window.lastSyncedTime = serverTime;
                     
                     setTimeout(() => this.renderAllModules(), 100);
+                    return; // Abort saving, because we just updated to the server's newer version
                 }
             }
         } catch (e) {
@@ -1619,10 +1622,8 @@ const settings = {
         }
     }
 
-    if (!bypassTimestampUpdate) {
-        localTime = Date.now();
-        localStorage.setItem("dj_last_updated", localTime.toString());
-    }
+    // Mark as not dirty while sync is in progress. If edits occur during fetch, it'll become dirty again.
+    localStorage.setItem("dj_sync_dirty", "false");
 
     // Extract local AI provider IDs to exclude from remote save
     const localProviderIds = [];
@@ -1647,7 +1648,7 @@ const settings = {
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && key.startsWith("dj_")) {
-            if (key === "dj_sync_enabled" || key === "dj_sync_id" || key === "dj_sync_key" || key === "dj_last_updated") {
+            if (key === "dj_sync_enabled" || key === "dj_sync_id" || key === "dj_sync_key" || key === "dj_last_updated" || key === "dj_sync_dirty") {
                 continue;
             }
             if (excludeKeys.includes(key)) {
@@ -1705,9 +1706,12 @@ const settings = {
             localStorage.setItem("dj_last_updated", serverTimeStr);
             window.isApplyingSyncData = false;
             window.lastSyncedTime = result.server_time;
+        } else {
+            localStorage.setItem("dj_sync_dirty", "true");
         }
     } catch (e) {
         console.error("Auto sync failed:", e);
+        localStorage.setItem("dj_sync_dirty", "true");
     }
   },
   startAutoSync() {

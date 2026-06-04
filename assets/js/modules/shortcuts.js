@@ -2053,7 +2053,7 @@ const shortcutMod = {
       catContainer.style.cssText = `display: grid; grid-template-rows: ${isCollapsed && showHeaders ? '0fr' : '1fr'}; transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1); width: 100%;`;
       
       const catContent = document.createElement("div");
-      catContent.style.cssText = `display: grid; grid-template-columns: repeat(auto-fill, 140px); justify-content: flex-start; gap: 15px; padding: 10px 0; overflow: hidden; transition: opacity 0.4s ease, transform 0.4s ease; opacity: ${isCollapsed && showHeaders ? '0' : '1'}; transform: translateY(${isCollapsed && showHeaders ? '-10px' : '0'});`;
+      catContent.style.cssText = `display: grid; grid-template-columns: repeat(auto-fill, 140px); justify-content: flex-start; gap: 15px; padding: 10px 0; overflow: ${isCollapsed && showHeaders ? 'hidden' : 'visible'}; transition: opacity 0.4s ease, transform 0.4s ease; opacity: ${isCollapsed && showHeaders ? '0' : '1'}; transform: translateY(${isCollapsed && showHeaders ? '-10px' : '0'});`;
       catContainer.appendChild(catContent);
 
       header.onclick = () => {
@@ -2067,11 +2067,17 @@ const shortcutMod = {
           catContainer.style.gridTemplateRows = "0fr";
           catContent.style.opacity = "0";
           catContent.style.transform = "translateY(-10px)";
+          catContent.style.overflow = "hidden";
         } else {
           icon.className = "fas fa-chevron-up";
           catContainer.style.gridTemplateRows = "1fr";
           catContent.style.opacity = "1";
           catContent.style.transform = "translateY(0)";
+          setTimeout(() => {
+            if (this.collapsedCategories[cat] === false) {
+              catContent.style.overflow = "visible";
+            }
+          }, 400);
         }
 
         if (window.settings && typeof settings.syncToServer === "function") {
