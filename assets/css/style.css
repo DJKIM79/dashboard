@@ -4816,6 +4816,21 @@ body.tutorial-closing .driver-active-element {
   border-color: #94a3b8 !important;
   box-shadow: 0 0 8px rgba(148, 163, 184, 0.4);
 }
+.stock-container .item-card:active {
+  box-shadow: none !important;
+}
+.stock-list.sorting-active .item-card.up.sortable-chosen,
+.stock-list.sorting-active .item-card.secret-up.sortable-chosen {
+  border-color: #ef4444 !important;
+}
+.stock-list.sorting-active .item-card.down.sortable-chosen,
+.stock-list.sorting-active .item-card.secret-down.sortable-chosen {
+  border-color: #3b82f6 !important;
+}
+.stock-list.sorting-active .item-card.same.sortable-chosen,
+.stock-list.sorting-active .item-card.secret-same.sortable-chosen {
+  border-color: #94a3b8 !important;
+}
 .stock-info {
   display: flex;
   justify-content: space-between;
