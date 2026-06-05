@@ -2261,6 +2261,7 @@ const shortcutMod = {
   },
   updateItemsFromDOM() {
     const newItems = [];
+    let updatedCurrentIndex = null;
     document.querySelectorAll('.shortcut-category-container > div').forEach(container => {
       const cat = container.parentElement.id.replace('shortcut-cat-', '');
       container.querySelectorAll('.shortcut-item').forEach(el => {
@@ -2268,6 +2269,9 @@ const shortcutMod = {
         if (!isNaN(oldIndex) && this.items[oldIndex]) {
           const item = { ...this.items[oldIndex] };
           item.category = cat;
+          if (window.currentShortcutIndex === oldIndex) {
+            updatedCurrentIndex = newItems.length;
+          }
           newItems.push(item);
         }
       });
@@ -2275,6 +2279,9 @@ const shortcutMod = {
     if (newItems.length === this.items.length) {
       this.items = newItems;
       window.shortcuts = this.items;
+      if (updatedCurrentIndex !== null) {
+        window.currentShortcutIndex = updatedCurrentIndex;
+      }
       utils.saveData();
       this.render(); // Re-render to update indexes
     }
@@ -2578,10 +2585,45 @@ const shortcutMod = {
       ic = document.getElementById("siteIcon").value;
     
     if (n && u) {
-      const item = { name: n, url: u, icon: ic, category: this.currentCategory };
+      const originalItem = this.items[window.currentShortcutIndex] || {};
+      const item = { ...originalItem, name: n, url: u, icon: ic, category: this.currentCategory };
       this.items[window.currentShortcutIndex] = item;
       window.shortcuts = this.items;
-      this.render();
+      
+      // Update specific DOM element instead of full render to avoid index/focus issues
+      const itemEl = document.querySelector(`.shortcut-item[data-index="${window.currentShortcutIndex}"]`);
+      if (itemEl) {
+        // Update name
+        const nameEl = itemEl.querySelector('span');
+        if (nameEl) nameEl.innerText = n;
+        
+        // Update icon
+        const wrapper = itemEl.querySelector('.shortcut-icon-wrapper');
+        if (wrapper) {
+          let hostname = "";
+          const finalUrl = u.startsWith("http") ? u : `http://${u}`;
+          try { hostname = new URL(finalUrl).hostname; } catch (e) { hostname = u; }
+          
+          let iconHtml = "";
+          if (ic) {
+            if (ic.startsWith("http") || ic.startsWith("data:")) {
+              iconHtml = `<img src="${ic}" class="shortcut-img">`;
+            } else if (ic.startsWith("fa-") || ic.startsWith("fas ") || ic.startsWith("fab ") || ic.startsWith("far ")) {
+              const iconClass = ic.includes("fa-") && !ic.includes(" ") ? `fas ${ic}` : ic;
+              iconHtml = `<div class="shortcut-default-icon" style="display: flex;"><i class="${iconClass}"></i></div>`;
+            } else {
+              iconHtml = `<img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" class="shortcut-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>`;
+            }
+          } else {
+            iconHtml = `<img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" class="shortcut-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>`;
+          }
+          wrapper.innerHTML = iconHtml;
+        }
+        
+        // Update URL
+        itemEl.onclick = (e) => this.isDragging ? (e.preventDefault(), (this.isDragging = false)) : window.open(finalUrl, "_blank");
+      }
+
       utils.saveData();
       this.updatePreview();
     }
@@ -2672,10 +2714,13 @@ const shortcutMod = {
       u = document.getElementById("siteUrl").value,
       ic = document.getElementById("siteIcon").value;
     if (n && u) {
-      const item = { name: n, url: u, icon: ic, category: this.currentCategory };
-      if (window.currentShortcutIndex !== null)
-        this.items[window.currentShortcutIndex] = item;
-      else this.items.push(item);
+      if (window.currentShortcutIndex !== null) {
+        const originalItem = this.items[window.currentShortcutIndex] || {};
+        this.items[window.currentShortcutIndex] = { ...originalItem, name: n, url: u, icon: ic, category: this.currentCategory };
+      } else {
+        const item = { name: n, url: u, icon: ic, category: this.currentCategory };
+        this.items.push(item);
+      }
       window.shortcuts = this.items;
       this.render();
       utils.saveData();
