@@ -1980,7 +1980,24 @@ const shortcutMod = {
       const item = this.items[idx];
       item.collapsed = !item.collapsed;
       utils.saveData();
-      this.render();
+
+      const container = document.getElementById("shortcut-container");
+      if (container) {
+        const card = container.querySelector(`.shortcut-item[data-index="${idx}"]`);
+        if (card) {
+          if (item.collapsed) {
+            card.classList.remove("expanded");
+            card.classList.add("collapsed");
+          } else {
+            card.classList.remove("collapsed");
+            card.classList.add("expanded");
+          }
+        }
+      }
+
+      setTimeout(() => {
+        this.render();
+      }, 300);
     }
   },
   render() {

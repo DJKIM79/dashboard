@@ -519,6 +519,7 @@ body::before {
   box-sizing: border-box;
   margin-top: auto;
   margin-bottom: auto;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .shortcut-icon-wrapper {
   width: 24px;
@@ -528,13 +529,14 @@ body::before {
   align-items: center;
   justify-content: center;
   position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .shortcut-item img {
   width: 24px;
   height: 24px;
   border-radius: 6px;
   pointer-events: none;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .shortcut-default-icon {
   width: 24px;
@@ -545,7 +547,7 @@ body::before {
   justify-content: center;
   font-size: 0.9rem;
   background: transparent;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .shortcut-column {
   display: flex;
