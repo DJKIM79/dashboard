@@ -13,6 +13,7 @@ const stock = {
   tooltipHideTimeout: null,
   isDragging: false,
   sortableInstance: null,
+  serverTimeOffset: 0,
   
   isSupported() {
     const lang = localStorage.getItem("dj_language") || "auto";
@@ -163,7 +164,11 @@ const stock = {
     this.startInterval();
   },
   
-  isMarketOpenNow(item, now = new Date()) {
+  getCurrentTime() {
+    return new Date(Date.now() + (this.serverTimeOffset || 0));
+  },
+
+  isMarketOpenNow(item, now = this.getCurrentTime()) {
     const day = now.getDay();
     if (day === 0 || day === 6) return false; // Weekend closed
 
@@ -187,7 +192,7 @@ const stock = {
     return false;
   },
 
-  getNextMarketOpenMs(item, now = new Date()) {
+  getNextMarketOpenMs(item, now = this.getCurrentTime()) {
     const currency = this.getCurrency(item);
     let targetDay = new Date(now);
     
@@ -240,7 +245,7 @@ const stock = {
         this.nextOpenTimeoutId = null;
       }
       
-      const now = new Date();
+      const now = this.getCurrentTime();
       const hasOpenMarket = this.items.some(item => this.isMarketOpenNow(item, now));
 
       if (hasOpenMarket) {
@@ -286,6 +291,9 @@ const stock = {
         const data = await response.json();
 
         if (data.success && data.stocks) {
+            if (data.serverTime) {
+                this.serverTimeOffset = data.serverTime - Date.now();
+            }
             this.items.forEach(item => {
                 const stockData = data.stocks.find(s => s.code === item.code);
                 if (stockData) {
@@ -646,12 +654,35 @@ const stock = {
     const changeText = (change >= 0 ? "+" : "") + this.formatPrice(change, item);
     const percentText = (changePercent >= 0 ? "+" : "") + changePercent.toFixed(2);
 
+    let statusKey = item.marketStatus || 'CLOSE';
+    const isKR = !item.code.includes('.');
+    
+    if (isKR) {
+      const now = this.getCurrentTime();
+      const krTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Seoul"}));
+      const hour = krTime.getHours();
+      const min = krTime.getMinutes();
+      const timeVal = hour * 100 + min;
+
+      if (statusKey === 'CLOSE_WAIT' || (timeVal >= 1520 && timeVal < 1530)) {
+        statusKey = 'CALL_AUCTION';
+      } else if (statusKey === 'PRE_OPEN' && timeVal >= 830 && timeVal < 900) {
+        statusKey = 'CALL_AUCTION';
+      }
+    } else {
+      if (statusKey === 'REGULAR') statusKey = 'OPEN';
+    }
+
     const statusMap = {
       OPEN: { text: window.i18n ? i18n.get("marketOpen") : "장중", style: "background: #fcd34d; color: #000;" },
-      CLOSE: { text: window.i18n ? i18n.get("marketClosed") : "장종료", style: "background: #374151; color: #fff;" }
+      CLOSE: { text: window.i18n ? i18n.get("marketClosed") : "장종료", style: "background: #374151; color: #fff;" },
+      CALL_AUCTION: { text: window.i18n ? i18n.get("marketCallAuction") : "동시호가", style: "background: #ef4444; color: #fff;" },
+      PRE_OPEN: { text: window.i18n ? i18n.get("marketPreOpen") : "장전", style: "background: #374151; color: #fff;" },
+      PRE_MARKET: { text: window.i18n ? i18n.get("marketPreMarket") : "장전", style: "background: #374151; color: #fff;" },
+      POST_MARKET: { text: window.i18n ? i18n.get("marketPostMarket") : "장후", style: "background: #374151; color: #fff;" }
     };
     const defaultStatus = { text: window.i18n ? i18n.get("marketClosed") : "장종료", style: "background: #374151; color: #fff;" };
-    const marketStatus = statusMap[item.marketStatus] || defaultStatus;
+    const marketStatus = statusMap[statusKey] || defaultStatus;
 
     if (isUpdate) {
       // 10s interval background update: refresh values without rebuilding DOM (prevents chart flickering)

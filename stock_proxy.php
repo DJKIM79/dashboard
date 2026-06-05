@@ -247,6 +247,6 @@ if ($type === 'candle') {
         }
     }
 
-    echo json_encode(["success" => true, "stocks" => $results]);
+    echo json_encode(["success" => true, "stocks" => $results, "serverTime" => (int)(microtime(true) * 1000)]);
 }
 ?>
