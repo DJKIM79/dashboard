@@ -78,6 +78,8 @@
   "optMedium": "S",
   "optSmall": "K",
   "citySearchPh": "Cari kota (mis. London, Jakarta)",
+  "msgLocationDenied": "Location permission required.",
+  "msgLocationFailed": "Cannot find current location.",
   "currentLoc": "Lokasi saat ini",
   "btnSaveSettings": "Terapkan",
   "modalLinkAdd": "Tambah pintasan",

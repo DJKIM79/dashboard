@@ -88,6 +88,8 @@
   "msgSearching": "검색 중...",
   "msgNoResults": "검색 결과가 없습니다.",
   "msgNoRegisteredCities": "등록된 도시가 없습니다.",
+  "msgLocationDenied": "위치 권한 허용이 필요합니다.",
+  "msgLocationFailed": "현재 위치를 검색할 수 없습니다.",
   "citySearchPh": "도시 검색 (예: 서울, London)",
   "currentLoc": "현재 위치",
   "btnSaveSettings": "적용",

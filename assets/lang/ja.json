@@ -88,6 +88,8 @@
   "msgSearching": "検索中...",
   "msgNoResults": "検索結果がありません。",
   "msgNoRegisteredCities": "登録された都市がありません。",
+  "msgLocationDenied": "位置情報の権限が必要です。",
+  "msgLocationFailed": "現在地を取得できません。",
   "citySearchPh": "都市を検索 (例: 東京, London)",
   "currentLoc": "現在地",
   "btnSaveSettings": "適用",

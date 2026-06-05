@@ -107,18 +107,25 @@ const weather = {
           } catch (e) {}
           await this.getData(lat, lon, locName, "current", myCallId);
           requestFinished();
-        }, async () => {
-          await this.getData(36.48, 127.08, i18n.get("weatherDefault"), "current", myCallId);
+        }, async (err) => {
+          if (myCallId !== this.callId) return;
+          const msg = err.code === 1 ? i18n.get("msgLocationDenied") : i18n.get("msgLocationFailed");
+          this.renderErrorItem("current", i18n.get("currentLoc"), msg);
           requestFinished();
         }, { timeout: 5000 });
       } else {
-        this.getData(36.48, 127.08, i18n.get("weatherDefault"), "current", myCallId).then(requestFinished);
+        this.renderErrorItem("current", i18n.get("currentLoc"), i18n.get("msgLocationFailed"));
+        requestFinished();
       }
     }
 
     customLocations.forEach(loc => {
       this.getData(loc.lat, loc.lon, loc.name, loc.id, myCallId).finally(requestFinished);
     });
+
+    // [TEMPORARY] Visual check for error messages
+    this.renderErrorItem("debug-denied", i18n.get("currentLoc"), i18n.get("msgLocationDenied"));
+    this.renderErrorItem("debug-failed", i18n.get("currentLoc"), i18n.get("msgLocationFailed"));
   },
   async getData(lat, lon, locName, id, callId) {
     try {
@@ -128,6 +135,7 @@ const weather = {
       
       const cache = JSON.parse(localStorage.getItem("dj_weather_cache") || "{}");
       cache[id] = { lat, lon, locName, data: d };
+      delete cache[id].error; // Clear error if success
       localStorage.setItem("dj_weather_cache", JSON.stringify(cache));
 
       this.renderItem(id, locName, lat, lon, d);
@@ -138,7 +146,11 @@ const weather = {
     container.innerHTML = "";
     if (this.showCurrent && cache["current"]) {
       const c = cache["current"];
-      this.renderItem("current", c.locName, c.lat, c.lon, c.data);
+      if (c.error) {
+        this.renderErrorItem("current", c.locName, c.error);
+      } else {
+        this.renderItem("current", c.locName, c.lat, c.lon, c.data);
+      }
     }
     this.locations.filter(l => l.id !== 'current').forEach(loc => {
       const c = cache[loc.id];
@@ -164,6 +176,25 @@ const weather = {
       <div id="forecast-${id}" class="forecast-window" onclick="event.stopPropagation()"></div>
     `;
     document.getElementById("top-right-widgets").appendChild(container);
+  },
+  renderErrorItem(id, locName, msg) {
+    const container = document.createElement("div");
+    container.className = "weather-item weather-error";
+    container.id = `weather-${id}`;
+    container.oncontextmenu = (e) => showContextMenu(e, "weather", id);
+    container.innerHTML = `
+      <div class="weather-loc">${locName}</div>
+      <div class="weather-main" style="display: block; font-size: 0.75rem; opacity: 1; line-height: 1.4; margin: 5px 0; word-break: keep-all; max-width: 110px; margin-left: auto; margin-right: auto; color: #ff5f5f; text-shadow: none; font-weight: 600;">
+        <i class="fas fa-location-slash" style="margin-bottom: 5px; display: block; font-size: 1.1rem; color: #ff5f5f;"></i>
+        ${msg}
+      </div>
+    `;
+    document.getElementById("top-right-widgets").appendChild(container);
+    
+    // Save error to cache to keep it on refresh until next attempt
+    const cache = JSON.parse(localStorage.getItem("dj_weather_cache") || "{}");
+    cache[id] = { locName, error: msg };
+    localStorage.setItem("dj_weather_cache", JSON.stringify(cache));
   },
   getDistance(lat1, lon1, lat2, lon2) {
     const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
@@ -266,3 +297,4 @@ const weather = {
   closeLocationPopup() { const popup = document.getElementById("weather-location-popup"); if (popup) { popup.classList.remove("show"); setTimeout(() => { if (!popup.classList.contains("show")) popup.style.display = "none"; }, 200); } },
 };
 window.weather = weather; window.fetchWeather = weather.fetch.bind(weather); window.searchCities = weather.searchCities.bind(weather); window.removeWeatherLocation = weather.removeLocation.bind(weather); window.renderWeatherLocationList = weather.renderLocationList.bind(weather); window.weatherLocations = weather.locations;
+r.locations;

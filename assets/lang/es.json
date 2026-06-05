@@ -97,6 +97,8 @@
   "msgSearching": "Buscando...",
   "msgNoResults": "No se encontraron resultados.",
   "msgNoRegisteredCities": "No hay ciudades registradas.",
+  "msgLocationDenied": "Location permission required.",
+  "msgLocationFailed": "Cannot find current location.",
   "citySearchPh": "Buscar ciudad (ej. Londres, Seúl)",
   "currentLoc": "Ubicación actual",
   "btnSaveSettings": "Aplicar",
