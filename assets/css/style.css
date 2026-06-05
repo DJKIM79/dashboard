@@ -4847,12 +4847,38 @@ body.tutorial-closing .driver-active-element {
   width: 100%;
   justify-content: center !important;
   display: flex !important;
+  height: 24px;
+}
+.stock-digit-group {
+  height: 24px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.stock-digit-strip {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+}
+.stock-digit {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 .stock-secret-view .stock-change {
   margin: 0 !important;
   text-align: center;
-  display: inline-block;
+  display: block;
   width: auto;
+  font-family: 'JetBrains Mono';
+  font-weight: bold;
+  font-size: 0.65rem;
+  color: #94a3b8;
+  line-height: 24px;
 }
 .stock-container .item-card.up:hover,
 .stock-container .item-card.secret-up:hover {

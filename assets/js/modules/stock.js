@@ -359,13 +359,13 @@ const stock = {
       }
 
       // Update Secret View
-      const secretChangeEl = div.querySelector(".stock-secret-view .stock-change");
-      if (secretChangeEl) {
-        const isShowVal = n.secretDisplayType === "val";
-        const changeValText = isShowVal 
-          ? this.formatPrice(Math.abs(n.change || 0), n)
-          : Math.abs(chg).toFixed(2);
-        secretChangeEl.innerText = changeValText;
+      const valView = div.querySelector(".stock-secret-view .val-view");
+      const percentView = div.querySelector(".stock-secret-view .percent-view");
+      if (valView) {
+        valView.innerText = this.formatPrice(Math.abs(n.change || 0), n);
+      }
+      if (percentView) {
+        percentView.innerText = Math.abs(chg).toFixed(2);
       }
 
       // Update Expanded View
@@ -446,8 +446,13 @@ const stock = {
           </div>
         </div>
         <div class="stock-secret-view">
-          <div class="noti-info stock-info" style="width: 100%; margin-top: 0; justify-content: center;">
-            <span class="stock-change" style="color: #94a3b8; font-family: 'JetBrains Mono'; font-weight: bold; font-size: 0.65rem;">${changeValText}</span>
+          <div class="noti-info stock-info">
+            <div class="stock-digit-group">
+              <div class="stock-digit-strip" style="transform: translateY(${n.secretDisplayType === "val" ? "0px" : "-24px"})">
+                <div class="stock-digit"><span class="stock-change val-view">${this.formatPrice(Math.abs(n.change || 0), n)}</span></div>
+                <div class="stock-digit"><span class="stock-change percent-view">${Math.abs(chg).toFixed(2)}</span></div>
+              </div>
+            </div>
           </div>
         </div>
       `;
@@ -468,7 +473,11 @@ const stock = {
           }
           n.secretDisplayType = n.secretDisplayType === "val" ? "percent" : "val";
           this.saveData();
-          this.updateDOM();
+          
+          const strip = div.querySelector(".stock-digit-strip");
+          if (strip) {
+            strip.style.transform = `translateY(${n.secretDisplayType === "val" ? "0px" : "-24px"})`;
+          }
           return;
         }
         if (window.utils && utils.closeAllUIPopups) utils.closeAllUIPopups(true);
