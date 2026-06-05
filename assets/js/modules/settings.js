@@ -1316,25 +1316,14 @@ const settings = {
                     localStorage.setItem("dj_sync_warned", "true");
                 }
                 if (isConfirmed) {
-                    window.isApplyingSyncData = true;
+                    this.applySyncData(result.data);
                     
-                    // Clear old local dj_ keys first (except sync meta)
-                    const keepKeys = ["dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty", "dj_sync_warned", "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"];
-                    const keysToRemove = [];
-                    for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        if (key && key.startsWith("dj_") && !keepKeys.includes(key) && !key.startsWith("dj_ai_chats_")) {
-                            keysToRemove.push(key);
-                        }
-                    }
-                    keysToRemove.forEach(key => localStorage.removeItem(key));
-
-                    for (const key in result.data) {
-                        localStorage.setItem(key, result.data[key]);
-                    }
                     localStorage.setItem("dj_sync_enabled", "true");
                     localStorage.setItem("dj_sync_id", id);
                     localStorage.setItem("dj_sync_key", authKey);
+                    localStorage.setItem("dj_last_updated", (result.data.dj_last_updated || Date.now()).toString());
+                    localStorage.setItem("dj_sync_dirty", "false");
+                    
                     window.isReloading = true;
                     location.reload();
                     return;
@@ -1463,11 +1452,11 @@ const settings = {
   applySyncData(serverData) {
     window.isApplyingSyncData = true;
     try {
-        // 1. Extract local AI provider IDs
+        // 1. Identify local-only AI providers
         const localProviderIds = [];
-        const localCustomStr = localStorage.getItem("dj_ai_custom_providers") || "[]";
+        let localCustom = [];
         try {
-            const localCustom = JSON.parse(localCustomStr);
+            localCustom = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
             localCustom.forEach(item => {
                 const url = (item.url || "").toLowerCase();
                 if (url.includes("localhost") || url.includes("127.0.0.1") || url.includes("0.0.0.0")) {
@@ -1478,52 +1467,70 @@ const settings = {
             console.error("Failed to parse local custom providers:", e);
         }
 
-        const keepKeys = [
+        // 2. Identify keys that should ALWAYS be kept locally (device/session specific)
+        const deviceSpecificKeys = [
             "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty", "dj_sync_warned", 
-            "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model", 
-            "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"
+            "dj_ai_is_connected", "dj_ai_models_cache"
         ];
 
-        // 2. Determine keys to remove from local storage
+        // 3. Apply server data
+        // Instead of deleting everything first, we'll iterate and update.
+        // For keys that exist locally but NOT on server, we only delete if they are NOT local AI data.
+        
+        const serverKeys = Object.keys(serverData);
         const keysToRemove = [];
+        
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (key && key.startsWith("dj_")) {
-                if (keepKeys.includes(key)) continue;
-                if (key === "dj_ai_custom_providers") continue; // Merged manually below
+                if (deviceSpecificKeys.includes(key)) continue;
+                if (serverKeys.includes(key)) continue; // Will be overwritten below
                 
-                // Check for chat data
+                // Keep Local AI Definitions (merged manually)
+                if (key === "dj_ai_custom_providers") continue;
+                
+                // Keep Local AI Chats
                 if (key.startsWith("dj_ai_chats_")) {
                     const provider = key.replace("dj_ai_chats_", "");
-                    if (localProviderIds.includes(provider)) {
-                        continue; // Keep local AI chats
-                    }
+                    if (localProviderIds.includes(provider)) continue;
                 }
+                
+                // Keep Local AI API Keys
+                if (key.startsWith("dj_ai_api_key_")) {
+                    const provider = key.replace("dj_ai_api_key_", "");
+                    if (localProviderIds.includes(provider)) continue;
+                }
+                
+                // Keep device-specific URLs if they are local
+                if (key === "dj_ai_server_url") {
+                    const url = localStorage.getItem(key) || "";
+                    if (url.includes("localhost") || url.includes("127.0.0.1") || url.includes("0.0.0.0")) continue;
+                }
+
                 keysToRemove.push(key);
             }
         }
+        
         keysToRemove.forEach(key => localStorage.removeItem(key));
 
-        // 3. Apply server data and merge custom providers
+        // Apply server data
         for (const key in serverData) {
             if (key === "dj_ai_custom_providers") {
                 try {
                     const serverCustom = JSON.parse(serverData[key] || "[]");
                     
-                    let localCustom = [];
-                    try {
-                        localCustom = JSON.parse(localStorage.getItem("dj_ai_custom_providers") || "[]");
-                    } catch(e) {}
-                    const localOnly = localCustom.filter(item => {
-                        const url = (item.url || "").toLowerCase();
+                    // Merge: Keep local-only providers, add/update from server
+                    const merged = localCustom.filter(locItem => {
+                        const url = (locItem.url || "").toLowerCase();
                         return url.includes("localhost") || url.includes("127.0.0.1") || url.includes("0.0.0.0");
                     });
 
-                    // Merge server and local-only custom providers (prevent duplicates)
-                    const merged = [...localOnly];
                     serverCustom.forEach(srvItem => {
-                        if (!merged.some(locItem => locItem.id === srvItem.id)) {
-                            merged.push(srvItem);
+                        const idx = merged.findIndex(m => m.id === srvItem.id);
+                        if (idx !== -1) {
+                            merged[idx] = srvItem; // Update existing
+                        } else {
+                            merged.push(srvItem); // Add new
                         }
                     });
 
@@ -1644,24 +1651,21 @@ const settings = {
     }
 
     const excludeKeys = [
-        "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model",
-        "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai", "dj_ai_server_url", "dj_ai_api_key_ollama"
+        "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty",
+        "dj_ai_is_connected", "dj_ai_models_cache"
     ];
 
     const data = {};
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && key.startsWith("dj_")) {
-            if (key === "dj_sync_enabled" || key === "dj_sync_id" || key === "dj_sync_key" || key === "dj_last_updated" || key === "dj_sync_dirty") {
-                continue;
-            }
             if (excludeKeys.includes(key)) {
                 continue;
             }
             
-            // Exclude local AI chat histories
-            if (key.startsWith("dj_ai_chats_")) {
-                const provider = key.replace("dj_ai_chats_", "");
+            // Exclude local AI chat histories and keys
+            if (key.startsWith("dj_ai_chats_") || key.startsWith("dj_ai_api_key_")) {
+                const provider = key.replace("dj_ai_chats_", "").replace("dj_ai_api_key_", "");
                 if (localProviderIds.includes(provider)) {
                     continue;
                 }
@@ -1683,8 +1687,8 @@ const settings = {
                     });
                     data[key] = JSON.stringify(filteredAis);
                     continue;
-                } catch (e) {
-                    console.error("Failed to parse custom providers during sync:", e);
+                } catch(e) {
+                    console.error("Failed to filter custom providers for sync:", e);
                 }
             }
             
