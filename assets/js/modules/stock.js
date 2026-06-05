@@ -325,15 +325,17 @@ const stock = {
 
     const cards = listContainer.querySelectorAll(".stock-card");
     if (cards.length !== this.items.length) {
+      if (this.isDragging) return; // Wait until drag ends to fix count mismatch
       this.render();
       return;
     }
 
-    // Mismatch detection (excluding secret mode check as it's now a class)
+    // Mismatch detection
     for (let idx = 0; idx < this.items.length; idx++) {
       const n = this.items[idx];
       const div = cards[idx];
       if (!div || div.dataset.id !== String(n.id)) {
+        if (this.isDragging) return; // Don't re-render while user is moving items
         this.render();
         return;
       }
@@ -551,17 +553,28 @@ const stock = {
         onEnd: (evt) => {
           setTimeout(() => (this.isDragging = false), 100);
           listContainer.classList.remove("sorting-active");
-          if (evt.oldIndex !== evt.newIndex) {
-            const item = this.items.splice(evt.oldIndex, 1)[0];
-            this.items.splice(evt.newIndex, 0, item);
-            this.saveData();
-            this.render();
-          }
+          this.updateOrderFromDOM();
         },
       });
     }
     
     setTimeout(() => this.updateScrollArrows(), 150);
+  },
+
+  updateOrderFromDOM() {
+    const listContainer = document.getElementById("stock-list");
+    if (!listContainer) return;
+    const newItems = [];
+    listContainer.querySelectorAll('.stock-card').forEach(el => {
+      const id = el.dataset.id;
+      const item = this.items.find(n => String(n.id) === String(id));
+      if (item) newItems.push(item);
+    });
+    if (newItems.length === this.items.length) {
+      this.items = newItems;
+      this.saveData();
+      this.render();
+    }
   },
   
   toggleDetail(id, targetEl) {

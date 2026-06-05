@@ -589,6 +589,8 @@ body::before {
   /* Clear default transitions to let Sortable.js handle transform animations via inline styles */
   transition: none; 
   box-shadow: none !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
 }
 #shortcut-container.sorting-active .shortcut-item:hover {
   border-color: var(--glass-border) !important;
@@ -4786,7 +4788,7 @@ body.tutorial-closing .driver-active-element {
   max-width: 140px;
   flex-shrink: 0;
   margin: 0;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
 }
@@ -4834,19 +4836,6 @@ body.tutorial-closing .driver-active-element {
   left: 0;
   transform: none;
 }
-.stock-list.sorting-active .item-card {
-  transition: none !important;
-  box-shadow: none !important;
-}
-.stock-list.sorting-active .item-card:hover {
-  border-color: var(--glass-border) !important;
-  box-shadow: none !important;
-}
-.stock-ghost {
-  opacity: 0.2 !important;
-  border-color: var(--glass-border) !important;
-  box-shadow: none !important;
-}
 .stock-container .item-card.up:hover,
 .stock-container .item-card.secret-up:hover {
   border-color: #ef4444 !important;
@@ -4865,6 +4854,23 @@ body.tutorial-closing .driver-active-element {
 .stock-container .item-card:active {
   box-shadow: none !important;
 }
+.stock-list.sorting-active .item-card {
+  transition: none;
+  box-shadow: none !important;
+}
+.stock-list.sorting-active .item-card:hover {
+  border-color: var(--glass-border) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.stock-list.sorting-active .item-card.sortable-chosen {
+  border-color: var(--accent-color) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: none !important;
+  opacity: 1 !important;
+  z-index: 100;
+}
 .stock-list.sorting-active .item-card.up.sortable-chosen,
 .stock-list.sorting-active .item-card.secret-up.sortable-chosen {
   border-color: #ef4444 !important;
@@ -4876,6 +4882,13 @@ body.tutorial-closing .driver-active-element {
 .stock-list.sorting-active .item-card.same.sortable-chosen,
 .stock-list.sorting-active .item-card.secret-same.sortable-chosen {
   border-color: #94a3b8 !important;
+}
+.stock-list.sorting-active .item-card.stock-ghost {
+  opacity: 0.2 !important;
+  border-color: var(--glass-border) !important;
+  box-shadow: none !important;
+  animation: none !important;
+  backdrop-filter: none !important;
 }
 .stock-info {
   display: flex;
