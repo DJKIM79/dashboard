@@ -1008,7 +1008,7 @@ const settings = {
       this.setWidgetSize(value);
     }
   },
-  setTheme(color, keepAdj = true) {
+  setTheme(color, keepAdj = true, triggerSync = true) {
     if (keepAdj === false) localStorage.setItem("dj_theme_adjustment", "none");
     const adj = localStorage.getItem("dj_theme_adjustment") || "none";
     const expandHex = (hex) => {
@@ -1043,7 +1043,7 @@ const settings = {
     }
 
     // Trigger instant forced sync on theme change to prevent timing issues
-    if (window.settings && typeof settings.syncToServer === "function") {
+    if (triggerSync && window.settings && typeof settings.syncToServer === "function") {
       settings.syncToServer(false, true);
     }
   },
@@ -1393,27 +1393,11 @@ const settings = {
     }
   },
   renderAllModules() {
+    window.isApplyingSyncData = true;
     try {
         const themeColor = localStorage.getItem("dj_theme_color");
         if (themeColor) {
-            document.documentElement.style.setProperty('--accent-color', themeColor);
-            const expandHex = (hex) => {
-              if (hex.length === 4) return "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
-              return hex;
-            };
-            const expanded = expandHex(themeColor);
-            const r = parseInt(expanded.slice(1, 3), 16);
-            const g = parseInt(expanded.slice(3, 5), 16);
-            const b = parseInt(expanded.slice(5, 7), 16);
-            const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-            const contrast = yiq >= 128 ? "#0f172a" : "#ffffff";
-            document.documentElement.style.setProperty('--accent-contrast', contrast);
-            
-            const activeColorBtn = document.querySelector(`.theme-color-option[data-color="${themeColor}"]`);
-            if (activeColorBtn) {
-                document.querySelectorAll(".theme-color-option").forEach(o => o.classList.remove("active"));
-                activeColorBtn.classList.add("active");
-            }
+            this.setTheme(themeColor, true, false);
         }
         const size = localStorage.getItem("dj_widget_size") || "medium";
         document.documentElement.style.setProperty('--widget-scale', 'var(--widget-scale-' + size + ')');
@@ -1447,6 +1431,8 @@ const settings = {
         }
     } catch (e) {
         console.error("Failed to render modules after sync:", e);
+    } finally {
+        window.isApplyingSyncData = false;
     }
   },
   applySyncData(serverData) {
@@ -1577,8 +1563,8 @@ const settings = {
                 const localTime = parseInt(localStorage.getItem("dj_last_updated") || 0);
                 const isDirty = localStorage.getItem("dj_sync_dirty") === "true";
 
-                if (serverTime > localTime) {
-                    console.log("Loading newer configuration from server. Server time:", serverTime, ", Local time:", localTime);
+                if ((serverTime > localTime) || (serverTime !== localTime && !isDirty)) {
+                    console.log("Loading configuration from server. Server time:", serverTime, ", Local time:", localTime);
                     this.applySyncData(result.data);
                     localStorage.setItem("dj_last_updated", serverTime.toString());
                     localStorage.setItem("dj_sync_dirty", "false");
