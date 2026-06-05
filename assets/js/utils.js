@@ -260,8 +260,11 @@ const utils = {
       }
     }
   },  saveData() {
-    if (window.shortcutMod)
+    if (window.shortcutMod) {
       localStorage.setItem("dj_shortcuts", JSON.stringify(shortcutMod.items));
+      if (shortcutMod.categories) localStorage.setItem("dj_shortcut_categories", JSON.stringify(shortcutMod.categories));
+      if (shortcutMod.collapsedCategories) localStorage.setItem("dj_shortcut_collapsed", JSON.stringify(shortcutMod.collapsedCategories));
+    }
     if (window.noti)
       localStorage.setItem("dj_notifications", JSON.stringify(noti.items));
     if (window.memo)
