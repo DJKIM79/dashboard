@@ -4786,55 +4786,73 @@ body.tutorial-closing .driver-active-element {
 .stock-container .item-card {
   min-width: 140px;
   max-width: 140px;
+  height: 60px;
   flex-shrink: 0;
   margin: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 15px;
+  position: relative;
 }
 .stock-container .item-card.secret {
   min-width: 70px;
   max-width: 70px;
-  padding-left: 2px;
-  padding-right: 2px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  height: 40px;
+  padding: 0 2px;
 }
 .stock-expanded-view {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   transition: opacity 0.3s ease, transform 0.3s ease;
   opacity: 1;
   transform: scale(1);
-  position: relative;
+  width: 100%;
+  pointer-events: auto;
+  text-align: left;
 }
 .stock-secret-view {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   transition: opacity 0.3s ease, transform 0.3s ease;
   opacity: 0;
   transform: scale(0.8);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.8);
   width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
   pointer-events: none;
+  text-align: center;
 }
 .item-card.secret .stock-expanded-view {
   opacity: 0;
   transform: scale(0.8);
   pointer-events: none;
-  position: absolute;
 }
 .item-card.secret .stock-secret-view {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+  transform: scale(1);
   pointer-events: auto;
-  position: relative;
-  top: 0;
-  left: 0;
-  transform: none;
+}
+.stock-secret-view .stock-info {
+  margin: 0 !important;
+  width: 100%;
+  justify-content: center !important;
+  display: flex !important;
+}
+.stock-secret-view .stock-change {
+  margin: 0 !important;
+  text-align: center;
+  display: inline-block;
+  width: auto;
 }
 .stock-container .item-card.up:hover,
 .stock-container .item-card.secret-up:hover {
