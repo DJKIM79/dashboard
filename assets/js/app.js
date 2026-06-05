@@ -250,7 +250,7 @@ const app = {
           localStorage.setItem("dj_show_current_weather", "false");
           if (window.weather) {
             weather.showCurrent = false;
-            weather.fetch();
+            weather.fetch(true);
           }
         }
       } else {

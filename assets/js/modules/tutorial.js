@@ -52,12 +52,12 @@ const tutorial = {
               lat: 37.5665,
               lon: 126.9780
             });
-            window.weather.fetch();
+            window.weather.fetch(true);
           }
         } else {
           if (window.weather.locations.find(l => l.id === dummyWeatherId)) {
             window.weather.locations = window.weather.locations.filter(l => l.id !== dummyWeatherId);
-            window.weather.fetch();
+            window.weather.fetch(true);
           }
         }
       }

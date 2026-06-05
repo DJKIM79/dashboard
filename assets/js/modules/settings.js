@@ -356,7 +356,7 @@ const settings = {
     localStorage.setItem("dj_show_current_weather", checked ? "true" : "false");
     if (window.weather) {
       weather.showCurrent = checked;
-      setTimeout(() => weather.fetch(), 50);
+      setTimeout(() => weather.fetch(true), 50);
     }
   },
   toggleFileMgmt(checked) {
@@ -1458,7 +1458,8 @@ const settings = {
             "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty", "dj_sync_warned", 
             "dj_ai_provider", "dj_ai_model", "dj_ai_disabled", "dj_hide_ai",
             "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache",
-            "dj_bg_seed", "dj_stock_codes_cache", "dj_tutorial_done"
+            "dj_bg_seed", "dj_stock_codes_cache", "dj_tutorial_done",
+            "dj_weather_last_fetch", "dj_weather_cache"
         ];
 
         // 3. Apply server data
@@ -1648,7 +1649,8 @@ const settings = {
         "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty", "dj_sync_warned",
         "dj_ai_provider", "dj_ai_model", "dj_ai_disabled", "dj_hide_ai",
         "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache",
-        "dj_bg_seed", "dj_stock_codes_cache", "dj_tutorial_done"
+        "dj_bg_seed", "dj_stock_codes_cache", "dj_tutorial_done",
+        "dj_weather_last_fetch", "dj_weather_cache"
     ];
 
     const data = {};
