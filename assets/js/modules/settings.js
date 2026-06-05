@@ -1470,7 +1470,9 @@ const settings = {
         // 2. Identify keys that should ALWAYS be kept locally (device/session specific)
         const deviceSpecificKeys = [
             "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty", "dj_sync_warned", 
-            "dj_ai_is_connected", "dj_ai_models_cache"
+            "dj_ai_provider", "dj_ai_model", "dj_ai_disabled", "dj_hide_ai",
+            "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache",
+            "dj_bg_seed", "dj_stock_codes_cache", "dj_tutorial_done"
         ];
 
         // 3. Apply server data
@@ -1498,6 +1500,12 @@ const settings = {
                 // Keep Local AI API Keys
                 if (key.startsWith("dj_ai_api_key_")) {
                     const provider = key.replace("dj_ai_api_key_", "");
+                    if (localProviderIds.includes(provider)) continue;
+                }
+                
+                // Keep Local AI Last Models
+                if (key.startsWith("dj_ai_last_model_")) {
+                    const provider = key.replace("dj_ai_last_model_", "");
                     if (localProviderIds.includes(provider)) continue;
                 }
                 
@@ -1651,8 +1659,10 @@ const settings = {
     }
 
     const excludeKeys = [
-        "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty",
-        "dj_ai_is_connected", "dj_ai_models_cache"
+        "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty", "dj_sync_warned",
+        "dj_ai_provider", "dj_ai_model", "dj_ai_disabled", "dj_hide_ai",
+        "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache",
+        "dj_bg_seed", "dj_stock_codes_cache", "dj_tutorial_done"
     ];
 
     const data = {};
@@ -1663,9 +1673,9 @@ const settings = {
                 continue;
             }
             
-            // Exclude local AI chat histories and keys
-            if (key.startsWith("dj_ai_chats_") || key.startsWith("dj_ai_api_key_")) {
-                const provider = key.replace("dj_ai_chats_", "").replace("dj_ai_api_key_", "");
+            // Exclude local AI chat histories, keys, and last models
+            if (key.startsWith("dj_ai_chats_") || key.startsWith("dj_ai_api_key_") || key.startsWith("dj_ai_last_model_")) {
+                const provider = key.replace("dj_ai_chats_", "").replace("dj_ai_api_key_", "").replace("dj_ai_last_model_", "");
                 if (localProviderIds.includes(provider)) {
                     continue;
                 }
@@ -1732,16 +1742,6 @@ const settings = {
         clearInterval(this.syncInterval);
         this.syncInterval = null;
     }
-    
-    // 30초마다 백그라운드 더티 체크를 수행하여 자동 저장 시도
-    this.syncInterval = setInterval(() => {
-        const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
-        const isDirty = localStorage.getItem("dj_sync_dirty") === "true";
-        if (isSyncEnabled && isDirty) {
-            console.log("Background check: Local data is dirty. Attempting to sync to server...");
-            this.syncToServer(false, false);
-        }
-    }, 30000);
     
     // 네트워크 복구(온라인) 시 자동 동기화 연결 재시도
     if (!window.hasSyncOnlineListener) {

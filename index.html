@@ -27,13 +27,14 @@
     <script>
       (function() {
         try {
+          window.isInitializing = true;
           // Intercept localStorage.setItem to track local modifications and trigger debounced sync
           const originalSetItem = Storage.prototype.setItem;
           let syncTimeout = null;
           const excludeKeys = [
-            "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty",
-            "dj_ai_provider", "dj_ai_model", "dj_ai_is_connected", "dj_ai_last_success_model",
-            "dj_ai_models_cache", "dj_ai_disabled", "dj_hide_ai",
+            "dj_sync_enabled", "dj_sync_id", "dj_sync_key", "dj_last_updated", "dj_sync_dirty", "dj_sync_warned",
+            "dj_ai_provider", "dj_ai_model", "dj_ai_disabled", "dj_hide_ai",
+            "dj_ai_is_connected", "dj_ai_last_success_model", "dj_ai_models_cache",
             "dj_bg_seed", "dj_stock_codes_cache", "dj_tutorial_done"
           ];
           Storage.prototype.setItem = function(key, value) {

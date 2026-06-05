@@ -3,36 +3,53 @@ window.currentEditMemoId = null;
 window.currentShortcutIndex = null;
 const app = {
   async init() {
-    window.isApplyingSyncData = true;
-    this.initDefaults();
-    window.isApplyingSyncData = false;
+    try {
+      window.isApplyingSyncData = true;
+      this.initDefaults();
+      window.isApplyingSyncData = false;
 
-    if (window.settings && typeof settings.loadFromServerOnStartup === "function") {
-      await settings.loadFromServerOnStartup();
-    }
-    await i18n.init();
-    this.initModules();
-    this.clearTutorialData();
-    this.setupIntervals();
-    this.checkTutorial();
-    
-    // Remove preload class to enable transitions after initial render
-    setTimeout(() => {
-      void document.body.offsetHeight; // Force reflow to commit settings changes without transitions
-      document.body.classList.remove("preload");
-    }, 100);
-    
-    // Check for updates when the user returns/switches back to this tab
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") {
+      if (window.settings && typeof settings.loadFromServerOnStartup === "function") {
+        await settings.loadFromServerOnStartup();
+      }
+      await i18n.init();
+      this.initModules();
+      this.clearTutorialData();
+      this.setupIntervals();
+      this.checkTutorial();
+      
+      // Check for updates when the user returns/switches back to this tab or focuses the window
+      let lastFocusLoadTime = 0;
+      const loadSyncOnFocus = () => {
+        const now = Date.now();
+        if (now - lastFocusLoadTime < 2000) return; // Prevent duplicate requests within 2 seconds
+        lastFocusLoadTime = now;
+        
         const isSyncEnabled = localStorage.getItem("dj_sync_enabled") === "true";
         if (isSyncEnabled && window.settings && typeof settings.loadFromServerOnStartup === "function") {
           settings.loadFromServerOnStartup();
         }
-      }
-    });
+      };
 
-    window.appInitialized = true;
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          loadSyncOnFocus();
+        }
+      });
+      window.addEventListener("focus", loadSyncOnFocus);
+      
+      // Remove preload class to enable transitions after initial render
+      setTimeout(() => {
+        void document.body.offsetHeight; // Force reflow to commit settings changes without transitions
+        document.body.classList.remove("preload");
+      }, 100);
+
+      window.appInitialized = true;
+    } catch (e) {
+      console.error("App initialization failed:", e);
+    } finally {
+      window.isApplyingSyncData = false;
+      window.isInitializing = false;
+    }
   },
   initDefaults() {
     const defaults = {
