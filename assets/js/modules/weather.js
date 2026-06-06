@@ -122,10 +122,6 @@ const weather = {
     customLocations.forEach(loc => {
       this.getData(loc.lat, loc.lon, loc.name, loc.id, myCallId).finally(requestFinished);
     });
-
-    // [TEMPORARY] Visual check for error messages
-    this.renderErrorItem("debug-denied", i18n.get("currentLoc"), i18n.get("msgLocationDenied"));
-    this.renderErrorItem("debug-failed", i18n.get("currentLoc"), i18n.get("msgLocationFailed"));
   },
   async getData(lat, lon, locName, id, callId) {
     try {
@@ -297,4 +293,3 @@ const weather = {
   closeLocationPopup() { const popup = document.getElementById("weather-location-popup"); if (popup) { popup.classList.remove("show"); setTimeout(() => { if (!popup.classList.contains("show")) popup.style.display = "none"; }, 200); } },
 };
 window.weather = weather; window.fetchWeather = weather.fetch.bind(weather); window.searchCities = weather.searchCities.bind(weather); window.removeWeatherLocation = weather.removeLocation.bind(weather); window.renderWeatherLocationList = weather.renderLocationList.bind(weather); window.weatherLocations = weather.locations;
-r.locations;
