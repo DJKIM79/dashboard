@@ -78,7 +78,6 @@
   "optMedium": "متوسط",
   "optSmall": "صغير",
   "citySearchPh": "ابحث عن مدينة (مثلاً لندن، دبي)",
-  "msgLocationDenied": "Location permission required.",
   "msgLocationFailed": "Cannot find current location.",
   "currentLoc": "الموقع الحالي",
   "btnSaveSettings": "تطبيق",

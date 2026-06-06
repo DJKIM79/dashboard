@@ -88,7 +88,6 @@
   "msgSearching": "Recherche...",
   "msgNoResults": "Aucun résultat trouvé.",
   "msgNoRegisteredCities": "Aucune ville enregistrée.",
-  "msgLocationDenied": "Location permission required.",
   "msgLocationFailed": "Cannot find current location.",
   "citySearchPh": "Rechercher une ville (ex. Paris, Londres)",
   "currentLoc": "Position actuelle",

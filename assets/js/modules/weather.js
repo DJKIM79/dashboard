@@ -8,6 +8,16 @@ const weather = {
     this.locations = JSON.parse(localStorage.getItem("dj_weather_locations")) || [];
     this.fetch();
     this.renderLocationList();
+    this.setupPermissionListener();
+  },
+  setupPermissionListener() {
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'geolocation' }).then(permissionStatus => {
+        permissionStatus.onchange = () => {
+          this.fetch(true);
+        };
+      }).catch(err => console.error("Geolocation permission query error:", err));
+    }
   },
   async fetch(force = false) {
     const container = document.getElementById("top-right-widgets");
@@ -17,9 +27,10 @@ const weather = {
     const lastFetch = parseInt(localStorage.getItem("dj_weather_last_fetch") || 0);
     const customLocations = this.locations.filter(loc => loc.id !== 'current');
     const cache = JSON.parse(localStorage.getItem("dj_weather_cache") || "{}");
+    const hasError = Object.values(cache).some(c => c && c.error);
 
     // 1. Throttling Check (1 hour)
-    if (!force && (now - lastFetch < 3600000)) {
+    if (!force && !hasError && (now - lastFetch < 3600000)) {
       // Check if we need to verify location movement (only for 'current' weather)
       if (this.showCurrent && cache["current"]) {
         const lastLocCheck = parseInt(localStorage.getItem("dj_weather_last_loc_check") || 0);
@@ -109,7 +120,7 @@ const weather = {
           requestFinished();
         }, async (err) => {
           if (myCallId !== this.callId) return;
-          const msg = err.code === 1 ? i18n.get("msgLocationDenied") : i18n.get("msgLocationFailed");
+          const msg = i18n.get("msgLocationFailed");
           this.renderErrorItem("current", i18n.get("currentLoc"), msg);
           requestFinished();
         }, { timeout: 5000 });
@@ -160,6 +171,15 @@ const weather = {
     container.id = `weather-${id}`;
     container.onclick = () => this.toggleForecast(id, daily, lat, lon);
     container.oncontextmenu = (e) => showContextMenu(e, "weather", id);
+    
+    // Calculate display order: 'current' always stays on the far right (highest order)
+    let order = 1000;
+    if (id !== "current") {
+      const idx = this.locations.findIndex(l => String(l.id) === String(id));
+      if (idx !== -1) order = 100 - idx;
+    }
+    container.style.order = order;
+
     const icon = this.getIcon(current.weather_code);
     const iconColor = this.getIconColor(current.weather_code);
     container.innerHTML = `
@@ -177,13 +197,20 @@ const weather = {
     const container = document.createElement("div");
     container.className = "weather-item weather-error";
     container.id = `weather-${id}`;
+    container.onclick = () => this.fetch(true);
     container.oncontextmenu = (e) => showContextMenu(e, "weather", id);
+    
+    // Calculate display order: 'current' always stays on the far right (highest order)
+    let order = 1000;
+    if (id !== "current") {
+      const idx = this.locations.findIndex(l => String(l.id) === String(id));
+      if (idx !== -1) order = 100 - idx;
+    }
+    container.style.order = order;
+
     container.innerHTML = `
-      <div class="weather-loc">${locName}</div>
-      <div class="weather-main" style="display: block; font-size: 0.75rem; opacity: 1; line-height: 1.4; margin: 5px 0; word-break: keep-all; max-width: 110px; margin-left: auto; margin-right: auto; color: #ff5f5f; text-shadow: none; font-weight: 600;">
-        <i class="fas fa-location-slash" style="margin-bottom: 5px; display: block; font-size: 1.1rem; color: #ff5f5f;"></i>
-        ${msg}
-      </div>
+      <div class="weather-main"><i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i></div>
+      <div class="weather-error-text">${msg}</div>
     `;
     document.getElementById("top-right-widgets").appendChild(container);
     

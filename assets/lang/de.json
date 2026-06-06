@@ -88,7 +88,6 @@
   "msgSearching": "Suche...",
   "msgNoResults": "Keine Ergebnisse gefunden.",
   "msgNoRegisteredCities": "Keine Städte registriert.",
-  "msgLocationDenied": "Location permission required.",
   "msgLocationFailed": "Cannot find current location.",
   "citySearchPh": "Stadt suchen (z. B. Berlin, London)",
   "currentLoc": "Aktueller Standort",

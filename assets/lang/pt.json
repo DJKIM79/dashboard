@@ -78,7 +78,6 @@
   "optMedium": "M",
   "optSmall": "P",
   "citySearchPh": "Buscar cidade (ex. Londres, Lisboa)",
-  "msgLocationDenied": "Location permission required.",
   "msgLocationFailed": "Cannot find current location.",
   "currentLoc": "Localização atual",
   "btnSaveSettings": "Aplicar",

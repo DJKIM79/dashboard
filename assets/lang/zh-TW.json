@@ -88,7 +88,6 @@
   "msgSearching": "搜尋中...",
   "msgNoResults": "找不到搜尋結果。",
   "msgNoRegisteredCities": "未註冊城市。",
-  "msgLocationDenied": "Location permission required.",
   "msgLocationFailed": "Cannot find current location.",
   "citySearchPh": "搜尋城市 (例如: 台北, 倫敦)",
   "currentLoc": "目前位置",
@@ -356,4 +355,4 @@
   "msgInvalidAuth": "ID或密碼錯誤。",
   "msgSyncDisconnected": "連接已斷開。",
   "msgSyncWarn": "目前設定將被強制更改為伺服器設定！"
-  }
+}

@@ -86,7 +86,6 @@
   "msgSearching": "Searching...",
   "msgNoResults": "No results found.",
   "msgNoRegisteredCities": "No registered cities.",
-  "msgLocationDenied": "Location permission required.",
   "msgLocationFailed": "Cannot find current location.",
   "citySearchPh": "Search city (e.g. London, Seoul)",
   "currentLoc": "Current Location",

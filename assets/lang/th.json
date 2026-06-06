@@ -78,7 +78,6 @@
   "optMedium": "กลาง",
   "optSmall": "เล็ก",
   "citySearchPh": "ค้นหาเมือง (เช่น ลอนดอน, กรุงเทพฯ)",
-  "msgLocationDenied": "Location permission required.",
   "msgLocationFailed": "Cannot find current location.",
   "currentLoc": "ตำแหน่งปัจจุบัน",
   "btnSaveSettings": "ตกลง",

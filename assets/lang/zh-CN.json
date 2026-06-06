@@ -88,7 +88,6 @@
   "msgSearching": "搜索中...",
   "msgNoResults": "未找到搜索结果。",
   "msgNoRegisteredCities": "未注册城市。",
-  "msgLocationDenied": "需要位置权限。",
   "msgLocationFailed": "无法获取当前位置。",
   "citySearchPh": "搜索城市 (例如: 上海, 伦敦)",
   "currentLoc": "当前位置",
@@ -356,4 +355,4 @@
   "msgInvalidAuth": "ID或密码错误。",
   "msgSyncDisconnected": "连接已断开。",
   "msgSyncWarn": "当前设置将被强制更改为服务器设置！"
-  }
+}

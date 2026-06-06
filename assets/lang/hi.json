@@ -78,7 +78,6 @@
   "optMedium": "मध्यम",
   "optSmall": "छोटा",
   "citySearchPh": "शहर खोजें (जैसे लंदन, दिल्ली)",
-  "msgLocationDenied": "Location permission required.",
   "msgLocationFailed": "Cannot find current location.",
   "currentLoc": "वर्तमान स्थान",
   "btnSaveSettings": "लागू करें",
