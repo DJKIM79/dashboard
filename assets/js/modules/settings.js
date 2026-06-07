@@ -1695,16 +1695,23 @@ const settings = {
     }
 
     try {
+        const serializedData = JSON.stringify(data);
         const formData = new FormData();
         formData.append("action", "save");
         formData.append("id", id);
         formData.append("authKey", authKey);
-        formData.append("data", JSON.stringify(data));
+        formData.append("data", serializedData);
         
-        const res = await fetch("sync.php", {
+        const fetchOptions = {
             method: "POST",
             body: formData
-        });
+        };
+        // payload 크기가 60KB 이하일 때만 안전하게 keepalive: true 사용 (창이 닫혀도 동기화 보장)
+        if (serializedData.length < 60000) {
+            fetchOptions.keepalive = true;
+        }
+
+        const res = await fetch("sync.php", fetchOptions);
         const result = await res.json();
         if (result.success && result.server_time) {
             const serverTimeStr = result.server_time.toString();
@@ -1712,6 +1719,12 @@ const settings = {
             localStorage.setItem("dj_last_updated", serverTimeStr);
             window.isApplyingSyncData = false;
             window.lastSyncedTime = result.server_time;
+
+            // 성공적으로 저장되었으므로 대기 중인 타이머가 있다면 취소
+            if (window.djSyncTimeout) {
+                clearTimeout(window.djSyncTimeout);
+                window.djSyncTimeout = null;
+            }
         } else {
             localStorage.setItem("dj_sync_dirty", "true");
             if (result.message === "Invalid ID" || result.message === "Invalid Password" || result.message === "Invalid auth") {
