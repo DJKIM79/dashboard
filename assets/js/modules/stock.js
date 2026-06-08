@@ -169,50 +169,87 @@ const stock = {
   },
 
   isMarketOpenNow(item, now = this.getCurrentTime()) {
-    const day = now.getDay();
-    if (day === 0 || day === 6) return false; // Weekend closed
+    if (item && item.marketStatus) {
+      const activeStatuses = ["OPEN", "REGULAR", "PRE_MARKET", "POST_MARKET", "CALL_AUCTION"];
+      if (activeStatuses.includes(item.marketStatus)) {
+        return true;
+      }
+    }
 
     const currency = this.getCurrency(item);
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    const timeNum = hours * 100 + minutes;
+    let tz = "Asia/Seoul";
+    let marketHours = [];
 
     if (currency === "KRW") {
-      return timeNum >= 900 && timeNum <= 1530;
+      tz = "Asia/Seoul";
+      marketHours = [{ start: 900, end: 1530 }];
+    } else if (currency === "JPY") {
+      tz = "Asia/Tokyo";
+      marketHours = [{ start: 900, end: 1500 }];
+    } else if (currency === "CNY") {
+      tz = "Asia/Shanghai";
+      marketHours = [{ start: 930, end: 1500 }];
+    } else if (currency === "HKD") {
+      tz = "Asia/Hong_Kong";
+      marketHours = [{ start: 930, end: 1600 }];
+    } else if (currency === "TWD") {
+      tz = "Asia/Taipei";
+      marketHours = [{ start: 900, end: 1330 }];
+    } else if (currency === "USD") {
+      tz = "America/New_York";
+      marketHours = [{ start: 400, end: 2000 }];
+    } else {
+      return false;
     }
-    if (currency === "JPY") {
-      return timeNum >= 900 && timeNum <= 1500;
+
+    let marketDate;
+    try {
+      marketDate = new Date(now.toLocaleString("en-US", { timeZone: tz }));
+    } catch (e) {
+      marketDate = new Date(now);
     }
-    if (currency === "CNY" || currency === "HKD" || currency === "TWD") {
-      return timeNum >= 1000 && timeNum <= 1700;
-    }
-    if (currency === "USD") {
-      return timeNum >= 2200 || timeNum <= 600;
-    }
-    return false;
+
+    const day = marketDate.getDay();
+    if (day === 0 || day === 6) return false;
+
+    const hours = marketDate.getHours();
+    const minutes = marketDate.getMinutes();
+    const timeNum = hours * 100 + minutes;
+
+    return marketHours.some(range => timeNum >= range.start && timeNum <= range.end);
   },
 
   getNextMarketOpenMs(item, now = this.getCurrentTime()) {
     const currency = this.getCurrency(item);
-    let targetDay = new Date(now);
-    
+    let tz = "Asia/Seoul";
     let targetHour = 9;
     let targetMin = 0;
 
     if (currency === "KRW" || currency === "JPY") {
+      tz = currency === "KRW" ? "Asia/Seoul" : "Asia/Tokyo";
       targetHour = 9;
       targetMin = 0;
     } else if (currency === "CNY" || currency === "HKD" || currency === "TWD") {
-      targetHour = 10;
-      targetMin = 0;
+      tz = currency === "CNY" ? "Asia/Shanghai" : (currency === "HKD" ? "Asia/Hong_Kong" : "Asia/Taipei");
+      targetHour = 9;
+      targetMin = (currency === "CNY" || currency === "HKD") ? 30 : 0;
     } else if (currency === "USD") {
-      targetHour = 22;
+      tz = "America/New_York";
+      targetHour = 4;
       targetMin = 0;
     }
 
+    let marketNow;
+    try {
+      marketNow = new Date(now.toLocaleString("en-US", { timeZone: tz }));
+    } catch (e) {
+      marketNow = new Date(now);
+    }
+
+    let targetDay = new Date(marketNow);
     targetDay.setHours(targetHour, targetMin, 0, 0);
 
-    if (targetDay.getTime() <= now.getTime()) {
+    if (targetDay.getTime() <= marketNow.getTime()) {
       targetDay.setDate(targetDay.getDate() + 1);
     }
 
@@ -220,7 +257,7 @@ const stock = {
       targetDay.setDate(targetDay.getDate() + 1);
     }
 
-    return targetDay.getTime() - now.getTime();
+    return targetDay.getTime() - marketNow.getTime();
   },
 
   startInterval() {
@@ -287,7 +324,7 @@ const stock = {
     const codes = this.items.map(item => item.code).join(',');
 
     try {
-        const response = await fetch(`stock_proxy.php?codes=${codes}`);
+        const response = await fetch(`stock_proxy.php?codes=${codes}&_=${Date.now()}`);
         const data = await response.json();
 
         if (data.success && data.stocks) {
@@ -859,7 +896,7 @@ const stock = {
     }
 
     try {
-        const res = await fetch(`stock_proxy.php?type=candle&codes=${item.code}`);
+        const res = await fetch(`stock_proxy.php?type=candle&codes=${item.code}&_=${Date.now()}`);
         const data = await res.json();
         if (data.success && data.candles && data.candles.length > 0) {
             item.cachedCandles = data.candles;
@@ -949,7 +986,7 @@ const stock = {
     this.searchTimeout = setTimeout(async () => {
         this.searchAbortController = new AbortController();
         try {
-            const res = await fetch(`stock_proxy.php?type=search&keyword=${encodeURIComponent(val)}`, {
+            const res = await fetch(`stock_proxy.php?type=search&keyword=${encodeURIComponent(val)}&_=${Date.now()}`, {
                 signal: this.searchAbortController.signal
             });
             const data = await res.json();

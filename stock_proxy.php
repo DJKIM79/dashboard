@@ -33,7 +33,7 @@ function get_domestic_stock_data($codes) {
     $options = [ "http" => [ "header" => "User-Agent: Mozilla/5.0\r\n" ] ];
     $context = stream_context_create($options);
 
-    $polling_url = "https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:" . $codes_str;
+    $polling_url = "https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:" . $codes_str . "&_=" . round(microtime(true) * 1000);
     $polling_json = @file_get_contents($polling_url, false, $context);
 
     if ($polling_json) {
@@ -71,7 +71,7 @@ function get_domestic_stock_data($codes) {
 function get_international_stock_data($code) {
     $options = [ "http" => [ "header" => "User-Agent: Mozilla/5.0\r\n" ] ];
     $context = stream_context_create($options);
-    $url = "https://api.stock.naver.com/stock/" . $code . "/basic";
+    $url = "https://api.stock.naver.com/stock/" . $code . "/basic?_=" . round(microtime(true) * 1000);
     $json = @file_get_contents($url, false, $context);
     
     if (!$json) return null;
@@ -113,7 +113,7 @@ function get_extra_info(&$stock) {
     $context = stream_context_create($options);
 
     if ($stock['isInternational']) {
-        $url = "https://api.stock.naver.com/stock/" . $code . "/basic";
+        $url = "https://api.stock.naver.com/stock/" . $code . "/basic?_=" . round(microtime(true) * 1000);
         $json = @file_get_contents($url, false, $context);
         if ($json) {
             $data = json_decode($json, true);
@@ -130,7 +130,7 @@ function get_extra_info(&$stock) {
             }
         }
     } else {
-        $url = "https://finance.naver.com/item/main.naver?code=" . $code;
+        $url = "https://finance.naver.com/item/main.naver?code=" . $code . "&_=" . round(microtime(true) * 1000);
         $html = @file_get_contents($url, false, $context);
         if ($html) {
             $html_utf8 = iconv("EUC-KR", "UTF-8//IGNORE", $html);
@@ -150,7 +150,7 @@ function get_candle_data($code) {
     $candles = [];
     
     if ($isInternational) {
-        $url = "https://api.stock.naver.com/chart/foreign/item/" . $code . "?periodType=dayCandle";
+        $url = "https://api.stock.naver.com/chart/foreign/item/" . $code . "?periodType=dayCandle&_=" . round(microtime(true) * 1000);
         $response = @file_get_contents($url, false, $context);
         if ($response === FALSE) return [];
         $data = json_decode($response, true);
@@ -168,7 +168,7 @@ function get_candle_data($code) {
             }
         }
     } else {
-        $url = "https://fchart.stock.naver.com/sise.nhn?symbol=" . $code . "&timeframe=day&count=40&requestType=0";
+        $url = "https://fchart.stock.naver.com/sise.nhn?symbol=" . $code . "&timeframe=day&count=40&requestType=0&_=" . round(microtime(true) * 1000);
         $response = @file_get_contents($url, false, $context);
         if ($response === FALSE) return [];
         $response_utf8 = iconv("EUC-KR", "UTF-8//IGNORE", $response);
