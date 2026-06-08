@@ -6,6 +6,7 @@ const shortcutMod = {
     if (!cats.includes("미지정")) cats.unshift("미지정");
     return cats;
   })(),
+  categoryIcons: JSON.parse(localStorage.getItem("dj_shortcut_category_icons")) || {},
   collapsedCategories: JSON.parse(localStorage.getItem("dj_shortcut_collapsed")) || {},
   currentCategory: "미지정",
   isDragging: false,
@@ -2053,10 +2054,23 @@ const shortcutMod = {
 
       const header = document.createElement("div");
       header.className = "shortcut-category-header";
-      header.style.cssText = "display: flex; justify-content: flex-start; align-items: center; gap: 8px; padding: 5px 10px; color: #f1f5f9; font-weight: 500; cursor: pointer; user-select: none; font-size: 0.75rem;";
+      header.style.cssText = "display: flex; justify-content: flex-start; align-items: center; gap: 8px; padding: 5px 10px; color: #f1f5f9; font-weight: 500; cursor: pointer; user-select: none; font-size: 0.75rem; position: relative;";
+      
+      const catIcon = this.categoryIcons[cat];
+      let catIconHtml = "";
+      if (catIcon) {
+        if (catIcon.startsWith("http") || catIcon.startsWith("data:")) {
+          catIconHtml = `<img src="${catIcon}" style="width: 36px; height: 36px; position: absolute; left: -46px; top: 0px; border-radius: 4px; object-fit: contain;">`;
+        } else if (catIcon.startsWith("fa-") || catIcon.startsWith("fas ") || catIcon.startsWith("fab ") || catIcon.startsWith("far ")) {
+          const iconClass = catIcon.includes("fa-") && !catIcon.includes(" ") ? `fas ${catIcon}` : catIcon;
+          catIconHtml = `<i class="${iconClass}" style="position: absolute; left: -46px; top: 0px; width: 36px; font-size: 1.9rem; text-align: center; color: var(--accent-color); line-height: 36px;"></i>`;
+        }
+      }
+
       header.innerHTML = `
+        ${catIconHtml}
         <span>${cat}</span>
-        <i class="fas fa-chevron-${isCollapsed ? 'down' : 'up'}" style="transition: transform 0.3s; color: #94a3b8;"></i>
+        <i class="fas fa-chevron-${isCollapsed ? 'down' : 'up'} category-chevron" style="transition: transform 0.3s; color: #94a3b8; margin-left: 8px;"></i>
       `;
       
       if (!showHeaders) {
@@ -2078,23 +2092,25 @@ const shortcutMod = {
         this.collapsedCategories[cat] = !currentlyCollapsed;
         localStorage.setItem("dj_shortcut_collapsed", JSON.stringify(this.collapsedCategories));
         
-        const icon = header.querySelector("i");
-        if (!currentlyCollapsed) {
-          icon.className = "fas fa-chevron-down";
-          catContainer.style.gridTemplateRows = "0fr";
-          catContent.style.opacity = "0";
-          catContent.style.transform = "translateY(-10px)";
-          catContent.style.overflow = "hidden";
-        } else {
-          icon.className = "fas fa-chevron-up";
-          catContainer.style.gridTemplateRows = "1fr";
-          catContent.style.opacity = "1";
-          catContent.style.transform = "translateY(0)";
-          setTimeout(() => {
-            if (this.collapsedCategories[cat] === false) {
-              catContent.style.overflow = "visible";
-            }
-          }, 400);
+        const chevron = header.querySelector(".category-chevron");
+        if (chevron) {
+          if (!currentlyCollapsed) {
+            chevron.className = "fas fa-chevron-down category-chevron";
+            catContainer.style.gridTemplateRows = "0fr";
+            catContent.style.opacity = "0";
+            catContent.style.transform = "translateY(-10px)";
+            catContent.style.overflow = "hidden";
+          } else {
+            chevron.className = "fas fa-chevron-up category-chevron";
+            catContainer.style.gridTemplateRows = "1fr";
+            catContent.style.opacity = "1";
+            catContent.style.transform = "translateY(0)";
+            setTimeout(() => {
+              if (this.collapsedCategories[cat] === false) {
+                catContent.style.overflow = "visible";
+              }
+            }, 400);
+          }
         }
 
         if (window.settings && typeof settings.syncToServer === "function") {
@@ -2102,13 +2118,14 @@ const shortcutMod = {
         }
       };
 
+      const allCollapsed = grouped[cat].every(({ s }) => s.collapsed);
       const columns = [];
       let currentColumn = null;
 
       grouped[cat].forEach(({ s, i }) => {
         const isCollapsed = !!s.collapsed;
         if (isCollapsed) {
-          if (currentColumn && currentColumn.type === "collapsed" && currentColumn.items.length < 2) {
+          if (!allCollapsed && currentColumn && currentColumn.type === "collapsed" && currentColumn.items.length < 2) {
             currentColumn.items.push({ s, i });
           } else {
             currentColumn = {
@@ -2313,8 +2330,33 @@ const shortcutMod = {
       div.onmouseover = () => div.style.background = "rgba(255,255,255,0.1)";
       div.onmouseout = () => div.style.background = "rgba(255,255,255,0.05)";
       
-      const isDefault = cat === "미지정";
+      const isDefault = cat === "미정";
       
+      // Get category icon
+      const catIcon = this.categoryIcons[cat];
+      let iconHtml = '<i class="fas fa-icons" style="opacity: 0.5;"></i>';
+      if (catIcon) {
+        if (catIcon.startsWith("http") || catIcon.startsWith("data:")) {
+          iconHtml = `<img src="${catIcon}" style="width: 16px; height: 16px; object-fit: contain; border-radius: 3px;">`;
+        } else if (catIcon.startsWith("fa-") || catIcon.startsWith("fas ") || catIcon.startsWith("fab ") || catIcon.startsWith("far ")) {
+          const iconClass = catIcon.includes("fa-") && !catIcon.includes(" ") ? `fas ${catIcon}` : catIcon;
+          iconHtml = `<i class="${iconClass}"></i>`;
+        }
+      }
+
+      const iconBtn = document.createElement("button");
+      iconBtn.className = "icon-upload-btn";
+      iconBtn.style.cssText = "width: 32px; height: 32px; flex-shrink: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; margin-right: 12px; transition: border-color 0.2s;";
+      iconBtn.innerHTML = iconHtml;
+      iconBtn.title = "카테고리 아이콘 변경";
+      iconBtn.onmouseover = () => iconBtn.style.borderColor = "var(--accent-color)";
+      iconBtn.onmouseout = () => iconBtn.style.borderColor = "rgba(255,255,255,0.1)";
+      iconBtn.onclick = (e) => {
+        e.stopPropagation();
+        this.editCategoryIcon(cat);
+      };
+      div.appendChild(iconBtn);
+
       const nameSpan = document.createElement("span");
       nameSpan.innerText = cat;
       nameSpan.style.cssText = "flex: 1; cursor: pointer; color: #f1f5f9; font-weight: 500;";
@@ -2342,6 +2384,12 @@ const shortcutMod = {
                   this.collapsedCategories[newVal] = this.collapsedCategories[cat];
                   delete this.collapsedCategories[cat];
                   localStorage.setItem("dj_shortcut_collapsed", JSON.stringify(this.collapsedCategories));
+                }
+                // Update category icon key
+                if (this.categoryIcons[cat] !== undefined) {
+                  this.categoryIcons[newVal] = this.categoryIcons[cat];
+                  delete this.categoryIcons[cat];
+                  this.saveCategoryIcons();
                 }
                 utils.saveData();
                 this.saveCategories();
@@ -2419,6 +2467,12 @@ const shortcutMod = {
       settings.syncToServer();
     }
   },
+  saveCategoryIcons() {
+    localStorage.setItem("dj_shortcut_category_icons", JSON.stringify(this.categoryIcons));
+    if (window.settings && typeof settings.syncToServer === "function") {
+      settings.syncToServer();
+    }
+  },
   async deleteCategory(cat) {
     if (cat === "미지정") {
       utils.alert("기본 카테고리는 삭제할 수 없습니다.");
@@ -2435,7 +2489,11 @@ const shortcutMod = {
     );
     if (isConfirmed) {
       this.categories = this.categories.filter(c => c !== cat);
-      const defaultCat = "미지정";
+      if (this.categoryIcons[cat] !== undefined) {
+        delete this.categoryIcons[cat];
+        this.saveCategoryIcons();
+      }
+      const defaultCat = "미정";
       if (!this.categories.includes(defaultCat)) {
         this.categories.unshift(defaultCat);
       }
@@ -2769,6 +2827,167 @@ const shortcutMod = {
     this.items.splice(index, 1);
     this.render();
     utils.saveData();
+  },
+  editCategoryIcon(cat) {
+    this.currentEditingCategory = cat;
+    
+    // Set title
+    const title = document.getElementById("categoryIconEditTitle");
+    if (title) {
+      if (window.i18n) {
+        title.innerText = `"${cat}" ${i18n.get("categoryIconTitle")}`;
+      } else {
+        title.innerText = `"${cat}" 카테고리 아이콘 설정`;
+      }
+    }
+    
+    // Load current icon value
+    const currentIcon = this.categoryIcons[cat] || "";
+    const input = document.getElementById("categoryIconInput");
+    if (input) input.value = currentIcon;
+    
+    this.updateCategoryIconPreview();
+    
+    // Close picker if open
+    const pickerArea = document.getElementById("categoryIconPickerArea");
+    if (pickerArea) pickerArea.style.display = "none";
+
+    // Clear search input if exists
+    const searchInput = document.getElementById("categoryIconSearchInput");
+    if (searchInput) searchInput.value = "";
+
+    // Open Modal
+    utils.openModal("categoryIconModal");
+  },
+  closeCategoryIconEdit() {
+    this.currentEditingCategory = null;
+    utils.closeModal("categoryIconModal");
+  },
+  saveCategoryIconEdit() {
+    if (!this.currentEditingCategory) return;
+    const val = document.getElementById("categoryIconInput").value.trim();
+    if (val) {
+      this.categoryIcons[this.currentEditingCategory] = val;
+    } else {
+      delete this.categoryIcons[this.currentEditingCategory];
+    }
+    this.saveCategoryIcons();
+    this.render();
+    this.openCategoryManager(); // Refresh category list to show updated icon
+    this.closeCategoryIconEdit();
+  },
+  updateCategoryIconPreview() {
+    const input = document.getElementById("categoryIconInput");
+    const preview = document.getElementById("categoryIconPreview");
+    if (!input || !preview) return;
+    
+    const val = input.value.trim();
+    if (!val) {
+      preview.innerHTML = '<i class="fas fa-icons" style="opacity: 0.5;"></i>';
+      return;
+    }
+    
+    if (val.startsWith("http") || val.startsWith("data:")) {
+      preview.innerHTML = `<img src="${val}" style="width:100%; height:100%; object-fit:contain; border-radius: 4px;">`;
+    } else if (val.startsWith("fa-") || val.startsWith("fas ") || val.startsWith("fab ") || val.startsWith("far ")) {
+      const iconClass = val.includes("fa-") && !val.includes(" ") ? `fas ${val}` : val;
+      preview.innerHTML = `<i class="${iconClass}"></i>`;
+    } else {
+      preview.innerHTML = '<i class="fas fa-icons" style="opacity: 0.5;"></i>';
+    }
+  },
+  handleCategoryIconFileUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 200 * 1024) {
+      alert("파일 크기가 너무 큽니다. 200KB 이하의 이미지를 사용해 주세요.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const input = document.getElementById("categoryIconInput");
+      if (input) {
+        input.value = event.target.result;
+        this.updateCategoryIconPreview();
+      }
+    };
+    reader.readAsDataURL(file);
+  },
+  toggleCategoryIconPicker() {
+    const pickerArea = document.getElementById("categoryIconPickerArea");
+    if (!pickerArea) return;
+    const isShowing = pickerArea.style.display === "flex";
+    if (isShowing) {
+      pickerArea.style.display = "none";
+    } else {
+      this.renderCategoryIconList();
+      pickerArea.style.display = "flex";
+      setTimeout(() => document.getElementById("categoryIconSearchInput")?.focus(), 50);
+    }
+  },
+  categoryIconListIndex: 0,
+  filteredCategoryIcons: [],
+  categoryIconScrollAdded: false,
+  renderCategoryIconList(filter = "", append = false) {
+    const grid = document.getElementById("categoryIconGrid");
+    if (!grid) return;
+    
+    if (!append) {
+      grid.innerHTML = "";
+      grid.scrollTop = 0;
+      this.categoryIconListIndex = 0;
+      this.filteredCategoryIcons = filter 
+        ? this.popularIcons.filter(icon => icon.includes(filter.toLowerCase())) 
+        : this.popularIcons;
+      
+      if (this.filteredCategoryIcons.length === 0) {
+        const msg = document.createElement("div");
+        msg.style.cssText = "grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 0.85rem; padding: 20px 0; gap: 10px;";
+        msg.innerHTML = `<i class="fas fa-search" style="font-size: 1.5rem; opacity: 0.2;"></i><span>검색 결과가 없습니다.</span>`;
+        grid.appendChild(msg);
+        return;
+      }
+    }
+    const batchSize = 105;
+    const batch = this.filteredCategoryIcons.slice(this.categoryIconListIndex, this.categoryIconListIndex + batchSize);
+    
+    const fragment = document.createDocumentFragment();
+    batch.forEach((icon, i) => {
+      const div = document.createElement("div");
+      div.className = "icon-item";
+      
+      const iconClass = icon.includes(" ") ? icon : `fas ${icon}`;
+      div.innerHTML = `<i class="${iconClass}"></i>`;
+      div.onclick = () => {
+        const input = document.getElementById("categoryIconInput");
+        if (input) {
+          input.value = icon;
+          this.updateCategoryIconPreview();
+        }
+        const pickerArea = document.getElementById("categoryIconPickerArea");
+        if (pickerArea) pickerArea.style.display = "none";
+      };
+      fragment.appendChild(div);
+    });
+    
+    grid.appendChild(fragment);
+    this.categoryIconListIndex += batchSize;
+    if (!this.categoryIconScrollAdded) {
+      grid.onscroll = () => {
+        if (grid.scrollTop + grid.clientHeight >= grid.scrollHeight - 50) {
+          if (this.categoryIconListIndex < this.filteredCategoryIcons.length) {
+            this.renderCategoryIconList(filter, true);
+          }
+        }
+      };
+      this.categoryIconScrollAdded = true;
+    }
+  },
+  filterCategoryIcons(val) {
+    if (this.categoryIconFilterTimeout) clearTimeout(this.categoryIconFilterTimeout);
+    this.categoryIconFilterTimeout = setTimeout(() => {
+      this.renderCategoryIconList(val);
+    }, 80);
   },
 };
 window.shortcutMod = shortcutMod;

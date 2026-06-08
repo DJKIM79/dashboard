@@ -1376,6 +1376,7 @@ const settings = {
         if (!cats.includes("미지정")) cats.unshift("미지정");
         shortcutMod.categories = cats;
         shortcutMod.collapsedCategories = JSON.parse(localStorage.getItem("dj_shortcut_collapsed")) || {};
+        shortcutMod.categoryIcons = JSON.parse(localStorage.getItem("dj_shortcut_category_icons")) || {};
     }
     if (window.noti) {
         noti.items = JSON.parse(localStorage.getItem("dj_notifications")) || [];

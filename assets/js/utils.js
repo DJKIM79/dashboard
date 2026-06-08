@@ -264,6 +264,7 @@ const utils = {
       localStorage.setItem("dj_shortcuts", JSON.stringify(shortcutMod.items));
       if (shortcutMod.categories) localStorage.setItem("dj_shortcut_categories", JSON.stringify(shortcutMod.categories));
       if (shortcutMod.collapsedCategories) localStorage.setItem("dj_shortcut_collapsed", JSON.stringify(shortcutMod.collapsedCategories));
+      if (shortcutMod.categoryIcons) localStorage.setItem("dj_shortcut_category_icons", JSON.stringify(shortcutMod.categoryIcons));
     }
     if (window.noti)
       localStorage.setItem("dj_notifications", JSON.stringify(noti.items));

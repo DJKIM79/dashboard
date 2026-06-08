@@ -1432,7 +1432,7 @@
       </div>
     </div>
     <div class="modal" id="categoryManagerModal" style="z-index: 4000;" onclick="event.target == this && closeModal('categoryManagerModal')">
-      <div class="modal-content">
+      <div class="modal-content" style="max-width: 450px;">
         <div style="position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; min-height: 30px;">
           <h3 data-i18n="modalCategory" style="margin: 0; text-align: center; width: 100%;">카테고리 설정</h3>
         </div>
@@ -1441,6 +1441,51 @@
           <button class="btn-save" style="width: auto; padding: 0 15px;" onclick="shortcutMod.addCategory()" data-i18n="btnAdd">추가</button>
         </div>
         <div id="categoryList" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 5px;">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="categoryIconModal" style="z-index: 4100;" onclick="event.target == this && shortcutMod.closeCategoryIconEdit()">
+      <div class="modal-content" style="max-width: 450px;">
+        <div style="position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; min-height: 30px;">
+          <h3 id="categoryIconEditTitle" style="margin: 0; text-align: center; width: 100%;" data-i18n="categoryIconTitle">카테고리 아이콘 설정</h3>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+          <button id="categoryIconPreview" class="icon-upload-btn" onclick="shortcutMod.toggleCategoryIconPicker()" data-i18n-title="tipIconList" title="아이콘 목록에서 선택">
+            <i class="fas fa-icons"></i>
+          </button>
+          <input
+            type="text"
+            id="categoryIconInput"
+            data-i18n-ph="categoryIconPh"
+            placeholder="아이콘 (URL 또는 FontAwesome)"
+            oninput="shortcutMod.updateCategoryIconPreview()"
+            style="flex: 1; margin-bottom: 0;"
+          />
+          <input type="file" id="categoryIconUpload" style="display: none;" accept="image/*" onchange="shortcutMod.handleCategoryIconFileUpload(event)">
+          <button class="icon-upload-btn" onclick="document.getElementById('categoryIconUpload').click()" data-i18n-title="tipIconUpload" title="내 컴퓨터에서 이미지 업로드">
+            <i class="fas fa-image"></i>
+          </button>
+        </div>
+        <div id="categoryIconPickerArea" style="display: none; flex-direction: column;">
+          <div class="icon-search-container" style="margin-bottom: 10px;">
+            <i class="fas fa-search"></i>
+            <input
+              type="text"
+              id="categoryIconSearchInput"
+              data-i18n-ph="iconSearchPh"
+              placeholder="아이콘 검색..."
+              oninput="shortcutMod.filterCategoryIcons(this.value)"
+              style="margin-left: 10px !important; margin-bottom: 0 !important; background: transparent !important; border: none !important; outline: none !important; color: #fff !important; width: 100% !important; padding: 0 !important; height: 100% !important; box-shadow: none !important; font-size: 0.9rem;"
+            />
+          </div>
+          <div id="categoryIconGrid" style="display: grid !important; grid-template-columns: repeat(6, 1fr) !important; gap: 10px; height: 180px; overflow-y: auto; overflow-x: hidden; padding: 12px; background: rgba(0, 0, 0, 0.2); border-radius: 12px; width: 100%; box-sizing: border-box; justify-items: center;">
+            <!-- Preset icons will be rendered here -->
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+          <button class="btn-save" style="width: auto; min-width: 80px; background: rgba(255,255,255,0.05); color: #94a3b8;" onclick="shortcutMod.closeCategoryIconEdit()" data-i18n="btnClose">닫기</button>
+          <button class="btn-save" style="width: auto; min-width: 80px;" onclick="shortcutMod.saveCategoryIconEdit()" data-i18n="btnSaveLabel">저장</button>
         </div>
       </div>
     </div>
