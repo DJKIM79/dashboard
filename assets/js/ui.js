@@ -186,6 +186,7 @@ const ui = {
     const aiGroup = document.getElementById("ctx-ai-group");
     const stockSecretItem = document.getElementById("ctx-stock-secret");
     const shortcutToggleItem = document.getElementById("ctx-shortcut-toggle");
+    const catSettingsItem = document.getElementById("ctx-cat-settings");
 
     if (addItem) addItem.style.display = "none";
     if (editItem) editItem.style.display = "none";
@@ -200,8 +201,12 @@ const ui = {
     if (delColItem) delColItem.style.display = "none";
     if (stockSecretItem) stockSecretItem.style.display = "none";
     if (shortcutToggleItem) shortcutToggleItem.style.display = "none";
+    if (catSettingsItem) catSettingsItem.style.display = "none";
 
-    if (type === "shortcut") {
+    if (type === "shortcutCategory") {
+      if (hideItem) hideItem.style.display = "none";
+      if (catSettingsItem) catSettingsItem.style.display = "flex";
+    } else if (type === "shortcut") {
       if (addItem) addItem.style.display = "flex";
       if (editItem) editItem.style.display = id !== undefined ? "flex" : "none";
       if (delItem) delItem.style.display = id !== undefined ? "flex" : "none";

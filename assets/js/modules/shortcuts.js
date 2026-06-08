@@ -2118,6 +2118,12 @@ const shortcutMod = {
         }
       };
 
+      header.oncontextmenu = (e) => {
+        if (window.showContextMenu) {
+          showContextMenu(e, "shortcutCategory", cat);
+        }
+      };
+
       const allCollapsed = grouped[cat].every(({ s }) => s.collapsed);
       const columns = [];
       let currentColumn = null;
