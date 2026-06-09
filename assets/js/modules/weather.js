@@ -182,12 +182,16 @@ const weather = {
 
     const icon = this.getIcon(current.weather_code);
     const iconColor = this.getIconColor(current.weather_code);
+    const tempVal = Math.round(current.temperature_2m);
+    const tempColor = this.getTempColor(tempVal);
+    const maxVal = Math.round(daily.temperature_2m_max[0]);
+    const minVal = Math.round(daily.temperature_2m_min[0]);
     container.innerHTML = `
       <div class="weather-loc">${locName}</div>
-      <div class="weather-main"><i class="fas ${icon}" style="color: ${iconColor}"></i><span>${Math.round(current.temperature_2m)}</span>°</div>
+      <div class="weather-main" style="color: ${tempColor}"><i class="fas ${icon}" style="color: ${iconColor}"></i><span>${tempVal}</span>°</div>
       <div class="weather-hl">
-        <span style="color: #ff5f5f;">${i18n.get("weatherHigh")}</span> ${Math.round(daily.temperature_2m_max[0])}°
-        <span style="color: #60a5fa;">${i18n.get("weatherLow")}</span> ${Math.round(daily.temperature_2m_min[0])}°
+        <span style="color: #ff5f5f;">${i18n.get("weatherHigh")}</span> <span style="color: ${this.getTempColor(maxVal)}">${maxVal}°</span>
+        <span style="color: #60a5fa;">${i18n.get("weatherLow")}</span> <span style="color: ${this.getTempColor(minVal)}">${minVal}°</span>
       </div>
       <div id="forecast-${id}" class="forecast-window" onclick="event.stopPropagation()"></div>
     `;
