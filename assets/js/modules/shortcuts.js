@@ -2156,11 +2156,15 @@ const shortcutMod = {
 
         col.items.forEach(({ s, i }) => {
           let hostname = "";
+          let origin = "";
           const finalUrl = s.url.startsWith("http") ? s.url : `http://${s.url}`;
           try {
-            hostname = new URL(finalUrl).hostname;
+            const urlObj = new URL(finalUrl);
+            hostname = urlObj.hostname;
+            origin = urlObj.origin;
           } catch (e) {
             hostname = s.url;
+            origin = finalUrl;
           }
           const div = document.createElement("a");
           div.className = "shortcut-item";
@@ -2177,6 +2181,8 @@ const shortcutMod = {
           div.oncontextmenu = (e) => showContextMenu(e, "shortcut", i);
 
           let iconHtml = "";
+          const fallbackChain = `this.onerror=function(){ this.onerror=function(){ this.onerror=function(){ this.style.display='none'; this.nextElementSibling.style.display='flex'; }; this.src='https://icons.duckduckgo.com/ip3/${hostname}.ico'; }; this.src='${origin}/favicon.png'; }; this.src='${origin}/favicon.svg';`;
+          
           if (s.icon) {
             if (s.icon.startsWith("http") || s.icon.startsWith("data:")) {
               iconHtml = `<img src="${s.icon}" class="shortcut-img">`;
@@ -2185,17 +2191,17 @@ const shortcutMod = {
               iconHtml = `<div class="shortcut-default-icon" style="display: flex;"><i class="${iconClass}"></i></div>`;
             } else {
               iconHtml = `
-                <img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" 
+                <img src="${origin}/favicon.ico" 
                      class="shortcut-img"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                     onerror="${fallbackChain}">
                 <div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>
               `;
             }
           } else {
             iconHtml = `
-              <img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" 
+              <img src="${origin}/favicon.ico" 
                    class="shortcut-img"
-                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                   onerror="${fallbackChain}">
               <div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>
             `;
           }
@@ -2600,13 +2606,12 @@ const shortcutMod = {
       ? T.modalLinkEdit
       : T.modalLinkAdd;
     document.getElementById("linkSaveBtn").innerText = isEdit
-      ? (T.lblSave || "저장")
+      ? (T.btnEdit || "수정")
       : (T.btnSave || "추가");
-    // Hide button when editing, use real-time saving instead
-    document.getElementById("linkSaveBtn").style.display = isEdit ? "none" : "block";
+    document.getElementById("linkSaveBtn").style.display = "block";
 
     const dBtn = document.getElementById("linkDelBtn");
-    if (dBtn) dBtn.style.display = isEdit ? "block" : "none";
+    if (dBtn) dBtn.style.display = "none";
     
     // Reset picker without animation
     const picker = document.getElementById("iconPickerArea");
@@ -2665,9 +2670,18 @@ const shortcutMod = {
         const wrapper = itemEl.querySelector('.shortcut-icon-wrapper');
         if (wrapper) {
           let hostname = "";
+          let origin = "";
           const finalUrl = u.startsWith("http") ? u : `http://${u}`;
-          try { hostname = new URL(finalUrl).hostname; } catch (e) { hostname = u; }
-          
+          try {
+            const urlObj = new URL(finalUrl);
+            hostname = urlObj.hostname;
+            origin = urlObj.origin;
+          } catch (e) {
+            hostname = u;
+            origin = finalUrl;
+          }
+          const fallbackChain = `this.onerror=function(){ this.onerror=function(){ this.onerror=function(){ this.style.display='none'; this.nextElementSibling.style.display='flex'; }; this.src='https://icons.duckduckgo.com/ip3/${hostname}.ico'; }; this.src='${origin}/favicon.png'; }; this.src='${origin}/favicon.svg';`;
+
           let iconHtml = "";
           if (ic) {
             if (ic.startsWith("http") || ic.startsWith("data:")) {
@@ -2676,10 +2690,10 @@ const shortcutMod = {
               const iconClass = ic.includes("fa-") && !ic.includes(" ") ? `fas ${ic}` : ic;
               iconHtml = `<div class="shortcut-default-icon" style="display: flex;"><i class="${iconClass}"></i></div>`;
             } else {
-              iconHtml = `<img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" class="shortcut-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>`;
+              iconHtml = `<img src="${origin}/favicon.ico" class="shortcut-img" onerror="${fallbackChain}"><div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>`;
             }
           } else {
-            iconHtml = `<img src="https://icons.duckduckgo.com/ip3/${hostname}.ico" class="shortcut-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>`;
+            iconHtml = `<img src="${origin}/favicon.ico" class="shortcut-img" onerror="${fallbackChain}"><div class="shortcut-default-icon" style="display: none;"><i class="fas fa-link"></i></div>`;
           }
           wrapper.innerHTML = iconHtml;
         }

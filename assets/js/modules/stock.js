@@ -1069,12 +1069,17 @@ const stock = {
     const input = document.getElementById("stockSearchInput");
     const titleEl = document.getElementById("stockModalTitle");
     
+    const saveBtn = document.getElementById("stockSaveBtn");
     if (id !== null) {
       const item = this.items.find(i => String(i.id) === String(id));
       if (item) {
         input.value = item.name;
       }
-      delBtn.style.display = "block";
+      delBtn.style.display = "none";
+      if (saveBtn) {
+        saveBtn.setAttribute("data-i18n", "btnEdit");
+        if (window.i18n) saveBtn.innerText = i18n.get("btnEdit") || "수정";
+      }
       if (titleEl) {
         titleEl.setAttribute("data-i18n", "modalStockEdit");
         if (window.i18n) titleEl.innerText = i18n.get("modalStockEdit");
@@ -1082,6 +1087,10 @@ const stock = {
     } else {
       input.value = "";
       delBtn.style.display = "none";
+      if (saveBtn) {
+        saveBtn.setAttribute("data-i18n", "btnOk");
+        if (window.i18n) saveBtn.innerText = i18n.get("btnOk") || "확인";
+      }
       if (titleEl) {
         titleEl.setAttribute("data-i18n", "modalStockAdd");
         if (window.i18n) titleEl.innerText = i18n.get("modalStockAdd");

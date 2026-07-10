@@ -234,8 +234,8 @@ const weather = {
     let h = (temp >= 15 && temp <= 20) ? 140 : (temp > 20) ? 140 - ((temp - 20) / 15 * 140) : 230 - (Math.pow((temp + 5) / 20, 0.85) * 90);
     return `hsl(${h}, 100%, 65%)`;
   },
-  getIcon: (code) => (code === 0) ? "fa-sun" : (code <= 3) ? "fa-cloud-sun" : [45, 48].includes(code) ? "fa-smog" : [51, 53, 55].includes(code) ? "fa-cloud-rain" : [61, 63, 65, 80, 81, 82].includes(code) ? "fa-cloud-showers-heavy" : [71, 73, 75].includes(code) ? "fa-snowflake" : [95, 96, 99].includes(code) ? "fa-bolt" : "fa-cloud",
-  getIconColor: (code) => (code === 0) ? "#ff7a00" : (code <= 3) ? "#dfab84" : [45, 48].includes(code) ? "#a0aec0" : [51, 53, 55].includes(code) ? "#60a5fa" : [61, 63, 65, 80, 81, 82].includes(code) ? "#3b82f6" : [71, 73, 75].includes(code) ? "#ffffff" : [95, 96, 99].includes(code) ? "#ffd32a" : "#cbd5e1",
+  getIcon: (code) => (code === 0) ? "fa-sun" : (code <= 3) ? "fa-cloud-sun" : [45, 48].includes(code) ? "fa-smog" : [51, 53, 55].includes(code) ? "fa-cloud-rain" : [61, 63, 65, 80, 81, 82].includes(code) ? "fa-cloud-showers-heavy" : [71, 73, 75].includes(code) ? "fa-snowflake" : [95, 96, 99].includes(code) ? "fa-cloud-bolt" : "fa-cloud",
+  getIconColor: (code) => (code === 0) ? "#ff7a00" : (code <= 3) ? "#dfab84" : [45, 48].includes(code) ? "#a0aec0" : [51, 53, 55].includes(code) ? "#60a5fa" : [61, 63, 65, 80, 81, 82].includes(code) ? "#3b82f6" : [71, 73, 75].includes(code) ? "#ffffff" : [95, 96, 99].includes(code) ? "#3b82f6" : "#cbd5e1",
   toggleForecast(id, daily) {
     const el = document.getElementById(`forecast-${id}`), isActive = el.classList.contains("active");
     document.querySelectorAll(".forecast-window").forEach(w => w.classList.remove("active"));

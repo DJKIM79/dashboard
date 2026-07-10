@@ -91,11 +91,10 @@ const memo = {
     
     const sBtn = document.getElementById("memoSaveBtn");
     if (sBtn) {
-        sBtn.innerText = id ? (T.lblSave || "저장") : (T.btnSaveMemo || "추가");
-        // Hide button when editing, use real-time saving instead
-        sBtn.style.display = id ? "none" : "block";
+        sBtn.innerText = id ? (T.btnEdit || "수정") : (T.btnSaveMemo || "추가");
+        sBtn.style.display = "block";
     }
-    if (d) d.style.display = id ? "block" : "none";
+    if (d) d.style.display = "none";
     utils.closeModal("settingModal");
     utils.openModal("memoModal");
     

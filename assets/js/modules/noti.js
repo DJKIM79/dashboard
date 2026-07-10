@@ -439,10 +439,9 @@ const noti = {
       ? T.modalNotiEdit
       : T.modalNotiAdd;
     sBtn.innerText = id ? T.btnEditNoti : T.btnAddNoti;
-    // Hide button when editing, use real-time saving instead
-    sBtn.style.display = id ? "none" : "block";
+    sBtn.style.display = "block";
     
-    if (dBtn) dBtn.style.display = id ? "block" : "none";
+    if (dBtn) dBtn.style.display = "none";
     utils.closeModal("settingModal");
     utils.openModal("notiModal");
     setTimeout(() => document.getElementById("notiTitle").focus(), 50);
