@@ -438,7 +438,7 @@ const noti = {
     document.getElementById("notiModalTitle").innerText = id
       ? T.modalNotiEdit
       : T.modalNotiAdd;
-    sBtn.innerText = id ? T.btnEditNoti : T.btnAddNoti;
+    sBtn.innerText = id ? (T.btnClose || "닫기") : T.btnAddNoti;
     sBtn.style.display = "block";
     
     if (dBtn) dBtn.style.display = "none";

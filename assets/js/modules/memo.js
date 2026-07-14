@@ -91,7 +91,7 @@ const memo = {
     
     const sBtn = document.getElementById("memoSaveBtn");
     if (sBtn) {
-        sBtn.innerText = id ? (T.btnEdit || "수정") : (T.btnSaveMemo || "추가");
+        sBtn.innerText = id ? (T.btnClose || "닫기") : (T.btnSaveMemo || "추가");
         sBtn.style.display = "block";
     }
     if (d) d.style.display = "none";
