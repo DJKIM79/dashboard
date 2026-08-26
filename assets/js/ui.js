@@ -185,6 +185,7 @@ const ui = {
     const colGroup = document.getElementById("ctx-col-group");
     const aiGroup = document.getElementById("ctx-ai-group");
     const stockSecretItem = document.getElementById("ctx-stock-secret");
+    const stockAlertItem = document.getElementById("ctx-stock-alert");
     const shortcutToggleItem = document.getElementById("ctx-shortcut-toggle");
     const catSettingsItem = document.getElementById("ctx-cat-settings");
 
@@ -200,6 +201,7 @@ const ui = {
     if (delRowItem) delRowItem.style.display = "none";
     if (delColItem) delColItem.style.display = "none";
     if (stockSecretItem) stockSecretItem.style.display = "none";
+    if (stockAlertItem) stockAlertItem.style.display = "none";
     if (shortcutToggleItem) shortcutToggleItem.style.display = "none";
     if (catSettingsItem) catSettingsItem.style.display = "none";
 
@@ -242,6 +244,34 @@ const ui = {
       if (delItem) delItem.style.display = id ? "flex" : "none";
       
       if (type === "stock") {
+        if (stockAlertItem) {
+          if (id) {
+            stockAlertItem.style.display = "flex";
+            const alertIcon = stockAlertItem.querySelector("i");
+            let hasAlert = false;
+            if (window.stock) {
+              const item = window.stock.items.find(x => String(x.id) === String(id));
+              hasAlert = !!(item && item.alert && item.alert.enabled);
+            }
+            if (hasAlert) {
+              stockAlertItem.style.color = "var(--accent-color)";
+              if (alertIcon) {
+                alertIcon.className = "fas fa-bell cm-icon";
+                alertIcon.style.color = "var(--accent-color)";
+                alertIcon.style.filter = "drop-shadow(0 0 6px rgba(var(--accent-color-rgb, 56, 189, 248), 0.6))";
+              }
+            } else {
+              stockAlertItem.style.color = "gray";
+              if (alertIcon) {
+                alertIcon.className = "far fa-bell cm-icon";
+                alertIcon.style.color = "gray";
+                alertIcon.style.filter = "none";
+              }
+            }
+          } else {
+            stockAlertItem.style.display = "none";
+          }
+        }
         if (stockSecretItem) {
           if (id) {
             stockSecretItem.style.display = "flex";

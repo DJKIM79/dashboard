@@ -146,6 +146,7 @@
       <div id="ctx-hide" class="cm-hide" onclick="hideCurrentWidget()"><i class="fas fa-eye-slash cm-icon"></i><span data-i18n="cmHide">숨기기</span></div>
       <div id="ctx-del" class="cm-del" onclick="showDeleteConfirm()"><i class="fas fa-trash-alt cm-icon"></i><span data-i18n="cmDelete">삭제</span></div>
       <div id="ctx-stock-secret" class="cm-action" onclick="if(window.stock) stock.toggleSecretMode()" style="display: none; color: gray;"><i class="fas fa-key cm-icon"></i><span id="ctx-stock-secret-text" data-i18n="cmSecret">축소</span></div>
+      <div id="ctx-stock-alert" class="cm-action" onclick="if(window.stock) stock.openAlertModal()" style="display: none; color: gray;"><i class="far fa-bell cm-icon"></i><span data-i18n="cmStockAlert">알림</span></div>
       <div id="ctx-shortcut-toggle" class="cm-action" onclick="if(window.shortcutMod) shortcutMod.toggleShortcutSize()" style="display: none; color: gray;"><i class="fas fa-compress-alt cm-icon"></i><span id="ctx-shortcut-toggle-text" data-i18n="cmSecret">축소</span></div>
       <div id="ctx-cat-settings" class="cm-action cm-edit" onclick="if(window.shortcutMod) shortcutMod.openCategoryManager()" style="display: none;"><i class="fas fa-pen cm-icon"></i><span data-i18n="cmEdit">수정</span></div>
 
@@ -1923,6 +1924,111 @@
           >
             확인
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Alert Modal -->
+    <div
+      class="modal"
+      id="stockAlertModal"
+      onclick="event.target == this && window.closeModal && closeModal('stockAlertModal')"
+    >
+      <div class="modal-content stock-alert-modal-content">
+        <div style="position: relative; display: flex; justify-content: center; align-items: center; margin-bottom: 16px; min-height: 28px;">
+          <h3 id="stockAlertModalTitle" data-i18n="modalStockAlert" style="margin: 0; text-align: center; width: 100%; font-size: 1.15rem;">주가 알림 설정</h3>
+        </div>
+        
+        <!-- Stock Info Summary Card -->
+        <div id="stockAlertStockInfo" style="background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.08);">
+          <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%;">
+            <div id="stockAlertStockName" style="font-weight: bold; font-size: 0.95rem; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">종목명</div>
+            <div id="stockAlertStockCode" style="font-size: 0.72rem; color: #94a3b8;">-</div>
+          </div>
+          <div style="text-align: right;">
+            <div id="stockAlertCurrentPrice" style="font-family: 'JetBrains Mono'; font-weight: bold; font-size: 1.05rem; color: #fff;">-</div>
+            <div id="stockAlertChange" style="font-size: 0.75rem; font-family: 'JetBrains Mono'; color: #94a3b8;">-</div>
+          </div>
+        </div>
+
+        <!-- Method Selection (Target Price / Price Change / Change %) -->
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 6px;" data-i18n="lblStockAlertMethod">설정 방법</label>
+          <div style="display: flex; gap: 4px; background: rgba(0,0,0,0.3); padding: 3px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+            <button type="button" class="stock-alert-tab active" id="stockAlertTabTarget" onclick="if(window.stock) stock.setAlertTab('target')" data-i18n="stockAlertTarget">목표가</button>
+            <button type="button" class="stock-alert-tab" id="stockAlertTabChangeVal" onclick="if(window.stock) stock.setAlertTab('change_val')" data-i18n="stockAlertChangeVal">변동가</button>
+            <button type="button" class="stock-alert-tab" id="stockAlertTabChangeRate" onclick="if(window.stock) stock.setAlertTab('change_rate')" data-i18n="stockAlertChangeRate">변동률</button>
+          </div>
+        </div>
+
+        <!-- Direction (Plus / Minus) -->
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 6px;" data-i18n="lblStockAlertSign">조건 방향</label>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="stock-alert-sign-btn active-plus" id="stockAlertSignPlus" onclick="if(window.stock) stock.setAlertSign('+')">
+              <i class="fas fa-arrow-trend-up"></i> <span id="stockAlertSignPlusText" data-i18n="stockAlertPlus">플러스 (+)</span>
+            </button>
+            <button type="button" class="stock-alert-sign-btn" id="stockAlertSignMinus" onclick="if(window.stock) stock.setAlertSign('-')">
+              <i class="fas fa-arrow-trend-down"></i> <span id="stockAlertSignMinusText" data-i18n="stockAlertMinus">마이너스 (-)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Value Input -->
+        <div style="margin-bottom: 14px;">
+          <label id="stockAlertValueLabel" style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 6px;" data-i18n="lblStockAlertValue">설정값 입력</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input
+              type="text"
+              id="stockAlertValueInput"
+              inputmode="decimal"
+              autocomplete="off"
+              oninput="if(window.stock) stock.handleAlertValueInput(this.value)"
+              style="width: 100%; box-sizing: border-box; margin-bottom: 0; padding-right: 50px; font-family: 'JetBrains Mono'; font-size: 1rem;"
+            />
+            <span id="stockAlertValueUnit" style="position: absolute; right: 12px; font-size: 0.8rem; color: #94a3b8; pointer-events: none; font-family: 'JetBrains Mono';">KRW</span>
+          </div>
+        </div>
+
+        <!-- Real-time Preview -->
+        <div id="stockAlertPreviewBox" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; font-size: 0.78rem; color: #bae6fd; line-height: 1.45;">
+          <div style="font-weight: bold; margin-bottom: 3px; display: flex; align-items: center; gap: 5px;">
+            <i class="fas fa-bell" style="font-size: 0.75rem;"></i> <span data-i18n="stockAlertConditionTitle">알림 조건</span>
+          </div>
+          <div id="stockAlertPreviewText" style="color: #e0f2fe; word-break: keep-all;">조건을 설정해주세요.</div>
+        </div>
+
+        <!-- Bottom Action Buttons: Delete / Close / Save -->
+        <div style="display: flex; gap: 8px; justify-content: space-between; align-items: center; margin-top: 10px;">
+          <button
+            class="btn-save"
+            id="stockAlertDelBtn"
+            style="display: none; background: #ef4444; color: #fff; width: auto; min-width: 70px; padding: 10px 14px;"
+            onclick="if(window.stock) stock.deleteAlert()"
+            data-i18n="btnDelete"
+          >
+            삭제
+          </button>
+          <div style="display: flex; gap: 8px; margin-left: auto;">
+            <button
+              class="btn-save"
+              id="stockAlertCloseBtn"
+              style="background: #334155; color: #fff; width: auto; min-width: 70px; padding: 10px 14px;"
+              onclick="closeModal('stockAlertModal')"
+              data-i18n="btnClose"
+            >
+              닫기
+            </button>
+            <button
+              class="btn-save"
+              id="stockAlertSaveBtn"
+              style="width: auto; min-width: 80px; padding: 10px 16px;"
+              onclick="if(window.stock) stock.saveAlert()"
+              data-i18n="btnSave"
+            >
+              저장
+            </button>
+          </div>
         </div>
       </div>
     </div>

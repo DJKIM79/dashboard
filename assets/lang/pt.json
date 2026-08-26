@@ -144,5 +144,18 @@
   "lblDailyChart": "Gráfico diário",
   "tutStockTitle": "📈 Widget de Ações",
   "tutStockDesc": "Monitore ações nacionais e internacionais em tempo real. Clique para ver gráficos detalhados e máximos/mínimos de 52 semanas.",
-  "lblOthers": "Outros"
+  "lblOthers": "Outros",
+  "cmStockAlert": "Alert",
+  "modalStockAlert": "Stock Price Alert",
+  "lblStockAlertMethod": "Alert Method",
+  "stockAlertTarget": "Target Price",
+  "stockAlertChangeVal": "Price Change",
+  "stockAlertChangeRate": "Change %",
+  "lblStockAlertSign": "Condition Direction",
+  "stockAlertPlus": "Plus (+)",
+  "stockAlertMinus": "Minus (-)",
+  "stockAlertConditionTitle": "Alert Condition",
+  "lblStockAlertValue": "Enter Value",
+  "msgAlertSaved": "Stock alert set successfully.",
+  "msgAlertDeleted": "Stock alert deleted."
 }

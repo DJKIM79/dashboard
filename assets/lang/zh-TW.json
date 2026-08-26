@@ -354,5 +354,18 @@
   "msgSyncError": "啟用同步時出錯。",
   "msgInvalidAuth": "ID或密碼錯誤。",
   "msgSyncDisconnected": "連接已斷開。",
-  "msgSyncWarn": "目前設定將被強制更改為伺服器設定！"
+  "msgSyncWarn": "目前設定將被強制更改為伺服器設定！",
+  "cmStockAlert": "提醒",
+  "modalStockAlert": "股票價格提醒",
+  "lblStockAlertMethod": "設定方法",
+  "stockAlertTarget": "目標價",
+  "stockAlertChangeVal": "變動額",
+  "stockAlertChangeRate": "變動率",
+  "lblStockAlertSign": "條件方向",
+  "stockAlertPlus": "上漲 (+)",
+  "stockAlertMinus": "下跌 (-)",
+  "stockAlertConditionTitle": "提醒條件",
+  "lblStockAlertValue": "輸入設定值",
+  "msgAlertSaved": "股票提醒已設置。",
+  "msgAlertDeleted": "股票提醒已刪除。"
 }

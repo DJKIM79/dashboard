@@ -334,5 +334,18 @@
   "optTh": "Thailändisch",
   "tutStockTitle": "📈 Aktien-Widget",
   "tutStockDesc": "Überwachen Sie nationale und internationale Aktien in Echtzeit. Klicken Sie hier, um detaillierte Charts und 52-Wochen-Hochs/Tiefs anzuzeigen.",
-  "lblOthers": "Sonstiges"
+  "lblOthers": "Sonstiges",
+  "cmStockAlert": "Alert",
+  "modalStockAlert": "Stock Price Alert",
+  "lblStockAlertMethod": "Alert Method",
+  "stockAlertTarget": "Target Price",
+  "stockAlertChangeVal": "Price Change",
+  "stockAlertChangeRate": "Change %",
+  "lblStockAlertSign": "Condition Direction",
+  "stockAlertPlus": "Plus (+)",
+  "stockAlertMinus": "Minus (-)",
+  "stockAlertConditionTitle": "Alert Condition",
+  "lblStockAlertValue": "Enter Value",
+  "msgAlertSaved": "Stock alert set successfully.",
+  "msgAlertDeleted": "Stock alert deleted."
 }

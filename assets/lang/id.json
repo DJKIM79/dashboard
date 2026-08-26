@@ -144,5 +144,18 @@
   "lblDailyChart": "Grafik harian",
   "tutStockTitle": "📈 Widget Saham",
   "tutStockDesc": "Pantau saham domestik dan internasional secara real-time. Klik untuk melihat grafik terperinci dan harga tertinggi/terendah 52 minggu.",
-  "lblOthers": "Lainnya"
+  "lblOthers": "Lainnya",
+  "cmStockAlert": "Alert",
+  "modalStockAlert": "Stock Price Alert",
+  "lblStockAlertMethod": "Alert Method",
+  "stockAlertTarget": "Target Price",
+  "stockAlertChangeVal": "Price Change",
+  "stockAlertChangeRate": "Change %",
+  "lblStockAlertSign": "Condition Direction",
+  "stockAlertPlus": "Plus (+)",
+  "stockAlertMinus": "Minus (-)",
+  "stockAlertConditionTitle": "Alert Condition",
+  "lblStockAlertValue": "Enter Value",
+  "msgAlertSaved": "Stock alert set successfully.",
+  "msgAlertDeleted": "Stock alert deleted."
 }

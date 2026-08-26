@@ -144,5 +144,18 @@
   "lblDailyChart": "رسم بياني يومي",
   "tutStockTitle": "📈 أداة الأسهم",
   "tutStockDesc": "مراقبة الأسهم المحلية والدولية في الوقت الحقيقي. انقر لعرض الرسوم البيانية المفصلة وأعلى/أدنى مستوى خلال 52 أسبوعًا.",
-  "lblOthers": "أخرى"
+  "lblOthers": "أخرى",
+  "cmStockAlert": "Alert",
+  "modalStockAlert": "Stock Price Alert",
+  "lblStockAlertMethod": "Alert Method",
+  "stockAlertTarget": "Target Price",
+  "stockAlertChangeVal": "Price Change",
+  "stockAlertChangeRate": "Change %",
+  "lblStockAlertSign": "Condition Direction",
+  "stockAlertPlus": "Plus (+)",
+  "stockAlertMinus": "Minus (-)",
+  "stockAlertConditionTitle": "Alert Condition",
+  "lblStockAlertValue": "Enter Value",
+  "msgAlertSaved": "Stock alert set successfully.",
+  "msgAlertDeleted": "Stock alert deleted."
 }

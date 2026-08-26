@@ -144,5 +144,18 @@
   "lblDailyChart": "दैनिक चार्ट",
   "tutStockTitle": "📈 स्टॉक विजेट",
   "tutStockDesc": "घरेलू और अंतर्राष्ट्रीय स्टॉक की रीयल-टाइम में निगरानी करें। विस्तृत चार्ट और 52-सप्ताह के उच्च/निम्न देखने के लिए क्लिक करें।",
-  "lblOthers": "अन्य"
+  "lblOthers": "अन्य",
+  "cmStockAlert": "Alert",
+  "modalStockAlert": "Stock Price Alert",
+  "lblStockAlertMethod": "Alert Method",
+  "stockAlertTarget": "Target Price",
+  "stockAlertChangeVal": "Price Change",
+  "stockAlertChangeRate": "Change %",
+  "lblStockAlertSign": "Condition Direction",
+  "stockAlertPlus": "Plus (+)",
+  "stockAlertMinus": "Minus (-)",
+  "stockAlertConditionTitle": "Alert Condition",
+  "lblStockAlertValue": "Enter Value",
+  "msgAlertSaved": "Stock alert set successfully.",
+  "msgAlertDeleted": "Stock alert deleted."
 }

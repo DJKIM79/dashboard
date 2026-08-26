@@ -144,5 +144,18 @@
   "lblDailyChart": "กราฟรายวัน",
   "tutStockTitle": "📈 วิดเจ็ตหุ้น",
   "tutStockDesc": "ติดตามข้อมูลหุ้นในประเทศและต่างประเทศแบบเรียลไทม์ คลิกเพื่อดูกราฟรายละเอียดและราคาสูงสุด/ต่ำสุดรอบ 52 สัปดาห์",
-  "lblOthers": "อื่นๆ"
+  "lblOthers": "อื่นๆ",
+  "cmStockAlert": "Alert",
+  "modalStockAlert": "Stock Price Alert",
+  "lblStockAlertMethod": "Alert Method",
+  "stockAlertTarget": "Target Price",
+  "stockAlertChangeVal": "Price Change",
+  "stockAlertChangeRate": "Change %",
+  "lblStockAlertSign": "Condition Direction",
+  "stockAlertPlus": "Plus (+)",
+  "stockAlertMinus": "Minus (-)",
+  "stockAlertConditionTitle": "Alert Condition",
+  "lblStockAlertValue": "Enter Value",
+  "msgAlertSaved": "Stock alert set successfully.",
+  "msgAlertDeleted": "Stock alert deleted."
 }

@@ -14,6 +14,10 @@ const stock = {
   isDragging: false,
   sortableInstance: null,
   serverTimeOffset: 0,
+  currentAlertStockId: null,
+  currentAlertTab: 'target',
+  currentAlertSign: '+',
+  alertCheckIntervalId: null,
   
   isSupported() {
     const lang = localStorage.getItem("dj_language") || "auto";
@@ -105,6 +109,13 @@ const stock = {
     const list = document.getElementById("stock-list");
     if (list) {
       list.addEventListener("scroll", () => this.updateScrollArrows());
+    }
+
+    this.checkAlerts();
+    if (!this.alertCheckIntervalId) {
+      this.alertCheckIntervalId = setInterval(() => {
+        this.checkAlerts();
+      }, 30000);
     }
   },
 
@@ -353,6 +364,7 @@ const stock = {
             this.saveData();
             window.isApplyingSyncData = false;
             this.updateDOM();
+            this.checkAlerts();
 
             const popup = document.getElementById("global-stock-detail");
             if (popup && popup.style.display === 'block' && popup.dataset.currentId) {
@@ -426,6 +438,23 @@ const stock = {
         expandedChangeEl.className = `remaining stock-change ${chgClass}`;
         expandedChangeEl.innerText = `${sign}${chg.toFixed(2)}%`;
       }
+
+      // Update Alert Badge in expanded view title
+      const titleEl = div.querySelector(".stock-expanded-view .title");
+      if (titleEl) {
+        let badge = titleEl.querySelector(".stock-alert-badge");
+        if (n.alert && n.alert.enabled) {
+          if (!badge) {
+            badge = document.createElement("i");
+            badge.className = "fas fa-bell stock-alert-badge";
+            badge.title = "알림 설정됨";
+            badge.style.marginLeft = "4px";
+            titleEl.appendChild(badge);
+          }
+        } else {
+          if (badge) badge.remove();
+        }
+      }
     });
   },
   
@@ -482,9 +511,16 @@ const stock = {
         ? this.formatPrice(Math.abs(n.change || 0), n)
         : Math.abs(chg).toFixed(2);
 
+      const alertBadgeHtml = (n.alert && n.alert.enabled) 
+        ? '<i class="fas fa-bell stock-alert-badge" title="알림 설정됨" style="margin-left: 4px;"></i>' 
+        : '';
+
       div.innerHTML = `
         <div class="stock-expanded-view">
-          <div class="title" style="color: var(--accent-color);">${n.name}</div>
+          <div class="title" style="color: var(--accent-color); display: flex; align-items: center; justify-content: space-between;">
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${n.name}</span>
+            ${alertBadgeHtml}
+          </div>
           <div class="noti-info stock-info">
             <span class="stock-price ${chgClass}">${price}</span>
             <span class="remaining stock-change ${chgClass}">${sign}${chg.toFixed(2)}%</span>
@@ -1158,6 +1194,347 @@ const stock = {
       utils.closeModal('stockModal');
     } else if (window.openModal) {
       window.closeModal('stockModal');
+    }
+  },
+
+  openAlertModal(id = null) {
+    const menu = document.getElementById("globalContextMenu");
+    if (!id && menu && menu.dataset.type === "stock") {
+      id = menu.dataset.id;
+    }
+    if (!id) return;
+
+    const item = this.items.find(i => String(i.id) === String(id));
+    if (!item) return;
+
+    this.currentAlertStockId = String(id);
+
+    // Request notification permission if needed
+    if (window.Notification && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
+    // Set stock summary info in modal
+    const nameEl = document.getElementById("stockAlertStockName");
+    const codeEl = document.getElementById("stockAlertStockCode");
+    const priceEl = document.getElementById("stockAlertCurrentPrice");
+    const changeEl = document.getElementById("stockAlertChange");
+    const delBtn = document.getElementById("stockAlertDelBtn");
+    const input = document.getElementById("stockAlertValueInput");
+
+    const currPrice = item.currentPrice || item.basePrice || 0;
+    const chg = item.changePercent || 0;
+    const sign = chg >= 0 ? "+" : "";
+    const chgClass = chg > 0 ? "up" : chg < 0 ? "down" : "same";
+    const changeText = (item.change >= 0 ? "+" : "") + this.formatPrice(item.change || 0, item);
+
+    if (nameEl) nameEl.innerText = item.name;
+    if (codeEl) codeEl.innerText = `${item.code || ""} (${item.nation || ""})`;
+    if (priceEl) {
+      priceEl.className = `stock-price ${chgClass}`;
+      priceEl.innerText = this.formatPrice(currPrice, item);
+    }
+    if (changeEl) {
+      changeEl.className = `stock-change ${chgClass}`;
+      changeEl.innerText = `${changeText} (${sign}${chg.toFixed(2)}%)`;
+    }
+
+    if (item.alert && item.alert.enabled) {
+      this.currentAlertTab = item.alert.mode || 'target';
+      this.currentAlertSign = item.alert.sign || '+';
+      if (input) input.value = item.alert.value !== undefined ? item.alert.value : "";
+      if (delBtn) delBtn.style.display = 'block';
+    } else {
+      this.currentAlertTab = 'target';
+      this.currentAlertSign = '+';
+      if (input) input.value = currPrice ? (currPrice % 1 === 0 ? currPrice : currPrice.toFixed(2)) : "";
+      if (delBtn) delBtn.style.display = 'none';
+    }
+
+    this.updateAlertTabUI();
+    this.updateAlertSignUI();
+    this.updateAlertPreview();
+
+    const modal = document.getElementById("stockAlertModal");
+    if (modal) {
+      if (window.utils && utils.openModal) {
+        utils.openModal("stockAlertModal");
+      } else if (window.openModal) {
+        window.openModal("stockAlertModal");
+      } else {
+        modal.style.display = "flex";
+        modal.offsetHeight;
+        modal.classList.add("show");
+      }
+      setTimeout(() => {
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }, 100);
+    }
+  },
+
+  setAlertTab(mode) {
+    this.currentAlertTab = mode;
+    this.updateAlertTabUI();
+
+    const item = this.items.find(i => String(i.id) === String(this.currentAlertStockId));
+    const input = document.getElementById("stockAlertValueInput");
+    if (item && input) {
+      const currPrice = item.currentPrice || item.basePrice || 0;
+      if (mode === 'target') {
+        input.value = currPrice ? (currPrice % 1 === 0 ? currPrice : currPrice.toFixed(2)) : "";
+      } else if (mode === 'change_val') {
+        const isUS = item.nation === "미국" || (item.code && (item.code.endsWith('.O') || item.code.endsWith('.N') || item.code.endsWith('.A')));
+        input.value = isUS ? "1.00" : (currPrice >= 50000 ? "1000" : "500");
+      } else if (mode === 'change_rate') {
+        input.value = "3";
+      }
+    }
+
+    this.updateAlertPreview();
+  },
+
+  setAlertSign(sign) {
+    this.currentAlertSign = sign;
+    this.updateAlertSignUI();
+    this.updateAlertPreview();
+  },
+
+  updateAlertTabUI() {
+    const tabs = {
+      'target': document.getElementById('stockAlertTabTarget'),
+      'change_val': document.getElementById('stockAlertTabChangeVal'),
+      'change_rate': document.getElementById('stockAlertTabChangeRate')
+    };
+
+    Object.keys(tabs).forEach(k => {
+      const tabEl = tabs[k];
+      if (tabEl) {
+        if (k === this.currentAlertTab) {
+          tabEl.classList.add('active');
+        } else {
+          tabEl.classList.remove('active');
+        }
+      }
+    });
+
+    const item = this.items.find(i => String(i.id) === String(this.currentAlertStockId));
+    const unitEl = document.getElementById('stockAlertValueUnit');
+    const labelEl = document.getElementById('stockAlertValueLabel');
+
+    if (unitEl) {
+      if (this.currentAlertTab === 'change_rate') {
+        unitEl.innerText = '%';
+      } else {
+        const currency = this.getCurrency(item);
+        unitEl.innerText = currency;
+      }
+    }
+
+    if (labelEl) {
+      if (this.currentAlertTab === 'target') {
+        labelEl.innerText = window.i18n ? (i18n.get('stockAlertTarget') + ' 입력') : '목표가 입력';
+      } else if (this.currentAlertTab === 'change_val') {
+        labelEl.innerText = window.i18n ? (i18n.get('stockAlertChangeVal') + ' 입력') : '변동가 입력';
+      } else {
+        labelEl.innerText = window.i18n ? (i18n.get('stockAlertChangeRate') + ' (%) 입력') : '변동률 (%) 입력';
+      }
+    }
+  },
+
+  updateAlertSignUI() {
+    const plusBtn = document.getElementById('stockAlertSignPlus');
+    const minusBtn = document.getElementById('stockAlertSignMinus');
+
+    if (plusBtn && minusBtn) {
+      if (this.currentAlertSign === '+') {
+        plusBtn.className = 'stock-alert-sign-btn active-plus';
+        minusBtn.className = 'stock-alert-sign-btn';
+      } else {
+        plusBtn.className = 'stock-alert-sign-btn';
+        minusBtn.className = 'stock-alert-sign-btn active-minus';
+      }
+    }
+  },
+
+  handleAlertValueInput(val) {
+    this.updateAlertPreview();
+  },
+
+  calculateTargetPrice(item, mode, sign, val) {
+    const numVal = parseFloat(val);
+    if (isNaN(numVal) || numVal <= 0) return NaN;
+    const base = item ? (item.currentPrice || item.basePrice || 0) : 0;
+
+    if (mode === 'target') {
+      return numVal;
+    } else if (mode === 'change_val') {
+      return sign === '+' ? (base + numVal) : (base - numVal);
+    } else if (mode === 'change_rate') {
+      return sign === '+' ? (base * (1 + numVal / 100)) : (base * (1 - numVal / 100));
+    }
+    return NaN;
+  },
+
+  updateAlertPreview() {
+    const previewTextEl = document.getElementById('stockAlertPreviewText');
+    if (!previewTextEl) return;
+
+    const item = this.items.find(i => String(i.id) === String(this.currentAlertStockId));
+    if (!item) return;
+
+    const input = document.getElementById('stockAlertValueInput');
+    const rawVal = input ? input.value.trim() : "";
+    const numVal = parseFloat(rawVal);
+
+    if (!rawVal || isNaN(numVal) || numVal <= 0) {
+      previewTextEl.innerText = "조건을 올바르게 입력해주세요.";
+      return;
+    }
+
+    const targetPrice = this.calculateTargetPrice(item, this.currentAlertTab, this.currentAlertSign, numVal);
+    if (isNaN(targetPrice) || targetPrice < 0) {
+      previewTextEl.innerText = "유효하지 않은 목표 가격입니다.";
+      return;
+    }
+
+    const currPrice = item.currentPrice || item.basePrice || 0;
+    const targetFormatted = this.formatPrice(targetPrice, item);
+    const currFormatted = this.formatPrice(currPrice, item);
+    const currency = this.getCurrency(item);
+    const signText = this.currentAlertSign === '+' ? '이상 (▲ 도달 시)' : '이하 (▼ 도달 시)';
+
+    let methodDesc = "";
+    if (this.currentAlertTab === 'target') {
+      methodDesc = `목표가 ${targetFormatted} ${currency}`;
+    } else if (this.currentAlertTab === 'change_val') {
+      methodDesc = `현재가 대비 ${this.currentAlertSign}${this.formatPrice(numVal, item)} ${currency} 변동`;
+    } else {
+      methodDesc = `현재가 대비 ${this.currentAlertSign}${numVal}% 변동`;
+    }
+
+    previewTextEl.innerHTML = `
+      <div><strong>${methodDesc}</strong> → 목표가 <strong>${targetFormatted} ${currency}</strong> ${signText}</div>
+      <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 3px;">현재가: ${currFormatted} ${currency} | 목표 달성 시 5분 주기로 윈도우 알림 발송</div>
+    `;
+  },
+
+  saveAlert() {
+    const item = this.items.find(i => String(i.id) === String(this.currentAlertStockId));
+    if (!item) return;
+
+    const input = document.getElementById('stockAlertValueInput');
+    const rawVal = input ? input.value.trim() : "";
+    const numVal = parseFloat(rawVal);
+
+    if (!rawVal || isNaN(numVal) || numVal <= 0) {
+      alert("0보다 큰 올바른 숫자를 입력해주세요.");
+      if (input) input.focus();
+      return;
+    }
+
+    const basePrice = item.currentPrice || item.basePrice || 0;
+    const targetPrice = this.calculateTargetPrice(item, this.currentAlertTab, this.currentAlertSign, numVal);
+
+    item.alert = {
+      enabled: true,
+      mode: this.currentAlertTab,
+      sign: this.currentAlertSign,
+      value: numVal,
+      basePrice: basePrice,
+      targetPrice: targetPrice,
+      lastNotifiedAt: 0
+    };
+
+    this.saveData();
+    this.updateDOM();
+
+    if (window.Notification && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
+    if (window.utils && utils.closeModal) {
+      utils.closeModal('stockAlertModal');
+    } else if (window.closeModal) {
+      window.closeModal('stockAlertModal');
+    }
+
+    // Check alert conditions immediately
+    this.checkAlerts();
+  },
+
+  deleteAlert() {
+    const item = this.items.find(i => String(i.id) === String(this.currentAlertStockId));
+    if (item) {
+      delete item.alert;
+      this.saveData();
+      this.updateDOM();
+    }
+
+    if (window.utils && utils.closeModal) {
+      utils.closeModal('stockAlertModal');
+    } else if (window.closeModal) {
+      window.closeModal('stockAlertModal');
+    }
+  },
+
+  checkAlerts() {
+    if (!this.items || this.items.length === 0) return;
+    const now = Date.now();
+    const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+    this.items.forEach(item => {
+      if (!item.alert || !item.alert.enabled) return;
+
+      const currentPrice = item.currentPrice || item.basePrice;
+      if (currentPrice === undefined || currentPrice === null || isNaN(currentPrice)) return;
+
+      const targetPrice = this.calculateTargetPrice(item, item.alert.mode, item.alert.sign, item.alert.value);
+      if (isNaN(targetPrice)) return;
+
+      let isConditionMet = false;
+      if (item.alert.sign === '+') {
+        isConditionMet = (currentPrice >= targetPrice);
+      } else {
+        isConditionMet = (currentPrice <= targetPrice);
+      }
+
+      if (isConditionMet) {
+        const lastNotified = item.alert.lastNotifiedAt || 0;
+        if (!lastNotified || (now - lastNotified >= COOLDOWN_MS)) {
+          this.sendStockNotification(item, currentPrice, targetPrice, item.alert);
+          item.alert.lastNotifiedAt = now;
+          this.saveData();
+        }
+      }
+    });
+  },
+
+  sendStockNotification(item, currentPrice, targetPrice, alertData) {
+    if (!window.Notification || Notification.permission !== "granted") {
+      return;
+    }
+
+    const currFormatted = this.formatPrice(currentPrice, item);
+    const targetFormatted = this.formatPrice(targetPrice, item);
+    const currency = this.getCurrency(item);
+    const signText = alertData.sign === '+' ? '이상 (▲)' : '이하 (▼)';
+
+    const title = `[주가 알림] ${item.name} (${currFormatted} ${currency})`;
+    const body = `현재가 ${currFormatted} ${currency}이(가) 목표가 ${targetFormatted} ${currency} ${signText}에 도달했습니다!`;
+
+    try {
+      const noti = new Notification(title, {
+        body: body,
+        icon: 'favicon.ico'
+      });
+      noti.onclick = () => {
+        window.focus();
+      };
+    } catch (e) {
+      console.error("Stock notification error:", e);
     }
   }
 };
