@@ -333,6 +333,8 @@
   "stockAlertMinus": "Minus (-)",
   "stockAlertConditionTitle": "Alert Condition",
   "lblStockAlertValue": "Enter Value",
+  "lblStockAlertInterval": "Alert Interval (minutes)",
+  "unitMinutes": "min",
   "msgAlertSaved": "Stock alert set successfully.",
   "msgAlertDeleted": "Stock alert deleted.",
   "btnLoadStocks": "Load Stocks",

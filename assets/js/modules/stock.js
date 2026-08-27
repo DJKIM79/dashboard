@@ -73,6 +73,25 @@ const stock = {
     return symbols[currency] || currency;
   },
 
+  getCurrencyName(currency) {
+    const names = {
+      "KRW": "원",
+      "USD": "달러",
+      "JPY": "엔",
+      "CNY": "위안",
+      "HKD": "홍콩달러",
+      "TWD": "대만달러"
+    };
+    return names[currency] || currency;
+  },
+
+  getSubjectParticle(word) {
+    if (!word) return "이(가)";
+    const lastChar = word.charCodeAt(word.length - 1);
+    if (lastChar < 0xac00 || lastChar > 0xd7a3) return "이(가)";
+    return (lastChar - 0xac00) % 28 > 0 ? "이" : "가";
+  },
+
   init() {
     this.render();
     if (this.isSupported()) {
@@ -370,6 +389,28 @@ const stock = {
             if (popup && popup.style.display === 'block' && popup.dataset.currentId) {
                 this.renderDetail(popup.dataset.currentId, popup, true);
             }
+
+            const alertModal = document.getElementById("stockAlertModal");
+            if (alertModal && alertModal.style.display !== 'none' && this.currentAlertStockId) {
+                const alertItem = this.items.find(s => String(s.id) === String(this.currentAlertStockId));
+                if (alertItem) {
+                    const aPriceEl = document.getElementById("stockAlertCurrentPrice");
+                    const aChangeEl = document.getElementById("stockAlertChange");
+                    const aCurrPrice = alertItem.currentPrice || alertItem.basePrice || 0;
+                    const aChg = alertItem.changePercent || 0;
+                    const aSign = aChg >= 0 ? "+" : "";
+                    const aChgClass = aChg > 0 ? "up" : aChg < 0 ? "down" : "same";
+                    const aChangeText = (alertItem.change >= 0 ? "+" : "") + this.formatPrice(alertItem.change || 0, alertItem);
+                    if (aPriceEl) {
+                        aPriceEl.className = `stock-price ${aChgClass}`;
+                        aPriceEl.innerText = this.formatPrice(aCurrPrice, alertItem);
+                    }
+                    if (aChangeEl) {
+                        aChangeEl.className = `stock-change ${aChgClass}`;
+                        aChangeEl.innerText = `${aChangeText} (${aSign}${aChg.toFixed(2)}%)`;
+                    }
+                }
+            }
         }
     } catch (e) {
         console.error("Stock update error:", e);
@@ -415,22 +456,35 @@ const stock = {
         div.classList.remove("secret");
       }
 
-      // Update Secret View
-      const valView = div.querySelector(".stock-secret-view .val-view");
-      const percentView = div.querySelector(".stock-secret-view .percent-view");
-      if (valView) {
-        valView.innerText = this.formatPrice(Math.abs(n.change || 0), n);
-      }
-      if (percentView) {
-        percentView.innerText = Math.abs(chg).toFixed(2);
-      }
-
       // Update Expanded View
       const price = this.formatPrice(n.currentPrice || n.basePrice || 0, n);
       const priceEl = div.querySelector(".stock-expanded-view .stock-price");
       if (priceEl) {
         priceEl.className = `stock-price ${chgClass}`;
         priceEl.innerText = price;
+      }
+
+      // Update Secret View
+      const valView = div.querySelector(".stock-secret-view .val-view");
+      const percentView = div.querySelector(".stock-secret-view .percent-view");
+      const priceView = div.querySelector(".stock-secret-view .price-view");
+      if (valView) {
+        valView.innerText = this.formatPrice(Math.abs(n.change || 0), n);
+      }
+      if (percentView) {
+        percentView.innerText = Math.abs(chg).toFixed(2);
+      }
+      if (priceView) {
+        priceView.innerText = price;
+      }
+      const strip = div.querySelector(".stock-digit-strip");
+      if (strip) {
+        const getTranslateY = (type) => {
+          if (type === "percent") return "-24px";
+          if (type === "price") return "-48px";
+          return "0px";
+        };
+        strip.style.transform = `translateY(${getTranslateY(n.secretDisplayType)})`;
       }
 
       const expandedChangeEl = div.querySelector(".stock-expanded-view .stock-change");
@@ -515,6 +569,12 @@ const stock = {
         ? '<i class="fas fa-bell stock-alert-badge" title="알림 설정됨" style="margin-left: 4px;"></i>' 
         : '';
 
+      const getTranslateY = (type) => {
+        if (type === "percent") return "-24px";
+        if (type === "price") return "-48px";
+        return "0px";
+      };
+
       div.innerHTML = `
         <div class="stock-expanded-view">
           <div class="title" style="color: var(--accent-color); display: flex; align-items: center; justify-content: space-between;">
@@ -529,9 +589,10 @@ const stock = {
         <div class="stock-secret-view">
           <div class="noti-info stock-info">
             <div class="stock-digit-group">
-              <div class="stock-digit-strip" style="transform: translateY(${n.secretDisplayType === "val" ? "0px" : "-24px"})">
+              <div class="stock-digit-strip" style="transform: translateY(${getTranslateY(n.secretDisplayType)})">
                 <div class="stock-digit"><span class="stock-change val-view">${this.formatPrice(Math.abs(n.change || 0), n)}</span></div>
                 <div class="stock-digit"><span class="stock-change percent-view">${Math.abs(chg).toFixed(2)}</span></div>
+                <div class="stock-digit"><span class="stock-change price-view">${price}</span></div>
               </div>
             </div>
           </div>
@@ -552,12 +613,18 @@ const stock = {
           if (window.utils && utils.hideValidationTip) {
             utils.hideValidationTip();
           }
-          n.secretDisplayType = n.secretDisplayType === "val" ? "percent" : "val";
+          if (n.secretDisplayType === "val" || !n.secretDisplayType) {
+            n.secretDisplayType = "percent";
+          } else if (n.secretDisplayType === "percent") {
+            n.secretDisplayType = "price";
+          } else {
+            n.secretDisplayType = "val";
+          }
           this.saveData();
           
           const strip = div.querySelector(".stock-digit-strip");
           if (strip) {
-            strip.style.transform = `translateY(${n.secretDisplayType === "val" ? "0px" : "-24px"})`;
+            strip.style.transform = `translateY(${getTranslateY(n.secretDisplayType)})`;
           }
           return;
         }
@@ -586,9 +653,9 @@ const stock = {
             const currentChg = currentItem ? (currentItem.changePercent || 0) : 0;
             const type = currentChg > 0 ? "up" : currentChg < 0 ? "down" : "same";
             
-            const isShowVal = currentItem ? (currentItem.secretDisplayType === "val") : (n.secretDisplayType === "val");
+            const displayType = currentItem ? (currentItem.secretDisplayType || "val") : (n.secretDisplayType || "val");
             let unit = "%";
-            if (isShowVal) {
+            if (displayType === "val" || displayType === "price") {
               const currency = this.getCurrency(currentItem || n);
               unit = this.getCurrencySymbol(currency);
             }
@@ -1221,6 +1288,7 @@ const stock = {
     const changeEl = document.getElementById("stockAlertChange");
     const delBtn = document.getElementById("stockAlertDelBtn");
     const input = document.getElementById("stockAlertValueInput");
+    const intervalInput = document.getElementById("stockAlertIntervalInput");
 
     const currPrice = item.currentPrice || item.basePrice || 0;
     const chg = item.changePercent || 0;
@@ -1243,17 +1311,18 @@ const stock = {
       this.currentAlertTab = item.alert.mode || 'target';
       this.currentAlertSign = item.alert.sign || '+';
       if (input) input.value = item.alert.value !== undefined ? item.alert.value : "";
+      if (intervalInput) intervalInput.value = item.alert.interval !== undefined ? item.alert.interval : "5";
       if (delBtn) delBtn.style.display = 'block';
     } else {
       this.currentAlertTab = 'target';
       this.currentAlertSign = '+';
       if (input) input.value = currPrice ? (currPrice % 1 === 0 ? currPrice : currPrice.toFixed(2)) : "";
+      if (intervalInput) intervalInput.value = "5";
       if (delBtn) delBtn.style.display = 'none';
     }
 
     this.updateAlertTabUI();
     this.updateAlertSignUI();
-    this.updateAlertPreview();
 
     const modal = document.getElementById("stockAlertModal");
     if (modal) {
@@ -1292,14 +1361,11 @@ const stock = {
         input.value = "3";
       }
     }
-
-    this.updateAlertPreview();
   },
 
   setAlertSign(sign) {
     this.currentAlertSign = sign;
     this.updateAlertSignUI();
-    this.updateAlertPreview();
   },
 
   updateAlertTabUI() {
@@ -1359,10 +1425,6 @@ const stock = {
     }
   },
 
-  handleAlertValueInput(val) {
-    this.updateAlertPreview();
-  },
-
   calculateTargetPrice(item, mode, sign, val) {
     const numVal = parseFloat(val);
     if (isNaN(numVal) || numVal <= 0) return NaN;
@@ -1376,49 +1438,6 @@ const stock = {
       return sign === '+' ? (base * (1 + numVal / 100)) : (base * (1 - numVal / 100));
     }
     return NaN;
-  },
-
-  updateAlertPreview() {
-    const previewTextEl = document.getElementById('stockAlertPreviewText');
-    if (!previewTextEl) return;
-
-    const item = this.items.find(i => String(i.id) === String(this.currentAlertStockId));
-    if (!item) return;
-
-    const input = document.getElementById('stockAlertValueInput');
-    const rawVal = input ? input.value.trim() : "";
-    const numVal = parseFloat(rawVal);
-
-    if (!rawVal || isNaN(numVal) || numVal <= 0) {
-      previewTextEl.innerText = "조건을 올바르게 입력해주세요.";
-      return;
-    }
-
-    const targetPrice = this.calculateTargetPrice(item, this.currentAlertTab, this.currentAlertSign, numVal);
-    if (isNaN(targetPrice) || targetPrice < 0) {
-      previewTextEl.innerText = "유효하지 않은 목표 가격입니다.";
-      return;
-    }
-
-    const currPrice = item.currentPrice || item.basePrice || 0;
-    const targetFormatted = this.formatPrice(targetPrice, item);
-    const currFormatted = this.formatPrice(currPrice, item);
-    const currency = this.getCurrency(item);
-    const signText = this.currentAlertSign === '+' ? '이상 (▲ 도달 시)' : '이하 (▼ 도달 시)';
-
-    let methodDesc = "";
-    if (this.currentAlertTab === 'target') {
-      methodDesc = `목표가 ${targetFormatted} ${currency}`;
-    } else if (this.currentAlertTab === 'change_val') {
-      methodDesc = `현재가 대비 ${this.currentAlertSign}${this.formatPrice(numVal, item)} ${currency} 변동`;
-    } else {
-      methodDesc = `현재가 대비 ${this.currentAlertSign}${numVal}% 변동`;
-    }
-
-    previewTextEl.innerHTML = `
-      <div><strong>${methodDesc}</strong> → 목표가 <strong>${targetFormatted} ${currency}</strong> ${signText}</div>
-      <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 3px;">현재가: ${currFormatted} ${currency} | 목표 달성 시 5분 주기로 윈도우 알림 발송</div>
-    `;
   },
 
   saveAlert() {
@@ -1435,6 +1454,15 @@ const stock = {
       return;
     }
 
+    const intervalInput = document.getElementById('stockAlertIntervalInput');
+    let intervalVal = 5;
+    if (intervalInput) {
+      const rawInterval = parseFloat(intervalInput.value.trim());
+      if (!isNaN(rawInterval) && rawInterval > 0) {
+        intervalVal = rawInterval;
+      }
+    }
+
     const basePrice = item.currentPrice || item.basePrice || 0;
     const targetPrice = this.calculateTargetPrice(item, this.currentAlertTab, this.currentAlertSign, numVal);
 
@@ -1443,6 +1471,7 @@ const stock = {
       mode: this.currentAlertTab,
       sign: this.currentAlertSign,
       value: numVal,
+      interval: intervalVal,
       basePrice: basePrice,
       targetPrice: targetPrice,
       lastNotifiedAt: 0
@@ -1483,7 +1512,6 @@ const stock = {
   checkAlerts() {
     if (!this.items || this.items.length === 0) return;
     const now = Date.now();
-    const COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 
     this.items.forEach(item => {
       if (!item.alert || !item.alert.enabled) return;
@@ -1502,8 +1530,10 @@ const stock = {
       }
 
       if (isConditionMet) {
+        const intervalMin = (item.alert.interval !== undefined && item.alert.interval > 0) ? item.alert.interval : 5;
+        const cooldownMs = intervalMin * 60 * 1000;
         const lastNotified = item.alert.lastNotifiedAt || 0;
-        if (!lastNotified || (now - lastNotified >= COOLDOWN_MS)) {
+        if (!lastNotified || (now - lastNotified >= cooldownMs)) {
           this.sendStockNotification(item, currentPrice, targetPrice, item.alert);
           item.alert.lastNotifiedAt = now;
           this.saveData();
@@ -1518,12 +1548,31 @@ const stock = {
     }
 
     const currFormatted = this.formatPrice(currentPrice, item);
-    const targetFormatted = this.formatPrice(targetPrice, item);
     const currency = this.getCurrency(item);
-    const signText = alertData.sign === '+' ? '이상 (▲)' : '이하 (▼)';
+    const currencyName = this.getCurrencyName(currency);
 
-    const title = `[주가 알림] ${item.name} (${currFormatted} ${currency})`;
-    const body = `현재가 ${currFormatted} ${currency}이(가) 목표가 ${targetFormatted} ${currency} ${signText}에 도달했습니다!`;
+    // 4.1 제목: 종목명 (xxxxx 원/달러/엔/...)
+    const title = `${item.name} (${currFormatted} ${currencyName})`;
+
+    // 4.2 내용: 종목명이 설정한 xxxx에 도달하였습니다. (xxxx는 목표가/변동가/변동률 을 표시함)
+    let conditionDesc = "";
+    if (alertData.mode === 'target') {
+      const targetFormatted = this.formatPrice(alertData.value !== undefined ? alertData.value : targetPrice, item);
+      conditionDesc = `목표가 ${targetFormatted} ${currencyName}`;
+    } else if (alertData.mode === 'change_val') {
+      const sign = alertData.sign || '+';
+      const valFormatted = this.formatPrice(alertData.value, item);
+      conditionDesc = `변동가 ${sign}${valFormatted} ${currencyName}`;
+    } else if (alertData.mode === 'change_rate') {
+      const sign = alertData.sign || '+';
+      conditionDesc = `변동률 ${sign}${alertData.value}%`;
+    } else {
+      const targetFormatted = this.formatPrice(targetPrice, item);
+      conditionDesc = `목표가 ${targetFormatted} ${currencyName}`;
+    }
+
+    const particle = this.getSubjectParticle(item.name);
+    const body = `${item.name}${particle} 설정한 ${conditionDesc}에 도달하였습니다.`;
 
     try {
       const noti = new Notification(title, {

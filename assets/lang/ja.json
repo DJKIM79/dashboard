@@ -371,6 +371,8 @@
   "stockAlertMinus": "マイナス (-)",
   "stockAlertConditionTitle": "アラート条件",
   "lblStockAlertValue": "設定値を入力",
+  "lblStockAlertInterval": "アラート周期 (分単位)",
+  "unitMinutes": "分",
   "msgAlertSaved": "株価アラートが設定されました。",
   "msgAlertDeleted": "株価アラートが削除されました。"
 }

@@ -335,6 +335,8 @@
   "stockAlertMinus": "마이너스 (-)",
   "stockAlertConditionTitle": "알림 조건",
   "lblStockAlertValue": "설정값 입력",
+  "lblStockAlertInterval": "알림 주기 (분 단위)",
+  "unitMinutes": "분",
   "msgAlertSaved": "주가 알림이 설정되었습니다.",
   "msgAlertDeleted": "주가 알림이 삭제되었습니다.",
   "btnLoadStocks": "종목 갱신하기",

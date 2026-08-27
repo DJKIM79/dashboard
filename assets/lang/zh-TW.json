@@ -366,6 +366,8 @@
   "stockAlertMinus": "下跌 (-)",
   "stockAlertConditionTitle": "提醒條件",
   "lblStockAlertValue": "輸入設定值",
-  "msgAlertSaved": "股票提醒已設置。",
+  "lblStockAlertInterval": "提醒週期 (分鐘)",
+  "unitMinutes": "分",
+  "msgAlertSaved": "股價提醒設定成功。",
   "msgAlertDeleted": "股票提醒已刪除。"
 }

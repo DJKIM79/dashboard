@@ -1946,8 +1946,8 @@
             <div id="stockAlertStockCode" style="font-size: 0.72rem; color: #94a3b8;">-</div>
           </div>
           <div style="text-align: right;">
-            <div id="stockAlertCurrentPrice" style="font-family: 'JetBrains Mono'; font-weight: bold; font-size: 1.05rem; color: #fff;">-</div>
-            <div id="stockAlertChange" style="font-size: 0.75rem; font-family: 'JetBrains Mono'; color: #94a3b8;">-</div>
+            <div id="stockAlertCurrentPrice" class="stock-price" style="font-family: 'JetBrains Mono'; font-weight: bold; font-size: 1.05rem;">-</div>
+            <div id="stockAlertChange" class="stock-change" style="font-size: 0.75rem; font-family: 'JetBrains Mono';">-</div>
           </div>
         </div>
 
@@ -1983,19 +1983,28 @@
               id="stockAlertValueInput"
               inputmode="decimal"
               autocomplete="off"
-              oninput="if(window.stock) stock.handleAlertValueInput(this.value)"
               style="width: 100%; box-sizing: border-box; margin-bottom: 0; padding-right: 50px; font-family: 'JetBrains Mono'; font-size: 1rem;"
             />
             <span id="stockAlertValueUnit" style="position: absolute; right: 12px; font-size: 0.8rem; color: #94a3b8; pointer-events: none; font-family: 'JetBrains Mono';">KRW</span>
           </div>
         </div>
 
-        <!-- Real-time Preview -->
-        <div id="stockAlertPreviewBox" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; font-size: 0.78rem; color: #bae6fd; line-height: 1.45;">
-          <div style="font-weight: bold; margin-bottom: 3px; display: flex; align-items: center; gap: 5px;">
-            <i class="fas fa-bell" style="font-size: 0.75rem;"></i> <span data-i18n="stockAlertConditionTitle">알림 조건</span>
+        <!-- Alert Interval Input (Minutes) -->
+        <div style="margin-bottom: 16px;">
+          <label id="stockAlertIntervalLabel" style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 6px;" data-i18n="lblStockAlertInterval">알림 주기 (분 단위)</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input
+              type="text"
+              id="stockAlertIntervalInput"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              autocomplete="off"
+              value="5"
+              placeholder="5"
+              style="width: 100%; box-sizing: border-box; margin-bottom: 0; padding-right: 50px; font-family: 'JetBrains Mono'; font-size: 1rem;"
+            />
+            <span id="stockAlertIntervalUnit" style="position: absolute; right: 12px; font-size: 0.8rem; color: #94a3b8; pointer-events: none;" data-i18n="unitMinutes">분</span>
           </div>
-          <div id="stockAlertPreviewText" style="color: #e0f2fe; word-break: keep-all;">조건을 설정해주세요.</div>
         </div>
 
         <!-- Bottom Action Buttons: Delete / Close / Save -->
