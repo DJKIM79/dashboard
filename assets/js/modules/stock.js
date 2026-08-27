@@ -22,7 +22,7 @@ const stock = {
   isSupported() {
     const lang = localStorage.getItem("dj_language") || "auto";
     const actualLang = (lang === "auto") ? (window.i18n ? i18n.userLang : "en") : lang;
-    const supported = ["ko", "en", "ja", "zh-CN", "zh-TW"];
+    const supported = ["ko", "en", "ja", "zh-CN", "zh-TW", "ar", "de", "es", "fr", "hi", "id", "pt", "th"];
     return supported.includes(actualLang);
   },
 
